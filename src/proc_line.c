@@ -29,7 +29,7 @@ int buflen;
 TDH_errprog( "pl proc line" );
 
 /* initialize */
-strcpy( Bigbuf, "" );
+strcpy( PL_bigbuf, "" );
 strcpy( linedetails, "" );
 strcpy( notation, "locvalue" );
 x = 0.0;
@@ -44,7 +44,7 @@ while( 1 ) {
 	lineval = &line[lvp];
 
 	if( stricmp( attr, "points" )==0 ) 
-		getmultiline( "points", lineval, MAXBIGBUF, Bigbuf );
+		getmultiline( "points", lineval, MAXBIGBUF, PL_bigbuf );
 		
 
 	else if( stricmp( attr, "linedetails" )==0 ) strcpy( linedetails, lineval );
@@ -63,9 +63,9 @@ if( !GL_member( notation[0], "aAsSlL" )) {
 	}
 ix = 0;
 first = 1;
-buflen = strlen( Bigbuf );
+buflen = strlen( PL_bigbuf );
 while( 1 ) {
-	GL_getchunk( buf, Bigbuf, &ix, "\n" );
+	GL_getchunk( buf, PL_bigbuf, &ix, "\n" );
 	nt = sscanf( buf, "%s %s %s %s", a, b, c, d );
 
 	if( nt == 4 || first ) { 
@@ -74,10 +74,10 @@ while( 1 ) {
 			/* if( !first ) */ Elin( atof( c ), atof( d ) ); 
 			}
 		else if( notation[0] == 's' ) { 
-			Emov( Eu( X, a ), Eu( Y, b ) ); 
+			Emov( PL_u( X, a ), PL_u( Y, b ) ); 
 			if( Econv_error() ) Eerr( 2945, "unplottable value(s) ", buf );
 			if( nt == 4 ) { 
-				Elin( Eu( X, c ), Eu( Y, d ) ); 
+				Elin( PL_u( X, c ), PL_u( Y, d ) ); 
 				if( Econv_error() ) Eerr( 2946, "unplottable value(s) ", buf );
 				} 
 			}
@@ -93,7 +93,7 @@ while( 1 ) {
 
 	else if( nt == 2 ) { 
 		if( notation[0] == 'a' ) Elin( atof( a ), atof( b ) ); 
-		else if( notation[0] == 's' ) Elin( Eu( X, a ), Eu( Y, b ) ); 
+		else if( notation[0] == 's' ) Elin( PL_u( X, a ), PL_u( Y, b ) ); 
 		else if( notation[0] == 'l' ) { 
 			Eposex( a, X, &x ); Eposex( b, Y, &y ); Elin( x, y );
 			}

@@ -3,26 +3,17 @@
  * This code is covered under the GNU General Public License (GPL);
  * see the file ./Copyright for details. */
 
-/* TDH database interface.  
+/* TDH abstract database interface.  
+   Interfaces to other databases should be implemented here.
 
-   Default database is pocketsql.  Interfaces to other databases should
-   be implemented here.
-   
-   Two database connections are available; they are identified as 0 and 1.
-   Connection 0 is the default.
+   If compile flag TDH_DB is undefined or set to 0, no sql connectivity is available.
 
-   Suggested strategy for managing database connections:
-     Implicitly initiate a connection upon first request.
-     Database name, user name, and password should be set in the project
-     config file as variables, eg  
-	varvalue:	_DBDATABASE=test1
-	varvalue:	_DBLOGIN=sys
-	varvalue:	_DBPW=mongoose47
+   If TDH_DB is set to 2, shsql calls will be made.  SHSQL has no concept of "connect".
+*/
 
- */
 #include "tdhkit.h"
 
-#define PSQL  1
+#define SHSQL  2
 #define MYSQL  10
 #define ORACLE  20
 #define SYBASE  30
@@ -31,15 +22,6 @@
 #endif
 
 
-#if TDH_DB == PSQL
-#define MAXROWS 5000
-static char *rows[2][MAXROWS];
-static struct selectparms sp[2];
-static int firsttime[2] = { 1, 1 };
-#endif
-
-static int rowcount[2];
-
 
 
 /* =============================================================================
@@ -47,12 +29,10 @@ static int rowcount[2];
  */
 
 TDH_sqlcommand( dbc, sql )
-int dbc; 	/* connection identifier (0 or 1) */
+int dbc; 	/* connection identifier (0 - 3) */
 char *sql; 	/* sql command */
 {
 int stat;
-
-if( dbc < 0 || dbc > 1 ) return( err( 7945, "sqlrow: invalid db connection identifier", "" ) );
 
 #if TDH_DB == 0
   return( err( 7949, "sql support not included in this build", "" ) );
@@ -61,26 +41,14 @@ if( dbc < 0 || dbc > 1 ) return( err( 7945, "sqlrow: invalid db connection ident
 #endif
 
 
-#if TDH_DB == PSQL
-  if( !firsttime[ dbc ] ) SQ_free( rows[dbc], &sp[ dbc ] ); /* free results from previous retrieval */
-  else 	{
-	/* PSQL doesn't require connections, 
-	 * but if we had to open a db connection, we could do that here like this..
-	 *  char database[80], login[20], pw[20];
-	 *  TDH_getvar( "_DBDATABASE", database );
-	 *  TDH_getvar( "_DBLOGIN", login );
-	 *  TDH_getvar( "_DBPW", pw );
-	 *  opendatabase( database, login, pw );
-	 */
-	sp[ dbc ].nrows = 0;
-	firsttime[ dbc ] = 0;
-	}
-  stat = SQ_command( sql );
-  stat += SQ_fetchrows( rows[ dbc], MAXROWS, &sp[ dbc ] ); 
-  rowcount[ dbc ] = SQ_rowcount(); /* preliminary */
-  return( stat );
+#if TDH_DB == SHSQL
+  stat = SHSQL_sql( dbc, sql );
 #endif
 
+#if TDH_DB != 0
+  TDH_dberrorcode( dbc, stat ); /* save return code so $sqlerror() can provide it later.. */
+#endif
+return( stat );
 }
 
 /* ========================================================================== 
@@ -96,15 +64,9 @@ int dbc;
 char *fields[];  /* size should be 256 */
 int *n;
 {
-int i, stat;
 
-if( dbc < 0 || dbc > 1 ) return( err( 7945, "sqlrow: invalid db connection identifier", "" ) );
-
-#if TDH_DB == PSQL
-  *n = sp[ dbc ].nitems;
-  stat = SQ_row( fields, rows[ dbc ], &sp[ dbc ] );
-  if( stat != 0 ) rowcount[ dbc ] = sp[ dbc ].finalrowcount;
-  return( stat );
+#if TDH_DB == SHSQL 
+  return( SHSQL_getrow( dbc, fields, n ) );
 #endif
 
 }
@@ -118,22 +80,29 @@ if( dbc < 0 || dbc > 1 ) return( err( 7945, "sqlrow: invalid db connection ident
 
 TDH_sqlnames( dbc, fields, n )
 int dbc;
-char *fields[]; /* size should be 256 */
+char *fields[]; 
 int *n;
 {
-int stat;
-int i;
-if( dbc < 0 || dbc > 1 ) return( err( 7945, "sqlrow: invalid db connection identifier", "" ) );
 
-#if TDH_DB == PSQL
-  for( i = 0; i < sp[ dbc ].nitems; i++ ) fields[i] = sp[ dbc ].itemlist[i];
-  *n = sp[ dbc ].nitems;
-  return( 0 );
+#if TDH_DB == SHSQL
+  return( SHSQL_getnames( dbc, fields, n ) );
 #endif
 
 }
 
+/* ===========================================================================
+   SQLTABDEF - fetch the names of a table's fields 
+ */
+TDH_sqltabdef( table, fields, n )
+char *table;
+char *fields[];
+int *n;
+{
 
+#if TDH_DB == SHSQL
+  return( SHSQL_tabdef( table, fields, n ) );
+#endif
+}
 
 /* ==========================================================================
    SQLROWCOUNT - return # of rows presented or affected by last sql command 
@@ -142,9 +111,10 @@ if( dbc < 0 || dbc > 1 ) return( err( 7945, "sqlrow: invalid db connection ident
 TDH_sqlrowcount( dbc )
 int dbc;
 {
-if( dbc < 0 || dbc > 1 ) return( err( 7945, "sqlrow: invalid db connection identifier", "" ) );
 
-return( rowcount[ dbc ] );
+#if TDH_DB == SHSQL
+  return( SHSQL_getnrows( dbc ) );
+#endif
 }
 
 

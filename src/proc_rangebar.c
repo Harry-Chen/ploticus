@@ -20,10 +20,19 @@ static int dblcompare(double *f, double *g);
 #endif
 
 static double Iqr, Lotail, Hitail;
-int Skipmed = 0;
-int Logmean = 0;
+static int Skipmed = 0;
+static int Logmean = 0;
+
+/* ========================= */
+PLP_rangebar_initstatic()
+{
+Skipmed = 0;
+Logmean = 0;
+return( 0 );
+}
 
 
+/* ========================= */
 PLP_rangebar()
 {
 int i;
@@ -162,7 +171,7 @@ while( 1 ) {
 	else if( stricmp( attr, "barwidth" )==0 ) {
 		stat = num( val, &barwidth );
 		if( stat != 0 ) { Eerr( 237, "barwidth invalid", val ); barwidth = 0.2; }
-		if( Using_cm ) barwidth /= 2.54;
+		if( PLS.usingcm ) barwidth /= 2.54;
 		}
 	else if( stricmp( attr, "showstats" )==0 ) {
 		if( strnicmp( val, YESANS, 1 )==0 ) showstats = 1;
@@ -252,7 +261,7 @@ while( 1 ) {
 	else if( stricmp( attr, "ticlen" )==0 ) {
 		stat = num( val, &ticlen );
 		if( stat != 0 ) ticlen = -1.0;
-		if( Using_cm ) barwidth /= 2.54;
+		if( PLS.usingcm ) barwidth /= 2.54;
 		}
 	else if( stricmp( attr, "select" )==0 ) strcpy( selectex, lineval );
 	else if( stricmp( attr, "meanmode" )==0 ) {
@@ -275,7 +284,7 @@ while( 1 ) {
 		}
 	else if( stricmp( attr, "outlierlinelen" )==0 ) {
 		outlinelen = atof( val );
-		if( Using_cm ) outlinelen /= 2.54;
+		if( PLS.usingcm ) outlinelen /= 2.54;
 		}
 	else if( stricmp( attr, "outlierlinedetails" )==0 ) strcpy( outlierlinedet, lineval );
 	else if( stricmp( attr, "meansym" )==0 ) strcpy( meansym, lineval );
@@ -296,7 +305,7 @@ while( 1 ) {
 
 /* overrides and degenerate cases */
 /* -------------------------- */
-if( ( datafield < 0 || datafield >= Nfields[Dsel] ) && values[0] == '\0'  && nplotfields < 1 ) 
+if( ( datafield < 0 || datafield >= Nfields ) && values[0] == '\0'  && nplotfields < 1 ) 
 	return( Eerr( 601, "datafield not specified or out of range", "" ) );
 if( axis == 'x' ) baseax = 'y';
 else baseax = 'x';
@@ -313,7 +322,7 @@ if( values[0] != '\0' && meanmode )
 	return( Eerr( 2470, "values may not be used with meanmode", "" ) );
 
 if( !quitaftershowingstats ) {
-	if( Nrecords[Dsel] < 1 && values[0] == '\0' ) 
+	if( Nrecords < 1 && values[0] == '\0' ) 
 		return( Eerr( 17, "No data has been read yet w/ proc getdata", "" ) );
 	if( !scalebeenset() )
          return( Eerr( 51, "No scaled plotting area has been defined yet w/ proc areadef", "" ) );
@@ -328,6 +337,8 @@ else Eposex( mlocation, axis, &mloc );
 
 if( ticlen < 0.0 ) ticlen = barwidth * 0.7;
 
+if( stricmp( msym, "dot" )==0 || stricmp( msym, "yes" )==0 ) 
+	strcpy( msym, "shape=circle style=filled fillcolor=black radius=0.05" );
  
 
 	
@@ -348,7 +359,7 @@ if( sbarloc[0] == '\0' ) strcpy( sbarloc, "1" );
 if( !quitaftershowingstats ) {
 	barloc = Econv( baseax, sbarloc );
 	if( Econv_error() ) { 
-		fprintf( Errfp, "ignoring barloc %s\n", sbarloc ); 
+		fprintf( PLS.errfp, "ignoring barloc %s\n", sbarloc ); 
 		return( 0 );
 		}
 	}
@@ -369,7 +380,7 @@ else if( nplotfields > 0  ) {
 		stats[5] = fda( plotrecord, pf[1], axis );
 		stats[6] = fda( plotrecord, pf[2], axis );
 		if( Econv_error() ) {
-			fprintf( Errfp, "plotfields: skipping rangebar due to non-numeric median value.\n" );
+			fprintf( PLS.errfp, "plotfields: skipping rangebar due to non-numeric median value.\n" );
 			return( 1 );
 			}
 		stats[7] = fda( plotrecord, pf[3], axis );
@@ -380,7 +391,7 @@ else if( nplotfields > 0  ) {
 	else if( meanmode ) {
 		stats[1] = fda( plotrecord, pf[0], axis );
 		if( Econv_error() ) {
-			fprintf( Errfp, "plotfields: skipping rangebar due to non-numeric mean value.\n" );
+			fprintf( PLS.errfp, "plotfields: skipping rangebar due to non-numeric mean value.\n" );
 			return( 1 );
 			}
 		stats[2] = fda( plotrecord, pf[1], axis );
@@ -392,7 +403,7 @@ else if( nplotfields > 0  ) {
 else	{
 	calculate_stats( datafield, axis, selectex, stats );
 	if( showstats || showbriefstats ) {
-		statfp = Diagfp;
+		statfp = PLS.diagfp;
 		if( showstatsfile[0] != '\0' ) {
 			statfp = fopen( showstatsfile, "a" ); /* diagnostics */
 			if( statfp == NULL ) {
@@ -518,7 +529,7 @@ if( quitaftershowingstats ) return( 0 ); /* moved scg 11/22/00 */
 
 /* check to see if bar location is in range.. */
 if( !Ef_inr( baseax, barloc ) ) {
-	fprintf( Errfp, "warning, rangebar location out of %c plotting area\n", baseax );
+	fprintf( PLS.errfp, "warning, rangebar location out of %c plotting area\n", baseax );
 	goto SKIPOUT;
 	}
 
@@ -533,11 +544,11 @@ if( stats[0] <= 0.0 ) goto SKIPOUT;
 
 /* if entire bar is out of plotting area, skip out.. */
 if( h[0] < Elimit( axis, 'l', 's' ) && h[4] < Elimit( axis, 'l', 's' ) ) {
-	fprintf( Errfp, "warning, entire rangebar out of %c plotting area (under)\n", axis );
+	fprintf( PLS.errfp, "warning, entire rangebar out of %c plotting area (under)\n", axis );
 	goto SKIPOUT;
 	}
 if( h[0] > Elimit( axis, 'h', 's' ) && h[4] > Elimit( axis, 'h', 's' ) ) {
-	fprintf( Errfp, "warning, entire rangebar out of %c plotting area (over)\n", axis );
+	fprintf( PLS.errfp, "warning, entire rangebar out of %c plotting area (over)\n", axis );
 	goto SKIPOUT;
 	}
 
@@ -613,7 +624,7 @@ if( showoutliers ) {
 	nfcutoff = (h[3] - h[1]) * outnfcutoff;
 	if( Eflip ) Etextdir( 90 );
 	if( outlierlinedet[0] != '\0' ) linedet( "outlierlinedetails", outlierlinedet, 0.5 );
-	for( i = 0; i < Nrecords[Dsel]; i++ ) {
+	for( i = 0; i < Nrecords; i++ ) {
 		double radius;
 		char symcode[50];
 
@@ -627,15 +638,15 @@ if( showoutliers ) {
 		fval = fda( i, datafield, axis );
 		if( ( fval < h[0] || fval > h[4] ) && !Econv_error() ) {  /* its an outlier.. */
 			if( printoutliers ) {
-				fprintf( Diagfp, "// data field %d outlier: %s (", 
+				fprintf( PLS.diagfp, "// data field %d outlier: %s (", 
 					datafield+1, da(i, datafield)  );
-				for( j = 0; j < Nfields[Dsel]; j++ ) 
-					fprintf( Diagfp, "%s ", da( i, j ) );
-				fprintf( Diagfp, ")\n" );
+				for( j = 0; j < Nfields; j++ ) 
+					fprintf( PLS.diagfp, "%s ", da( i, j ) );
+				fprintf( PLS.diagfp, ")\n" );
 				}
 					
 			if( !Ef_inr( axis, fval )) {
-				fprintf( Errfp, "warning, outlier %s out of range, not displayed\n", 
+				fprintf( PLS.errfp, "warning, outlier %s out of range, not displayed\n", 
 					da(i,datafield) );
 				continue;
 				}
@@ -672,7 +683,7 @@ if( showoutliers ) {
 /* display mean symbol on a median-based rangebar.. */
 if( meansym[0] != '\0' ) {
 	double radius; char symcode[50];
-	if( stricmp( meansym, "yes" )==0 ) 
+	if( stricmp( meansym, "yes" )==0 || stricmp( meansym, "dot" )==0 ) 
 		strcpy( meansym, "shape=circle style=filled fillcolor=black radius=0.02" );
 	symdet( "meansym", meansym, symcode, &radius );
 	Emark( barloc, Ea(Y,stats[1]), symcode, radius );
@@ -729,7 +740,7 @@ total = 0; n = 0, totsq=0; min = PLHUGE; max = NEGHUGE; nbad = 0;
 Iqr = 0.0; /* fallback */
 
 /* read lines of data */
-for( i = 0; i < Nrecords[Dsel]; i++ ) {
+for( i = 0; i < Nrecords; i++ ) {
 	
 	if( selectex[0] != '\0' ) { /* process against selection condition if any.. */
 		stat = do_select( selectex, i, &result );
@@ -758,9 +769,9 @@ for( i = 0; i < Nrecords[Dsel]; i++ ) {
 		}
 	n++;
 	if( !Skipmed ) {
-		if( n <= MAXDAT-1 ) Dat[n] = val;
-		else if( n > MAXDAT-1 ) 
-			Eerr( 248, "Sorry, capacity for median comp exceeded- results not valid\n", "" );
+		if( n <= PLVsize-1 ) PLV[n] = val;
+		else if( n > PLVsize-1 ) 
+			Eerr( 248, "Cannot compute median - capacity exceeded (raise using -maxvector)\n", "" );
 		}
 	}
 
@@ -769,21 +780,21 @@ if( n > 1 ) stddev = sqrt( (totsq-( total*total /(double)n )) / (double)(n - 1))
 else stddev = 0.0;
 
 
-/* Dat[0] will not be used.  Dat[n] holds last value. */
+/* PLV[0] will not be used.  PLV[n] holds last value. */
 
 /* sort */
-if( !Skipmed ) qsort( &Dat[1], n, sizeof(double), dblcompare);
+if( !Skipmed ) qsort( &PLV[1], n, sizeof(double), dblcompare);
 
 stats[0] = (double) n;
 stats[1] = mean;
 stats[2] = stddev;
 stats[3] = min;
 if( !Skipmed ) {
-  stats[4] = (n % 20 ) ? Dat[(n/20) + 1] :  (Dat[n/20] + Dat[(n/20) + 1] ) /2.0 ;  /* 5th */
-  stats[5] = ( n % 4 ) ?  Dat[(n/4) + 1]  :  (Dat[n/4] + Dat[(n/4) + 1])/2.0 ;      /* 25 */
-  stats[6] = ( n % 2 ) ?  Dat[(n+1) / 2]  :  (Dat[n/2] + Dat[(n/2)+1])/2.0 ;         /* 50 */
-  stats[7] = ( n % 4 )  ? Dat[n - (n/4)]  :  (Dat[(n+1) - (n/4)] + Dat[n-(n/4)])/2.0 ;   /* 75 */
-  stats[8] = ( n % 20 ) ? Dat[n - (n/20)] : (Dat[(n+1) - (n/20)] + Dat[n - (n/20)]) / 2.0 ;  /* 95 */
+  stats[4] = (n % 20 ) ? PLV[(n/20) + 1] :  (PLV[n/20] + PLV[(n/20) + 1] ) /2.0 ;  /* 5th */
+  stats[5] = ( n % 4 ) ?  PLV[(n/4) + 1]  :  (PLV[n/4] + PLV[(n/4) + 1])/2.0 ;      /* 25 */
+  stats[6] = ( n % 2 ) ?  PLV[(n+1) / 2]  :  (PLV[n/2] + PLV[(n/2)+1])/2.0 ;         /* 50 */
+  stats[7] = ( n % 4 )  ? PLV[n - (n/4)]  :  (PLV[(n+1) - (n/4)] + PLV[n-(n/4)])/2.0 ;   /* 75 */
+  stats[8] = ( n % 20 ) ? PLV[n - (n/20)] : (PLV[(n+1) - (n/20)] + PLV[n - (n/20)]) / 2.0 ;  /* 95 */
   }
 stats[9] = max;
 stats[10] = (double) nbad;
@@ -798,12 +809,12 @@ hiend = stats[7] + (Iqr*1.5);
 
 
 
-/* NOTE: Dat values are in cell 1 THROUGH n */
+/* NOTE: PLV values are in cell 1 THROUGH n */
 
 /* find low tail.. */
 for( i = 1; i < n; i++ ) {
-	if( Dat[i] >= loend && Dat[i] <= stats[5] ) {  /* (2nd part of exp handles degen case) */
-		Lotail = Dat[i];
+	if( PLV[i] >= loend && PLV[i] <= stats[5] ) {  /* (2nd part of exp handles degen case) */
+		Lotail = PLV[i];
 		break;
 		}
 	}
@@ -811,8 +822,8 @@ if( i == n ) Lotail = stats[5]; /* handle degenerate case */
 
 /* find hi tail.. */
 for( i = n; i >= 1; i-- ) { 
-	if( Dat[i] <= hiend && Dat[i] >= stats[7] ) {  /* (2nd part of exp handles degen case) */
-		Hitail = Dat[i];
+	if( PLV[i] <= hiend && PLV[i] >= stats[7] ) {  /* (2nd part of exp handles degen case) */
+		Hitail = PLV[i];
 		break;
 		}
 	}

@@ -3,7 +3,7 @@ Mon, 18 Feb 2002 22:24:15 -0500.
 
 It was downloaded from http://ploticus.sourceforge.net
 
-Upstream Author(s): Stephen C. Grubb  (scg@jax.org)
+Upstream Author: Stephen C. Grubb  (scg@jax.org)
 
 Copyright:
 
@@ -58,8 +58,9 @@ questions or need clarification in this area just ask.
 
 
 SVG driver copyright 2001 Bill Traill  bill@traill.demon.co.uk 
+SWF driver copyright 2003 Bill Traill  bill@traill.demon.co.uk
 
-ploticus 2.02 generates PNG and run-length-encoded GIF-compatible 
+ploticus 2.20 generates PNG and run-length-encoded GIF-compatible 
 output using portions of Thomas Boutell's gd library versions 
 1.6.3 and 1.3.  ploticus 2.02 does not read GIF files.
 GD 1.6.3 and 1.3 (www.boutell.com) carry the following statements:
@@ -108,4 +109,4 @@ GD 1.6.3 and 1.3 (www.boutell.com) carry the following statements:
    |
 
 
-== End of ploticus 2.02 Copyright Notice ==
+== End of ploticus 2.20 Copyright Notice ==

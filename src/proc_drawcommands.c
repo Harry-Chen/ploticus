@@ -21,14 +21,14 @@ int stat;
 int align;
 double adjx, adjy;
 
-char dcfile[256];
+char dcfile[ MAXPATH ];
 
 
 TDH_errprog( "pl proc drawcommands" );
 
 /* initialize */
 strcpy( dcfile, "" );
-strcpy( Bigbuf, "" );
+strcpy( PL_bigbuf, "" );
 
 /* get attributes.. */
 first = 1;
@@ -41,7 +41,7 @@ while( 1 ) {
 	if( stricmp( attr, "file" )==0 ) strcpy( dcfile, val );
 
 	else if( stricmp( attr, "commands" )==0 ) {
-		getmultiline( "commands", lineval, MAXBIGBUF, Bigbuf );
+		getmultiline( "commands", lineval, MAXBIGBUF, PL_bigbuf );
 		}
 
 	else Eerr( 1, "drawcommands attribute not recognized", attr );
@@ -52,13 +52,13 @@ while( 1 ) {
 /* -------------------------- */
 /* now do the plotting work.. */
 /* -------------------------- */
-if( Bigbuf[0] != '\0' ) {
+if( PL_bigbuf[0] != '\0' ) {
 	FILE *fp;
 	char filename[MAXPATH];
-	sprintf( filename, "%s_Z", Tmpname );
+	sprintf( filename, "%s_Z", PLS.tmpname );
 	fp = fopen( filename, "w" ); /* temp file, unlinked below */
-	if( fp == NULL ) return( Eerr( 522, "Cannot open draw commands file", buf ));
-	fprintf( fp, "%s\n", Bigbuf );
+	if( fp == NULL ) return( Eerr( 522, "Cannot open draw commands file", filename ));
+	fprintf( fp, "%s\n", PL_bigbuf );
 	fclose( fp );
 	do_drawcommands( filename );
 	unlink( filename );
@@ -91,7 +91,7 @@ if( filename[0] == '\0' ) return( 0 );
 
 if( strcmp( filename, "stdin" )==0 ) fp = stdin;
 else fp = fopen( filename, "r" );
-if( fp == NULL ) return( 0 );
+if( fp == NULL ) return( Eerr( 5737, "cannot open draw commands file", filename ) );
                
 oldtextsize = Ecurtextsize;
 strcpy( oldcolor, Ecurcolor );
@@ -105,14 +105,13 @@ Elinetype( 0, 1.0, 1.0 );
 while( fgets( buf, 511, fp ) != NULL ) {
 	buf[ strlen( buf ) - 1 ] = '\0';
 
-
 	nt = sscanf( buf, "%s %lf %lf", op, &x, &y );	
 
 	if( nt < 1 ) continue; /* blank line */
 	if( op[0] == '/' && op[1] == '/' ) continue; /* comment */
 
 	if( GL_smember( op, "mov lin" ) && nt != 3 ) { 
-		if( nt != 6 ) Eerr( 2582, "drawfile error on this line", buf );
+		if( nt != 6 ) Eerr( 2582, "error in drawcommands", buf );
 		continue;
 		}
 
@@ -125,9 +124,9 @@ while( fgets( buf, 511, fp ) != NULL ) {
 	else if( strcmp( op, "path" )==0 ) Epath( x, y );
 	else if( GL_smember( op, "movs lins paths" )) { /* scaled space operators */
 		sscanf( buf, "%*s %s %s", sx, sy );
-		if( op[0] == 'm' ) Emov( Eu(X, sx ), Eu(Y, sy ) );
-		else if( op[0] == 'l' ) Elin( Eu(X, sx ), Eu(Y, sy ) );
-		else if( op[0] == 'p' ) Epath( Eu(X, sx ), Eu(Y, sy ) );
+		if( op[0] == 'm' ) Emov( PL_u(X, sx ), PL_u(Y, sy ) );
+		else if( op[0] == 'l' ) Elin( PL_u(X, sx ), PL_u(Y, sy ) );
+		else if( op[0] == 'p' ) Epath( PL_u(X, sx ), PL_u(Y, sy ) );
 		}
 	else if( GL_smember( op, "movp linp pathp" )) { /* posex operators */
 		sscanf( buf, "%*s %s %s", sx, sy );

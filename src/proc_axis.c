@@ -62,7 +62,6 @@ int vertstub;
 int irow;
 double ofsx, ofsy;
 char stubomit[256];
-int axslot;
 int mon, day, yr;
 
 int stubdf1, stubdf2, nstubdf;
@@ -101,6 +100,14 @@ char clickmap;
 double cmylast, cmemin, cmemax;
 char cmemins[40], cmemaxs[40];
 char cmvalfmt[80], cmtxt[100];
+int logx, logy, stubexp;
+int stublen;
+char autodays[40], automonths[40];
+char labelurl[256], labelinfo[256];
+double stubmult;
+double stubmininc;
+char firststub[80], laststub[80];
+char stubsubpat[80], stubsubnew[80];
 
 TDH_errprog( "pl proc axis" );
 
@@ -125,7 +132,7 @@ minorticinc = 0.0;
 mticin = 0;
 mticout = 0.03;
 strcpy( stubformat, "" );
-strcpy( Bigbuf, "" );
+strcpy( PL_bigbuf, "" );
 strcpy( stubdetails, "" );
 strcpy( axislabel, "" );
 strcpy( axislabeldet, "" );
@@ -157,6 +164,12 @@ stubevery = 1;
 clickmap = 0;
 strcpy( cmemins, "min" ); strcpy( cmemaxs, "max" );
 strcpy( cmvalfmt, "" );
+stubexp = 0; stublen = 0;
+strcpy( autodays, "" ); strcpy( automonths, "" );
+strcpy( labelurl, "" ); strcpy( labelinfo, "" );
+stubmult = 1.0; stubmininc = 0.0;
+strcpy( firststub, "" ); strcpy( laststub, "" );
+strcpy( stubsubpat, "" ); strcpy( stubsubnew, "" );
 
 
 /* get attributes.. */
@@ -176,7 +189,8 @@ while( 1 ) {
 		strcpy( axislabel, lineval );
 		convertnl( axislabel );
 		}
-
+	else if( stricmp( &attr[astart], "labelurl" )==0 ) strcpy( labelurl, val );
+	else if( stricmp( &attr[astart], "labelinfo" )==0 ) strcpy( labelinfo, lineval );
 
 	else if( stricmp( &attr[astart], "stubs" )==0 || 
 		 stricmp( &attr[astart], "selflocatingstubs" )==0 ) {
@@ -224,19 +238,19 @@ while( 1 ) {
 			i = 0;
 			GL_getchunk( buf, lineval, &i, " \t" );
 			while( GL_member( lineval[i], " \t" ) ) i++;
-			strcpy( Bigbuf, &lineval[i] );
-			convertnl( Bigbuf );
+			strcpy( PL_bigbuf, &lineval[i] );
+			convertnl( PL_bigbuf );
 			}
 		else if( stricmp( val, "none" )==0 ) isrc = 0;
 		else 	{
 			isrc = HERE;
 			if( stricmp( val, "text" ) == 0 ) {
-				getmultiline( "stubs", "", MAXBIGBUF, Bigbuf );
+				getmultiline( "stubs", "", MAXBIGBUF, PL_bigbuf );
 				}
 			else 	{
-				fprintf( Errfp, 
+				fprintf( PLS.errfp, 
 				  "warning: proc axis assuming multiline stub text even though 'text' keyword not given\n" );
-				getmultiline( "stubs", lineval, MAXBIGBUF, Bigbuf );
+				getmultiline( "stubs", lineval, MAXBIGBUF, PL_bigbuf );
 				}
 			}
 		}
@@ -264,15 +278,27 @@ while( 1 ) {
 
 	else if( stricmp( &attr[astart], "stubomit" )==0 ) strcpy( stubomit, lineval );
 
-	else if( stricmp( &attr[astart], "stubslide" )==0 )  Elenex( val, xory, &stubslide );
-		
+	else if( stricmp( &attr[astart], "stubslide" )==0 ) Elenex( val, xory, &stubslide );
+
+	else if( stricmp( &attr[astart], "stubexp" )==0 ) {
+		if( strnicmp( val, YESANS, 1 )==0 ) stubexp = 1;
+		else if( stricmp( val, "exp-1" )==0 ) stubexp = 2;
+                else stubexp = 0;
+		}
+
+	else if( stricmp( &attr[astart], "stublen" )==0 ) stublen = atoi( val );
+
+	else if( stricmp( &attr[astart], "stubmult" )==0 ) stubmult = atof( val );
+
+	else if( stricmp( &attr[astart], "stubmininc" )==0 ) stubmininc = atof( val );
+
 	else if( stricmp( &attr[astart], "ticslide" )==0 )  Elenex( val, xory, &ticslide );
 
 	else if( stricmp( &attr[astart], "labeldetails" )==0 ) strcpy( axislabeldet, lineval );
 
 	else if( stricmp( &attr[astart], "labeldistance" )==0 ) {
 		axislabelofs = atof( val );
-		if( Using_cm ) axislabelofs /= 2.54;
+		if( PLS.usingcm ) axislabelofs /= 2.54;
 		}
 
 	else if( stricmp( &attr[astart], "location" )==0 ) {
@@ -303,7 +329,7 @@ while( 1 ) {
 
 	else if( stricmp( &attr[astart], "ticlen" )==0  ) {
 		sscanf( lineval, "%lf %lf", &ticout, &ticin );
-		if( Using_cm ) { ticout /= 2.54; ticin /= 2.54; }
+		if( PLS.usingcm ) { ticout /= 2.54; ticin /= 2.54; }
 		}
 
 	else if( stricmp( &attr[astart], "minortics" )==0 ) {
@@ -318,7 +344,7 @@ while( 1 ) {
 	else if( stricmp( &attr[astart], "minorticlen" )==0 ||
 		stricmp( attr, "minorticlen" )==0 ) {
 		sscanf( lineval, "%lf %lf", &mticout, &mticin );
-		if( Using_cm ) { mticout /= 2.54; mticin /= 2.54; }
+		if( PLS.usingcm ) { mticout /= 2.54; mticin /= 2.54; }
 		}
 
 	else if( stricmp( &attr[astart], "grid" )==0 ) {
@@ -341,12 +367,46 @@ while( 1 ) {
                 else stubcull = 0.0;
 		}
 
-	else if( stricmp( &attr[astart], "autoyears" )==0 ) strcpy( autoyears, val );
+	else if( stricmp( &attr[astart], "autoyears" )==0 ) {
+		strcpy( autoyears, val );
+		if( stricmp( autoyears, "yes" )==0 || stricmp( autoyears, "y" )==0 ) strcpy( autoyears, "'yy" );
+		else if( stricmp( autoyears, "no" )==0 ) strcpy( autoyears, "" );
+		}
+
+	else if( stricmp( &attr[astart], "autodays" )==0 ) {
+		strcpy( autodays, val );
+		if( stricmp( autodays, "yes" )==0 || stricmp( autodays, "y" )==0 ) strcpy( autodays, "Mmmdd" );
+		else if( stricmp( autodays, "no" )==0 ) strcpy( autodays, "" );
+		}
+
+	else if( stricmp( &attr[astart], "automonths" )==0 ) {
+		strcpy( automonths, val );
+		if( stricmp( automonths, "yes" )==0 || stricmp( automonths, "y" )==0 ) strcpy( automonths, "Mmm" );
+		else if( stricmp( automonths, "no" )==0 ) strcpy( automonths, "" );
+		}
+
+
 	else if( stricmp( &attr[astart], "signreverse" )==0 ) {
 		if( strnicmp( val, YESANS, 1 )==0 )revsign = 1;
                 else revsign = 0;
 		}
+
 	else if( stricmp( &attr[astart], "stubevery" )==0 ) stubevery = atoi( val );
+
+	else if( stricmp( &attr[astart], "firststub" )==0 ) {
+		strcpy( firststub, lineval );
+		if( strcmp( firststub, "\"\"" )==0 ) strcpy( firststub, " " );
+		}
+	else if( stricmp( &attr[astart], "laststub" )==0 ) {
+		strcpy( laststub, lineval );
+		if( strcmp( laststub, "\"\"" )==0 ) strcpy( laststub, " " );
+		}
+	else if( stricmp( &attr[astart], "stubsubpat" )==0 ) strcpy( stubsubpat, lineval );
+	else if( stricmp( &attr[astart], "stubsubnew" )==0 ) {
+		strcpy( stubsubnew, lineval );
+		if( strcmp( stubsubnew, "\"\"" )==0 ) strcpy( stubsubnew, " " );
+		}
+
 	else if( stricmp( &attr[astart], "clickmap" )==0 ) {
 		if( strnicmp( val, "xy", 2 )==0 ) {
 			if( xory == 'x' ) clickmap = 3;
@@ -377,25 +437,39 @@ if( axlinestop > max || axlinestop < min ) axlinestop = max;
 if( stubevery == 0 ) stubevery = 1;
 
 
+
+
+/* -------------------------- */
 /* now do the plotting work.. */
 /* -------------------------- */
+
 Egetunits( xory, scaleunits );
 
 /* do the label.. easier if we do it before the Eflip below.. */
 if( axislabel[0] != '\0' ) {
-	double labelofs;
+	double xpos, ypos, txtsize;
 	textdet( "labeldetails", axislabeldet, &align, &adjx, &adjy, 0, "R" );
+	txtsize = (double)(strlen( axislabel )) * Ecurtextwidth;
 
 	if( xory == 'x' ) {
-		Emov( (EXlo+ (( EXhi - EXlo ) / 2.0 )) + adjx, (pos - axislabelofs) + adjy );
+		xpos =  ( EXlo+ (( EXhi - EXlo ) / 2.0 )) + adjx;
+		ypos = (pos - axislabelofs) + adjy;
+		Emov( xpos, ypos );
 		Ecentext( axislabel );
+		if( PLS.clickmap && ( labelurl[0] != '\0' || labelinfo[0] != '\0' ) )
+			clickmap_entry( 'r', labelurl, 0, xpos - (txtsize/2.0), ypos, 
+				xpos + (txtsize/2.0), ypos+Ecurtextheight, 1, 0, labelinfo );
 		}
 	else if( xory == 'y' ) {
-		labelofs = 0.4;
-		Emov( (pos - axislabelofs) + adjx, (EYlo + (( EYhi-EYlo ) / 2.0 )) + adjy );
+		xpos = (pos - axislabelofs) + adjx;
+		ypos = (EYlo + (( EYhi-EYlo ) / 2.0 )) + adjy;
+		Emov( xpos, ypos );
 		Etextdir( 90 );
 		Ecentext( axislabel );
 		Etextdir( 0 );
+		if( PLS.clickmap && ( labelurl[0] != '\0' || labelinfo[0] != '\0' ) )
+			clickmap_entry( 'r', labelurl, 0, xpos-Ecurtextheight, ypos - (txtsize*0.6), 
+				xpos, ypos + (txtsize*0.6), 0, 0, labelinfo );
 		}
 	}
 
@@ -404,6 +478,7 @@ if( xory == 'x' ) Eflip = 1; /* reverse sense of x and y for draw operations */
 
 
 
+/* --------------------- */
 /* tics and axis preliminaries.. */
 /* --------------------- */
 
@@ -412,6 +487,8 @@ overrun = inc / 10.0;
 specialunits = 0;
 
 
+
+/* ----------------- */
 /* helpful overrides */
 /* ----------------- */
 
@@ -424,10 +501,11 @@ if( !stubrangegiven && !stubreverse && !selfloc &&
 /* if doing Y axis with text stubs, and user didn't specify stubreverse: no, 
 	reverse the stubs */
 if( xory == 'y' && !stubreverse_given && stubreverse == 0 &&
-	( isrc == HERE || isrc == FROMFILE || isrc == FROMDATA ) ) {
+	( isrc == HERE || isrc == FROMFILE || isrc == FROMDATA ) && !selfloc ) {  /* && !selfloc added scg 3/19/03 */
 	stubreverse = 1;
 	if( !stubrangegiven ) stubstop = max - 1.0;
 	}
+
 
 if( stubformat[0] != '\0' && isrc == 0 )
 	Eerr( 2749, "warning, stubformat but no stubs specification", "" );
@@ -445,7 +523,7 @@ if( doinggrid ) {
 	gbstate = 0;
  	} 
 
-if( Clickmap && clickmap ) {
+if( PLS.clickmap && clickmap ) {
 	Eposex( cmemins, opax, &cmemin ); 
 	Eposex( cmemaxs, opax, &cmemax );
 	Eposex( "min", xory, &cmylast );
@@ -460,11 +538,15 @@ if( isrc == INCREMENTAL && strnicmp( mtics, "no", 2 )!= 0 ) {
 		strcpy( minorticunits, "" );
 		minorticinc = minorticinc * 60;
 		}
-	else if( stricmp( scaleunits, "datetime" )==0 && strnicmp( minorticunits, "hour", 4 ) ==0 ) {
+	else if( stricmp( scaleunits, "datetime" )==0 && 
+		(strnicmp( minorticunits, "hour", 4 ) ==0 || strnicmp( minorticunits, "minute", 3 )==0 )) {
+		double winsize; /* window size in hours */
+		DT_getwin( &winsize );
 		strcpy( minorticunits, "" );
-		minorticinc = minorticinc / 24.0;
+		minorticinc = minorticinc / winsize;
+		if( strnicmp( minorticunits, "minute", 3 )==0 ) minorticinc = minorticinc / 60.0;
 		}
-	else if( stricmp( scaleunits, "time" )==0 && strnicmp( minorticunits, "second", 4 ) ==0 ) {
+	else if( stricmp( scaleunits, "time" )==0 && strnicmp( minorticunits, "second", 3 ) ==0 ) {
 		strcpy( minorticunits, "" );
 		minorticinc = minorticinc / 60.0;
 		}
@@ -493,12 +575,14 @@ if( isrc == INCREMENTAL && strnicmp( mtics, "no", 2 )!= 0 ) {
 
 	
 
+
+/* --------------------------------- */
 /* preliminaries based on stubs type */
 /* --------------------------------- */
 
-if( isrc == HERE ) bigbuflen = strlen( Bigbuf );
+if( isrc == HERE ) bigbuflen = strlen( PL_bigbuf );
 
-if( isrc == FROMFILE ) {  /* if taking from file, read the file into Bigbuf */
+if( isrc == FROMFILE ) {  /* if taking from file, read the file into PL_bigbuf */
 	stubfp = fopen( filename, "r" );
 	if( stubfp == NULL ) {
 		Eerr( 303, "Cannot open specified stub file", filename );
@@ -507,7 +591,7 @@ if( isrc == FROMFILE ) {  /* if taking from file, read the file into Bigbuf */
 	else	{
 		i = 0;
 		while( fgets( buf, 128, stubfp ) != NULL ) {
-			strcpy( &Bigbuf[i], buf );
+			strcpy( &PL_bigbuf[i], buf );
 			i += strlen( buf );
 			}
 		fclose( stubfp );
@@ -523,11 +607,7 @@ if( isrc == FROMDATA ) {
 		}
 	}
 
-if( isrc == FROMCATS ) {
-	if( xory == 'x' ) axslot = 0;
-	else axslot = 1;
-	selfloc = 0; 	/* for rendering purposes don't treat category stubs as self locating */
-	}
+if( isrc == FROMCATS ) selfloc = 0; 	/* for rendering purposes don't treat category stubs as self locating */
 
 
 if( isrc == 0 && (doingtics || doinggrid) ) {   /* no stubs but doing tics or doing grid */
@@ -540,11 +620,21 @@ if( stricmp( scaleunits, "time" )==0 && strnicmp( incunits, "hour", 4 ) ==0 ) {
 	strcpy( incunits, "" );
 	incamount = incamount * 60.0;
 	}
-else if( stricmp( scaleunits, "datetime" )==0 && strnicmp( incunits, "hour", 4 ) ==0 ) {
+else if( stricmp( scaleunits, "datetime" )==0 && 
+	( strnicmp( incunits, "hour", 4 ) ==0 || strnicmp( incunits, "minute", 3 )==0 )) {
+	double winsize; /* window size in hours */
+	/* must be relative to window size.. */
+	DT_getwin( &winsize );
+	incamount = incamount / winsize;
+	if( strnicmp( incunits, "minute", 3 )==0 ) incamount = incamount / 60.0;
 	strcpy( incunits, "" );
-	incamount = incamount / 24.0;
+	/* incamount = incamount / 24.0; */
 	}
-else if( stricmp( scaleunits, "time" )==0 && strnicmp( incunits, "second", 4 ) ==0 ) {
+else if( stricmp( scaleunits, "datetime" )==0 && strnicmp( incunits, "minute", 3 ) ==0 ) {
+	strcpy( incunits, "" );
+	incamount = (incamount / 24.0) / 60.0;
+	}
+else if( stricmp( scaleunits, "time" )==0 && strnicmp( incunits, "second", 3 ) ==0 ) {
 	strcpy( incunits, "" );
 	incamount = incamount / 60.0;
 	}
@@ -572,7 +662,7 @@ if( isrc == INCREMENTAL || ( isrc == 0 && (doingtics || doinggrid )) ) {
 	if( strnicmp( incunits, "month", 5 )==0 ) {
 		long l;
 		if( ! GL_smember( scaleunits, "date" )) 
-			Eerr( 2476, "month increment only valid with date scale type", "" );
+			return( Eerr( 2476, "month increment only valid with date scale type", "" ) );
 		specialunits = MONTHS;
 		selfloc = 0; /* for rendering purposes don't treat month stubs as self locating.. */
 		/* do the following to get starting m, d, y.. */
@@ -602,7 +692,9 @@ if( isrc == INCREMENTAL || ( isrc == 0 && (doingtics || doinggrid )) ) {
 			}
 		else	{
 			/* try to be smart about choosing default inc */
-			defaultinc( min, max, &inc );
+			PL_defaultinc( min, max, &inc );
+			if( stubevery > 1 ) inc = inc * (double)stubevery;
+			if( inc < stubmininc ) inc = stubmininc;
 			}
 		overrun = inc / 10.0;
 		}
@@ -611,9 +703,19 @@ if( isrc == INCREMENTAL || ( isrc == 0 && (doingtics || doinggrid )) ) {
 if( xory == 'x' ) setfloatvar( "XINC", inc );
 else if( xory == 'y' ) setfloatvar( "YINC", inc );
 
+/* log mode */
+logx = logy = 0;
+if( Escaletype_x == E_LOG || Escaletype_x == E_LOGPLUS1 ) logx = 1;
+if( Escaletype_y == E_LOG || Escaletype_y == E_LOGPLUS1 ) logy = 1;
+
 /* sanity check.. added scg 8/7/00 */
 if( inc <= 0.0 ) return( Eerr( 2705, "axis increment is zero or negative", "" ));
 
+
+
+
+
+/* ---------------------------------------------- */
 /* render the stubs and/or tics and/or grid lines.. */
 /* ---------------------------------------------- */
 
@@ -634,44 +736,55 @@ while( 1 ) {
 	if( isrc == INCREMENTAL ) {
 
  		/* exception for log 0.0 */
-                if( y <= 0.0 && ((xory == 'x' && (Escaletype_x == E_LOG || Escaletype_x == E_LOGPLUS1 ) ) ||
-                                 (xory == 'y' && (Escaletype_y == E_LOG || Escaletype_y == E_LOGPLUS1 ) ) ) ) goto NEXTSTUB;
+                if( y <= 0.0 && ((xory == 'x' && logx ) || (xory == 'y' && logy ) ) ) goto NEXTSTUB;
                  
 		}
 
 	if( isrc == INCREMENTAL ) {
-		double yy, fabs(), ftest;
+		double yy, fabs(), ftest, exp();
 		if( revsign && fabs(y) > 0.0001 ) yy = y * -1;
 		else yy = y;
+		if( stubexp == 1 ) yy = exp( yy );
+		else if( stubexp == 2 ) yy = exp( yy ) - 1;
+
+		/* when generating incremental axes moving from negative to positive, for zero sprintf sometimes
+           	gives -0.00 or very tiny values like -5.5579e-17.  The following is a workaround.. scg 7/5/01 */
+		/* moved here from Euprint() scg 10/1/03 */
+		if( stubstart < 0.0 && stubstop > 0.0 && yy < 0.0000000000001 && yy > -0.0000000000001 ) yy = 0.0; 
+
+		if( stubmult != 1.0 ) yy = yy * stubmult; /* added scg 10/2/03 */
+
 		nt = sscanf( incunits, "%lf", &ftest );
 		if( nt > 0 ) Euprint( txt, xory, yy/ftest, stubformat );
 		else Euprint( txt, xory, yy, stubformat );
-		if( Clickmap && clickmap ) Euprint( cmtxt, xory, yy, cmvalfmt );
+		if( PLS.clickmap && clickmap ) Euprint( cmtxt, xory, yy, cmvalfmt );
 		}
 
 	if( isrc == HERE || isrc == FROMFILE ) {
 		if( ibb >= bigbuflen ) break;
-		GL_getseg( txt, Bigbuf, &ibb, "\n" );
-		if( Clickmap && clickmap ) strcpy( cmtxt, txt );
+		GL_getseg( txt, PL_bigbuf, &ibb, "\n" );
+		if( PLS.clickmap && clickmap ) strcpy( cmtxt, txt );
 		}
 		
 	if( isrc == FROMDATA ) {
-		if( irow >= Nrecords[Dsel] ) break;
+		if( irow >= Nrecords ) break;
 		if( ( irow % stubevery ) != 0 ) { irow++; goto NEXTSTUB; }
 		if( nstubdf == 1 )
 			sprintf( txt, "%s", da( irow, stubdf1 ) );
 		else if( nstubdf == 2 ) 
 			sprintf( txt, "%s %s", da( irow, stubdf1 ), da( irow, stubdf2 ) );
-		if( Clickmap && clickmap ) strcpy( cmtxt, txt );
+		if( PLS.clickmap && clickmap ) strcpy( cmtxt, txt );
 		irow++;
 		}
 
 	if( isrc == FROMCATS ) {
-		if( irow >= Ncats[axslot] ) break;
+		char *catp, *PL_getcat();
+		catp = PL_getcat( xory, irow );
+		if( catp == NULL ) break;  /* reached end of cat list */
 		if( ( irow % stubevery ) != 0 ) { irow++; goto NEXTSTUB; }
-		y = Econv( xory, Cats[axslot][irow] ); /* error checking not needed */
-		strcpy( txt, Cats[axslot][irow] );
-		if( Clickmap && clickmap ) strcpy( cmtxt, txt );
+		y = Econv( xory, catp ); /* error checking not needed */
+		strcpy( txt, catp );
+		if( PLS.clickmap && clickmap ) strcpy( cmtxt, txt );
 		irow++;
 		}
 
@@ -682,14 +795,14 @@ while( 1 ) {
 		y = Econv( xory, buf );
 		if( Econv_error() ) { 
 			Eerr( 9675, "warning, error on date conversion", buf );
-			goto NEXTSTUB;
+			break; /* goto NEXTSTUB; changed to avoid inf loop - scg 2/12/03 */
 			}
 		if( day != 1 ) goto NEXTSTUB; /* added scg 9/12/01 */
 		if( ( y - stubstop ) > overrun ) break;
 		DT_formatdate( buf, stubformat, txt ); /* buf holds date string made above */
-		if( Clickmap && clickmap ) DT_formatdate( buf, cmvalfmt, cmtxt ); /* buf holds date string made above */
+		if( PLS.clickmap && clickmap ) DT_formatdate( buf, cmvalfmt, cmtxt ); /* buf holds date string made above */
+		/* autoyears */
 		if( autoyears[0] != '\0' && ( (firsttime && mon < 11) || mon == 1) ) { /* mon<11 added scg 9/12/01 */
-			firsttime = 0;
 			if( strlen( autoyears ) == 2 ) sprintf( buf, "%s\n%02d", txt, yr % 100 );
 			else if( strlen( autoyears ) == 3 ) sprintf( buf, "%s\n'%02d", txt, yr % 100 );
 			else	{
@@ -700,6 +813,47 @@ while( 1 ) {
 			strcpy( txt, buf );
 			}
 		}
+
+	/* autodays */
+	if( autodays[0] != '\0' ) {
+		if( stricmp( scaleunits, "datetime" )!=0 ) Eerr( 9677, "warning, autodays is only valid with datetime scaling", "" );
+		else	{
+			double datepart, timepart;
+			char dt[40];
+			datepart = floor( y );
+			timepart = y - datepart;
+			if( firsttime || fabs(timepart) < 0.000001 ) { /* render date  */
+				DT_fromjul( (long)datepart, dt );
+				DT_formatdate( dt, autodays, buf );
+				strcat( txt, "\n" );
+				strcat( txt, buf );
+				}
+			}
+		}
+
+	/* automonths - can be used w/ date or datetime.. */
+	if( automonths[0] != '\0' ) {
+		char dt[40];
+		long foo;
+		int imon, iday, iyr;
+		DT_fromjul( (long) y, dt );
+		DT_jdate( dt, &foo ); /* to get m d y */
+		DT_getmdy( &imon, &iday, &iyr );
+		if( firsttime || iday == 1 ) {
+			DT_formatdate( dt, automonths, buf );
+			strcat( txt, "\n" );
+			strcat( txt, buf );
+			}
+		}
+	
+
+	/* last minute stub content overrides.. */
+	if( stubsubpat[0] != '\0' && GL_wildcmp( txt, stubsubpat, strlen(stubsubpat), 0 )==0 ) strcpy( txt, stubsubnew );
+	if( firststub[0] != '\0' && firsttime ) strcpy( txt, firststub );
+	if( laststub[0] != '\0' && y+inc > stubstop ) strcpy( txt, laststub );
+
+	firsttime = 0;
+		
 
 
 
@@ -760,7 +914,7 @@ while( 1 ) {
 			}
 		}
 
-	if( Clickmap && clickmap ) {    /* save region.. */
+	if( PLS.clickmap && clickmap ) {    /* save region.. */
 		double halfdown, halfup;
 		if( specialunits == MONTHS ) { halfdown = halfup = ( Ea( Y, y ) - cmylast ) / 2.0; }
 		else 	{
@@ -771,12 +925,12 @@ while( 1 ) {
 			}
 
 		if( Eflip ) {
-			mapentry( 'r', cmtxt, clickmap, (Ea(Y,y)-halfdown)+stubslide, cmemin, 
-				Ea(Y,y)+halfup+stubslide, cmemax, 0, 1 );
+			clickmap_entry( 'r', cmtxt, clickmap, (Ea(Y,y)-halfdown)+stubslide, cmemin, 
+				Ea(Y,y)+halfup+stubslide, cmemax, 0, 1, "" );
 			}
 		else 	{
-			mapentry( 'r', cmtxt, clickmap, cmemin, (Ea(Y,y)-halfdown)+stubslide, 
-				cmemax, Ea(Y,y)+halfup+stubslide, 0, 2 );
+			clickmap_entry( 'r', cmtxt, clickmap, cmemin, (Ea(Y,y)-halfdown)+stubslide, 
+				cmemax, Ea(Y,y)+halfup+stubslide, 0, 2, "" );
 			}
 		cmylast = Ea( Y, y );
 		}
@@ -807,9 +961,11 @@ while( 1 ) {
 		/* render text..   but don't do last stub if it is past range.. */
 		if( ( (Ea(Y, y)+ofsy)  - Ea(Y, stubstop ) <= overrun ) || stubreverse ) {  
 			Emov( pos+ofsx, Ea( Y, y)+ofsy ); 
+			if( stublen && txt[stublen] != '\0' ) { txt[stublen] = '.'; txt[stublen+1] = '.'; txt[stublen+2] = '\0'; }
 			Edotext( txt, align );
 			}
 		}
+
 
 
 	/* render major tic mark  */

@@ -79,75 +79,68 @@ while( 1 ) {
 /* -------------------------- */
 /* overrides and degenerate cases */
 /* -------------------------- */
-if( Nrecords[Dsel] < 1 ) return( Eerr( 17, "No data has been read yet w/ proc getdata", "" ) );
+if( Nrecords < 1 ) return( Eerr( 17, "No data has been read yet w/ proc getdata", "" ) );
 if( !scalebeenset() ) 
          return( Eerr( 51, "No scaled plotting area has been defined yet w/ proc areadef", "" ) );
 
 
-if( (lofield < 0 || lofield >= Nfields[Dsel] )) return( Eerr( 601, "lofield out of range", "" ) );
-if( (hifield < 0 || hifield >= Nfields[Dsel] )) return( Eerr( 601, "hifield out of range", "" ) );
-if( xfield >= Nfields[Dsel] ) return( Eerr( 601, "xfield out of range", "" ) );
+if( (lofield < 0 || lofield >= Nfields )) return( Eerr( 601, "lofield out of range", "" ) );
+if( (hifield < 0 || hifield >= Nfields )) return( Eerr( 601, "hifield out of range", "" ) );
+if( xfield >= Nfields ) return( Eerr( 601, "xfield out of range", "" ) );
  
 /* -------------------------- */
 /* now do the plotting work.. */
 /* -------------------------- */
 
-/* put all values into Dat array.. */
+/* put all values into PLV array.. */
 j = 0;
 f = xstart;
-for( i = 0; i < Nrecords[Dsel]; i++ ) {
+for( i = 0; i < Nrecords; i++ ) {
 
 	if( selectex[0] != '\0' ) { /* process against selection condition if any.. */
                 stat = do_select( selectex, i, &result );
                 if( stat != 0 ) { Eerr( stat, "Select error", selectex ); continue; }
-                if( result == 0 ) {  /* mark with +huge */
-			/* Dat[j++] = PLHUGE;
-			 * Dat[j++] = PLHUGE;
-			 * Dat[j++] = PLHUGE;
-			 * Changed scg 8/17/00 - these should not even go into Dat array.. 
-			 */
-			 continue;
-			}
+                if( result == 0 ) continue;
                 }
 
 
 	/* X */
 	if( xfield < 0 ) {
-		Dat[j] = f;
+		PLV[j] = f;
 		f += 1.0;
 		}
 	else 	{
-		Dat[j] = fda( i, xfield, X );
+		PLV[j] = fda( i, xfield, X );
 		if( Econv_error() ) { 
 			conv_msg( i, xfield, "xfield" ); 
-			Dat[j] = NEGHUGE;
+			PLV[j] = NEGHUGE;
 			}
 		}
 
 	j++; 
 
 	/* LO */
-	Dat[j] = fda( i, lofield, Y );
+	PLV[j] = fda( i, lofield, Y );
 	if( Econv_error() ) { 
 		conv_msg( i, lofield, "yfield" ); 
-		Dat[j] = NEGHUGE;
+		PLV[j] = NEGHUGE;
 		continue;
 		}
 	j++;
 
 	/* HI */
-	Dat[j] = fda( i, hifield, Y );
+	PLV[j] = fda( i, hifield, Y );
 	if( Econv_error() ) { 
 		conv_msg( i, hifield, "hifield" ); 
-		Dat[j] = NEGHUGE;
+		PLV[j] = NEGHUGE;
 		continue;
 		}
 	j++;
 
 
 
-	if( j >= MAXDAT-3 ) {
-		Eerr( 3579, "Sorry, too many points, sweep truncated", "" );
+	if( j >= PLVsize-3 ) {
+		Eerr( 3579, "Too many points, sweep truncated (raise using -maxvector)", "" );
 		break;
 		}
 	}

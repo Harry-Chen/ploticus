@@ -8,8 +8,6 @@
 #include "pl.h"
 #include "tdhkit.h"
 
-#define MAXINBUF 3000
-
 
 static int do_filter();
 
@@ -17,11 +15,20 @@ static int specialmode = 0, showresults = 0;
 static char pathname[MAXPATH] = "";
 static int nscriptrows = 0, scriptstart;
 
+/* =============================== */
+PLP_getdata_initstatic()
+{
+specialmode = showresults = 0;
+strcpy( pathname, "" );
+nscriptrows = 0;
+return( 0 );
+}
 
+/* =============================== */
 PLP_getdata( )
 {
 int i, j;
-char buf[MAXINBUF]; /* 2/21/01 */
+char buf[ MAXRECORDLEN ]; /* 2/21/01 */
 char attr[40], val[256]; 
 char *line, *lineval;
 int nt, lvp;
@@ -31,47 +38,50 @@ int align;
 double adjx, adjy;
 
 char datafile[256];
-char command[256];
+char command[512];
 char commentchar[12];
 FILE *dfp, *popen();
-int gotdata;
 int len;
-char delim_method[80];
+char delim_method[30];
 char tok[256];
 char str[256];
 char selectex[256];
-int dblen;
 int standardinput;
 int rotaterec;
 int fieldnameheader;
 int first;
-int cclen, blen;
+int cclen, buflen;
 int literaldata;
 int reqnfields;
 char *pfnames;
+
+int datastart, ndatarows, irow;
+char datasource;
+char *row;
+int nrecords, nfields, totalitems, foo;
+int sqlflag;
 
 TDH_errprog( "getdata" );
 
 
 
 /* initialize */
-strcpy( Databuf, "" );
 strcpy( datafile, "" );
 if( !specialmode ) strcpy( pathname, "" );
 strcpy( command, "" );
 strcpy( commentchar, "//" );
 strcpy( delim_method, "space" );
-gotdata = 0;
 if( !specialmode ) showresults = 0;
 strcpy( selectex, "" );
 standardinput = 0;
 rotaterec = 0;
-strcpy( Bigbuf, "" );
+strcpy( PL_bigbuf, "" );
 fieldnameheader = 0;
 literaldata = 0;
 nscriptrows = 0;
 reqnfields = 0;
 pfnames = NULL;
+sqlflag = 0;
 
 
 /* get attributes.. */
@@ -85,35 +95,46 @@ if( !specialmode ) while( 1 ) {
 
 	if( stricmp( attr, "file" )==0 ) 
 #ifdef WIN32
-		strcpy( pathname, val ); /* to avoid invoking 'cat' .. */
+		strcpy( pathname, lineval ); /* to avoid invoking 'cat' .. */ /* changed to lineval  scg 10/16/03 */
 #else
 		strcpy( datafile, val );
 #endif
 		
 
-	else if( stricmp( attr, "pathname" )==0 ) strcpy( pathname, val );
+	else if( stricmp( attr, "pathname" )==0 ) strcpy( pathname, lineval );
 	else if( stricmp( attr, "command" )==0 ) strcpy( command, lineval );
 	else if( stricmp( attr, "commentchar" )==0 ) strcpy( commentchar, val );
+	else if( stricmp( attr, "sql" )==0 ) { strcpy( command, lineval ); sqlflag = 1; }
 	else if( strnicmp( attr, "delim", 5 )==0 ) strcpy( delim_method, val );
 
 	else if( stricmp( attr, "data" )==0 ) {
-		getmultiline( "data", lineval, MAXDATABUF, Databuf );
+		if( nt == 2 ) {
+			datastart = PLL.curline-1;
+			strcpy( PLL.procline[ PLL.curline-1 ], lineval ); /* remove 'data:' */
+			}
+		else datastart = PLL.curline;
+		getmultiline( "data", lineval, 0, NULL );
+		ndatarows = (PLL.curline - datastart) - 1;
 		literaldata = 1;
+		PL_holdmem( 1 ); /* tell execline() not to free this storage when the proc is done executing.. */
 		}
 	else if( stricmp( attr, "filter" )==0 ) {
 		if( nt == 2 ) {
-			scriptstart = Curpl-1;
-			strcpy( Procline[ Curpl-1 ], lineval ); /* remove 'filter:' */
+			scriptstart = PLL.curline-1;
+			strcpy( PLL.procline[ PLL.curline-1 ], lineval ); /* remove 'filter:' */
 			}
-		else scriptstart = Curpl;
-		getmultiline( "filter", lineval, MAXBIGBUF, Bigbuf ); /* use this to skip over filter script */
-		nscriptrows = (Curpl - scriptstart) - 1;
+		else scriptstart = PLL.curline;
+		getmultiline( "filter", lineval, 0, NULL ); /* use this to skip over filter script */
+		nscriptrows = (PLL.curline - scriptstart) - 1;
+
+		/* in all script lines, convert double slashes (##) to single slash.. */
 		for( i = scriptstart; i < scriptstart+nscriptrows; i++ ) {
-			for( j = 0; Procline[i][j] != '\0'; j++ ) {
-				if( Procline[i][j] == '#' && Procline[i][j+1] == '#' ) {
-					Procline[i][j] = ' ';
+			for( j = 0; PLL.procline[i][j] != '\0'; j++ ) {
+				if( PLL.procline[i][j] == '#' && PLL.procline[i][j+1] == '#' ) {
+					PLL.procline[i][j] = ' ';
 					break;
 					}
+				else if( !isspace( PLL.procline[i][j] )) break;  /* no need to search entire line.. scg 11/25/02 */
 				}
 			}
 		}
@@ -132,10 +153,10 @@ if( !specialmode ) while( 1 ) {
 		}
 	else if( stricmp( attr, "select" )==0 ) strcpy( selectex, lineval );
 	else if( stricmp( attr, "nfields" )==0 ) reqnfields = atoi( val );
-	else if( stricmp( attr, "fieldnames" )==0 ) definefieldnames( lineval );
+	else if( stricmp( attr, "fieldnames" )==0 ) definefieldnames( lineval ); 
 	else if( stricmp( attr, "fieldnamerows" )==0 ) {
-		getmultiline( "fieldnamerows", lineval, 4998, &Bigbuf[MAXBIGBUF-5000] );  /* share Bigbuf */
-		definefieldnames( &Bigbuf[MAXBIGBUF-5000] );
+		getmultiline( "fieldnamerows", lineval, MAXBIGBUF, PL_bigbuf );  
+		definefieldnames( PL_bigbuf );
 		}
 	else if( stricmp( attr, "pf_fieldnames" )==0 ) pfnames = lineval;
 
@@ -149,189 +170,240 @@ if( !specialmode ) while( 1 ) {
 
 if( specialmode ) strcpy( delim_method, "tab" );
 
+
+
 /* now do the work.. */
+
 
 if( !GL_slmember( delim_method, "s* c* t* w*" )) {
 	Eerr( 5839, "Warning, invalid delim specification, using 'space'", delim_method );
 	strcpy( delim_method, "space" );
 	}
 	
-if( standardinput || strcmp( datafile, "-" ) ==0 ) { /* a file of "-" means read from stdin */
-	dfp = stdin;
-	goto PT1;
+
+/* determine source of data.. */
+if( sqlflag ) datasource = 'q';
+else if( command[0] != '\0' ) datasource = 'c';					/* shell command */
+else if( literaldata ) {
+	if( nscriptrows > 0 ) Eerr( 5792, "Warning, filter ignored (it cannot be used with in-script data)", "" );
+	datasource = 'd';    							/* in-script data statement */
+	}
+else if( standardinput || strcmp( datafile, "-" ) ==0 ) datasource = 's'; 	/* stdin */
+else if( datafile[0] != '\0' ) { 						/* shell-expandable file name */
+	sprintf( command, "cat %s", datafile ); 
+	datasource = 'c'; 
+	} 
+else if( pathname[0] != '\0' ) datasource = 'p'; 				/* explicit full pathname */
+else { PLS.skipout = 1; return( Eerr( 407, "No data, file, or command was specified", "" ) ); }
+
+
+/* get ready to loop thru data.. */
+if( datasource != 'd' ) { 
+	datastart = 0; 
+	ndatarows = 99999999; 
+	}
+if( datasource == 'p' ) {  /* 'pathname' given.. */
+	dfp = fopen( pathname, "r" );
+	if( dfp == NULL ) { PLS.skipout = 1; return( Eerr( 401, "Cannot open data file", pathname ) ); }
+	}
+else if( datasource == 's' ) dfp = stdin;
+else if( datasource == 'c' ) {
+	dfp = popen( command, "r" );
+	if( dfp == NULL ) { PLS.skipout = 1; return( Eerr( 401, "Cannot open", command ) ); }
 	}
 
-if( literaldata ) {
-	if( selectex[0] != '\0' ) Eerr( 5792, "Warning, select ignored (it cannot be used with supplied data)", "" );
-	if( nscriptrows > 0 ) Eerr( 5792, "Warning, filter ignored (it cannot be used with supplied data)", "" );
-	if( fieldnameheader ) {
-		int nf;
-		i = 0;
-		GL_getchunk( buf, Databuf, &i, "\n" );
-		nf = definefieldnames( buf );
-		if( reqnfields == 0 ) reqnfields = nf;
-		strcpy( Databuf, &Databuf[ strlen( buf ) ] ); /* inefficient; user should use fieldnames attr */
+
+
+/* get the PLD data structure ready.. */
+
+PL_checkds( 0 ); 
+PLD.curds = 0;
+if( PLS.debug ) fprintf( PLS.diagfp, "filling data set# 0\n" );
+PLD.dsfirstdf[ 0 ] = PLD.curdf;
+if( datasource == 'd' ) PLD.dsfirstrow[ 0 ] = -1;
+else PLD.dsfirstrow[ 0 ] = PLD.currow;
+
+
+/* handle embedded sql using db abstraction interface - see dbinterface.c */
+if( sqlflag ) {
+	char *fields[128];
+	int blen, nf2;
+	/* config file must have already been read.. */
+	stat = TDH_sqlcommand( 0, command );
+	if( stat != 0 ) return( Eerr( stat, "error on sql command", command ));
+	/* get result field names and use these to set ploticus field names (what about joins?) */
+	stat = TDH_sqlnames( 0, fields, &nfields );
+	if( stat != 0 ) return( Eerr( stat, "error on sql result fieldnames", command ));
+	for( i = 0, blen = 0; i < nfields; i++ ) {
+		strcpy( &PL_bigbuf[blen], fields[i] ); blen += strlen( fields[i] );
+		strcpy( &PL_bigbuf[blen], " " ); blen++;
 		}
-	gotdata = 1;
-	goto HAVE_DATABUF;
+	PL_bigbuf[blen] = '\0';
+	definefieldnames( PL_bigbuf );
+	for( nrecords = 0; ; nrecords++ ) {
+		if( PLD.curdf + nfields >= PLD.maxdf ) {
+			Eerr( 406, "Data capture truncated (too many data fields; try raising -maxfields)", "" );
+			break;
+			}
+		stat = TDH_sqlrow( 0, &PLD.df[ PLD.curdf ], &nf2 );
+		if( stat > 1 ) return( Eerr( stat, "error on sql row retrieval", command ));
+		if( stat != 0 ) break;
+		if( nfields != nf2 ) return( Eerr( 461, "sql retrieval inconsistency", "" ));
+		PLD.curdf += nf2;
+		}
+	goto READ_DONE; /* skip down to do the finish-up stuff.. */
 	}
 
-if( datafile[0] != '\0' ) sprintf( command, "cat %s", datafile );
-else if( pathname[0] != '\0' ) strcpy( command, "////file" );
-	
-if( command[0] != '\0' ) {
-	if( strcmp( command, "////file" )==0 ) {
-		dfp = fopen( pathname, "r" );
-		if( dfp == NULL ) {
-			Skipout = 1;
-			return( Eerr( 401, "Cannot open data file", pathname ) );
-			}
+
+/* all other means of getting data use the following.. */
+
+/* loop thru lines of data.. */
+first = 1;
+nrecords = 0;
+cclen = strlen( commentchar );
+for( irow = datastart; irow < datastart+ndatarows; irow++ ) {
+
+	if( datasource != 'd' ) {
+		if( fgets( buf, MAXRECORDLEN-1, dfp ) == NULL ) break;
+		row = buf;
+		}
+	else row = PLL.procline[ irow ];
+
+
+	/* skip empty lines */
+	if( row[0] == '\n' || row[0] == '\0' ) continue;
+
+	if( tolower( delim_method[0] ) == 'c' ) {		/* fixed 12-18-03 */
+		/* skip comment lines */
+		if( strncmp( row, commentchar, cclen )==0 ) continue;
+		/* (lines containing nothing but whitespace are illegal with comma delim) */
 		}
 	else	{
-		dfp = popen( command, "r" );
-		if( dfp == NULL ) {
-			Skipout = 1;
-			return( Eerr( 401, "Cannot open", command ) );
-			}
-		}
-
-	PT1:
-	strcpy( Databuf, "" );
-	len = 0;
-	gotdata = 1;
-	first = 1;
-	cclen = strlen( commentchar );
-	while( fgets( buf, MAXINBUF-1, dfp ) != NULL ) { 
-		nt = sscanf( buf, "%s", tok );
-		if( nt < 1 ) continue;
+		/* skip lines containing nothing but whitespace chars.. */
+		/* and skip comment lines */
+		nt = sscanf( row, "%s", tok );
+		if( nt < 1 ) continue;	
 		if( strncmp( tok, commentchar, cclen )==0 ) continue;
-		blen = strlen( buf );
-
-
-		/* #set var = value  - added scg 11/13/00 */
-		if( strcmp( tok, "#set" )==0 ) {
-			int ix, oldix;
-			char varname[40];
-			ix = 0;
-			GL_getchunk( tok, buf, &ix, " 	" ); /* #set */
-			GL_getchunk( varname, buf, &ix, " 	=" ); /* varname */
-			oldix = ix;
-			GL_getchunk( tok, buf, &ix, " 	" ); /* optional = */
-			if( strcmp( tok, "=" ) != 0 ) ix = oldix;
-			buf[ blen - 1 ] = '\0'; /* strip off trailing newline - scg 7/27/01 */
-			blen--;
-			if( buf[ix+1] == '"' ) TDH_setvar( varname, &buf[ix+2] );
-			else TDH_setvar( varname, &buf[ix+1] );
-			continue;
-			}
-
-		/* field name header.. */
-		if( first && fieldnameheader ) {
-			definefieldnames( buf );
-			first = 0;
-			continue;
-			}
-
-
-		/* select */
-		if( selectex[0] != '\0' ) { 
-			stat = do_filter( buf, selectex, delim_method, 1 ); /*doesn't modify buf*/
-			if( ! stat ) continue;
-			}
-
-		/* optional filter data processing.. */
-                if( nscriptrows > 0  ) {
-                        do_filter( buf, "", delim_method, 0 ); /* modifies buf */
-                        TDH_getvar( "_PRINTDATA", str );
-                        if( strcmp( str, "0" )== 0 ) continue; /* user is supressing print of data*/
-			blen = strlen( buf );
-			if( buf[ blen -1 ] != '\n' ) strcpy( &buf[ blen-1 ], "\n" );
-			/* if( showresults ) fprintf( Diagfp, "%s", buf ); */
-                        }
-
-		dblen = len;
-		len += blen;
-		if( len >= MAXDATABUF ) {
-			/* this is pretty much fatal.. */
-			Skipout = 1;
-			return( Eerr( 406, "Sorry, data set too large, capacity exceeded.", "" ) );
-			}
-		strcpy( &Databuf[dblen], buf );
 		}
+
+	buflen = strlen( row );
+
+	if( datasource != 'd' && row[ buflen-2 ] == 13 ) strcpy( &buf[ buflen-2 ], "\n" ); /* DOS LF */
+
+	/* #set var = value .. this can be used in data files.. - added scg 11/13/00 */
+	if( strcmp( tok, "#set" )==0 ) {
+		int ix, oldix;
+		char varname[40];
+		ix = 0;
+		GL_getchunk( tok, row, &ix, " 	" ); /* #set */
+		GL_getchunk( varname, row, &ix, " 	=" ); /* varname */
+		oldix = ix;
+		GL_getchunk( tok, row, &ix, " 	" ); /* optional = */
+		if( strcmp( tok, "=" ) != 0 ) ix = oldix;
+		row[ buflen - 1 ] = '\0'; /* strip off trailing newline - scg 7/27/01 */
+		buflen--;
+		if( row[ix+1] == '"' ) TDH_setvar( varname, &row[ix+2] );
+		else TDH_setvar( varname, &row[ix+1] );
+		continue;
+		}
+
+
+	/* field name header.. */
+	if( first && fieldnameheader ) {
+		definefieldnames( row );  /* takes whitespace or comma delimited.. */
+		first = 0;
+		continue;
+		}
+	first = 0;
+
+
+
+	/* optional select */
+	if( selectex[0] != '\0' ) { 
+		stat = do_filter( row, selectex, delim_method, 1 ); /*doesn't modify row*/
+		if( ! stat ) continue;
+		}
+
+	/* optional filter data processing.. */
+	if( datasource != 'd' && nscriptrows > 0  ) {
+		do_filter( buf, "", delim_method, 0 ); /* modifies row */
+		if( buf[0] == '\0' ) continue;  	/* nothing printed, skip row.. added scg 3/19/03 */
+		buflen = strlen( buf ); 		/* because row has been modified above */
+		if( buf[ buflen -1 ] != '\n' ) strcpy( &buf[ buflen-1 ], "\n" );
+		}
+
+	/* if we reach here, keep the line.. */
+
+	if( datasource != 'd' ) {
+		/* copy the row into malloced storage.. */
+		if( PLD.currow >= PLD.maxrows ) { 
+			Eerr( 429, "Data input truncated (too many data rows; try raising -maxrows)", "" );
+			break;
+			}
+		row = (char *) malloc( buflen+1 );
+		if( row == NULL ) return( err( 2480, "malloc error", "" ) );
+		strcpy( row, buf );
+		PLD.datarow[ PLD.currow++ ] = row;
+		}
+
+	/* parse the row into fields.. */
+	if( reqnfields > 0 ) nfields = reqnfields;
+	else if( nrecords == 0 ) nfields = 0;
+	stat = PL_parsedata( row, delim_method, commentchar, &(PLD.df[ PLD.curdf ]), MAXITEMS, &foo, &nfields, &totalitems );
+	if( stat != 0 ) { PLS.skipout = 1; return( Eerr( stat, "Parse error on input data.", "" )); }
+
+	PLD.curdf += nfields;
+
+	if( PLD.curdf + nfields >= PLD.maxdf ) {
+		Eerr( 406, "Data input truncated (too many data fields; try raising -maxfields)", "" );
+		break;
+		}
+
+	nrecords++;
 	}
+	
 
-if( GL_smember( datafile, "- stdin STDIN" )); /* don't want to close STDIN */
-else if( pathname[0] != '\0' ) fclose( dfp );
-else pclose( dfp );
+if( datasource == 's' ) ;
+else if( datasource == 'p' ) fclose( dfp );
+else if( datasource == 'c' ) pclose( dfp );
 
+READ_DONE:
 
-/* set a clean slate.. */
-HAVE_DATABUF:
-Dsize = strlen( Databuf ); 
-Dsel = 0;
- 
-ND[0] = 0; ND[1] = 0;
-Nrecords[0] = 0; Nrecords[1] = 0;
-Nfields[0] = 0; Nfields[1] = 0;
-StartD[0] = 0; StartD[1] = 0;
+Nrecords = nrecords;		/* Nrecords is a macro - see pl.h */
+setintvar( "NRECORDS", nrecords );
 
-
-if( !gotdata ) {
-	Skipout = 1;
-	return( Eerr( 407, "No data, file, or command was specified", "" ) );
-	}
-
-if( reqnfields > 0 ) Nfields[Dsel] = reqnfields;
-
-/* parse data and always put in D beginning at position 0.. */
-stat = parsedata( Databuf, delim_method, commentchar, D, MAXD, 
-	&Nrecords[Dsel], &Nfields[Dsel], &ND[Dsel] );
-
- 
-
-setintvar( "NRECORDS", Nrecords[Dsel] );
-setintvar( "NFIELDS", Nfields[Dsel] );
-
-if( stat != 0 ) {
-	/* this is pretty much fatal.. */
-	Skipout = 1; 
-	return( Eerr( stat, "Parsing error on input data.", "" ));
-	}
-
-if( ND[Dsel] < 1 ) {
-	/* Skipout = 1; */  /* trying this.. scg 11/24/00 */
-	setintvar( "NRECORDS", 0 );
-	return( Eerr( 408, "No data were read", "" ) );
-	}
-
-if( Debug ) fprintf( Diagfp, "// getdata has read %d records with %d fields per record.\n", 
-	Nrecords[Dsel], Nfields[Dsel] );
-
-if( showresults ) {
-	fprintf( Diagfp, "// Data rows and fields (square brackets added):\n" );
- 	for( i = 0; i < Nrecords[Dsel]; i++ ) {
- 		for( j = 0; j < Nfields[Dsel]; j++ ) fprintf( Diagfp, "[%s]", da(i,j) );
-		fprintf( Diagfp, "\n" );
- 		}
-	}
-
-/* if filter was used and pfnames given, assign post-filter field names now.. */
-if( nscriptrows > 0 && pfnames != NULL ) definefieldnames( pfnames );
-
+Nfields = nfields;		/* Nfields is a macro - see pl.h */
+setintvar( "NFIELDS", nfields );
 
 if( rotaterec ) {   /* swap nrecords and nfields */
-	int tmp;
-	if( Nrecords[Dsel] != 1 ) Eerr( 5798, "rotate cannot be done if more than 1 row of data", "" );
+	if( nrecords != 1 ) Eerr( 5798, "rotate cannot be done if more than 1 row of data", "" );
 	else	{
-		tmp = Nrecords[Dsel];
-		Nrecords[Dsel] = Nfields[Dsel];
-		Nfields[Dsel] = tmp;
+		Nrecords = nfields;
+		Nfields = nrecords;
 		}
 	}
+
+
+if( nrecords == 0 ) fprintf( PLS.diagfp, "warning: no data fields found..\n" );
+if( PLS.debug ) fprintf( PLS.diagfp, "getdata has read %d records; there are %d fields per record.\n", Nrecords, Nfields );
+
+if( showresults ) {
+	if( specialmode ) fprintf( PLS.diagfp, "// proc processdata produced the following:\n" );
+	else fprintf( PLS.diagfp, "// proc getdata has read & parsed these data:\n" );
+ 	for( i = 0; i < Nrecords; i++ ) {
+ 		for( j = 0; j < Nfields; j++ ) fprintf( PLS.diagfp, "[%s]", da(i,j) );
+		fprintf( PLS.diagfp, "\n" );
+ 		}
+	}
+if( nscriptrows > 0 && pfnames != NULL ) definefieldnames( pfnames ); /* assign any post-filter field names.. */
+
 
 return( 0 );
 }
 /* ======================================== */
+/* DO_FILTER - implement 'select' and 'filter'.
+   This needs to be reworked again sometime for efficiency.. 
+ */
 
 static int
 do_filter( buf, scriptname, delim, mode )
@@ -344,7 +416,7 @@ int stat;
 char recordid[80]; 
 char data[MAXITEMS][DATAMAXLEN+1];
 char *df[MAXITEMS];
-char str[MAXINBUF], str2[MAXINBUF]; /* size increased from 255  scg 6/27/01 */
+char str[MAXRECORDLEN], str2[MAXRECORDLEN]; /* size increased from 255  scg 6/27/01 */
 int nfields, nrecords, nd;
 int i;
 char commentchar[12];
@@ -356,11 +428,11 @@ strcpy( commentchar, "//" ); /* not used? */
 /* split up buf into fields.. */
 strcpy( str, buf );
 nfields = 0;
-parsedata( str, delim, commentchar, df, MAXITEMS, &nrecords, &nfields, &nd ); 
+PL_parsedata( str, delim, commentchar, df, MAXITEMS, &nrecords, &nfields, &nd ); 
 
 if( mode == 1 ) { /* condex processing.. */
 	strcpy( str2, str );
-	stat = plvalue_subst( str2, scriptname, df, FOR_CONDEX );
+	stat = PL_value_subst( str2, scriptname, df, FOR_CONDEX );
 	if( stat > 1 ) Eerr( 2208, "value_subst error", scriptname );
 	stat = TDH_condex( str2, 0 );
 	return( stat );
@@ -372,29 +444,18 @@ for( i = 0; i < nfields; i++ ) strcpy( data[i], df[i] );
 
 
 
-stat = TDH_sinterp_openmem( &Procline[ scriptstart ], nscriptrows, &ss ); /* scriptstart & nscriptlines set above.. */
+stat = TDH_sinterp_openmem( &(PLL.procline[ scriptstart ]), nscriptrows, &ss ); /* scriptstart & nscriptlines set above.. */
 if( stat != 0 ) return( Eerr( stat, "filter script error", "" ) );
 
 /* do filter processing.. */
-TDH_setvar( "_PRINTDATA", "" );
 strcpy( buf, "" );
 while( 1 ) {
 	stat = TDH_sinterp( str, &ss, recordid, data );
         if( stat > 255 ) return( Eerr( 169, "filter script error.. quitting..", "" ) );
         else if( stat != SINTERP_MORE ) break;
-
 	strcat( buf, str ); /* strcat ok */
 	}
-TDH_getvar( "_PRINTDATA", str );
-if( strcmp( str, "" )== 0 ) return( 0 ); /* don't print data; return results in buf */
-
-/* if user opted to "print data", assemble fields back into one string.. */
-strcpy( buf, "" );
-for( i = 0; i < nfields; i++ ) {
-	sprintf( str, "\"%s\" ", data[i] );
-	strcat( buf, str );
-	}
-return( 0 );
+return( 0 ); /* return results in buf */
 }
 
 

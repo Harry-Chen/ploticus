@@ -14,33 +14,39 @@
 char TDH_scriptdir[ MAXPATH] = "./";	/* root directory for scripts */
 char TDH_configfile[ MAXPATH ] = "";	/* path name of config file */
 char TDH_tmpdir[ MAXPATH ] = "/tmp";	/* directory for tmp files */
-char TDH_dbnull[ 40 ] = "null";		/* external code for empty data item */
+char TDH_dbnull[ 10 ] = "=";		/* null representation in data files */
 int TDH_debugflag = 0;			/* may be set to 1 for extra debugging output */
-char TDH_utilfieldterm = ' ';		/* default field sep for utility output */
 char TDH_decpt = '.';			/* decimal point char */
-char TDH_dbquote = '"';			/* quote character for use in database statements */
-char TDH_dbquoteesc = '\\';		/* character to insert before embedded dbquote in db statements */
-int TDH_htmlqh = 1;			/* HTML quote handling mode */
 
-char TDH_optionstring[80] = "";		/* various options list */
 char *TDH_dat = NULL;			/* points to data array for condex */
 char *TDH_recid = NULL;			/* points to recordid for condex */
 char TDH_progname[20] = "";
 int TDH_initialized = 0;
+char TDH_shellmetachars[30] = "\"'`$\\;"; /* shell meta characters to strip out of variables when building
+					    shell commands for security purposes */
 
 #ifndef TDH_NOREC
-char TDH_bin[ MAXPATH ] = "";			
-char TDH_tmptbldir[ MAXPATH ] = "";	
 char TDH_fdfpath[ MAXPATH ] =      "./";	/* directory where FDF files are kept */
 #endif
 
+int TDH_midriff_flag = 0;		/* this is needed with the new ploticus api PL_initstatics() 
+					   so that we don't wipe out variables, and other script
+					   settings already in action.. mrcgi sets this to 1 */
 
-#define MAXPE 2048
+#define MAXPE 512
 static char putenvstring[MAXPE+2];
 static int pelen = 0;
 
+/* ================================ */
+TDH_readconfig_initstatic()
+{
+TDH_initialized = 0;
+/* everything else will be set just before the read is done, below.. */
+return( 0 );
+}
 
 
+/* ================================ */
 
 TDH_readconfig( loc )
 char *loc; /* environment var or file=filename */
@@ -55,18 +61,36 @@ char *filename, *getenv();
 int slen;
 
 
+if( TDH_initialized ) return( 0 );
+
+/* set tdh defaults now.. */
+strcpy( TDH_scriptdir, "./" );
+strcpy( TDH_configfile, "" );
+strcpy( TDH_tmpdir, "/tmp" );
+strcpy( TDH_dbnull, "=" );
+TDH_debugflag = 0;
+TDH_decpt = '.';
+TDH_dat = NULL;
+TDH_recid = NULL;
+strcpy( TDH_progname, "" );
+strcpy( TDH_shellmetachars, "\"'`$\\;" );
+#ifndef TDH_NOREC
+  strcpy( TDH_fdfpath, "./" );
+#endif
+pelen = 0;
+
+
 if( strncmp( loc, "file=", 5 )==0 ) strcpy( TDH_configfile, &loc[5] );
 else	{
-	strcpy( TDH_configfile, getenv( loc ) );
-	if( TDH_configfile == NULL ) return( 1 ); /* no env var specified - ok */
+	if( getenv( loc ) == NULL ) return( 1 ); /* no config environment var exists .. ok */
+	else strcpy( TDH_configfile, getenv( loc ) );
 	if( TDH_configfile[0] == '\0' ) return( 1 ); /* env var empty - ok */
 	}
 fp = fopen( TDH_configfile, "r" );
 if( fp == NULL ) {
-	return( err( 1250, "Cannot open config file", TDH_configfile ) );
+	return( err( 1250, "warning: cannot open config file", TDH_configfile ) );
 	}
 
-strcpy( TDH_optionstring, "" );
 
 /* get user settings.. */
 while( fgets( value, 511, fp ) != NULL ) {
@@ -80,33 +104,19 @@ while( fgets( value, 511, fp ) != NULL ) {
 
 	if( nt < 2 ) strcpy( value, "" );
 
-	if( stricmp( tag, "scriptdir:" )==0 ) strcpy( TDH_scriptdir, value );
+	if( stricmp( tag, "scriptdir:" )==0 || stricmp( tag, "pagesdir:" )==0 ) strcpy( TDH_scriptdir, value );
+	/* note.. mrcgi sets this by way of projdir: */
+
+	else if( stricmp( tag, "tmpdir:" )==0 ) strcpy( TDH_tmpdir, value );  
+	else if( stricmp( tag, "shellmetachars:" )==0 ) strcpy( TDH_shellmetachars, value );
 #ifndef TDH_NOREC
 	else if( stricmp( tag, "fdfpath:" )==0 ) strcpy( TDH_fdfpath, value );
-	else if( stricmp( tag, "tmpdir:" )==0 ) {
-		strcpy( TDH_tmpdir, value );  
-		if( TDH_tmptbldir[0] == '\0' ) strcpy( TDH_tmptbldir, value );
-		}
-	else if( stricmp( tag, "tdhbin:" )==0 ) sprintf( TDH_bin, "%s%c", value, PATH_SLASH );
-	else if( stricmp( tag, "joinprog:" )==0 ) {
-		value[ strlen( value ) - 6 ] = '\0';
-		sprintf( TDH_bin, "%s%c", value, PATH_SLASH );
-		}
-	else if( stricmp( tag, "dbtemptabledir:" )==0 ) strcpy( TDH_tmptbldir, value );
 #endif
-	else if( stricmp( tag, "dbnull:" )==0 ) strcpy( TDH_dbnull, value ); 
-	else if( stricmp( tag, "dbquote:" )==0 ) TDH_dbquote = value[0];
-	else if( stricmp( tag, "dbquoteesq:" )==0 ) TDH_dbquoteesc = value[0];
-	else if( stricmp( tag, "htmlqmode" )==0 ) {
-		if( tolower(value[0]) == 'y' ) TDH_htmlqh = 1;
-		else TDH_htmlqh = 0;
-		}
-	else if( stricmp( tag, "fieldnameheaders:" )==0 ) {
-		if( tolower(value[0]) == 'y' ) strcat( TDH_optionstring, "headermode " );
-		}
-	else if( stricmp( tag, "tabfields:" )==0 ) {
-		if( tolower(value[0]) == 'y' ) strcat( TDH_optionstring, "tabfields " );
-		TDH_utilfieldterm = '\t';
+	else if( stricmp( tag, "dbnull:" )==0 ) { 
+		if( strlen( value ) > 4 ) {
+			err( 1282, "dbnull symbol may not be longer than 4 chars", "" );
+			}
+		strncpy( TDH_dbnull, value, 4 ); TDH_dbnull[4] = '\0';
 		}
 
 	else if( stricmp( tag, "varvalue:" )==0 ) {   
@@ -134,16 +144,14 @@ while( fgets( value, 511, fp ) != NULL ) {
 			}
 		}
 
-	else if( stricmp( tag, "utilfieldterm:" )==0 ) {		  
-		if( stricmp( value, "tab" )==0 ) TDH_utilfieldterm = '\t';
-		else if( stricmp( value, "space" )==0 ) TDH_utilfieldterm = ' ';
-		else TDH_utilfieldterm = value[0];
-		}
-
 	else if( stricmp( tag, "decpt:" )==0 ) TDH_decpt = value[0];
 
-#ifndef PSQLONLY
-        else if( GL_slmember( tag, "dateformat: pivotyear: months* weekdays: omitweekends: lazydates:" )) {
+#ifndef SHSQL
+
+	/* this is shielded for SHSQL standalone applications.  Midriff needs functions code and thus
+	   must be linked such that tdhkit.a has presidence over libshsql.a */
+
+        else if( GL_slmember( tag, "dateformat: pivotyear: months* weekdays: omitweekends: lazydates: strictdatelengths:" )) {
 		int ix;
 		ix = 0;
 		GL_getok( buf, &ix ); /* skip tag.. */

@@ -7,5 +7,8 @@ This directory contains files needed for ploticus -prefab operation.
 
 See pltestsuite to run examples.
 
-These files are intended for use with ploticus version 2.02 - use with 
-other versions may cause trouble.
+If you're looking for simple examples that demonstrate ploticus this probably
+isn't the right place.. these scripts are more complicated because they 
+implement all the functionality of prefabs (they have to accomodate all 
+possible parameter combinations that might be specified).  
+Check in ./gallery or ./pltestsuite.  

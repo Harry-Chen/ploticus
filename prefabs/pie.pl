@@ -6,20 +6,31 @@
 //// PIE - pie graph
 
 //// set defaults..
-#setifnotgiven delim = ""
-#setifnotgiven comment = ""
 #setifnotgiven colors = "dullyellow"
-#setifnotgiven explode = ""
-#setifnotgiven lbldet = ""
 #setifnotgiven title = ""
-#setifnotgiven titledet = ""
-#setifnotgiven select = ""
-#setifnotgiven clickmapurl = ""
+
+// stick with the prefab convention where 'legend' contains legend location..
+#setifnotgiven legend = no
+#set dolegend = 0
+#if @legend != no
+  #set dolegend = 1
+  #if @legend = yes
+    #set legend = ""
+  #endif
+#endif
+#if @CM_UNITS = 1 
+    #setifnotgiven  center = "6.25 6.25"
+    #setifnotgiven  radius = 2.5
+    #setifnotgiven  legend = "12 18"
+#else
+    #setifnotgiven  center = "2.5 2.5"
+    #setifnotgiven  radius = 1
+    #setifnotgiven  legend = "4 3"
+#endif
 
 
 #include $chunk_read
 
-#musthave values labels
 
 //// do title..
 #if @title != ""
@@ -29,23 +40,40 @@
   #else
     location: 2.5 4.2
   #endif
-  textdetails: @titledet
+  #ifspec titledet textdetails
   text: @title
+  #endproc
 #endif
 
 //// do pie graph..
 #proc pie
-#if @CM_UNITS = 1
-  center: 6.25 6.25
-  radius: 2.5
-#else
-  center: 2.5 2.5
-  radius: 1
-#endif
+center: @center
+radius: @radius
 datafield: @values
-labelfield: @labels
-labelmode: line+label
-colors: @colors
-explode: @explode
-textdetails: @lbldet
-clickmapurl: @clickmapurl
+#ifspec labels labelfield
+#if @labelfarout like -*
+  labelmode: label
+#elseif @dolegend = 1
+  labelmode: legend
+#else
+  labelmode: line+label
+#endif
+#ifspec colorfld exactcolorfield
+#ifspec colors
+#ifspec explode
+#ifspec firstslice
+#ifspec lbldet textdetails
+#ifspec outlinedetails
+#ifspec total
+#ifspec labelback
+#ifspec labelfarout
+#ifspec clickmapurl
+#ifspec clickmaplabel
+  
+
+#if @dolegend = 1
+  #proc legend
+  location: @legend
+  #ifspec legendfmt format
+  #ifspec legendsep sep
+#endif

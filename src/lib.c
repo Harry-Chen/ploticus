@@ -7,32 +7,43 @@
 
 static int Supress_convmsg = 0;
 static int N_convmsg = 0;
+static int beginnum();
+
+
+/* ====================== */
+PL_lib_initstatic()
+{
+Supress_convmsg = 0;
+N_convmsg = 0;
+return( 0 );
+}
+
 
 /* ====================== */
 /* DA - access D as a 2-D array; return as char *    */
 char *
-da( r, c )
+PL_da( r, c )
 int r, c;
 {
 int base;
-base = StartD[Dsel];
-if( r >= Nrecords[Dsel] ) { 
-	fprintf( Errfp, "warning: %s data reference (rec=%d field=%d) is out of bounds\n", 
+base = PLD.dsfirstdf[ PLD.curds ];
+if( r >= Nrecords ) { 
+	fprintf( PLS.errfp, "warning: %s data reference (rec=%d field=%d) is out of bounds\n", 
 		Eprogname, r+1, c+1 ); 
 	return( "" );
 	}
-if( c >= Nfields[Dsel] ) { 
-	fprintf( Errfp, "warning: %s data reference (rec=%d field=%d) is out of bounds\n", 
+if( c >= Nfields ) { 
+	fprintf( PLS.errfp, "warning: %s data reference (rec=%d field=%d) is out of bounds\n", 
 		Eprogname, r+1, c+1 ); 
 	return( "" );
 	}
-return( D[ base + ( r * Nfields[Dsel] ) + c ] );
+return( PLD.df[ base + ( r * Nfields ) + c ] );
 }
 /* ====================== */
 /* FDA - access D as a 2-D array; return as double; 
    For non-plottables 0.0 is returned, but Econv_error may be called to see if 
    there was a conversion error */
-double fda( r, c, ax )
+double PL_fda( r, c, ax )
 int r, c;
 char ax;
 {
@@ -43,7 +54,7 @@ return( Econv( ax, da( r, c ) ) );
 /* NUM - convert string to double, and ensure that it is proper numeric
    Result is s converted to double.
    Return is 0 on ok, 1 on non-numeric. */
-num( s, result )
+PL_num( s, result )
 char s[];
 double *result;
 {
@@ -60,7 +71,7 @@ else	{
 
 /* ============================= */
 /* GETCOORDS - extract a coordinate pair (two posex's) from val */
-getcoords( parmname, val, x, y )
+PL_getcoords( parmname, val, x, y )
 char *parmname, *val;
 double *x, *y;
 {
@@ -79,7 +90,7 @@ else return( 0 );
 
 /* ============================= */
 /* GETBOX - extract two coordinate pairs (four posex's) from val */
-getbox( parmname, val, x1, y1, x2, y2 )
+PL_getbox( parmname, val, x1, y1, x2, y2 )
 char *parmname, *val;
 double *x1, *y1, *x2, *y2;
 {
@@ -100,7 +111,7 @@ else return( 0 );
 
 /* ================== */
 /* GETRANGE - get a low/high range */
-getrange( lineval, lo, hi, ax, deflo, defhi )
+PL_getrange( lineval, lo, hi, ax, deflo, defhi )
 char *lineval;
 double *lo, *hi;
 char ax;
@@ -132,7 +143,7 @@ else if( nt <= 0 ) {
    Shell expandable file name is ok.
    Returns 0 if ok, 1 if file not available */
 
-file_to_buf( filename, mode, result, buflen )
+PL_file_to_buf( filename, mode, result, buflen )
 char *filename;
 int mode; /* 1 = file   2 = command */
 char *result;
@@ -159,7 +170,7 @@ return( 0 );
 
 /* ========================= */
 /* SETFLOATVAR - set a DMS var to a double value */
-setfloatvar( varname, f )
+PL_setfloatvar( varname, f )
 char *varname;
 double f;
 {
@@ -172,7 +183,7 @@ return( 0 );
 }
 /* ========================= */
 /* SETINTVAR - set a DMS var to an integer value */
-setintvar( varname, n )
+PL_setintvar( varname, n )
 char *varname;
 int n;
 {
@@ -186,7 +197,7 @@ return( 0 );
 
 /* ========================== */
 /* SETCHARVAR - set a DMS var to a char string value */
-setcharvar( varname, s )
+PL_setcharvar( varname, s )
 char *varname;
 char *s;
 {
@@ -197,34 +208,32 @@ return( 0 );
 }
 
 /* =========================== */
-/* CONV_MSG - print a message to Errfp for a data item of invalid type */
-conv_msg( row, col, aname )
+/* CONV_MSG - print a message to errfp for a data item of invalid type */
+PL_conv_msg( row, col, aname )
 int row, col;
 char *aname;
 {
 N_convmsg++;
 if( Supress_convmsg ) return( 0 );
-fprintf( Errfp, "%s warning, %s skipping unplottable '%s' (rec=%d field=%d)\n",
+fprintf( PLS.errfp, "%s warning, %s skipping unplottable '%s' (rec=%d field=%d)\n",
 	Eprogname, aname, da(row,col), row+1, col+1 );
 return( 0 );
 }
 
 /* =========================== */
-/* OTH_MSG - print a message to Errfp for a data item of invalid type */
-oth_msg( msg )
+/* OTH_MSG - print a message to errfp for a data item of invalid type */
+PL_oth_msg( msg )
 char *msg;
 {
 N_convmsg++;
 if( Supress_convmsg ) return( 0 );
-fprintf( Errfp, "%s %s\n", Eprogname, msg );
+fprintf( PLS.errfp, "%s %s\n", Eprogname, msg );
 return( 0 );
 }
 
 /* =========================== */
-
-/* =========================== */
 /* SUPPRESS_CONVMSG - suppress invalid type messages */
-suppress_convmsg( mode )
+PL_suppress_convmsg( mode )
 int mode;
 {
 Supress_convmsg = mode;
@@ -233,14 +242,14 @@ return( 0 );
 
 /* ============================= */
 /* ZERO_CONVMSGCOUNT - zero out the conv msg counter */
-zero_convmsgcount()
+PL_zero_convmsgcount()
 {
 N_convmsg = 0;
 return( 0 );
 }
 /* ============================= */
 /* REPORT_CONVMSGCOUNT - report on what the conv msg count is.. */
-report_convmsgcount()
+PL_report_convmsgcount()
 {
 return( N_convmsg );
 }
@@ -249,58 +258,54 @@ return( N_convmsg );
 
 /* ========================== */
 /* SCALEBEENSET - return 1 if scaling has been set, 0 if not */
-scalebeenset()
+PL_scalebeenset()
 {
 if( EDXhi - EDXlo > 0.0000001 ) return( 1 );
 else return( 0 );
 }
 
-/* ===================== */
-/* CATITEM - add a new data item */
-catitem( s, d, avail )
-char *s;
-int *d;
-int *avail;
-{
-D[ (*d)++ ] = &Databuf[ *avail ];
-strcpy( &Databuf[ (*avail) ], s );
-(*avail) += (strlen( s ) + 1);
-return( 0 );
-}
+
 
 /* ======================== */
-/* DEFAULTINC - given a min and a max, estimate a reasonable default inc */
-static double threshvals[40] = { 0.000001, 0.00001, 0.0001, 0.001, 0.002, 0.005,
-	0.01, 0.02, 0.05, 
-	0.1, 0.2, 0.5, 
-	1.0, 2.0, 5.0, 
-	10.0, 20.0, 50.0, 
-	100.0, 200.0, 500.0, 
-	1000.0, 2000.0, 5000.0, 
-	10000.0, 20000.0, 50000.0, 
-	100000.0, 200000.0, 500000.0, 
-	1000000.0, 2000000.0, 5000000.0, 
-	10000000.0, 20000000.0, 50000000.0 };
+/* DEFAULTINC - given a min and a max, estimate a reasonable default inc 
+ *
+ * Improvements contributed by Dan Pelleg peldan@yahoo.com :
+ *  we want to find a number that is:
+ *   - the same order of magnitude of h, and greater than h
+ *   - is either 1, 2, or 5, multiplied by the appropriate units
+ *   - is the smallest such number
+ *  For example, all numbers between 10000 and 19999 are mapped to 20000.
+ *  Numbers 20000 - 49999 are mapped to 50000.
+ *  Numbers 50000 - 99999 are mapped to 100000.
+ *  Numbers 100000 - 199999 are mapped to 200000.   And so on.  
+ *
+ * Remaining scg code deleted 10/1/03...
+ */
 
-defaultinc( min, max, inc )
+PL_defaultinc( min, max, inc )
 double min, max, *inc;
 {
 double diff, h, fabs();
+double ret, mult, mant;
 int i;
 
 diff = max - min;
 diff = fabs( diff );
 h = diff / 10.0;  /* we want to have about 10 tics on an axis.. */
 
-for( i = 0; ; i++ ) {
-	if( h < threshvals[i] ) break;
-	if( threshvals[i] > 49999999.0 ) break;
-	}
+/* normalize and write h = mant * mult, for 1 <= mant 10 */
+mult = pow( 10.0, floor( log10(h) ) );
+mant = h / mult;
 
-*inc = threshvals[i];
+/* find the next step and multiply */
+if(mant < 2.0) ret = 2.0 * mult;
+else if(mant < 5.0) ret = 5.0 * mult;
+else ret = 10.0 * mult;
+*inc = ret;
 return( 0 );
 }
 
+ 
 
 /* ======================== */
 /* REWRITENUMS - rewrite numbers, supplying a spacer (comma in US)
@@ -308,16 +313,18 @@ return( 0 );
 	mode is presumed, decimal point is written as a comma, and
 	large numbers are spaced using dot.   
 
+	Numbers in scientific notation are returned unaltered.
+
  	Parameter num is modified.
 */
 
-rewritenums( num )
+PL_rewritenums( num )
 char *num;
 {
 int i, j, k, decplace, len;
 char s[40], tmp[40];
 
-if( Bignumspacer == '\0' ) return( 0 ); /* do nothing */
+if( PLS.bignumspacer == '\0' ) return( 0 ); /* do nothing */
 
 sscanf( num, "%s", s ); /* strip off any leading spaces */
 
@@ -325,36 +332,44 @@ sscanf( num, "%s", s ); /* strip off any leading spaces */
 k = -1;
 decplace = -1;
 for( i = 0, len = strlen( s ); i < len; i++ ) {
+	if( s[i] == 'e' ) return( 0 ); /* scientific notation detected - leave it alone - scg 11/26/02 */
 	/* remember the char where number begins.. */
-	if( k < 0 && ( isdigit( s[i] ) || s[i] == '.' || s[i] == '-' ) ) k = i;
+	if( k < 0 && beginnum( s, i ) ) k = i;
+		/* ( isdigit( s[i] )  || (( s[i] == '.' || s[i] == '-' ) && isdigit( s[i+1]) ) ) ) k = i; */
 	if( s[i] == '.' ) {
 		decplace = i - k;
-		if( Bignumspacer == '.' ) tmp[i] = ',';
+		if( PLS.bignumspacer == '.' ) tmp[i] = ',';
 		else tmp[i] = '.';
 		}
 	else tmp[i] = s[i];
 	}
-if( decplace < 0 ) decplace = i - k;
+
 tmp[i] = '\0';
 
-if( decplace > Bignumspacer_thres ) {   /* add spacers.. */
+if( decplace < 0 ) {
+	for( ; i >= 0; i-- ) if( isdigit( s[i] ) || s[i] == '.' ) { i++; break; } /* added scg 3/25/02 */
+	decplace = i - k;
+	}
+
+if( decplace > PLS.bignumthres ) {   /* add spacers.. */
 	/* process tmp; put result back in 's'.. */
 	for( i = -1, j = 0, k = 0; i < decplace; k++ ) {
 		/* just copy over any leading alpha portion.. */
-		if( i < 0 && ( ! isdigit( tmp[k] ) && tmp[k] != '.' && tmp[k] != '-' ) ) {
+		if( i < 0 && !beginnum( tmp, k ) ) {
+				/* ( ! isdigit( tmp[k] ) && tmp[k] != '.' && tmp[k] != '-' ) ) { */
 			s[j++] = tmp[k];
 			continue; /* scg 2/28/02 */
 			}
 
 		i++;
 		if( i > 0 && decplace-i > 0 && (decplace-i) % 3 == 0 ) {  /* insert 000 separator.. */
-			s[j++] = Bignumspacer;
-			s[j++] = tmp[k];
+			s[j++] = PLS.bignumspacer;
+			s[j++] = tmp[k]; 
 			}
-		else s[j++] = tmp[k];
+		else  s[j++] = tmp[k]; 
 		}
 	s[j] = '\0';
-	strcat( s, &tmp[k] ); /* append decimal point and rightward */
+	if( k < strlen( tmp ) ) strcat( s, &tmp[k] ); /* append decimal point and rightward */
 	}
 else strcpy( s, tmp );
 
@@ -362,9 +377,18 @@ strcpy( num, s );
 return( 0 );
 } 
 
+static int
+beginnum( s, i )
+char *s;
+int i;
+{
+if( ( isdigit( s[i] )  || (( s[i] == '.' || s[i] == '-' ) && isdigit( s[i+1]) ) ) ) return( 1 );
+else return( 0 );
+}
+
 /* ============================= */
 /* CONVERTNL - change all occurrances of "\n" (backslash followed by n) to a newline character */
-convertnl( str )
+PL_convertnl( str )
 char *str;
 {
 int i, j, len;
@@ -381,7 +405,7 @@ return( 0 );
 }
 /* ============================== */
 /* MEASURETEXT - count the number of lines present in txt and find the length of longest line. */
-measuretext( txt, nlines, maxlen )
+PL_measuretext( txt, nlines, maxlen )
 char *txt;
 int *nlines, *maxlen;
 {
@@ -402,23 +426,35 @@ while( 1 ) {
 return( 0 );
 }
 
-/* =================================== */
-/* STRIP_WS strip white-space off of front and end of string s */
-strip_ws( s )
-char s[];
+
+/* ================================= */
+/* DO_X_BUTTON */
+
+PL_do_x_button( label )
+char *label;
 {
-int i, j, len;
-
-/* don't do anything if first and last characters are non-space.. */
-if( !isspace( s[0] ) && !isspace( s[ strlen( s ) - 1 ] ) ) return( 0 );
- 
-
-/* find last significant char and put a null after it */
-for( j = strlen( s ) -1; j >= 0; j-- )
-	if( !GL_member( s[j], " \t\n" )) break;
-s[j+1] = '\0';
-/* find 1st significant char at position i */
-for( i = 0, len = strlen( s ); i < len; i++ ) 
-	if( !GL_member( s[i], " \t\n" )) break; 
-strcpy( s, &s[i] );
+double x, y;
+int e;
+#ifndef NOX11
+while( 1 ) {
+	if( PL_clickmap_getdemomode() ) clickmap_show( 'x' ); /* added scg 11/23/01 */
+	Ecolor( "black" );
+	Elinetype( 0, 0.5, 1.0 );
+	Ecblock( 0.1, 0.1, 1.0, 0.3, "yellow", 0 );
+	Emov( 0.5, 0.12 );
+	Etextsize( 12 );
+	Ecentext( label );
+	Ecblockdress( 0.1, 0.1, 1.0, 0.3, 0.06, "0.6", "0.8", 0.0, "" );
+	Esavewin();
+        Egetkey( &x, &y, &e );
+	if( e < 1000 || (y < 0.3 && x < 1.0 )) {
+              	Ecblock( 0.1, 0.1, 1.0, 0.3, "black", 0 ); 
+		Eflush();
+		if( e == 'q' ) PLS.skipout = 1; 
+                break;
+                }
+	else if( PLS.usingcm ) fprintf( PLS.diagfp, "%g %g\n", x*2.54, y*2.54 ); /* in cm */
+        else fprintf( PLS.diagfp, "%g %g\n", x, y ); /* mouse click location in inches from lower-left */
+	}
+#endif
 }

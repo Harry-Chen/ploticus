@@ -6,7 +6,7 @@
         A:active{text-decoration:none}
 -->
 </STYLE>
-<title>ploticus: the pl program</title>
+<title>ploticus: the ploticus program</title>
 <body bgcolor=D0D0EE vlink=0000FF>
 <br>
 <br>
@@ -14,7 +14,7 @@
 <table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
 <td>
   <table cellpadding=2 width=550><tr>
-  <td><br><h2>The pl program</h2></td>
+  <td><br><h2>The ploticus program</h2></td>
   <td align=right>
   <small>
   <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
@@ -28,24 +28,24 @@
 <br>
 .>>
 
-.TH The_pl_program PL "01-MAR-2002   PL ploticus.sourceforge.net"
+.TH The_ploticus_program PL "18-MAR-2002   PL ploticus.sourceforge.net"
 
 .SH NAME
-pl
+ploticus
 
 .SH SYNOPSIS
-\fCpl  -prefab \fIprefabname\fC   \fIparm=value\fC ..  [\fI-options\fR]
+\fCploticus  -prefab \fIprefabname\fC   \fIparm=value\fC ..  [\fI-options\fR]
 .br
 \0.. OR ..
 .br
-\fCpl \fIscriptfile\fC  [\fI-options\fC]  
+\fCploticus \fIscriptfile\fC  [\fI-options\fC]  
 
 .ig >>
 <br><br><br>
 .>>
 
 .SH DESCRIPTION
-\fBpl\fR is a program that produces plots and charts from data, and 
+\fBploticus\fR is a program that produces plots and charts from data, and 
 produces results that can be viewed on web pages, paper, slides,
 or interactively on the screen.  Standard types of plots may be
 done using
@@ -65,7 +65,7 @@ done using
 </a>
 .>>
 may be supplied for greater flexibility and customization.
-\fBpl\fR may be executed from the command line or 
+\fBploticus\fR may be executed from the command line or 
 .ig >>
 <a href="cgi.html">
 .>>
@@ -109,7 +109,7 @@ are also available.
 
 .SH COMMAND LINE ARGUMENTS
 .LP
-The \fBpl\fR command line arguments may be given in any order.
+The \fBploticus\fR command line arguments may be given in any order.
 
 .LP
 \fB-prefab\fR \fIprefabname\fR
@@ -187,13 +187,6 @@ will be used.
 &nbsp; &nbsp; &nbsp;
 .>>
 PNG image
-
-.LP
-\fB-gif \fR
-.ig >>
-&nbsp; &nbsp; &nbsp; &nbsp;
-.>>
-pseudo-GIF image
 
 .LP
 \fB-jpeg\fR
@@ -485,8 +478,13 @@ For further discussion of this, see
 .LP
 \fB-debug\fR
 .IP
-Debug mode; extra dianostic information produced and 
-temporary files not cleaned up upon termination.
+Debug mode.  Causes dianostic information to be written to the 
+diagnostic stream (stderr by default, see \fC-diagfile\fR below).
+Highly recommended if you are experiencing difficulty.
+Best to 
+use \fC-debug\fR as the first (leftmost) argument so that it can report
+on all arguments gotten.
+Another effect of debug mode is that any temporary files are not removed upon termination.
 
 .LP
 \fB-showbad\fR
@@ -556,32 +554,30 @@ The following example uses the
 .>>
 :
 .IP
-\fCpl -prefab scat -png datafile=results.dat x=2 y=3\fR
+\fCploticus -prefab scat -png datafile=results.dat x=2 y=3\fR
 
 .LP
 The following examples assume
 that you have a script file called \fClineplot1.p\fR.
 .IP
- \fCpl -x lineplot1.p\fR = view on X11 screen
+ \fCploticus -x lineplot1.p\fR = view on X11 screen
 .IP
- \fCpl -png lineplot1.p\fR = create PNG image lineplot1.png
+ \fCploticus -png lineplot1.p\fR = create PNG image lineplot1.png
 .IP
- \fCpl -gif lineplot1.p -o stdout\fR = create GIF image on standard output
-.IP
- \fCpl -gif lineplot1.p -viewer xv\fR = produce GIF and view using xv 
+ \fCploticus -png lineplot1.p -viewer xv\fR = produce PNG and view using xv 
 (assuming xv image viewer is available on your system).
 .IP
- \fCpl -eps lineplot1.p\fR = produce EPS file lineplot1.eps
+ \fCploticus -eps lineplot1.p\fR = produce EPS file lineplot1.eps
 .IP
- \fCpl -eps lineplot1.p -viewer gv\fR = produce EPS and view using gv 
+ \fCploticus -eps lineplot1.p -viewer gv\fR = produce EPS and view using gv 
 (that's ghostview, assuming it is available on your system).
 .IP
- \fCpl -eps lineplot1.p -o lineplot.eps\fR = produce EPS into file lineplot.eps
+ \fCploticus -eps lineplot1.p -o lineplot.eps\fR = produce EPS into file lineplot.eps
 .IP
- \fCpl -ps lineplot1.p | lp\fR = produce paginated postscript and send to
+ \fCploticus -ps lineplot1.p | lp\fR = produce paginated postscript and send to
 unix lp print spooler.
 .IP
- \fCpl -ps lineplot1.p -veiwer gv\fR = produce paginated postscript
+ \fCploticus -ps lineplot1.p -veiwer gv\fR = produce paginated postscript
 and view using ghostview.
 
 .ig >>

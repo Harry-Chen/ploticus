@@ -4,8 +4,7 @@
 
 
 /* ROUTINES FOR WORKING WITH VARIOUS UNITS */
-/* These routines may be thought of as "sitting on top of" 
-   the routines in ./src/graphic.c 
+/* These routines may be thought of as "sitting on top of" the routines in ./src/graphic.c 
 
    References dmslib/dates.c and dmslib/times.c
 */
@@ -21,21 +20,35 @@
 
 static char unitdesc[2][20] = { "", "" };
 static int unittyp[2] = { 0, 0 };
-
 static int conv_errflag = 0;
-
 static int dashindate = 0;	 /* 1 if current date format contains dash(s), 0 otherwise */
 static char dashindateaxis = '0';
+static double catslide[2] = { 0.0, 0.0 };  /* for displaying clusters over categories */
 
 static int pex();
 static int do_pex();
-
-static double catslide[2] = { 0.0, 0.0 };  /* for displaying clusters over categories */
+static int setdatesub();
+static int convdatesub();
+static int evalbound();
 
 
 /* ============================ */
-/* ESETUNITS - set up for special units on an axis */
-Esetunits( axis, s )
+PL_units_initstatic()
+{
+strcpy( unitdesc[0], "" ); strcpy( unitdesc[1], "" );
+unittyp[0] = 0; unittyp[1] = 0;
+conv_errflag = 0;
+dashindate = 0;
+dashindateaxis = '\0';
+catslide[0] = 0.0; catslide[1] = 0.0; 
+
+return( 0 );
+}
+
+
+/* ============================ */
+/* SETUNITS - set up for special units on an axis */
+PL_setunits( axis, s )
 char axis;
 char *s;
 {
@@ -50,6 +63,8 @@ else i = 1;
 
 strcpy( unitdesc[i], "" );
 
+strcpy( tok, "" );
+strcpy( tok2, "" );
 nt = sscanf( s, "%s %s", tok, tok2 );
 
 
@@ -82,10 +97,10 @@ else if( stricmp( tok, "time" )==0 ) {
 else if( strnicmp( tok, "datetime", 8 )==0 ) {
 	unittyp[i] = DATETIME;
 	dashindate = 0; dashindateaxis = '0';
-	if( nt == 2 ) {
-		stat = DT_setdatetimefmt( tok2, &tok[8] );
-		if( stat != 0 ) return( -1 ) ;
-		}
+	/* if( nt == 2 ) { */ /* condition removed scg 9/29/03 */
+	stat = DT_setdatetimefmt( tok2, &tok[8] );
+	if( stat != 0 ) return( -1 ) ;
+	/* } */
 	DT_getdatefmt( tok2 );
 	/* check for - in date format- this messes up arithmetic */
 	for( j = 0, slen = strlen( tok2 ); j < slen; j++ ) {
@@ -100,8 +115,8 @@ else return( -1 ); /* unknown type */
 return( 0 );
 }
 /* ============================ */
-/* EGETUNITS - report on what units are in effect on the given axis. */
-Egetunits( axis, result )
+/* GETUNITS - report on what units are in effect on the given axis. */
+PL_getunits( axis, result )
 char axis;
 char *result;
 {
@@ -119,8 +134,8 @@ return( 0 );
 }
 
 /* ============================ */
-/* EGETUNITSUBTYPE - report on subtype of units are in effect on the given axis. */
-Egetunitsubtype( axis, result )
+/* GETUNITSUBTYPE - report on subtype of units are in effect on the given axis. */
+PL_getunitsubtype( axis, result )
 char axis;
 char *result;
 {
@@ -134,8 +149,8 @@ return( 0 );
 }
 
 /* ============================ */
-/* ESETSCALE - set scaling for an axis - special units supported */
-Esetscale( axis, alo, ahi, scalelo, scalehi )
+/* SETSCALE - set scaling for an axis - special units supported */
+PL_setscale( axis, alo, ahi, scalelo, scalehi )
 char axis;
 double alo, ahi;
 char *scalelo, *scalehi;
@@ -159,15 +174,19 @@ else	{
 
 if( axis == 'x' ) return( Escale_x( alo, ahi, slo, shi ) );
 
-else if( axis == 'y' ) return( Escale_y( alo, ahi, slo, shi ) );
+else if( axis == 'y' ) {
+	int stat;
+	stat = Escale_y( alo, ahi, slo, shi ); 
+	return( stat );
+	}
 
 else return( Eerr( 209, "invalid axis", "" ));
 }
 
 /* ============================ */
-/* ECONV - return linear equivalent of special units */
+/* CONV - return linear equivalent of special units */
 double
-Econv( axis, s )
+PL_conv( axis, s )
 char axis;
 char *s;
 {
@@ -218,31 +237,13 @@ else if( unittyp[i] == DATETIME ) {
 	}
 
 else if( unittyp[i] == CATEGORIES ) { 
-	int j;
-	int axslot;
-	if( axis == 'x' ) axslot = 0;
-	else axslot = 1;
+	int catj;
 	/* look up the category.. */
-	for( j = 0; j < Ncats[ axslot ]; j++ ) {
-		if( Catcompmethod == 0 ) {   	  /* contains */
-			if( strnicmp( s, Cats[axslot][j], strlen(s) )==0 ) break;
-			}
-		else if( Catcompmethod == -1 ) {  /* exact */
-			if( stricmp( s, Cats[axslot][j] )==0 ) break;
-			}
-		else if( Catcompmethod > 0 ) {   /* specified length */
-			if( strnicmp( s, Cats[axslot][j], Catcompmethod )==0 ) break;
-			}
-		else if( Catcompmethod < -10 ) {   /* specified length */
-			if( GL_fuzzymatch( Cats[axslot][j], s, strlen(s), (15+Catcompmethod) ) ) break;
-			}
-		}
-	if( j >= Ncats[ axslot ] ) {  /* not found */
-		conv_errflag = 1; 
-		return( 0.0 ); 
-		}
-	if( axis == 'x' ) f = (double)(j+1) + catslide[0]; /* +1 because we will never want origin */
-	else f = EDYhi-((double)(j+1) + catslide[1]);  /* cats always top down in Y */
+	catj = PL_findcat( axis, s );
+	if( catj < 0 ) { conv_errflag = 1; return( 0.0 ); }
+
+	if( axis == 'x' ) f = (double)( catj + 1 ) + catslide[0]; /* +1 because we will never want origin */
+	else f = EDYhi-((double)( catj + 1 ) + catslide[1]);  /* cats always top down in Y */
 	return( f );
 	}
 
@@ -252,15 +253,15 @@ else	{
 	}
 }
 /* ============================= */
-/* ECONV_ERROR check of Econv() error status */
-Econv_error()
+/* CONV_ERROR check of Econv() error status */
+PL_conv_error()
 {
 return( conv_errflag );
 }
 
 /* ============================= */
-/* EUPRINT - produce a string containing the external representation of a value */
-Euprint( result, axis, f, format )
+/* UPRINT - produce a string containing the external representation of a value */
+PL_uprint( result, axis, f, format )
 char *result;
 char axis;
 double f;
@@ -276,19 +277,23 @@ else i = 1;
 if( unittyp[i] == LINEAR ) {
 	/* when generating incremental axes moving from negative to positive, for zero sprintf sometimes 
 	   gives -0.00 or very tiny values like -5.5579e-17.  The following is a workaround.. scg 7/5/01 */
-	if( f < 0.0000000000001 && f > -0.0000000000001 ) f = 0.0;
+	/* if( f < 0.0000000000001 && f > -0.0000000000001 ) f = 0.0; */  /* moved this to proc_axis() scg 10/1/03 */
 
 	if( format[0] == '\0' ) sprintf( result, "%g", f );
+	else if( strnicmp( format, "autoround", 9 )==0 ) {
+		if( format[9] == '\0' ) strcpy( result, GL_autoroundf( f, 0 ));
+		else strcpy( result, GL_autoroundf( f, atoi( &format[9] ) ));
+		}
 	else sprintf( result, format, f );
 
-	if( Bignumspacer ) rewritenums( result ); /* rewrite w/various spacing, decimal pt options*/
+	if( PLS.bignumspacer ) rewritenums( result ); /* rewrite w/various spacing, decimal pt options*/
 	}
 
 
 else if( unittyp[i] == DATE ) {
 	stat = DT_fromjul( (long) f, s );
 	if( stat != 0 ) {
-		fprintf( Errfp, "[invalid f value: %g stat=%d]", f, stat );
+		fprintf( PLS.errfp, "[invalid f value: %g stat=%d]", f, stat );
 		return( Eerr( 801, "error in parsing date", "" ));
 		}
 
@@ -326,8 +331,8 @@ return( 0 );
 }
 
 /* ========================= */
-/* EPOSEX - evaluate position expression and return absolute.
-   ELENEX - evaluate length expression and return absolute.  No special units
+/* POSEX - evaluate position expression and return absolute.
+   LENEX - evaluate length expression and return absolute.  No special units
 		are allowed in a length, thus for date scaling, value is in days;
 		for time scaling, value is in seconds.
 
@@ -344,7 +349,7 @@ return( 0 );
 
 	Returns 0 if ok, 1 on error.
 */
-Eposex( val, axis, result )
+PL_posex( val, axis, result )
 char *val, axis;
 double *result;
 {
@@ -352,7 +357,7 @@ return( pex( val, axis, result, 0 ) );
 }
 
 /* ------------ */
-Elenex( val, axis, result )
+PL_lenex( val, axis, result )
 char *val, axis;
 double *result;
 {
@@ -382,6 +387,7 @@ int slen;
 
 if( in[0] == '\0' ) { *result = 0.0;  return( 1 ); }
 
+conv_errflag = 0; /* scg 4/22/02 */
 strcpy( val, in );
 nval = 1;
 op = 1;
@@ -391,7 +397,8 @@ subval[0] = &val[0];
 neg_offset_allowed = 1;
 if( dashindate && dashindateaxis == axis ) neg_offset_allowed = 0;
 for( i = 1, slen = strlen( val ); i < slen; i++ ) {
-	if( val[i] == '+' || (val[i] == '-' && neg_offset_allowed) ) {
+	/* the following condition was changed scg 10/1/03 to allow scientific notation values.. */
+	if( ( val[i] == '+' || (val[i] == '-' && neg_offset_allowed) ) && tolower( val[i-1] ) != 'e' ) {  /* EMB-MIN */
 		if( val[i] == '+' ) op = 1;
 		else if( val[i] == '-' ) op = 2;
 		val[i] = '\0';
@@ -463,7 +470,7 @@ if( stricmp( modifier, "(s)" )==0 ) {
 	}
 
 /* convert absolute centimeter specs to inches */
-if( Using_cm && (  modifier[0] == '\0' || stricmp( modifier, "(a)" )==0 ) ) {
+if( PLS.usingcm && (  modifier[0] == '\0' || stricmp( modifier, "(a)" )==0 ) ) {
 	*result = *result/ 2.54;
 	}
 
@@ -471,8 +478,9 @@ return( 0 );
 }
 
 /* ============================= */
-/* EU - take s in special units and return absolute */
-double Eu( axis, s )
+/* U - take s in special units and return absolute */
+double 
+PL_u( axis, s )
 char axis;
 char *s;
 {
@@ -489,6 +497,7 @@ return( Ea( axis, Econv( axis, s ) ) );
 
 	If date format includes embedded dashes then subtraction is disabled.
 */
+static int
 evalbound( val, axis, result )
 char *val;
 char axis;
@@ -499,8 +508,10 @@ int op, nval, i, slen;
 
 /* check for embedded + and -  (skip first character - could be unary)*/
 subval[0] = &val[0];
+nval = 0;
 for( i = 1, slen = strlen( val ); i < slen; i++ ) {
-        if( val[i] == '+' || (val[i] == '-' && !dashindate) ) {
+	/* the following condition was changed scg 10/1/03 to allow scientific notation values.. */
+        if( ( val[i] == '+' || (val[i] == '-' && !dashindate) ) && tolower(val[i-1]) != 'e' ) { 	/* EMB-MIN */
                 if( val[i] == '+' ) op = 1;
                 else if( val[i] == '-' ) op = 2;
                 val[i] = '\0';
@@ -522,6 +533,7 @@ return( 0 );
 /* date types that are special to ploticus
 	(generally yymm and Q type notations)
 */
+static int
 setdatesub( tok, desc )
 char *tok, *desc;
 {
@@ -540,6 +552,7 @@ return( 0 );
 }
 
 /* ----- */
+static int
 convdatesub( desc, s, result )
 char *desc, *s, *result;
 {
@@ -602,7 +615,7 @@ return( 0 );
 }
 
 /* ======================= */
-Esetcatslide( axis, amount )
+PL_setcatslide( axis, amount )
 char axis;
 double amount;
 {
@@ -612,7 +625,7 @@ return( 0 );
 }
 /* ======================= */
 /* ES_INR - see if a string-based value is in range for the given axis */
-Es_inr( axis, val )
+PL_s_inr( axis, val )
 char axis;
 char *val;
 {
@@ -627,7 +640,7 @@ else return( 0 );
 }
 /* ======================= */
 /* EF_INR - see if a float-based value is in range for the given axis */
-Ef_inr( axis, val )
+PL_f_inr( axis, val )
 char axis;
 double val;
 {

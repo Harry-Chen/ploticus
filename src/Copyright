@@ -1,68 +1,81 @@
 #set TITLE = "copyright and license"
 #include top
 .ig >>
-<pre>
 
-== Begin ploticus 2.03 copyright notice ==
+== Begin ploticus 2.20 copyright notice ==
+<p>
 
+ploticus 2.20 data display engine.  Software, documentation, and examples.
+Copyright 1998-2004 Stephen C. Grubb  (scg@jax.org)
+<p>
 
-ploticus 2.03 data display engine.  Software, documentation, and examples.
-Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org)
-
-<a href="http://ploticus.sourceforge.net/sgpr.html">About the author</a>
+The home page for PLOTICUS is     http://ploticus.sourceforge.net
+The source code, binaries for some platforms, documentation, and examples 
+may be freely downloaded from that site.  
+<a href="http://ploticus.sourceforge.net/steve.html">About the author</a>
+<p>
 
 This program is free software; you can redistribute it and/or modify it 
 under the terms of the GNU General Public License as published by the 
 Free Software Foundation; either version 2 of the License, or (at your 
 option) any later version.
+<p>
 
-This program is distributed in the hope that it will be useful, but WITHOUT 
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
-FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+This program is distributed in the hope that it will be useful, but 
+WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
+or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License 
+for more details.
+<p>
 
 <a href="http://www.gnu.org/copyleft/gpl.html">GNU General Public License</a> 
 &nbsp; <a href="http://www.gnu.org/copyleft/gpl.html"><img src="../doc/gpl.gif" 
 border=0></a>
+<p>
 
 A copy of the GNU General Public License should be present with the code, in 
-file GPL.txt.
+file GPL.txt.  A copy of the GNU General Public License may also be obtained 
+from: Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  
+02111-1307, USA.
+<p>
 
-A copy of the GNU General Public License may be obtained from: Free Software 
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-The home page for PLOTICUS is     http://ploticus.sourceforge.net
-The source code, binaries for some platforms, documentation, and examples 
-may be freely downloaded from that site.  
+Clarification:
+<p>
 
-The author wishes to be informed of and to maintain links to other development 
-efforts involving ploticus.  Feel free to copy and use this nifty new logo
-in works that use ploticus, as a link back to this site.
-<center><a href="../doc/Welcome.html"><img src="../doc/ploticus.gif"></a></center>
+My view is that the GPL places no restriction on _using_ ploticus to produce 
+graphs for any legal commercial, proprietary, public or private purpose,
+but that the GPL prohibits someone from taking the ploticus code and selling 
+it, or adding it into a larger software product that is to be sold or 
+distributed to other parties as non-GPL software.  Software that's freely
+distributed strictly within an organization for internal use only does not 
+have to be GPL.  I take an active interest in seeing that these rules are 
+adhered to, and request notification of any suspected violations - scg@jax.org
+<p>
 
-Can ploticus be used as part of a commercial package or service?  The GPL 
-does not allow ploticus code to be used within proprietary software that is to 
-be distributed to others.  However, for cases where ploticus is included as a 
-separate, distinct reporting utility within a larger package, I interpret GPL 
-section 2 as requiring that GPL be attached only to ploticus, and not to the 
-entire product.  For this to be allowed: 1) the rest of your product must be 
-considered an independent and seperate work in its own right; 2) ploticus must 
-be invoked as a distinct, separate executable; 3) ploticus graphics capability 
-may not be involved as an option at additional cost; 4) ploticus source code 
-may not be modified or enhanced, except for changes to the Makefile or similar 
-as needed for configuration or packaging; 5) ploticus identity and authorship 
-must not be obfuscated of omitted-- a prominent statement must be visible to 
-users to the effect that "graphs are produced using the Ploticus data display 
-program (c) Steve Grubb.  The Ploticus program is freely downloadable at 
-http://ploticus.sourceforge.net".  I also request that you notify me out of 
-courtesy at scg@jax.org, and include a URL for your product.  If you have 
-questions or need clarification in this area just ask.
+Exception for bundling as a reporting utility:
+For situations where ploticus is to be bundled as an ancillary reporting 
+utility along with a larger software package, I interpret GPL section 2 as 
+requiring that GPL be attached only to ploticus, and not to the larger 
+package.  Prerequisites: 1) the rest of your product must be considered an 
+independent and viable work in its own right; 2) ploticus must be invoked 
+using the standard pl(1) executable, not the libploticus API; 3) ploticus 
+graphics capability may not be offered as an additional cost option; 
+4) ploticus source code may not be enhanced; 5) ploticus identity and 
+authorship must be clearly stated and be visible to users.
+<p>
+
+If you have questions or need clarification please contact me - scg@jax.org
+<p>
+
+<pre>
 
 
 SVG driver copyright 2001 Bill Traill  bill@traill.demon.co.uk 
+SWF driver copyright 2003 Bill Traill  bill@traill.demon.co.uk 
 
-ploticus 2.03 generates PNG and run-length-encoded GIF-compatible 
+ploticus 2.20 generates PNG and run-length-encoded GIF-compatible 
 output using portions of Thomas Boutell's gd library versions 
-1.6.3 and 1.3.  ploticus 2.03 does not read GIF files.
+1.6.3 and 1.3.  ploticus 2.20 does not read GIF files.
 GD 1.6.3 and 1.3 (www.boutell.com) carry the following statements:
    |
    |	Portions copyright 1994, 1995, 1996, 1997, 1998, 1999 by 
@@ -109,7 +122,7 @@ GD 1.6.3 and 1.3 (www.boutell.com) carry the following statements:
    |
 
 
-== End of ploticus 2.03 Copyright Notice ==
+== End of ploticus 2.20 Copyright Notice ==
 
 </pre>
 .>>

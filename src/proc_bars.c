@@ -4,18 +4,7 @@
 
 /* PROC BARS - bargraphs and histograms */
 
-#include "pl.h"
-#define MAXSTACKFIELDS 40
-#define MAXCLP 200
-
-static int do_label();
-static int do_lwl();
-static char stacklist[300] = ""; /* lenfields get appended to this list so that "stackfield: *"  can be used */
-static int prevclust = 1; /* attempt to be smart about resetting stacklist on cluster change */
-
-
-#if 1
-/*
+/* Improvements made by
  * Michael D. Beynon (mdb) - beynon@cs.umd.edu
  * 09/23/2001 : mdb - Bug fix: wrong position of cluster bar labels.
  *                  - Bug fix: only use selected records for automatic x value
@@ -24,16 +13,30 @@ static int prevclust = 1; /* attempt to be smart about resetting stacklist on cl
  * Note: These changes allow clustered bars to not require all data on one
  *       line, and instead use select to pick the correct portion for each
  *       clusterpos.
- *
- * Todo: What would be nice is a way to automatically collect category names
- *       to avoid retyping them from the data.
- *       #proc yaxis
- *          stubs: categories
- *          ycategories_select: @2 == 1985 or @2 == 1995
  */
-#endif
+
+#include "pl.h"
+#define MAXSTACKFIELDS 40
+#define MAXCLP 200
+
+static int do_label();
+static int do_lwl();
+static char stacklist[300] = ""; /* lenfields get appended to this list so that "stackfield: *"  can be used */
+static int prevclust = 1; /* attempt to be smart about resetting stacklist on cluster change */
+static int labelrot = 0;	/* label rotation */
 
 
+/* =========================== */
+PLP_bars_initstatic()
+{
+strcpy( stacklist, "" );
+prevclust = 1;
+labelrot = 0;
+return( 0 );
+}
+
+
+/* =========================== */
 PLP_bars( )
 {
 int i;
@@ -106,6 +109,10 @@ int colorfield;
 char mapurl[MAXPATH], expurl[MAXPATH];
 int irow;
 int segmentflag;
+char constantlen[40], constantloc[40];
+char maplabel[MAXPATH], explabel[MAXPATH];
+int clickmap_on;
+int exactcolorfield;
 
 
 TDH_errprog( "pl proc bars" );
@@ -157,6 +164,13 @@ errbarmult = 1.0;
 colorfield = -1;
 strcpy( mapurl, "" );
 segmentflag = 0;
+strcpy( constantlen, "" );
+strcpy( constantloc, "" );
+strcpy( maplabel, "" );
+clickmap_on = 0;
+exactcolorfield = -1;
+labelrot = 0;
+
 
 
 /* get attributes.. */
@@ -176,7 +190,7 @@ while( 1 ) {
 	else if( stricmp( attr, "outline" )==0 ) strcpy( outline, lineval );
 	else if( stricmp( attr, "barwidth" )==0 ) {
 		barwidth = atof( val );
-		if( Using_cm ) barwidth /= 2.54;
+		if( PLS.usingcm ) barwidth /= 2.54;
 		}
 	else if( strnicmp( attr, "stackfield", 10 )==0 ) {
 		int ix;
@@ -196,9 +210,11 @@ while( 1 ) {
 		}
 	else if( stricmp( attr, "clustersep" )==0 ) {
 		clustsep = atof( val );
-		if( Using_cm ) clustsep /= 2.54;
+		if( PLS.usingcm ) clustsep /= 2.54;
 		}
 	else if( stricmp( attr, "crossover" )==0 ) strcpy( crossover, val );
+	else if( strnicmp( attr, "constantlen", 11 )==0 ) strcpy( constantlen, val );
+	else if( strnicmp( attr, "constantloc", 11 )==0 ) strcpy( constantloc, val );
 	else if( strnicmp( attr, "segmentfield", 12 )==0 ) {
 		char fnames[2][50];
 		/* nt = sscanf( lineval, "%d %d", &stackf[0], &stopfld ); */
@@ -233,7 +249,7 @@ while( 1 ) {
 	else if( stricmp( attr, "tails" )==0 ) {
 		taillen = atof( val );
 		taillengiven = 1;
-		if( Using_cm ) taillen /= 2.54;
+		if( PLS.usingcm ) taillen /= 2.54;
 		}
 	else if( stricmp( attr, "showvalues" )==0 ) {
 		if( strnicmp( val, YESANS, 1 )==0 ) showvals = 1;
@@ -269,18 +285,24 @@ while( 1 ) {
 	else if( stricmp( attr, "barsrange" )==0 ) sscanf( lineval, "%s %s", rangelo, rangehi );
 	else if( stricmp( attr, "colorlist" )==0 ) strcpy( colorlist, lineval );
 	else if( stricmp( attr, "colorfield" )==0 ) colorfield = fref( val ) -1;
+	else if( stricmp( attr, "exactcolorfield" )==0 ) exactcolorfield = fref( val ) -1;
 
 	/* longwise label */
 	else if( stricmp( attr, "longwayslabel" )==0 ) {
 		if( strnicmp( val, YESANS, 1 )==0 ) lwl = 1;
 		else lwl = 0;
 		}
+	else if( strnicmp( attr, "labelrot", 8 )==0 ) labelrot = atoi( val );
 	else if( stricmp( attr, "select" )==0 ) strcpy( selectex, lineval );
 	else if( stricmp( attr, "legendlabel" )==0 ) strcpy( legendlabel, lineval );
 	else if( stricmp( attr, "labelpos" )==0 ) strcpy( lblpos, val );
 	else if( stricmp( attr, "barwidthfield" )==0 ) barwidthfield = fref( val ) -1;
-	else if( stricmp( attr, "clickmapurl" )==0 ) strcpy( mapurl, val );
-
+	else if( stricmp( attr, "clickmapurl" )==0 ) {
+		if( PLS.clickmap ) { strcpy( mapurl, val ); clickmap_on = 1; }
+		}
+	else if( stricmp( attr, "clickmaplabel" )==0 ) {
+		if( PLS.clickmap ) { strcpy( maplabel, lineval ); clickmap_on = 1; }
+		}
 	else Eerr( 1, "attribute not recognized", attr );
 	}
 
@@ -291,30 +313,26 @@ while( 1 ) {
 if( axis == 'y' ) baseax = 'x';
 else baseax = 'y';
 
-if( Nrecords[Dsel] < 1 ) return( Eerr( 17, "No data has been read yet w/ proc getdata", "" ) );
+if( Nrecords < 1 ) return( Eerr( 17, "No data has been read yet w/ proc getdata", "" ) );
 if( !scalebeenset() )
          return( Eerr( 51, "No scaled plotting area has been defined yet w/ proc areadef", "" ) );
 
 
 
-if( locfield > Nfields[Dsel] ) return( Eerr( 52, "locfield out of range", "" ) );
-if( lenfield > Nfields[Dsel] ) return( Eerr( 52, "lenfield out of range", "" ) );
-if( lenfield < 0 && stopfld < 0 ) 
-	return( Eerr( 2805, "Either lenfield or segmentfields must be defined", ""));
+if( locfield > Nfields ) return( Eerr( 52, "locfield out of range", "" ) );
+if( lenfield > Nfields ) return( Eerr( 52, "lenfield out of range", "" ) );
+if( lenfield < 0 && !segmentflag && constantlen[0] == '\0' ) 
+	return( Eerr( 2805, "Either lenfield, segmentfields, or constantlen must be defined", ""));
 
 if( stopfld >= 0 ) {
 	if( nstackf > 1 )  /* but 1 is ok */
 		{ Eerr( 2984, "stackfield may not be used with segments", "" ); nstackf=0; }
-#if 0
-	if( ncluster > 1 ) 
-	  { Eerr( 2984, "clustering may not be used with segments", "" ); ncluster=0; }
-#endif
 	}
 
 if( labelword[0] != '\0' ) showvals = 1;
 if( showvals && labelword[0] == '\0' ) strcpy( labelword, "@N" );
 
-if( locfield == lenfield ) Eerr( 2479, "Warning, locfield same as lenfield", "" );
+if( locfield == lenfield && locfield >= 0 ) Eerr( 2479, "Warning, locfield same as lenfield", "" );
 
 for( i = 0; i < nstackf; i++ ) {
 	if( (lenfield+1) == stackf[i] ) Eerr( 2479, "Warning, lenfield same as a stackfield", "" );
@@ -322,6 +340,10 @@ for( i = 0; i < nstackf; i++ ) {
 	}
 
 if( axis == 'x' && !reversespecified ) reverseorder = 1;
+
+
+if( strnicmp( legendlabel, "#usefname", 9 )==0 ) getfname( lenfield+1, legendlabel );
+
 
 /* -------------------------- */
 /* now do the plotting work.. */
@@ -336,11 +358,7 @@ else rhi = Elimit( baseax, 'h', 's' );
 /* maintain stacklist */
 if( clusterpos != prevclust ) {
 	resetstacklist();
-#if 1
-	if( stopfld <= 0 ) nstackf = 0; /* needed for current bar */
-#else
-	nstackf = 0; /* needed for current bar */
-#endif
+	if( !segmentflag ) nstackf = 0; /* needed for current bar */
 	}
 prevclust = clusterpos;
 sprintf( buf, "%d ", lenfield+1 );
@@ -396,7 +414,8 @@ if( errlofld >= 0 && !taillengiven ) taillen = 0.2; /* set a default taillen for
 
 /* now start looping through current data set.. */
 ibar = -1;
-for( irow = 0; irow < Nrecords[Dsel]; irow++ ) {
+for( irow = 0; irow < Nrecords; irow++ ) {
+
 
 	if( selectex[0] != '\0' ) { /* process against selection condition if any.. */
                 stat = do_select( selectex, irow, &result );
@@ -405,26 +424,21 @@ for( irow = 0; irow < Nrecords[Dsel]; irow++ ) {
                 }
 	ibar++;
 
+
 	if( lenfield >= 0 ) {
 		y = fda( irow, lenfield, axis );
 		if( Econv_error() ) { conv_msg( irow, lenfield, "lenfield" ); continue; }
 		}
-	if( locfield < 0 ) {
-#if 1 /* count only selected data */	 
+	else if( constantlen[0] != '\0' ) y = Econv( axis, constantlen );
+
+	if( constantloc[0] != '\0' ) x = Econv( baseax, constantloc );
+	else if( locfield < 0 ) {
 		if( reverseorder ) x = (Elimit( baseax, 'h', 's' ) - 1.0) - (double)ibar;
 		else x = (double)ibar+1;
 		if( x > Elimit( baseax, 'h', 's' ) ) {
-			fprintf( Errfp, "bars warning, skipping bar# %d, loc is out of range\n", ibar+1 );
+			fprintf( PLS.errfp, "bars warning, skipping bar# %d, loc is out of range\n", ibar+1 );
 			continue; /* out of range hi */
 			}
-#else
-		if( reverseorder ) x = (Elimit( baseax, 'h', 's' ) - 1.0) - (double)irow;
-		else x = (double)irow+1;
-		if( x > Elimit( baseax, 'h', 's' ) ) {
-			fprintf( Errfp, "bars warning, skipping bar# %d, loc is out of range\n", irow+1 );
-			continue; /* out of range hi */
-			}
-#endif
 		}	
 	else 	{
 		x = fda( irow, locfield, baseax );
@@ -436,6 +450,7 @@ for( irow = 0; irow < Nrecords[Dsel]; irow++ ) {
 	/* y0 = Elimit( axis, 'l', 's' ); */
 	if( nstackf > 0 && !segmentflag ) y0 = 0.0; /* added scg 11/27/01 */
 	else y0 = cr;
+
 
 	/* if barwidthfield was specified, set bar width now.. */
 	if( barwidthfield >= 0 ) {
@@ -450,10 +465,12 @@ for( irow = 0; irow < Nrecords[Dsel]; irow++ ) {
 
 	if( nstackf > 0 ) /* stacking */
 		for( j = 0; j < nstackf; j++ ) {
+			/* BDB: here is where scott barrett's bug seems to occur.. */
+			/* Digital UNIX 4.0g on a Compaq ES-40 Server.  debugger indicates abend in proc_bars.c */
 			f = fda( irow, stackf[j]-1, axis );
-			if( stopfld > 0 ) f -= cr; /* normalize? */
+			if( segmentflag ) f -= cr; /* normalize? */
 			y0 += f;
-			y += f;
+			if( !segmentflag ) y += f; /* condition added scg 9/26/03 .. because y is undefined at this point */
 			}
 
 
@@ -469,17 +486,17 @@ for( irow = 0; irow < Nrecords[Dsel]; irow++ ) {
 		xright = Ea( X, x) + halfw;
 		}
 
-	if( stopfld > 0 ) { /* set y from stopfld; bar start is done via stacking, above */
+	if( segmentflag ) { /* set y from stopfld; bar start is done via stacking, above */
 		y = fda( irow, stopfld-1, axis );
 		}
 	if( errlofld > 0 ) { /* set y and y0 as offsets from original y */
 		y0 = y - (fda( irow, errlofld-1, axis ) * errbarmult);
 		if( reflecterr ) y += (fda( irow, errlofld-1, axis ) * errbarmult);
-		else y += (fda( irow, errhifld+1, axis ) * errbarmult);
+		else y += (fda( irow, errhifld-1, axis ) * errbarmult);
 		}
 
 	/* catch units errors for stopfld and errflds.. */
-	if( stopfld > 0  && Econv_error() ) {conv_msg( irow, stopfld, "segmentfields" );continue;}
+	if( segmentflag && Econv_error() ) {conv_msg( irow, stopfld, "segmentfields" );continue;}
 	if( errlofld > 0 && Econv_error() ){conv_msg( irow, stopfld, "errbarfields" );continue;} 
 
 	/* null-length bars.. skip out.. scg 11/29/00 */
@@ -490,11 +507,11 @@ for( irow = 0; irow < Nrecords[Dsel]; irow++ ) {
 	if( trunc ) {
 
 		if( y0 <= Elimit( axis, 'l', 's' ) && y < Elimit( axis, 'l', 's' ) ) {
-			fprintf( Errfp, "warning, bar completely out of %c plotting area\n", axis );
+			fprintf( PLS.errfp, "warning, bar completely out of %c plotting area\n", axis );
 			continue; /* skip entirely */
 			}
 		if( y0 >= Elimit( axis, 'h', 's' ) && y > Elimit( axis, 'h', 's' ) ) {
-			fprintf( Errfp, "warning, bar completely out of %c plotting area\n", axis );
+			fprintf( PLS.errfp, "warning, bar completely out of %c plotting area\n", axis );
 			continue; /* skip entirely */
 			}
 
@@ -513,18 +530,26 @@ for( irow = 0; irow < Nrecords[Dsel]; irow++ ) {
 	/* if colorfield used, get color.. */
 	if( colorfield >= 0 ) {
 		strcpy( color, "" );
-		get_legent( da( irow, colorfield ), color, NULL, NULL );
+		get_legent( da( irow, colorfield ), val, NULL, NULL );
+		sscanf( val, "%s", color ); /* strip off any space */
 		}
+	else if( exactcolorfield >= 0 ) strcpy( color, da( irow, exactcolorfield ));
 
 	/* if colorlist used, get color.. */
 	if( colorlist[0] != '\0' && ibar < MAXCLP ) sscanf( colorlp[ibar], "%s", color ); 
 
 	/* now do the bar.. */
-	if( strcmp( color, Ecurbkcolor )==0 ) doo = 1; /* if bar color is same as background, force outline.. */
-	else doo = do_outline;
+	/* if( strcmp( color, Ecurbkcolor )==0 ) doo = 1; */ /* if bar color is same as background, force outline.. */
+	/* this was yanked 4/11/03 scg - sometimes useful to do invisible bars for mouseover */
+	/* else */
+	doo = do_outline;
 
 	/* allow @field substitutions into url */
-	if( Clickmap && mapurl[0] != '\0' ) do_subst( expurl, mapurl, irow );
+	if( clickmap_on ) {
+		do_subst( expurl, mapurl, irow, NORMAL );
+		do_subst( explabel, maplabel, irow, NORMAL );
+		}
+
 
 	/* if thinbarline specified, or if doing error bars, render bar as a line */
 	if( ( thinbarline[0] != '\0' && strnicmp( thinbarline, "no", 2 )!= 0 ) || errlofld >= 0 ) { 
@@ -535,9 +560,9 @@ for( irow = 0; irow < Nrecords[Dsel]; irow++ ) {
   	/* otherwise, render bar as a rectangle */
   	else 	{
 		Ecblock( xleft, Ea( Y, y0 ), xright, Ea( Y, y ), color, doo ); 
-		if( Clickmap && mapurl[0] != '\0' ) {
-			if( Eflip ) mapentry( 'r', expurl, 0, Ea( Y, y0 ), xleft, Ea( Y, y ), xright, 0, 0 );
-			else mapentry( 'r', expurl, 0, xleft, Ea( Y, y0 ), xright, Ea( Y, y ), 0, 0 );
+		if( clickmap_on ) {
+			if( Eflip ) clickmap_entry( 'r', expurl, 0, Ea( Y, y0 ), xleft, Ea( Y, y ), xright, 0, 0, explabel );
+			else clickmap_entry( 'r', expurl, 0, xleft, Ea( Y, y0 ), xright, Ea( Y, y ), 0, 0, explabel );
 			}
 		}
   
@@ -583,32 +608,26 @@ if( showvals || labelfld >= 0 ) { /* print values.. a lot of code replicated fro
 	textdet( "labeldetails", labeldetails, &align, &adjx, &adjy, -3, "R" );
 	if( adjy == 0.0 ) adjy = 0.02; /* so label is a little above end of bar */
 	if( align == '?' ) align = 'C';
-#if 1
 	ibar = -1;
-#endif
-	for( i = 0; i < Nrecords[Dsel]; i++ ) {
+	for( i = 0; i < Nrecords; i++ ) {
+
+
 		if( selectex[0] != '\0' ) { /* added 8/23/01 - process against selection condition if any.. */
                 	stat = do_select( selectex, i, &result );
                 	if( stat != 0 ) { Eerr( stat, "Select error", selectex ); continue; }
                 	if( result == 0 ) continue; /* reject */
                 	}
-#if 1
 		ibar++;
-#endif
 
 		if( lenfield >= 0 ) {
 			y = fda( i, lenfield, axis );
 			if( Econv_error() ) continue; /* don't bother to label bad values */
-			if( !label0val && GL_close_to( y, cr, 0.01 )) continue; /* don't label 0 */
+			if( !label0val && GL_close_to( y, cr, 0.000001 )) continue; /* don't label 0 */
 			}
-		if( locfield < 0 ) {
-#if 1 /* count only selected data */	 
+		if( constantloc[0] != '\0' ) x = Econv( baseax, constantloc );
+		else if( locfield < 0 ) {
 		        if( reverseorder ) x = (Elimit( baseax, 'h', 's' ) - 1.0) - (double)ibar;
 			else x = (double)ibar+1;
-#else
-		        if( reverseorder ) x = (Elimit( baseax, 'h', 's' ) - 1.0) - (double)i;
-			else x = (double)i+1;
-#endif
 			}	
 		else 	{
 			x = fda( i, locfield, baseax );
@@ -626,11 +645,11 @@ if( showvals || labelfld >= 0 ) { /* print values.. a lot of code replicated fro
 			for( j = 0; j < nstackf; j++ ) {
 				f = fda( i, stackf[j]-1, axis );
 				/* (f is used later on below to center longwise labels) */
-				if( stopfld > 0 ) y += (f - cr); /* normalize? */
+				if( segmentflag ) y += (f - cr); /* normalize? */
 				else y += f;
 				}
 
-		if( stopfld >= 0 ) { /* set y from stopfld; bar start is done via stacking, above */
+		if( segmentflag ) { /* set y from stopfld; bar start is done via stacking, above */
 			y = fda( i, stopfld-1, axis );
 			if( Econv_error() ) continue;
 			}
@@ -664,17 +683,11 @@ if( showvals || labelfld >= 0 ) { /* print values.. a lot of code replicated fro
 
 
 		if( ncluster > 1 ) { /* if clusters, move sideways a little bit.. */
-#if 1
 			x = Ea( X, x ) - ((halfw+clustsep) * (double)(ncluster));
 			x += clustsep;
 		        if( baseax == Y ) x += ((halfw+clustsep) * (ncluster-clusterpos)*2.0);
 			else x += ((halfw+clustsep) * (clusterpos-1)*2.0);
 			x += halfw;
-#else
-			x = Ea( X, x ) - (halfw * (double)(ncluster));
-			x += (halfw * (clusterpos-1)*2.0);
-			x += halfw;
-#endif
 			if( lwl ) do_lwl( labelstr, x+adjx, Ea( Y, y )+adjy, Ea(Y,f), 
 				align, reverse );
 			else do_label( labelstr, x+adjx, laby, align, backbox, reverse );
@@ -688,6 +701,7 @@ if( showvals || labelfld >= 0 ) { /* print values.. a lot of code replicated fro
 			}
 		}
 	}
+
 
 
 if( legendlabel[0] != '\0' ) {
@@ -716,6 +730,7 @@ double halfbox;
 halfbox = ((strlen( s ) * Ecurtextwidth) / 2.0) + 0.01;
 
 convertnl( s ); /* added scg 3/8 */
+
 
 if( Eflip ) {
 	if( reverse && align == 'L' ) {
@@ -788,9 +803,12 @@ if( reverse ) {
 if( align == 'C' ) Emov( x, y2+((y1-y2)/2.0) );
 else if( align == 'L' ) Emov( x, y2 );
 else Emov( x, y1 );
-if( !Eflip ) Etextdir(90);
+if( !Eflip ) Etextdir(90+labelrot);
+else if( labelrot != 0 ) Etextdir( labelrot );
 Edotext( s, align );
-if( !Eflip ) Etextdir(0);
+/* if( !Eflip ) */ 
+Etextdir(0);
+return( 0 );
 }
 
 /* ================================ */

@@ -27,7 +27,9 @@ double shadowsize;
 int gotrect;
 char outline[128];
 int ioutline;
-
+char mapurl[MAXPATH];
+char maplabel[256];
+int clickmap_on;
 
 TDH_errprog( "pl proc rect" );
 
@@ -43,6 +45,9 @@ shadowsize = 0.0;
 strcpy( outline, "" );
 ioutline = 0;
 gotrect = 0;
+clickmap_on = 0;
+strcpy( mapurl, "" );
+strcpy( maplabel, "" );
 
 
 /* get attributes.. */
@@ -63,6 +68,12 @@ while( 1 ) {
 	else if( stricmp( attr, "lowbevelcolor" )==0 ) strcpy( lowbevelcolor, val );
 	else if( stricmp( attr, "hibevelcolor" )==0 ) strcpy( hibevelcolor, val );
 	else if( stricmp( attr, "shadowcolor" )==0 ) strcpy( shadowcolor, val );
+	else if( stricmp( attr, "clickmapurl" )==0 ) {
+		if( PLS.clickmap ) { strcpy( mapurl, val ); clickmap_on = 1; }
+		}
+	else if( stricmp( attr, "clickmaplabel" )==0 ) {
+		if( PLS.clickmap ) { strcpy( maplabel, lineval ); clickmap_on = 1; }
+		}
 	else if( stricmp( attr, "outline" )==0 ) {
 		strcpy( outline, lineval );
 		if( GL_smember( val, "no none" )==0 ) ioutline = 1;
@@ -85,6 +96,8 @@ if( color[0] != '\0' ) {
 if( bevelsize > 0.0 || shadowsize > 0.0 ) 
 	Ecblockdress( xlo, ylo, xhi, yhi,
        		bevelsize, lowbevelcolor, hibevelcolor, shadowsize, shadowcolor);
+
+if( clickmap_on ) clickmap_entry( 'r', mapurl, 0, xlo, ylo, xhi, yhi, 0, 0, maplabel );
 
 return( 0 );
 }

@@ -13,18 +13,27 @@
 #define strnicmp( s, t, n )     strncasecmp( s, t, n )
 
 #define DATAMAXLEN 256
-#define NUMBER 0
-#define ALPHA 1
 
-static int encode();
 static int getdecplaces();
 static int wcmp();
+static int domember();
 
 static char Sep = ',';  /* separator character for lists */
-static int domember();
-static char     Gettok_buf[256];
-static char starsym = '*';
+static char Gettok_buf[256];
+static char Wildcard = '*';
+static char Wildcard1 = '?';
 static int Maxlen = 99999;
+static char Member_nullstring[10] = "";
+
+GL_initstatic()
+{
+Sep = ',';
+Wildcard = '*';
+Wildcard1 = '?';
+Maxlen = 99999;
+strcpy( Member_nullstring, "" );
+return( 0 );
+}
 
 
 /* ================================= */
@@ -60,7 +69,6 @@ ltime = localtime(&clock);
 return( 0 );
 }
 
-
 /* ===================================================== */
 /* RAND returns a "random" number between 0.0 and 1.0 */
 double GL_rand()
@@ -72,7 +80,7 @@ if( first ) {
 	first = 0;
 	}
 r = rand() / (double)(RAND_MAX);
-if( r < 0.0 || r > 1.0 ) { printf( "%f: rand return out of range\n", r ); exit(1); }
+if( r < 0.0 || r > 1.0 ) { printf( "%f: rand return out of range\n", r ); return( -1.0 ); }
 return( r );
 }
 
@@ -91,6 +99,7 @@ for( n=0;
         string[*index] != ' '  &&
         string[*index] != '\t'  &&
         string[*index] != '\n'  &&
+        string[*index] != 13  &&       /* DOS LF added may 03 scg */
         string[*index] != '\0'  ;
                 Gettok_buf[n++] = string[(*index)++] )  ;
 Gettok_buf[n] = '\0' ;
@@ -110,6 +119,9 @@ i = 0;
 while( 1 ) {
 	strcpy( tok, GL_getok( t, &i ) );
 	if( tok[0] == '\0' ) break;
+	if( Member_nullstring[0] != '\0' ) {
+		if( strcmp( s, Member_nullstring)== 0 && stricmp( tok, "null" )==0 )return( 1 );
+		}
 	if( strcmp( tok, s ) == 0 ) return( 1 );
 	}
 return( 0 );
@@ -127,6 +139,9 @@ i = 0;
 while( 1 ) {
 	strcpy( tok, GL_getok( t, &i ) );
 	if( tok[0] == '\0' ) break;
+	if( Member_nullstring[0] != '\0' ) {
+		if( strcmp( s, Member_nullstring)== 0 && stricmp( tok, "null" )==0 )return( 1 );
+		}
 	if( stricmp( tok, s ) == 0 ) return( 1 );
 	}
 return( 0 );
@@ -150,6 +165,9 @@ i = 0;
 while( 1 ) {
         strcpy( tok, GL_getok( list, &i ) );
         if( tok[0] == '\0' ) break;
+	if( Member_nullstring[0] != '\0' ) {
+		if( strcmp( str, Member_nullstring)== 0 && stricmp( tok, "null" )==0 )return( 1 );
+		}
         if( GL_wildcmp( str, tok, strlen(tok), 0 ) == 0 ) return( 1 );
         }
 return( 0 );
@@ -164,6 +182,16 @@ char c, s[];
 {
 int i, len;
 for( i = 0, len = strlen( s ); i < len; i++ ) if( s[i] == c ) return( i+1 );
+return( 0 );
+}
+
+/* ==================================================================== */
+/* MEMBER_NULLMODE - set a special mode for the benefit of shsql, to consider
+   "null" or "NULL" equivalent to some code such as "=" */
+GL_member_nullmode( s )
+char *s;
+{
+strcpy( Member_nullstring, s );
 return( 0 );
 }
 
@@ -324,20 +352,20 @@ int i, nwc, wcp, stat, stat2;
 
 
 if( len == 0 ) return( strlen( s1 ) );
-else if( s2[0] == starsym ) {
+else if( s2[0] == Wildcard ) {
 	if( len == 1 ) return( 0 ); /* everything matches */
 	}
-else if( s2[0] == '?' ) ; /* can't tell yet */
+else if( s2[0] == Wildcard1 ) ; /* can't tell yet */
 else if( tolower( s1[0] ) < tolower( s2[0] ) ) return( -1 ); /* way off */
 else if( tolower( s1[0] ) > tolower( s2[0] ) ) return( 1 );  /* way off */
 
 /* strip off extraneous * at beginning and end.. */
-if( s2[0] == starsym && s2[1] == starsym ) { s2 = &s2[1]; len--; }
-if( s2[len-1] == starsym && s2[len-2] == starsym ) len--;
+if( s2[0] == Wildcard && s2[1] == Wildcard ) { s2 = &s2[1]; len--; }
+if( s2[len-1] == Wildcard && s2[len-2] == Wildcard ) len--;
 
 /* see if any wild cards were used.. */
 nwc = 0;
-for( i = 0; i < len; i++ ) if( s2[i] == starsym ) { nwc++; wcp = i; }
+for( i = 0; i < len; i++ ) if( s2[i] == Wildcard ) { nwc++; wcp = i; }
 
 if( nwc < 1 ) {  /* straight match */
 	if( strlen( s1 ) > len ) return( wcmp( s1, s2, strlen( s1 ), casecare));
@@ -382,7 +410,7 @@ else if( nwc == 2 ) {
 	int stop;
 	/* case 4: wc at beginning and end.. */
 	if( wcp != (len-1) ) goto ERR;
-	else if( s2[0] != starsym ) goto ERR;
+	else if( s2[0] != Wildcard ) goto ERR;
 	stop = ( strlen( s1 ) - len ) + 2;
 	for( i = 0; i <= stop; i++ ) {
 		if( wcmp( &s1[i], &s2[1], len-2, casecare ) == 0 ) return( 0 );
@@ -405,129 +433,30 @@ wcmp( char *s1, char *s2, int len, int casecare )
 {
 int i;
 for( i = 0; i < len; i++ ) {
+	
+	if( s1[i] == '\0' ) return( 1 );  /* added scg 10/22/03 ... abc???? was matching abcde */
+
 	if( ! casecare ) {
-		if( tolower(s1[i]) < tolower(s2[i]) && s2[i] != '?' ) 
+		if( tolower(s1[i]) < tolower(s2[i]) && s2[i] != Wildcard1 ) 
 			return( -1 );
-		else if( tolower(s1[i]) > tolower(s2[i]) && s2[i] != '?' ) 
+		else if( tolower(s1[i]) > tolower(s2[i]) && s2[i] != Wildcard1 ) 
 			return( 1 );
 		}
 	else	{
-		if( s1[i] < s2[i] && s2[i] != '?' ) return( -1 );
-		else if( s1[i] > s2[i] && s2[i] != '?' ) return( 1 );
+		if( s1[i] < s2[i] && s2[i] != Wildcard1 ) return( -1 );
+		else if( s1[i] > s2[i] && s2[i] != Wildcard1 ) return( 1 );
 		}
 	}
 return( 0 );
 }
 
 /* WILDCHAR - set the wildcard symbol to be used instead of '*' */
-GL_wildchar( c )
-char c;
+GL_wildchar( c, d )
+char c, d;
 {
-starsym = c;
+Wildcard = c;
+Wildcard1 = d;
 return( 0 );
-}
-
-/* ===================================================================== */
-/* FUZZYMATCH - Do a 'fuzzy' match.  See if s1 is similar to s2.
-
-   This routine may alter s1 and s2.
-
-   A wildcard character '*' at the beginning or end of s2 indicates
-   that a match can occur anywhere within s1 (eg. smith* would match
-   smithington and *smith would match harrowsmith; *smith* would match
-   both).  If there are no asterisks, lengths
-   of the two strings must be similar.
-
-   Degree changes the 'looseness' of the match.  
-   5 = strict, 4 = medium-strict, 3 = medium 2= loose, 1 = very loose.
-   
-   Returns 1 on a match, 0 not. 
-
-   SCG '94,'95
- */
-
-GL_fuzzymatch( s1, s2, len2, degree )
-char *s1; /* data value */
-char *s2; /* query value */
-int len2; /* length of s2 */
-int degree; /* dgree of tightness */
-{
-int i, j, k, len1, pts;
-int bestpts, score;
-char c;
-int openfront, openend, goal;
-
-/* exact match.. no need to do more.. */
-if( strcmp( s2, s1 ) ==0 ) return( 1 );
-
-len1 = strlen( s1 );
-
-/* see what type of match, open or closed */
-if( s2[0] == '*' ) { openfront = 1; s2 = &s2[1]; len2--; }
-else openfront = 0;
-if( s2[ len2-1 ] == '*' ) { openend = 1; len2--; }
-else openend = 0;
-
-/* set goal */
-if( len2 < 4 )goal = len2 * degree;
-else if( len2 < 10 ) goal = (len2 -2) * degree;
-else goal = (len2 -3) * degree;
-
-
-/* reject disparate lengths if doing a closed match */
-if( !openfront && !openend && len1 - len2 > 3 ) return( 0 );
-
-/* truncate end of s1 if openended match */
-if( openend && !openfront && len1 > len2+2 ) len1 = len2+2;
-
-/* chop of front of s1 if openfronted match */
-if( openfront && !openend && len1 > len2+2 ) s1 = &s1[ len1-(len2+2) ];
-
-/* printf( "[%d-%d]", openfront, openend ); */
-
-/* go thru s2.. */
-score = 0;
-for( i = 0; i < len2; i++ ) {
-	c = s2[i];
-
-	/* find each occurrence of c in s1.. */
-	bestpts = 0;
-	pts = 0;
-	for( j = 0; j < len1; j++ ) {
-
-		if( s1[j] == c ) {
-
-			/* check adjacent characters, count matches.. */
-			pts = 1;
-
-			if( i + j == 0 ) pts+=2; /* both 1st char */
-			
-			else /* go left.. */
-			  for( k = 1; k <= 4; k++ ) {
-				if( j-k < 0 || i-k < 0 ) break;
-				else if( s1[j-k] == s2[i-k] ) pts++;
-				else break;
-				}
-			if( i == len2-1 && j == len1-1 )
-				pts+=2; /* both last char */
-
-			else /* go right.. */
-			  for( k = 1; k <= 4; k++ ) {
-				if( j+k > len1-1 || i+k > len2-1 ) break;
-				else if( s1[j+k] == s2[i+k] ) pts++;
-				else break;
-				}
-			}
-		if( pts > bestpts )bestpts = pts;
-		}
-	if( bestpts > 6 ) score += 6;
-	else score += bestpts;
-	/* printf( "[%c:%d]", c, bestpts ); */
-	if( score > goal ) return( 1 ); /* optimize */
-	}
-/* printf( "<%s v. %s : %d>\n", s2, s1, score ); */
-if( score > goal ) return( 1 );
-else return( 0 );
 }
 
 
@@ -563,30 +492,39 @@ int i;  /* may be sent as an integer.. if 0 getpid() will be used.. */
 int mon, day, yr, hr, min, sec, pid, a, b, c;
 GL_sysdate( &mon, &day, &yr );
 GL_systime( &hr, &min, &sec );
-s[0] = encode( yr % 100 );
-s[1] = encode( mon );
-s[2] = encode( day );
-s[3] = encode( hr );
-s[4] = encode( min );
-s[5] = encode( sec );
+s[0] = GL_encode( yr % 100 );
+s[1] = GL_encode( mon );
+s[2] = GL_encode( day );
+s[3] = GL_encode( hr );
+s[4] = GL_encode( min );
+s[5] = GL_encode( sec );
 if( i == 0 ) pid = getpid();
 else pid = i;
-s[6] = encode( pid % 62 );
+s[6] = GL_encode( pid % 62 );
 pid = pid / 62;
-s[7] = encode( pid % 62 );
-s[8] = encode( pid / 62 );
+s[7] = GL_encode( pid % 62 );
+s[8] = GL_encode( pid / 62 );
 s[9] = '\0';
 
 return( 0 );
 }
 
-/* encode - derive a character representation of a number */
-static int encode( a )
+/* encode - derive a character representation of a number (number must be in range 0 - 62) */
+GL_encode( a )
 int a;
 {
 if( a >= 0 && a <= 9 ) return( a + '0' );
 else if( a > 35 ) return( (a-36) + 'A' ); /* A-Z    26 letters + 9 = 35 */
 else if( a > 9 ) return( (a-10) + 'a' ); /* a-z */
+else return( '0' );
+}
+
+GL_decode( a )
+int a;
+{
+if( a >= '0' && a <= '9' ) return( a - '0' );
+else if( a >= 'a' ) return( (a - 'a')+10 ); /* a-z */
+else if( a >= 'A' ) return( (a - 'A')+36 ); /* A-Z    26 letters + 9 = 35 */
 else return( '0' );
 }
 
@@ -603,6 +541,36 @@ else	{
 	}
 return( 0 );
 }
+
+/* ============================================= */
+/* DELETEMEMBER - remove member(s) from a comma-delimited list.
+   Mem may contain wild cards.  Returns number of members removed. */
+GL_deletemember( mem, inlist, resultlist )
+char *mem;
+char *inlist;
+char *resultlist;
+{
+int i, ix, len, outlen, found, memlen;
+char tok[ 256 ];
+
+resultlist[0] = '\0';
+outlen = 0;
+if( inlist[0] == '\0' ) return( 1 );
+memlen = strlen( mem );
+len = strlen( inlist );
+for( i = 0, ix = 0, found = 0; ; ) {
+        if( ix >= len ) break;
+        GL_getseg( tok, inlist, &ix, "," );
+        if( GL_wildcmp( tok, mem, memlen, 0 )==0 ) { found++; continue; }
+	if( i > 0 ) strcpy( &resultlist[ outlen++ ], "," );
+	strcpy( &resultlist[ outlen ], tok );
+	outlen += strlen( tok );
+	i++;
+	}
+resultlist[ outlen ] = '\0';
+return( found );
+}
+
 
 /* ============================================= */
 /* CONTAINS - if string s contains any of chars in clist, return position (1=first)
@@ -843,6 +811,7 @@ else if( g >= 0.0001 ) decplaces = 6;
 return( decplaces );
 }
 
+#ifdef HOLD
 /* ======================== */
 /* FMOD  */
 double fmod( a, b )
@@ -854,6 +823,7 @@ x = a / b;
 y = (int) (x) * b;
 return( a - y );
 }
+#endif
 
 
 /* ======================================================================== */
@@ -921,94 +891,6 @@ else return( 0 );
 }
 
 
-/* ================================= */
-/* CHECKSUM FUNCTIONS  */
-
-/* CHECKDIG - returns the check digit for the number in aptr with length l.
- 	NOTE: when the check digit is computed to be 10 an `x' is returned.  
-
-   This algorithm protects against interchanged digits.
-*/
- 
-#define TEN	'x'
-
-char GL_checkdig(aptr,l)
-char *aptr;
-int l;
-{
-int i,odds,evens,checkdigit;
-	
-odds = evens = 0;
-i = 0;
-
-while (i < l) {
-	if (i % 2 == 0) { evens += (*(aptr+i) - '0'); }
-	else { odds += (*(aptr+i) - '0'); }
-	i++;
-	}
-checkdigit = (odds + (3 * evens)) % 11;
-	
-/* if the checkdigit is 10 then return the character to be used in place of ten */
-if ( checkdigit == 10 ) return ( TEN );
-else return(checkdigit+'0'); 
-}
-
-
-/* ------------ */
-/* script entry point for checksum functions */
-GL_checksum_functions( hash, name, arg, nargs, result, typ )
-int hash;
-char *name;
-char *arg[];
-int nargs;
-char *result;
-int *typ;
-{
-char *s;
-
-if( hash == 2182 ) { /* $checksumvalid(s) -  validate s which is an integer containing a trailing check digit, 
-   			using the algorithm in $ps/clibx/checkdig  */
-	int i;
-	i = GL_checkdig( arg[0], strlen( arg[0] ) -1 );
-	if( i == arg[0][ strlen( arg[0] ) -1 ] ) sprintf( result, "1" );
-	else sprintf( result, "0" );
-	*typ = NUMBER;
-	return( 0 );
-	}
-
-if( hash == 2412 ) { /* $checksumencode(i) - result is i with checksum digit appended. */
-	long i, atol();
-	char tmp[20];
-	int cs;
-	i = atol( arg[0] );
-	sprintf( tmp, "%ld", i );
-	cs = GL_checkdig( tmp, strlen( tmp ) );
-	sprintf( result, "%s%c", tmp, cs );
-	*typ = ALPHA;
-	return( 0 );
-	}
-	
-if( hash == 2155 ) { /* $checksumnext(s) take s which is a number including trailing checksum 
-   			digit, increment number and recompute new checksum digit. */
-	int cs;
-	long i, atol();
-	char tmp[20];
-	s = arg[0];
-	s[ strlen( s ) - 1 ] = '\0'; /* strip off existing checksum digit */
-	i = atol( s );
-	i++;
-	sprintf( tmp, "%ld", i );
-	cs = GL_checkdig( tmp, strlen( tmp ) );
-	sprintf( result, "%s%c", tmp, cs );
-	*typ = ALPHA;
-	return( 0 );
-	}
-
-fprintf( stderr, "unrecognized function: %s\n", name ); /* not found */
-return( 195 );
-}
-
-
 /* ============================= */
 /* COMMONMEMBERS - compare two commalists and return number of members
    that are in common.. */
@@ -1070,7 +952,7 @@ return( 0 );
 }
 
 /* ===================================== */
-/* GETCGIARG - get next arg from CGI REQUEST_URI string (escape constructs are converted) */
+/* GETCGIARG - get next arg from CGI QUERY_STRING (escape constructs are converted) */
 GL_getcgiarg( arg, uri, pos, maxlen )
 char *arg, *uri;
 int *pos; /* current position */
@@ -1080,33 +962,69 @@ int i, j;
 char hex[10];
 unsigned int val;
 
-if( *pos == 0 ) {   /* scan to '?'.. */
-	for( i = 0; ; i++ ) {
-		if( uri[i] == '?' || uri[i] == '\0' ) {
-			strncpy( arg, uri, i );
-			arg[i] = '\0';
-			if( uri[i] == '\0' ) *pos = i;
-			else *pos = i+1;
-			return( 0 );
-			}
+for( i = *pos, j = 0; j < maxlen; i++ ) {
+
+	if( uri[i] == '&' || uri[i] == '\0' || j >= maxlen ) {
+		arg[j] = '\0';
+		if( uri[i] == '\0' ) *pos = i;
+		else *pos = i+1;
+		return( 0 );
 		}
-	}
-else	{
-	for( i = *pos, j = 0; j < maxlen; i++ ) {
-		if( uri[i] == '&' || uri[i] == '\0' || j >= maxlen ) {
-			arg[j] = '\0';
-			if( uri[i] == '\0' ) *pos = i;
-			else *pos = i+1;
-			return( 0 );
-			}
-		else if( uri[i] == '%' && isxdigit( uri[i+1] ) && isxdigit( uri[i+2] ) ) {
-			sprintf( hex, "%c%c", uri[i+1], uri[i+2] );
+
+	else if( uri[i] == '%' && isxdigit( uri[i+1] ) && isxdigit( uri[i+2] ) ) {
+		sprintf( hex, "%c%c", uri[i+1], uri[i+2] );
         		sscanf( hex, "%x", &val );
-			arg[j++] = (char) val;
-			i += 2;
-			}
-		else arg[j++] = uri[i];
+		arg[j++] = (char) val;
+		i += 2;
 		}
+
+	else arg[j++] = uri[i];
+
 	}
+
 return( 0 );
+}
+
+
+
+/* ================================================= */
+/* GETCWORD - get next word, as delimited by any sequence of spaces and punct chars - related to 'contains' */
+
+GL_getcword( rtn, line, i )
+char rtn[];
+char line[];
+int *i;
+{
+int n, j;
+j = *i;
+while( isspace( line[j] ) || ispunct( line[j] ) ) j++; 
+n = 0;
+rtn[0] = '\0';
+while( 1 ){
+	if( line[j] != '*' && ( isspace( line[j] ) || ispunct( line[j] ) || line[j] == '\0' )) break;
+	else rtn[n++] = line[j];
+	j++;
+	}
+*i = j;
+rtn[n] = '\0' ;
+}
+
+/* =================================== */
+/* STRIP_WS strip white-space off of front and end of string s */
+GL_strip_ws( s )
+char *s;
+{
+int i, j, len;
+
+/* don't do anything if first and last characters are non-space.. */
+if( !isspace( s[0] ) && !isspace( s[ strlen( s ) - 1 ] ) ) return( 0 );
+ 
+/* find last significant char and put a null after it */
+for( j = strlen( s ) -1; j >= 0; j-- )
+	if( !GL_member( s[j], " \t\n" )) break;
+s[j+1] = '\0';
+/* find 1st significant char at position i */
+for( i = 0, len = strlen( s ); i < len; i++ ) 
+	if( !GL_member( s[i], " \t\n" )) break; 
+strcpy( s, &s[i] );
 }

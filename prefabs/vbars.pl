@@ -21,12 +21,14 @@
 #setifnotgiven errunder = no
 #setifnotgiven erronly = no
 #setifnotgiven vals = ""
+
 #setifnotgiven y2 = ""
 #setifnotgiven err2 = ""
 #setifnotgiven color2 = "powderblue"
-#setifnotgiven name = ""
-#setifnotgiven name2 = ""
 #setifnotgiven errcolor2 = black
+
+#setifnotgiven name = "#usefname"
+#setifnotgiven name2 = "#usefname"
 #setifnotgiven legend = "min+0.5 max+0.5"
 #setifnotgiven sep = 0.15
 #setifnotgiven outline = no
@@ -49,22 +51,24 @@
 //// plotting area..
 #include $chunk_area
 #if @xnumeric = yes
-  xautorange: datafield=@x incmult=2.0
+  xautorange: datafield=@x incmult=2.0 nearest=@xnearest
 #else
   xscaletype: categories
   xcategories: datafield=@x
+  // the following was added 9/2/02 scg
+  catcompmethod: exact
 #endif
 #if @yrange = ""
   #if @y2 = ""
-    yautorange: datafields=@y,@err combomode=hilo incmult=2.0 
+    yautorange: datafields=@y,@err combomode=hilo incmult=2.0  nearest=@ynearest
   #else
-    yautorange: datafields=@y,@y2 incmult=2.0 
+    yautorange: datafields=@y,@y2 incmult=2.0  nearest=@ynearest
   #endif
 #elseif @yrange = 0
   #if @y2 = ""
-    yautorange: datafields=@y,@err combomode=hilo incmult=2.0 lowfix=0
+    yautorange: datafields=@y,@err combomode=hilo incmult=2.0 lowfix=0 nearest=@ynearest
   #else
-    yautorange: datafields=@y,@y2 incmult=2.0 lowfix=0
+    yautorange: datafields=@y,@y2 incmult=2.0 lowfix=0 nearest=@ynearest
   #endif
 #else
   yrange: @yrange
@@ -129,6 +133,7 @@ truncate: yes
 #if @erronly = yes
   legendlabel: @name
 #endif
+#ifspec ptselect select
 #saveas: ERRBARS
 
 //// if error bars are to go under bar graph, do them now..
@@ -146,18 +151,15 @@ truncate: yes
   outline: @outline
   #if @barwidth = line
     thinbarline: color=@color
+  #else
+    #ifspec barwidth
   #endif
-  #if @barwidth != ""
-    barwidth: @barwidth
-  #endif
-  #if @vals = "yes"
-    showvalues: yes
-  #endif
+  #ifspec vals showvalues
   legendlabel: @name
-  #if @crossover != ""
-    crossover: @crossover
-  #endif
-  clickmapurl: @clickmapurl
+  #ifspec crossover
+  #ifspec clickmapurl
+  #ifspec clickmaplabel
+  #ifspec ptselect select
 #endif
 
 //// if error bars are to go on top of bar graph, do them now..
@@ -174,6 +176,7 @@ truncate: yes
   #set TICLEN = $arith(@errwidth*0.5)
   linelen: 0.02
   linedetails: color=@errcolor width=2
+  #ifspec ptselect select
 #endif
   
 
@@ -196,6 +199,7 @@ truncate: yes
   #if @erronly = yes
     legendlabel: @name2
   #endif
+  #ifspec ptselect2 select
   #saveas: ERRBARS2
 
   //// err bars under..
@@ -211,17 +215,13 @@ truncate: yes
     lenfield: @y2
     color: @color2
     outline: @outline
-    #if @barwidth != ""
-      barwidth: @barwidth
-    #endif
-    #if @vals = "yes"
-      showvalues: yes
-    #endif
+    #ifspec barwidth
+    #ifspec vals showvalues
     legendlabel: @name2
-    #if @crossover != ""
-      crossover: @crossover
-    #endif
-    clickmapurl: @clickmapurl
+    #ifspec crossover
+    #ifspec clickmapurl
+    #ifspec clickmaplabel
+    #ifspec ptselect2 select
   #endif
   
   //// err bars over..
@@ -238,15 +238,11 @@ truncate: yes
     #set TICLEN = $arith(@errwidth*0.5)
     linelen: 0.02
     linedetails: color=@errcolor2 width=2
+    #ifspec ptselect2 select
   #endif
-  
-  //// do legend..
-  #if @name != ""
-    #proc legend
-    location: @legend
-  #endif
-  
+ 
 #endif
+
 
 //// crossover line..
 #if @crossover != ""
@@ -255,6 +251,13 @@ truncate: yes
   points: min @crossover(s) max @crossover(s)
 #endif
 
+//// do legend..
+#if @name != "#usefname" || @header = yes
+  #proc legend
+  location: @legend
+  #ifspec legendfmt format
+  #ifspec legendsep sep
+#endif
 
 //// user post-plot include..
 #if @include2 != ""

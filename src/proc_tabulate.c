@@ -35,16 +35,9 @@ double tab[MAXROWS][MAXCOLS];
 double total[2][MAXROWS];
 double grantotal;
 char list[2][MAXROWS][WORDLEN];
-
-int stat;
-int align;
-double adjx, adjy;
-
-int j, m, fld, nlist[3];
-int select[3], ndim;
+int stat, j, m, fld, nlist[3], select[3], ndim;
 int order[2][MAXROWS], valuesgiven[2], nval, dopercents;
 int forcevertical, forcehorizontal;
-/* int outputbyfreq[2], reverse[2]; */
 char ordering[2];
 char tmp[WORDLEN];
 char *GL_getok();
@@ -54,12 +47,11 @@ char valuelist[2][256];
 int field[2];
 int ix;
 double tmpd;
-char savetable[80];
+int showresults;
 int len;
 int irow;
 double gran[2];
 int davail;
-int curd;
 char numbuf[80];
 char selectex[80];
 int result;
@@ -90,7 +82,6 @@ valuesgiven[0] = valuesgiven[1] = 0;
 dopercents = 0;
 forcevertical = 1; forcehorizontal = 0;
 ordering[0] = '?'; ordering[1] = '?';
-strcpy( savetable, "" );
 gran[0] = gran[1] = 0.0;
 strcpy( selectex, "" );
 doranges[0] = doranges[1] = 0;
@@ -102,6 +93,7 @@ strcpy( rangespec[0], "" );
 strcpy( rangespec[1], "" );
 axisset[0] = axisset[1] = 0; /* was axis1 or axis2 set explicitly - added 1/11/00 scg */
 accumfield = -1;
+showresults = 0;
 
 
 /* get attributes.. */
@@ -155,7 +147,7 @@ while( 1 ) {
 		if( strnicmp( val, YESANS, 1 )==0 ) dopercents = 1;
 		else dopercents = 0;
 		}
-	else if( stricmp( attr, "savetable" )==0 ) strcpy( savetable, val );
+	else if( stricmp( attr, "showresults" )==0 || stricmp( attr, "savetable" )==0 ) showresults = 1;
 
 	else if( stricmp( attr, "select" )==0 ) strcpy( selectex, lineval );
 
@@ -192,14 +184,6 @@ if( ordering[1] == '?' ) {
 
 /* now do the computation work.. */
 /* -------------------------- */
-
-if( savetable[0] != '\0' ) {
-	if( stricmp( savetable, "stdout" )==0 ) sfp = stdout;
-	else if( stricmp( savetable, "stderr" )==0 ) sfp = stderr;
-	else sfp = fopen( savetable, "w" );  /* diagnostics */
-	if( sfp == NULL ) sfp = Diagfp;
-	}
-
 
 /* initialize tables */
 grantotal = 0.0;
@@ -279,22 +263,14 @@ for( j = 0; j < ndim; j++ ) { /* for all dimensions (1 or 2).. */
 		return( Eerr( 2052, "A values list must be given when doing ranges.", "" ));
 	}
 
-/* make a description string */
-if( ndim == 1 ) sprintf( buf, "// 1-way distribution on field %d %s", field[0]+1, selectex ); 
-if( ndim == 2 ) sprintf( buf, "// 2-way distribution on field %d (down) by field %d (across) %s", 
-	field[0]+1, field[1]+1, selectex ); 
-/* set a DMS variable to the description? */
-if( savetable[0] != '\0' ) fprintf( sfp, "%s\n", buf );
 
 
 /* process from data already read in earlier.. */
-Dsel = 0;
-
-if( Nrecords[Dsel] < 1 ) return( Eerr( 32, "No data has been read yet.", "" ) );
+if( Nrecords < 1 ) return( Eerr( 32, "No data has been read yet.", "" ) );
 
 /* process input data.. */
 ix = 0;
-for( irow = 0; irow < Nrecords[Dsel]; irow++ ) {
+for( irow = 0; irow < Nrecords; irow++ ) {
 
  	if( selectex[0] != '\0' ) { /* process against selection condition if any.. */
                 stat = do_select( selectex, irow, &result );
@@ -328,7 +304,7 @@ for( irow = 0; irow < Nrecords[Dsel]; irow++ ) {
 				/* otherwise, add the internal representation to list */
 				if( j == nlist[i] ) {
 					if( (i == 0 && nlist[i] >= MAXROWS) || (i == 1 && nlist[i] >= MAXCOLS) ) 
-					    fprintf( Errfp, "tabulate warning, sorry, table capacity exceeded, skipping %s\n", val );
+					    fprintf( PLS.errfp, "tabulate warning, sorry, table capacity exceeded, skipping %s\n", val );
 					else	{
 						if( !Econv_error()) 
 							sprintf( list[i][j], "%f", fval );
@@ -353,7 +329,7 @@ for( irow = 0; irow < Nrecords[Dsel]; irow++ ) {
 	                        /* add it to list */
 	                        if( j == nlist[i] ) { 
 					if( (i == 0 && nlist[i] >= MAXROWS) || (i == 1 && nlist[i] >= MAXCOLS) ) 
-						fprintf( Errfp, "tabulate warning, sorry, table capacity exceeded, skipping %s\n", val );
+						fprintf( PLS.errfp, "tabulate warning, sorry, table capacity exceeded, skipping %s\n", val );
 					else	{
 						strcpy( list[i][j], val ); 
 						select[i] = j; 
@@ -429,12 +405,16 @@ else if( ndim == 2 ) {
 /* generate the results */
 /* --------------------- */
 
-Dsel = 1;
+/* make a description string */
+if( showresults ) {
+        if( ndim == 1 ) fprintf( PLS.diagfp, "// proc tabulate has computed this distribution on field %d %s\n", field[0]+1, selectex );
+        else if( ndim == 2 ) fprintf( PLS.diagfp, "// proc tabulate has computed this 2-way distribution\n// on field %d (down) by field %d (across) %s\n",
+                field[0]+1, field[1]+1, selectex );
+	}
 
-davail = Dsize;
-ND[Dsel] = 0;
-StartD[Dsel] = ND[0];
-curd = StartD[Dsel];
+
+
+PL_newdataset();
 
 
 /* ------------------ */
@@ -442,51 +422,26 @@ curd = StartD[Dsel];
 /* ------------------ */
 if( ndim == 1 ) {
 
-	/* set PL data array dimensions for slot 2 */
-	Nfields[Dsel] = 2;
-	Nrecords[Dsel] = nlist[0];
-
-        sprintf( buf, "//%-20s    N", "Value" );
-	if( dopercents ) {
-		sprintf( buf, "%s  Pct", buf );
-		Nfields[Dsel] = 3;
-		}
-	if( savetable[0] != '\0' ) fprintf( sfp, "%s\n\n", buf );
-
 
 	/* do output lines.. */
         for( i = 0; i < nlist[0]; i++ ) {
-		if( !doranges[0] && axisset[0] ) 
-			Euprint( tag, axis[0], atof(list[0][order[0][i]]), "" );
+		if( !doranges[0] && axisset[0] ) Euprint( tag, axis[0], atof(list[0][order[0][i]]), "" );
 		else strcpy( tag, list[0][order[0][i]] );
 
-		sprintf( buf, "%-20s  %5.0f", tag, tab[0][order[0][i]] );
-		if( dopercents ) sprintf( buf, "%s  %3.0f", buf, 
-			(tab[0][order[0][i]])/(total[0][0]+0.0001)*100  );
-		if( savetable[0] != '\0' ) fprintf( sfp, " %s\n", buf );
-		
-		/* put the results into the PL data array.. */
 
-		/* label */
-		catitem( tag, &curd, &davail );
+		PL_startdatarow();
+		PL_catitem( tag ); /* label */
 
 		/* n */
 		sprintf( buf, "%g", tab[0][order[0][i]] ); 
-		catitem( buf, &curd, &davail );
+		PL_catitem( buf );
 
 		if( dopercents ) {
 			sprintf( buf, "%g", (double)(tab[0][order[0][i]])/(total[0][0]+0.0001)*100  );
-			catitem( buf, &curd, &davail );
+			PL_catitem( buf );
 			}
+		PL_enddatarow();
 		}
-	ND[Dsel] = curd - StartD[Dsel];
-
-	/* lastly, do total line */
-	sprintf( buf, "%-20s  %5.0f", "//Total:", total[0][0] );
-	if( dopercents ) sprintf( buf, "%s  100", buf );
-
-	/* Use DMS variable here? */
-	if( savetable[0] != '\0' ) fprintf( sfp, " %s\n", buf );
 	}
 
 
@@ -495,109 +450,58 @@ if( ndim == 1 ) {
 /* ------------------ */
 else if( ndim == 2 ) { 
 
-	/* set PL data array dimensions for slot 2 */
-	if( dopercents ) Nfields[Dsel] = ((nlist[1]+1)*2) + 1;
-	else Nfields[Dsel] = (nlist[1]+1) + 1; /* label, cols, rowtotal */
-	Nrecords[Dsel] = nlist[0];
-
-
-	/* build header */
-	sprintf( buf, "//%-20s", "" );
-	strcpy( fieldnamelist, "rowname" );
-        for( i = 0; i < nlist[1]; i++ ) {
-		if( !doranges[1] && axisset[1] ) 
-			Euprint( tag, axis[1], atof(list[1][order[1][i]]), "" );
-		else strcpy( tag, list[1][order[1][i]] );
-
-		sprintf( buf, "%s%6s  ", buf, tag );
-	 	if( dopercents ) sprintf( buf, "%s%s", buf, " Pct    " );
-
-		/* set up the column tags as data field names.. */
-		strcat( fieldnamelist, "," );
-		strcat( fieldnamelist, tag );
-		}
-
 	if( fieldnamelist[0] != '\0' ) {
 		definefieldnames( fieldnamelist );
-		fprintf( Diagfp, "proc tabulate: field names are now: %s\n", fieldnamelist );
+		fprintf( PLS.diagfp, "proc tabulate: field names are now: %s\n", fieldnamelist );
 		}
 	 
-	sprintf( buf, "%s%s  ", buf, "  Total" );
-	if( dopercents ) sprintf( buf, "%s%s", buf, " Pct    " );
-	if( savetable[0] != '\0' ) fprintf( sfp, "%s\n\n", buf );
-
 	/* do output lines.. */
         for( j = 0; j < nlist[0]; j++ ) {
-		if( !doranges[0] && axisset[0] ) 
-			Euprint( tag, axis[0], atof(list[0][order[0][j]]), "" );
+		if( !doranges[0] && axisset[0] ) Euprint( tag, axis[0], atof(list[0][order[0][j]]), "" );
 		else strcpy( tag, list[0][order[0][j]] );
 
-		sprintf( buf, "%-20s", tag ); 
-
-		/* put label into PL data */
-		catitem( tag, &curd, &davail );
+		PL_startdatarow();
+		PL_catitem( tag ); /* label */
 
                 for( i = 0; i < nlist[1]; i++ ) {
-			sprintf( buf, "%s %5.0f  ", buf, tab[order[0][j]][order[1][i]] ); 
 
 			/* n */
 			sprintf( numbuf, "%g", tab[order[0][j]] [order[1][i]] );
-			catitem( numbuf, &curd, &davail );
+			PL_catitem( numbuf );
 
 			if( dopercents ) {
-				sprintf( buf, "%s %3.0f    ", buf, 
-				  (double)(tab[order[0][j]][order[1][i]])/
-					(total[1][order[1][i]]+0.00001) * 100 ); 
-
 				sprintf( numbuf, "%g", 
-				  (double)(tab[order[0][j]][order[1][i]])/
-					(total[1][order[1][i]]+0.00001) * 100 ); 
-				catitem( numbuf, &curd, &davail );
+				  	(double)(tab[order[0][j]][order[1][i]])/ (total[1][order[1][i]]+0.00001) * 100 ); 
+				PL_catitem( numbuf );
 				}
 			}
 		
-                sprintf( buf, "%s%5.0f  ", buf, total[0][order[0][j]] );
 		/* row total */
 		sprintf( numbuf, "%g", total[0][order[0][j]] );
-		catitem( numbuf, &curd, &davail );
+		PL_catitem( numbuf );
 
 		if( dopercents ) {
-			sprintf( buf, "%s   %3.0f", buf, 
-			  (double)(total[0][order[0][j]]) / (grantotal+0.00001) * 100 ); 
-			sprintf( numbuf, "%g", 
-			  (double)(total[0][order[0][j]]) / (grantotal+0.00001) * 100 ); 
-			catitem( numbuf, &curd, &davail );
+			sprintf( numbuf, "%g", (double)(total[0][order[0][j]]) / (grantotal+0.00001) * 100 ); 
+			PL_catitem( numbuf );
 			}
 		
-		if( savetable[0] != '\0' ) fprintf( sfp, " %s\n", buf );
+		PL_enddatarow();
                 }
-	ND[Dsel] = curd - StartD[Dsel];
 
-	/* lastly, do total line.. */
-	sprintf( buf, "%-19s", "//Total:" );
-        for( i = 0; i < nlist[1]; i++ ) {
-		sprintf( buf, "%s  %5.0f ", buf, total[1][order[1][i]] );
-		if( dopercents ) sprintf( buf, "%s  100   ", buf ); 
-		}
-        sprintf( buf, "%s %5.0f", buf, grantotal );
-	if( dopercents ) sprintf( buf, "%s     100", buf );
-	/* set DMS var here?? */
-	if( savetable[0] != '\0' ) fprintf( sfp, " %s\n", buf );
-        }
+	}
 
 
-/* fprintf( Diagfp, "After Xtab:     ND=%d Nrecords=%d Nfields=%d\n", 
-	ND[Dsel], Nrecords[Dsel], Nfields[Dsel] ); */
+PLD.curds++;
+if( PLS.debug ) fprintf( PLS.diagfp, "filling data set# %d (this will now be the current data)\n", PLD.curds );
 
-setintvar( "NRECORDS", Nrecords[Dsel] );
-setintvar( "NFIELDS", Nfields[Dsel] );
+setintvar( "NRECORDS", Nrecords );
+setintvar( "NFIELDS", Nfields );
+
+if( showresults ) for( i = 0; i < Nrecords; i++ ) {
+	for( j = 0; j < Nfields; j++ ) fprintf( PLS.diagfp, "[%s]", da( i, j ) );
+	fprintf( PLS.diagfp, "\n" );
+	}
  
-/* for( i = 0; i < Nrecords[Dsel]; i++ ) {
- *      for( j = 0; j < Nfields[Dsel]; j++ ) fprintf( Diagfp, "|%s| ", da(i,j) );
- *      fprintf( Diagfp, "\n" );
- *      }
- */
-
 
 return( 0 );
 }

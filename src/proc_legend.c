@@ -20,7 +20,15 @@ static int LElabel[MAXLEGENT];
 static int LEtag[MAXLEGENT];
 static char Ltext[MAXLEGTEXT];
 
+/* ================================ */
+PLP_legend_initstatic()
+{
+NLE = 0;
+LEavail = 0;
+return(0);
+}
 
+/* ================================ */
 PLP_legend()
 {
 int i;
@@ -70,7 +78,7 @@ msep = 0.0;
 hsep = 1.2;
 do_outline = 0;
 colortext = 0;
-strcpy( Bigbuf, "" );
+strcpy( PL_bigbuf, "" );
 specifyorder = 0;
 ix = 0;
 swatchsize = 0.1;
@@ -113,14 +121,14 @@ while( 1 ) {
 		else format = 'm';
 		}
 	else if( stricmp( attr, "specifyorder" )==0 ) {
-		getmultiline( "specifyorder", lineval, MAXBIGBUF, Bigbuf );
+		getmultiline( "specifyorder", lineval, MAXBIGBUF, PL_bigbuf );
 		specifyorder = 1;
 		}
 
 	else if( stricmp( attr, "swatchsize" )==0 ) {
 		if( val[0] != '\0' ) {
 			swatchsize = atof( val );
-			if( Using_cm ) swatchsize /= 2.54;
+			if( PLS.usingcm ) swatchsize /= 2.54;
 			}
 		else swatchsize = 0.1;
 		}
@@ -150,7 +158,7 @@ if( x < -9000.0 ) {
 	}
 
 ix = 0;
-buflen = strlen( Bigbuf );
+buflen = strlen( PL_bigbuf );
 
 textdet( "textdetails", textdetails, &align, &adjx, &adjy, -2, "R" );
 y -= Ecurtextheight; 
@@ -163,7 +171,7 @@ for( i = 0; i < NLE; i++ ) {
 	if( specifyorder ) {
 		/* get next line in orderspec.. */
 		NEXTORDERLINE:
-		GL_getchunk( buf, Bigbuf, &ix, "\n" );
+		GL_getchunk( buf, PL_bigbuf, &ix, "\n" );
 		if( ix >= buflen ) break;
 
 		/* now search for matching entry.. */
@@ -258,9 +266,9 @@ for( i = 0; i < NLE; i++ ) {
 	Etext( s );
 	if( colortext ) strcpy( Estandard_color, holdstdcolor );
 
-	if( Clickmap && url[0] ) {
-		mapentry( 'r', url, 0, x+adjx, y+adjy, 
-			x+adjx+(maxlen*Ecurtextwidth), y+adjy+(nlines*Ecurtextheight), 1, 0 );
+	if( PLS.clickmap && url[0] ) {
+		clickmap_entry( 'r', url, 0, x+adjx, y+adjy, 
+			x+adjx+(maxlen*Ecurtextwidth), y+adjy+(nlines*Ecurtextheight), 1, 0, "" );
 		}
 
 	/* position for next line.. */

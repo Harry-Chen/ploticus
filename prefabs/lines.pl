@@ -21,10 +21,10 @@
 #setifnotgiven err3 = ""
 #setifnotgiven err4 = ""
 
-#setifnotgiven name = ""
-#setifnotgiven name2 = ""
-#setifnotgiven name3 = ""
-#setifnotgiven name4 = ""
+#setifnotgiven name = "#usefname"
+#setifnotgiven name2 = "#usefname"
+#setifnotgiven name3 = "#usefname"
+#setifnotgiven name4 = "#usefname"
 
 #setifnotgiven linedet = "color=red"
 #setifnotgiven linedet2 = "color=blue"
@@ -41,9 +41,13 @@
 #setifnotgiven fill3 = ""
 #setifnotgiven fill4 = ""
 
+#setifnotgiven fill = ""
 #setifnotgiven step = ""
-#setifnotgiven gapmissing = ""
-#setifnotgiven legend = "min+0.5 min-0.5"
+#if @CM_UNITS = 1
+  #setifnotgiven legend = "min+1.2 min-1.2"
+#else
+  #setifnotgiven legend = "min+0.5 min-0.5"
+#endif
 
 
 //// load standard parameters..
@@ -59,30 +63,30 @@
 //// plotting area..
 #include $chunk_area
 #if @cats = ""
-  // xautorange: datafield=@x incmult=2.0
   #if @xrange = ""
-    xautorange: datafield=@x 
+    xautorange: datafield=@x nearest=@xnearest 
   #else
     xrange: @xrange
   #endif
 #else
   xscaletype: categories
   xcategories: datafield=@x
-  #if @stubvert = yes
-    xaxis.stubvert: yes
-  #endif
+  // following added 9/2/02 scg
+  catcompmethod: exact
+
+  #ifspec stubvert xaxis.stubvert
 #endif
 #if @yrange = ""
   #if @y2 = ""
-    yautorange: datafields=@y,@err combomode=hilo incmult=2.0 
+    yautorange: datafields=@y,@err combomode=hilo incmult=2.0 nearest=@ynearest 
   #else
-    yautorange: datafields=@y,@y2,@y3,@y4 incmult=2.0 
+    yautorange: datafields=@y,@y2,@y3,@y4 incmult=2.0 nearest=@ynearest 
   #endif
 #elseif @yrange = 0
   #if @y2 = ""
-    yautorange: datafields=@y,@err combomode=hilo incmult=2.0 lowfix=0
+    yautorange: datafields=@y,@err combomode=hilo incmult=2.0 lowfix=0 nearest=@ynearest 
   #else
-    yautorange: datafields=@y,@y2,@y3,@y4 incmult=2.0 lowfix=0
+    yautorange: datafields=@y,@y2,@y3,@y4 incmult=2.0 lowfix=0 nearest=@ynearest 
   #endif
 #else
   yrange: @yrange
@@ -130,6 +134,7 @@ stubcull: yes
   thinbarline: color=@errcolor width=@errthick
   tails: @errwidth
   truncate: yes
+  #ifspec ptselect select
 #endif
 
 //// do line plot for group 1
@@ -152,9 +157,11 @@ pointsymbol: @pointsym
 #else
   legendsampletype: line+symbol
 #endif
-#if @gapmissing != ""
-  gapmissing: @gapmissing
-#endif
+#ifspec gapmissing
+#ifspec ptselect select
+#ifspec numbers
+#ifspec accum
+#ifspec clip
 
   
 //// do error bars and line for group 2
@@ -168,6 +175,7 @@ pointsymbol: @pointsym
     thinbarline: color=@errcolor width=@errthick
     tails: @errwidth
     truncate: yes
+    #ifspec ptselect2 select
   #endif
 
   #proc lineplot
@@ -189,9 +197,11 @@ pointsymbol: @pointsym
   #else
     legendsampletype: line+symbol
   #endif
-  #if @gapmissing != ""
-    gapmissing: @gapmissing
-  #endif
+  #ifspec gapmissing
+  #ifspec ptselect2 select
+  #ifspec numbers
+  #ifspec accum
+  #ifspec clip
 #endif
 
 
@@ -206,6 +216,7 @@ pointsymbol: @pointsym
     thinbarline: color=@errcolor width=@errthick
     tails: @errwidth
     truncate: yes
+    #ifspec ptselect3 select
   #endif
 
   #proc lineplot
@@ -227,9 +238,11 @@ pointsymbol: @pointsym
   #else
     legendsampletype: line+symbol
   #endif
-  #if @gapmissing != ""
-    gapmissing: @gapmissing
-  #endif
+  #ifspec gapmissing
+  #ifspec ptselect3 select
+  #ifspec numbers
+  #ifspec accum
+  #ifspec clip
 #endif
 
 
@@ -244,6 +257,7 @@ pointsymbol: @pointsym
     thinbarline: color=@errcolor width=@errthick
     tails: @errwidth
     truncate: yes
+    #ifspec ptselect4 select
   #endif
 
   #proc lineplot
@@ -265,17 +279,21 @@ pointsymbol: @pointsym
   #else
     legendsampletype: line+symbol
   #endif
-  #if @gapmissing != ""
-    gapmissing: @gapmissing
-  #endif
+  #ifspec gapmissing
+  #ifspec ptselect4 select
+  #ifspec numbers
+  #ifspec accum
+  #ifspec clip
   
 #endif
   
 
 // do legend
-#if @name != ""
+#if @name != "#usefname" || @header = yes
   #proc legend
   location: @legend
+  #ifspec legendfmt format
+  #ifspec legendsep sep
 #endif
 
 

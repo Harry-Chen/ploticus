@@ -3,8 +3,14 @@
  * Covered by GPL; see the file ./Copyright for details. */
 
 
-#include "graphcore.h"
-/* draw a geometric data point using current line type and current color for line elements. */
+#include "plg.h"
+
+#define NVARIAT 18
+#define NSHAPE 9
+#define TORAD 0.0174532
+
+
+/* MARK - draw a geometric data point using current line type and current color for line elements. */
 /* point styles are selected by the code string 
 		"symNS[C]" 
    where	N is an integer 1-8 selecting the shape (1=up tri 2=down tri 3=diam 4=square
@@ -15,24 +21,30 @@
 
    Performance is best when point style and radius remains the same for consecutive points.
 */
-#define NVARIAT 18
-#define NSHAPE 9
 
+static char prevcode[30] = "";
+static double prev_r;
+static char color[30];
+static int inc, variation;
+static int nc[] =    {  3,  3,  4,  4,  5, 12, 3, 3, 20 };	/* number of corners (constant) */
+static int nt[] =    { 90,270,  0, 45, 90, 90, 0, 180, 90 };    /* location (in degrees) of first corner (constant) */
+static double h[24][2]; /* the offsets */
 
-Emark( x, y, code, r )
+/* ==================================== */
+PLG_mark_initstatic()
+{
+strcpy( prevcode, "" );
+return( 0 );
+}
+
+/* ==================================== */
+PLG_mark( x, y, code, r )
 double x, y; 	/* point location in abs space */
 char code[];	/* pre-set symbol name */
 double r; 	/* radius of dot in absolute units */
 {
 int i;
 double g, theta;
-static char prevcode[30] = "";
-static double prev_r;
-static char color[30];
-static int inc, variation;
-static int nc[] =    {  3,  3,  4,  4,  5, 12, 3, 3, 20 };	/* number of corners */
-static int nt[] =    { 90,270,  0, 45, 90, 90, 0, 180, 90 }; /* location (in degrees) of first corner*/
-static double h[24][2]; /* the offsets */
 
 /* no-op code */
 if( strcmp( code, "sym00" ) == 0 ) return( 0 );
@@ -56,8 +68,8 @@ if( strcmp( code, prevcode ) != 0 || r != prev_r ) {
 	/* get offsets */
 	g = nt[inc];
 	for( i = 0; i < nc[inc]; i++ ) {
-		h[i][0] = r * cos( (g*3.1415927)/180.0 );
-		h[i][1] = r * sin( (g*3.1415927)/180.0 );
+		h[i][0] = r * cos( g * TORAD );
+		h[i][1] = r * sin( g * TORAD );
 		g += theta;
 		}
 	}
@@ -87,10 +99,10 @@ else 	{
 return( 0 );
 }
 
-
+#ifdef SUSPENDED
 /* ======================================= */
-/* draw a circle of n "sides" */
-Ecircle( cx, cy, r, color, outline )
+/* CIRCLE - draw a circle of n "sides" */
+PLG_circle( cx, cy, r, color, outline )
 double cx, cy; 	/* point location in abs space */
 double r; 	/* radius of dot in absolute units */
 char *color;	/* color name, or "" for no fill */
@@ -111,8 +123,8 @@ if( first ) {
 	/* get offsets */
 	g = 0.0;
 	for( i = 0; i < n+1; i++ ) {
-		hx[i] = cos( (g*3.1415927)/180.0 );
-		hy[i] = sin( (g*3.1415927)/180.0 );
+		hx[i] = cos( (g * TORAD );
+		hy[i] = sin( (g * TORAD );
 		g += theta;
 		}
 	}
@@ -130,9 +142,11 @@ if( outline ) {
 		}
 	}
 }
+#endif
+
 /* ========================================= */
-/* draw an elipse */
-Eellipse( cx, cy, r1, r2, color, outline )
+/* ELLIPSE  - draw an elipse */
+PLG_ellipse( cx, cy, r1, r2, color, outline )
 double cx, cy, r1, r2;
 char *color;	/* color name, or "" for no fill */
 int outline;    /* if 1, circle will be outlined. */
@@ -148,8 +162,8 @@ theta = 360.0 / (double)n;
 /* get offsets */
 g = 0.0;
 for( i = 0; i < n+1; i++ ) {
-        hx[i] = cos( (g*3.1415927)/180.0 );
-        hy[i] = sin( (g*3.1415927)/180.0 );
+        hx[i] = cos( (g * TORAD ) );
+        hy[i] = sin( (g * TORAD ) );
         g += theta;
         }
 

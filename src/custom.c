@@ -2,42 +2,34 @@
 
 
 /* ----------------------------- */
-/* CUSTOMFORVECT - defines vector objects that app can #for across */
-customforvect( result, obj, n )
-char *result;
-char *obj;
-int n;
-{
-return( 1 );
-}
-
-
-/* ----------------------------- */
-/* CUSTOMTEXTVECT - defines text objects that app can #for across */
-customtextvect( result, obj, pos )
-char *result;
-char *obj;
-int *pos;
-{
-return( 1 );
-}
-
-
-/* ----------------------------- */
 /* CUSTOM_FUNCTION - returns 0 on success, 1 if named function not found */
 
-/* NOTE: in order to add a custom function it is now necessary to check the
-   hash value of the function name to be sure that it does not collide with
-   existing names.  See functions.c, fprintf statement around line 108.  */
+/* Note: custom_function( name, arg, nargs, result, typ ) is not referenced in ploticus
+ * due to an #ifdef in functions.c
+ *
+ * char *name;
+ * char *arg[];
+ * int nargs;
+ * char *result;
+ * int *typ;
+ * {
+ * int stat;
+ * 
+ * stat = custom_pl_functions( name, arg, nargs, result, typ );
+ * return( stat );
+ * }
+ */
 
-custom_function( name, arg, nargs, result, typ )
+
+PL_custom_function( name, arg, nargs, result, typ )
 char *name;
 char *arg[];
 int nargs;
 char *result;
 int *typ;
 {
-double Econv(), Elimit();
+
+double PLG_conv(), PLG_limit();
 char buf[100];
 char axis;
 
@@ -84,6 +76,23 @@ else if( strcmp( name, "dataitem" )==0 ) {
 	return( 0 );
 	}
 
+/* -------------------- */
+/* hash: 1306  $defaultinc(min,max) - get a default increment */
+else if( strcmp( name, "defaultinc" )==0 ) {
+	double inc;
+	PL_defaultinc( atof( arg[0] ), atof( arg[1] ), &inc );
+	sprintf( result, "%g", inc );
+	return( 0 );
+	}
+
+/* -------------------- */
+/* hash: 2959  $squelch_display(mode) */
+else if( strcmp( name, "squelch_display" )==0 ) {
+	PLG_squelch_display( atoi( arg[0] ) );
+	strcpy( result, "" );
+	return( 0 );
+	}
+
 /* ------------------- */
 /* hash:987 $nextstub(maxlen) - return next pltab row stub, "" if no more */
 else if( strcmp( name, "nextstub" )==0 ) {
@@ -94,10 +103,10 @@ else if( strcmp( name, "nextstub" )==0 ) {
         /* see which axis is using categories or pltab scaling.. */
         Egetunits( 'y', buf );
         strcpy( result, "" );
-        if( strcmp( buf, "categories" )==0 ) nextcat( 'y', result, maxlen );
+        if( strcmp( buf, "categories" )==0 ) PL_nextcat( 'y', result, maxlen );
         else    {
                 Egetunits( 'x', buf );
-                if( strcmp( buf, "categories" )==0 ) nextcat( 'x', result, maxlen );
+                if( strcmp( buf, "categories" )==0 ) PL_nextcat( 'x', result, maxlen );
                 else Eerr( 2709, "$nextstub only valid with pltab or categories", "" );
                 }
         /* convert spaces to underscores */
@@ -126,7 +135,7 @@ else if( strcmp( name, "max" )==0 ) {
    Example: #set AVAL = $data_to_absolute(Y,@DVAL)
  */
 else if( strcmp( name, "data_to_absolute" )==0 ) {
-	double f, Econv(), Ea();
+	double f, PLG_conv(), PLG_a();
 	f = Econv( tolower(arg[0][0]), arg[1] );
 	sprintf( result, "%g", Ea( tolower(arg[0][0]), f ) );
 	return( 0 );
@@ -146,7 +155,7 @@ else if( strcmp( name, "sleep" )==0 ) {
 /* ------------------- */
 /* hash:793 getclick( label ) - produce a button; when user clicks on it, return */
 else if( strcmp( name, "getclick" )==0 ) {
-	if( Edev == 'x' ) do_x_button( "More.." );
+	if( Edev == 'x' ) PL_do_x_button( "More.." );
 	return( 0 );
 	}
 
@@ -177,7 +186,5 @@ else if( strcmp( name, "notexists" )==0 ) {
 	return( 0 );
 	}
 
-
-	
 return( 1 ); 
 }

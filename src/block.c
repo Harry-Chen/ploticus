@@ -4,13 +4,24 @@
 
 
 /* do a rectangle, with shading and/or outline */
-#include "graphcore.h"
 
-double Ebox_x1 = 0, Ebox_y1 = 0, Ebox_x2 = 0, Ebox_y2 = 0;
+#include "plg.h"
+
+static double box_x1 = 0.0, box_y1 = 0.0, box_x2 = 0.0, box_y2 = 0.0;
 
 /* ========================================== */
-/* Ecblock() - all coords in abs space, color fill */
-Ecblock( xlo, ylo, xhi, yhi, color, outline )
+PLG_cblock_initstatic( )
+{
+box_x1 = 0.0;
+box_y1 = 0.0;
+box_x2 = 0.0;
+box_y2 = 0.0;
+return( 0 );
+}
+
+/* ========================================== */
+/* CBLOCK - all coords in abs space, color fill */
+PLG_cblock( xlo, ylo, xhi, yhi, color, outline )
 double xlo, ylo, xhi, yhi;
 char *color;
 int outline;
@@ -126,23 +137,23 @@ if( outline ) {
 	}
 }
 /* ============================================== */
-/* set last box */
-Esetlastbox( x1, y1, x2, y2 )
+/* SETLASTBOX - set last box */
+PLG_setlastbox( x1, y1, x2, y2 )
 double x1, y1, x2, y2;
 {
-Ebox_x1 = x1; Ebox_y1 = y1; Ebox_x2 = x2; Ebox_y2 = y2;
+box_x1 = x1; box_y1 = y1; box_x2 = x2; box_y2 = y2;
 }
 /* ============================================== */
-/* get dimensions of most recently generated box.. */
-Egetlastbox( x1, y1, x2, y2 )
+/* GETLASTBOX - get dimensions of most recently generated box.. */
+PLG_getlastbox( x1, y1, x2, y2 )
 double *x1, *y1, *x2, *y2;
 {
-*x1 = Ebox_x1; *y1 = Ebox_y1; *x2 = Ebox_x2; *y2 = Ebox_y2;
+*x1 = box_x1; *y1 = box_y1; *x2 = box_x2; *y2 = box_y2;
 }
 
 /* ============================================== */
-/*  Ecblockdress - color shadowing/3-d effect for rectangles */
-Ecblockdress( xlow, ylow, xhi, yhi, 
+/*  BLOCKDRESS - color shadowing/3-d effect for rectangles */
+PLG_cblockdress( xlow, ylow, xhi, yhi, 
 	bevelsize, lowbevelcolor, hibevelcolor, shadowsize, shadowcolor)
 double xlow, ylow, xhi, yhi;
 char *lowbevelcolor, *hibevelcolor, *shadowcolor;

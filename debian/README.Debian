@@ -4,25 +4,23 @@ ploticus for Debian
 The prefabs (templates for some common chart types) are installed
 in /usr/share/ploticus.  
 
-In Debian, the plotius binary is in /usr/bin/ploticus.  Upstream
+In Debian, the ploticus binary is /usr/bin/ploticus.  Upstream
 calls it pl, but there is a conflict with a package already part
 of Debian, so this could not be used.
 
-Upstream is discontinuing a utility, pltab, that is packaged in
-its release of 2.0.2.  As 2.0.2 will be the last release to have
-it upstream, it seemed pointless to include in a package new to
-Debian a utility that will be removed in the next release.
-
 No support for any .gif format is provided in the Debian.  Support
-is offered for .jpeg, .png, .bmp, .svg, X11, and .ps files.
+is offered for .ps, .eps, .svg, .svgz, .png, .bmp, .x11  files.
+FreeType2 font support is also compiled in.
+
+Locale support has been compiled in.
+
+Libploticus support is not offered by this package.  The real reason is
+so-name issues will require interdistribution coordination.  A secondary
+reason is that I know of no "in the wild" programs that need this support.
+If you can point to a program which needs libploticus and which offers at 
+least a 5% performance benefit, then I will start the necessary coordination.
 
 I strongly urge that you install ploticus-doc. This package will
 be hard to use without it.
 
-Finally, note that the .orig package contains a LOT of stuff not
-used in the debian package.  It contains several versions of libgd,
-partial documentation, and a test suite.  In interest of leaving
-the original source as pristine as possible, they have not been
-removed.  
-
- -- James W. Penny <jpenny@debian.org>, Mon, 18 Feb 2002 22:24:15 -0500
+ -- James W. Penny <jpenny@debian.org>, Thu, 21 Jan 2004 22:28:25 -0500

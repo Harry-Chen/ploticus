@@ -1,3 +1,5 @@
+//// this chunk is included by prefabs to set up the plotting area
+//
 //// set default grid
 #if @xgrid = yes
   #set xgrid = "color=tan1"
@@ -5,17 +7,18 @@
 #if @ygrid = yes
   #set ygrid = "color=tan1"
 #endif
-
+//
 //// set up plotting area..
 #proc areadef
 rectangle: @rectangle
-xscaletype: @unittype
-#if @ylog != ""
-  yscaletype: @ylog
+#if @context = chron && @unittype = date
+  // this is done so that partial date formats eg. mm/yyyy are handled correctly by 2.20..
+  xscaletype: date @datefmt
+#else
+  #ifspec unittype xscaletype
 #endif
-#if @xlog != ""
-  xscaletype: @xlog
-#endif
+#ifspec ylog yscaletype
+#ifspec xlog xscaletype
 #if @autow = yes
   autowidth: 0.5 4.0 8.0
 #endif

@@ -1,16 +1,16 @@
+//// chunk included by prefabs to do standard x axis
 #proc xaxis
-label: @xlbl
-labeldetails: @xlbldet
+#ifspec xlbl label
+#ifspec xlbldet labeldetails
 stubs: inc @xinc
-#setifnotgiven stubfmt = ""
-#if @stubfmt != ""
-  stubformat: @stubfmt
-#endif
+#ifspec stubfmt stubformat
+#ifspec xstubfmt stubformat
 stubrange: @XMIN
-#if @stubvert = yes
-  stubvert: yes
-#endif
+#ifspec stubvert
 // stubcull: yes
-#if @xgrid != ""
-  grid: @ygrid
-#endif
+#ifspec xgrid grid
+//
+// was:               is this a typo?
+// #if @xgrid != ""
+//  grid: @ygrid
+// #endif

@@ -4,7 +4,6 @@
 
 /* PROC LINEPLOT - draw a lineplot */
 
-/* Data are skipped upon unit conversion error. */
 /* Jan 15 01 - went from dat2d to dat3d so that original data row is preserved */
 
 #include "pl.h"
@@ -12,8 +11,7 @@
 #define LINE 1
 #define PATH 2
 
-int fillmode = 0;
-static int ptcompare(double *f, double *g);
+static int dblcompare( double *f, double *g );
 
 PLP_lineplot()
 {
@@ -32,7 +30,7 @@ int yfield;
 int xfield;
 char linedetails[256];
 double linestart, linestop; 
-int j;
+int j, k;
 int accum;
 double x, y;
 int stairstep;
@@ -71,6 +69,12 @@ int altlist[102];
 int anyvalid;
 int realrow;
 int gapmissing, ingap;
+int clipping;
+int firstpt;
+double firstx, firsty;
+int sortopt;
+int relax_xrange;
+int fillmode;
 
 TDH_errprog( "pl proc lineplot" );
 
@@ -103,6 +107,10 @@ strcpy( legsamptyp, "symbol" );
 strcpy( altsym, "" );
 strcpy( altwhen, "" );
 gapmissing = 0;
+clipping = 0;
+firstpt = 0;
+sortopt = 0;
+relax_xrange = 0;
 
 
 /* get attributes.. */
@@ -131,6 +139,17 @@ while( 1 ) {
 		linxstart = Econv( X, val );
 		if( Econv_error() ) linxstart = EDXlo;
 		}
+	else if( stricmp( attr, "firstpoint" )==0 ) {
+		int ix;
+		ix = 0;
+		firstpt = 1;
+		strcpy( buf, GL_getok( lineval, &ix ));
+		firstx = Econv( X, buf );
+		if( Econv_error() ) firstpt = 0;
+		strcpy( buf, GL_getok( lineval, &ix ));
+		firsty = Econv( X, buf );
+		if( Econv_error() ) firstpt = 0;
+		}
 	else if( stricmp( attr, "accum" )==0 ) {
 		if( strnicmp( val, YESANS, 1 )==0 ) accum = 1;
 		else accum = 0;
@@ -151,6 +170,18 @@ while( 1 ) {
 		if( strnicmp( val, YESANS, 1 )==0 ) gapmissing = 1;
 		else if( strnicmp( val, "small", 4 )==0 ) gapmissing = 2;
 		else gapmissing = 0;
+		}
+	else if( stricmp( attr, "clip" )==0 ) {
+		if( strnicmp( val, YESANS, 1 )==0 ) clipping = 1;
+		else clipping = 0;
+		}
+	else if( stricmp( attr, "sort" )==0 ) {
+		if( strnicmp( val, YESANS, 1 )==0 ) sortopt = 1;
+		else sortopt = 0;
+		}
+	else if( stricmp( attr, "relax_xrange" ) == 0 ) {
+		if( strnicmp( val, YESANS, 1 )==0 ) relax_xrange = 1;
+		else relax_xrange = 0;
 		}
 
 	else if( stricmp( attr, "lastseglen" )==0 ) Elenex( val, X, &lastseglen );
@@ -188,13 +219,13 @@ while( 1 ) {
 
 /* overrides and degenerate cases */
 /* -------------------------- */
-if( Nrecords[Dsel] < 1 ) return( Eerr( 17, "No data has been read yet w/ proc getdata", "" ) );
+if( Nrecords < 1 ) return( Eerr( 17, "No data has been read yet w/ proc getdata", "" ) );
 if( !scalebeenset() ) 
          return( Eerr( 51, "No scaled plotting area has been defined yet w/ proc areadef", "" ) );
 
 
-if( (yfield < 0 || yfield >= Nfields[Dsel] ) && !instancemode ) return( Eerr( 601, "yfield out of range", "" ) );
-if( xfield >= Nfields[Dsel] ) return( Eerr( 601, "xfield out of range", "" ) );
+if( (yfield < 0 || yfield >= Nfields ) && !instancemode ) return( Eerr( 601, "yfield out of range", "" ) );
+if( xfield >= Nfields ) return( Eerr( 601, "xfield out of range", "" ) );
 if( yfield >= 0 && instancemode ) {
 	Eerr( 4729, "warning, turning instancemode off since yfield specified", "" );
 	instancemode = 0;
@@ -205,6 +236,12 @@ if( groupmode && ptlabelfield ) {
 	ptlabelfield = 0;
 	}
 	
+if( strnicmp( legendlabel, "#usefname", 9 )==0 ) {
+	if( instancemode ) getfname( xfield+1, legendlabel );
+	else getfname( yfield+1, legendlabel );
+	}
+
+
 
 /* now do the plotting work.. */
 /* -------------------------- */
@@ -216,12 +253,12 @@ dopoints = 1;
 if( GL_slmember( pointsym, "no*" ) || pointsym[0] == '\0' ) dopoints = 0;
 
 
-/* put all values into Dat array, doing accumulation if required.. */
+/* put all values into PLV vector, doing accumulation if required.. */
 j = 0;
 f = linxstart;
-sum = 0.0;
 nalt = 0;
-for( i = 0; i < Nrecords[Dsel]; i++ ) {
+
+for( i = 0; i < Nrecords; i++ ) {
 
 	if( selectex[0] != '\0' ) { /* process against selection condition if any.. */
                 stat = do_select( selectex, i, &result );
@@ -232,7 +269,8 @@ for( i = 0; i < Nrecords[Dsel]; i++ ) {
                 stat = do_select( altwhen, i, &result );
                 if( stat != 0 ) { Eerr( stat, "Select error", altwhen ); continue; }
                 if( result == 1 && nalt < 100 ) {
-			altlist[nalt] = j/2;
+			/* altlist[nalt] = j/2; */
+			altlist[nalt] = j/3;
 			nalt++;
 			}
                 }
@@ -241,70 +279,89 @@ for( i = 0; i < Nrecords[Dsel]; i++ ) {
 
 	/* X */
 	if( xfield < 0 ) {
-		Dat[j] = f + sob;
+		PLV[j] = f + sob;
 		f += 1.0;
 		}
 	else 	{
-		Dat[j] = fda( i, xfield, X ) + sob;
+		PLV[j] = fda( i, xfield, X ) + sob;
 		if( Econv_error() ) { 
 			conv_msg( i, xfield, "xfield" ); 
-			Dat[j] = NEGHUGE;
+			continue;
 			}
 		}
 
 	j++; 
 
 	/* Y */
-	if( instancemode ) Dat[j] = 1.0;
+	if( instancemode ) PLV[j] = 1.0;
 	else 	{
-		Dat[j] = fda( i, yfield, Y );
+		PLV[j] = fda( i, yfield, Y );
 		if( Econv_error() ) { 
 			conv_msg( i, yfield, "yfield" ); 
-			Dat[j] = NEGHUGE;
+			PLV[j] = NEGHUGE;
 			/* continue; removed scg 5/19/99 */
 			}
 		}
-
-	if( groupmode && xfield >= 0 ) { /* look ahead for like X and combine.. */
-		i++;
-		for( ; i < Nrecords[Dsel]; i++ ) {
-			if( selectex[0] != '\0' ) { /* run selection condition if any.. */
-                		stat = do_select( selectex, i, &result );
-                		if( stat != 0 ) { Eerr( stat, "Select error",selectex); continue; }
-                		if( result == 0 ) continue; /* reject */
-                		}
-			x = fda( i, xfield, X ) + sob;
-			if( x == Dat[j-1] ) {
-				if( instancemode ) y = 1.0;
-				else y = fda( i, yfield, Y );
-				if( !Econv_error() ) {
-					Dat[j] += y;
-					}
-				}
-			else 	{
-				i--;     /* back off.. */
-				break;
-				}
-			}
-		}
-
-	if( accum && Dat[j] > (NEGHUGE+1) ) {
-		sum += Dat[j];
-		Dat[j] = sum;
-		}
-
 	j++;
 
-	Dat[j] = (double)i;
+	PLV[j] = (double)i;
 	j++;
 
-	if( j >= MAXDAT-1 ) {
-		Eerr( 3579, "Sorry, too many curve points, curve truncated", "" );
+	if( j >= PLVsize-1 ) {
+		Eerr( 3579, "Sorry, too many curve points, curve truncated (raise using -maxvector)", "" );
 		break;
 		}
 	}
 
 npoints = j / 3;
+
+
+/* sort if required.. */  /* added 4/22/02 */
+if( sortopt ) {
+        if( PLS.debug ) fprintf( PLS.diagfp, "sorting points for line\n" );
+        qsort( PLV, npoints, sizeof(double)*3, dblcompare );
+        }
+
+/* fprintf( stderr, "after sort\n" );
+ * for( i = 0; i < npoints; i++ ) fprintf( stderr, "%g %g %g\n", dat3d(i,0), dat3d(i,1), dat3d(i,2 ) );
+ */
+
+/* process for groupmode.. */
+if( groupmode && xfield >= 0 ) for( i = 0; i < npoints; i++ ) {
+
+	for( k = i+1; k < npoints; k++ ) {
+                		
+		if( dat3d(i,0) == dat3d(k,0) ) {
+			if( instancemode ) y = 1.0;
+			else y = dat3d( k, 1 );
+			dat3d( k, 1 ) = NEGHUGE; /* rub out the additional instance.. */
+			if( y > NEGHUGE+1 ) (dat3d( i, 1 )) += (y);
+			}
+		else 	{
+			i = k-1;     /* back off.. */
+			break;
+			}
+		}
+	}
+/* fprintf( stderr, "after grouping\n" );
+ * for( i = 0; i < npoints; i++ ) fprintf( stderr, "%g %g %g\n", dat3d(i,0), dat3d(i,1), dat3d(i,2 ) );
+ */
+
+/* process for accum.. */
+if( accum ) {
+	sum = 0.0;
+	for( i = 0; i < npoints; i++ ) {
+
+		if( dat3d( i, 1 ) > (NEGHUGE+1) ) {
+			sum += (dat3d( i, 1 )); 
+			(dat3d( i, 1 )) = sum;
+			}
+		}
+   	}
+
+/* fprintf( stderr, "after accum\n" );
+ * for( i = 0; i < npoints; i++ ) fprintf( stderr, "%g %g %g\n", dat3d(i,0), dat3d(i,1), dat3d(i,2 ) );
+ */
 
 
 /* draw the curve.. */
@@ -321,16 +378,23 @@ ingap = 0;
 cr = Elimit( Y, 'l', 's' );
 for( i = 0; i < npoints; i++ ) {
 	if( !first && (y > (NEGHUGE+1) && x > (NEGHUGE+1) ) ) { lasty = y; lastx = x; }
-	x = dat3d(i,0);
-	y = dat3d(i,1);
+
+	if( first && firstpt ) { 
+		x = firstx; 
+		y = firsty; 
+		}
+	else	{
+		x = dat3d(i,0);
+		y = dat3d(i,1);
+		}
 	
 	if( x < (NEGHUGE+1) || y < (NEGHUGE+1) ) {
 		if( gapmissing ) ingap = 1;
 		continue; /* skip bad values */
 		}
 	
-	if( x < linestart ) continue; /* out of range - lo */
-	if( x > linestop ) {          /* out of range - hi */
+	if( x < linestart && !relax_xrange ) continue; /* X out of range - lo */ 
+	if( x > linestop && !relax_xrange ) {          /* X out of range - hi */ 
 		x = lastx; /* back up to last in-range point so last stairtstep is correct*/
 		y = lasty;
 		break; 
@@ -365,7 +429,13 @@ for( i = 0; i < npoints; i++ ) {
 		if( ingap ) Emovu( x, y ); 	
 		if( stairstep && x > linestart && !ingap ) Elinu( x, lasty ); 
 		if( stairstep && x == linestart ) Emovu( x, y ); 
-		Elinu( x, y );
+		if( clipping && !ingap && !stairstep ) {
+			double cx1, cy1, cx2, cy2;
+			cx1 = lastx; cy1 = lasty; cx2 = x; cy2 = y;
+			stat = Elineclip( &cx1, &cy1, &cx2, &cy2, EDXlo, EDYlo, EDXhi, EDYhi );
+			if( !stat ) { Emovu( cx1, cy1 ); Elinu( cx2, cy2 ); }
+			}
+		else Elinu( x, y );
 		}
 	ingap = 0;
 	}
@@ -377,7 +447,7 @@ if( x < (NEGHUGE+1) || y < (NEGHUGE+1) ) { x = lastx; y = lasty; }
 
 
 /* handle last segment of stairstep.. */
-/* if( stairstep ) { */ /* changed to allow lastseglen to be used anytime, scg 12/13/01 */
+/* if( stairstep ) { */ /* } changed to allow lastseglen to be used anytime, scg 12/13/01 */
 if( lastseglen > 0.0 ) {
 	if( x < (NEGHUGE+1) || y < (NEGHUGE+1) ) { x = lastx; y = lasty; }
 	lastx = Eax( x ) + lastseglen;
@@ -418,9 +488,14 @@ for( i = 0; i < npoints; i++ ) {
 
 	if( x < (NEGHUGE+1) || y < (NEGHUGE+1) ) continue; /* skip bad values */
 
-	if( x < linestart ) continue; /* out of range - lo */
-	if( x > linestop ) {          /* out of range - hi */
+	if( x < linestart && !relax_xrange ) continue; /* out of range - lo */
+	if( x > linestop && !relax_xrange ) {          /* out of range - hi */
 		break; 
+		}
+
+	if( clipping && !stairstep && !fillmode ) {
+		/* if clipping, suppress points or labels that are outside the plotting area */
+		if( x < EDXlo || x > EDXhi || y < EDYlo || y > EDYhi ) continue;
 		}
 
 	if( x >= ptlblstart && x <= ptlblstop ) {
@@ -492,7 +567,7 @@ double adjx, adjy;
 /* change to text color, size, etc.. */
 textdet( "numbers", shownums, &align, &adjx, &adjy, -4, "R" );
 if( align == '?' ) align = 'C';
-Emov( Eax(avg(x1,x2)) + adjx, Eay(y)+0.02+adjy );
+Emov( Eax( (x1+x2)/2.0 ) + adjx, Eay(y)+0.02+adjy );
 /* sprintf( numstr, numstrfmt, y ); */
 Euprint( numstr, 'y', y, numstrfmt );
 Edotext( numstr, align );
@@ -501,60 +576,13 @@ Emovu( x1, y ); /* restore old position for drawing the curve.. */
 return( 0 );
 }
 
-#ifdef CUT
-/* ------------------------ */
-/* LINU - local line draw which does path if fillmode = 1 */
-linu( x, y )
-double x, y;
-{
-if( fillmode ) Epathu( x, y );
-else Elinu( x, y );
-return( 0 );
-}
-/* ------------------------ */
-/* MOVU - local mov which does path if fillmode = 1 */
-movu( x, y )
-double x, y;
-{
-if( fillmode ) Epathu( x, y );
-else Emovu( x, y );
-return( 0 );
-}
-/* ------------------------ */
-/* LIN - local line draw which does path if fillmode = 1 */
-lin( x, y )
-double x, y;
-{
-if( fillmode ) Epath( x, y );
-else Elin( x, y );
-return( 0 );
-}
-/* ------------------------ */
-/* MOV - local mov which does path if fillmode = 1 */
-mov( x, y )
-double x, y;
-{
-if( fillmode ) Epath( x, y );
-else Emov( x, y );
-return( 0 );
-}
-/* ======================= */
+/* ------------------------- */
 static int
-ptcompare( f, g )
-double *f;
-double *g;
+dblcompare( f, g )
+double *f, *g;
 {
-double *f2, *g2;
 if( *f > *g ) return( 1 );
-else if( *f < *g ) return( -1 );
-else    {
-        /* advance to Y component */
-        f2 = f+1;
-        g2 = g+1;
-        if( *f2 > *g2 ) return( 1 );
-        else if( *f2 < *g2 ) return( -1 );
-        else return( 0 ); /* same */
-        }
+if( *f < *g ) return( -1 );
+return( 0 );
 }
-#endif
 

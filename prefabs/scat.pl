@@ -21,12 +21,41 @@
   #set PTLBL = 0.07
   #set TAILS = 0.02
 #endif
-#setifnotgiven ptsym = "circle"
+#setifnotgiven ptshape = "circle"
 #setifnotgiven ptcolor = "blue"
+#setifnotgiven ptcolor2 = "red"
+#setifnotgiven ptcolor3 = "green"
+#setifnotgiven ptcolor4 = "black"
 #setifnotgiven corrcolor = "green"
 #setifnotgiven xerr = ""
+#setifnotgiven err2 = ""
+#setifnotgiven xerr2 = ""
 #setifnotgiven errcolor = "gray(0.7)"
+#setifnotgiven id = ""
 #setifnotgiven idcolor = "orange"
+
+#setifnotgiven x2 = ""
+#setifnotgiven y2 = ""
+#setifnotgiven ptshape2 = square
+#setifnotgiven color2 = red
+#setifnotgiven x3 = ""
+#setifnotgiven y3 = ""
+#setifnotgiven ptshape3 = diamond
+#setifnotgiven color3 = black
+#setifnotgiven x4 = ""
+#setifnotgiven y4 = ""
+#setifnotgiven ptshape4 = triangle
+#setifnotgiven color4 = powderblue
+
+#setifnotgiven name = "#usefname"
+#setifnotgiven name2 = "#usefname"
+#setifnotgiven name3 = "#usefname"
+#setifnotgiven name4 = "#usefname"
+#if @CM_UNITS = 1
+  #setifnotgiven legend = "max+1.5 max" 
+#else
+  #setifnotgiven legend = "max+0.6 max" 
+#endif
 
 //// load standard vars..
 #include $chunk_setstd
@@ -44,13 +73,16 @@
 #elseif @cats = yes
   xscaletype: categories
   xcategories: @x
+  // following added 9/2/02 scg
+  catcompmethod: exact
+
 #else
-  xautorange: datafield=@x incmult=2.0
+  xautorange: datafields=@x,@x2,@x3,@x4 incmult=2.0 nearest=@xnearest 
 #endif
 #if @yrange != ""
   yrange: @yrange
 #else
-  yautorange: datafield=@y incmult=2.0
+  yautorange: datafields=@y,@y2,@y3,@y4 incmult=2.0 nearest=@ynearest 
 #endif
 
 //// x axis
@@ -87,13 +119,16 @@ labeldistance: @LBLDIST
 #endif
 
 
-//// do scatterplot..
+//// do labels..
 #if @id != ""
   #proc scatterplot
   xfield: @x
   yfield: @y
-  labelfield: @id
+  #if @id != ""  
+    labelfield: @id
+  #endif
   textdetails: size=6 color=@idcolor adjust=0,@PTLBL
+  #ifspec cluster
 #endif
 
 
@@ -107,17 +142,38 @@ labeldistance: @LBLDIST
   thinbarline: color=@errcolor width=0.5
   tails: @TAILS
   truncate: yes
+  #ifspec ptselect select
+  #saveas EB
 #endif
   
 #if @xerr != ""
   #proc bars
+  #clone EB
   locfield: @y
   lenfield: @x
   horizontalbars: yes
   errbarfield: @xerr
-  thinbarline: color=@errcolor width=0.5
-  tails: @TAILS
-  truncate: yes
+  #ifspec ptselect select
+#endif
+
+//// do 2nd set of error bars..
+#if @err2 != ""
+ #proc bars
+  #clone EB
+  locfield: @x2
+  lenfield: @y2
+  errbarfield: @err2
+  #ifspec ptselect2 select
+#endif
+  
+#if @xerr2 != ""
+  #proc bars
+  #clone EB
+  locfield: @y2
+  lenfield: @x2
+  errbarfield: @xerr2
+  horizontalbars: yes
+  #ifspec ptselect2 select
 #endif
 
 
@@ -126,7 +182,54 @@ labeldistance: @LBLDIST
 xfield: @x
 yfield: @y
 symbol: shape=@ptshape style=filled radius=@ptsize fillcolor=@ptcolor
-clickmapurl: @clickmapurl
+#ifspec clickmapurl
+#ifspec clickmaplabel
+legendlabel: @name
+#ifspec ptselect select
+#ifspec cluster
+
+
+//// optional 2nd set of points...
+#if @x2 != "" && @y2 != ""
+  #proc scatterplot
+  xfield: @x2
+  yfield: @y2
+  symbol: shape=@ptshape2 style=filled radius=@ptsize fillcolor=@ptcolor2
+  legendlabel: @name2
+  #ifspec ptselect2 select
+  #ifspec cluster
+#endif
+
+//// optional 3d set of points...
+#if @x3 != "" && @y3 != ""
+  #proc scatterplot
+  xfield: @x3
+  yfield: @y3
+  symbol: shape=@ptshape3 style=filled radius=@ptsize fillcolor=@ptcolor3
+  legendlabel: @name3
+  #ifspec ptselect3 select
+  #ifspec cluster
+#endif
+
+//// optional 4th set of points...
+#if @x4 != "" && @y4 != ""
+  #proc scatterplot
+  xfield: @x4
+  yfield: @y4
+  symbol: shape=@ptshape4 style=filled radius=@ptsize fillcolor=@ptcolor4
+  legendlabel: @name4
+  #ifspec ptselect4 select
+  #ifspec cluster
+#endif
+
+// do legend
+#if @name != "#usefname" || @header = yes
+  #proc legend
+  location: @legend
+  #ifspec legendfmt format
+  #ifspec legendsep sep
+#endif
+
 
 //// user post-plot include..
 #if @include2 != ""

@@ -1,28 +1,37 @@
+/// this chunk is included by prefabs to read data..
+//
 #musthave data
-
+//
 //// read data file..
 #proc getdata
-file: @data
 #if @data = stdin
   standardinput: yes
+#else
+  file: @data
 #endif
-#if @delim != ""
-  delim: @delim
+#ifspec delim
+#ifspec header fieldnameheader
+#ifspec comment commentchar
+#ifspec select
+#ifspec echodata showresults
+#ifspec nfields
+
+#if @context = chron 
+  #include $chunk_chronfilter
+#elseif @context = stack && @stackarea = yes && @y2 != ""
+  #include $chunk_stackareafilter
+#elseif @context = vdist
+  #include $chunk_vdistfilter
+#elseif @context = heatmap
+  #include $chunk_heatmapfilter
 #endif
-#if @header = yes
-  fieldnameheader: yes
-#endif
-#if @comment != ""
-  commentchar: @comment
-#endif
-select: @select
-//showresults: yes
- 
-#proc endproc
+
+#endproc
 
 #if @NRECORDS = 0
   #exit
 #endif
 
-#proc print
-label: Got @NRECORDS records, @NFIELDS fields per record.  
+#write stderr
+Got @NRECORDS records, @NFIELDS fields per record.  
+#endwrite

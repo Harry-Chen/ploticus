@@ -29,12 +29,29 @@ static char varsym = '@';
 static int omitws = 0;
 static int shieldquotedvars = 0;
 static int showwithquotes = 0;
-#ifndef TDH_DB
-  static char punctlist[10] = "_";
-#else
-  static char punctlist[10] = "_."; /* because sql join result var names contain dots */
-#endif
+static char punctlist[10] = "_";
+static int sqlmode = 0;  /* if 1, TDH_dequote will be more strict about quote errors.. */
+static int omit_shell_meta = 0;
 
+/* =============================== */
+TDH_valuesubst_initstatic()
+{
+ninvolved = 0;
+translate_to_fn = 0;
+allowinlinecodes = 0;
+hideund = 0;
+suppressdll = 0;
+varsym = '@';
+omitws = 0;
+shieldquotedvars = 0;
+showwithquotes = 0;
+strcpy( punctlist, "_" );
+sqlmode = 0;
+omit_shell_meta = 0;
+return( 0 );
+}
+
+/* =============================== */
 TDH_value_subst( out, in, data, recordid, mode, erronbadvar )
 char *out; /* result buffer */
 char *in;  /* input buffer */
@@ -42,6 +59,7 @@ char data[ MAXITEMS ][ DATAMAXLEN+1 ];	/* data array */
 char *recordid; /* recordid or "" */
 int mode;  /* either FOR_CONDEX, indicating that the line will be passed to condex(),
 		   (minor hooks related to this) or NORMAL */
+int erronbadvar;
 {
 int i, j, k, f;
 char itemname[ 512 ]; /* big because arbitrary tokens are being stored in it */
@@ -158,11 +176,15 @@ for( i = 0, inlen = strlen( in ); i < inlen; i++ ) {
 
 		/* append value to outbuf.. */
 		vlen = strlen( value );
-		if( hideund ) for( k = 0; k < vlen; k++ ) if( value[k] == '_' ) value[k] = ' ';
-		if( mode == FOR_CONDEX ) for( k = 0; k < vlen; k++ ) if( value[k] == ' ' ) value[k] = '_';
+		if( hideund ) for( k = 0; k < vlen; k++ ) if( value[k] == '_' ) value[k] = ' ';		/* datadelim - ok */
+		if( mode == FOR_CONDEX ) for( k = 0; k < vlen; k++ ) if( value[k] == ' ' ) value[k] = '_'; /* datadelim - ok */
 		if( showwithquotes ) {
 			sprintf( &out[j], "\"%s\"", value );
 			j += (vlen+2);
+			}
+		else if( omit_shell_meta ) {
+			for( k = 0; k < vlen; k++ ) if( ! GL_member( value[k], TDH_shellmetachars )) out[j++] = value[k];
+			out[j] = '\0';
 			}
 		else 	{
 			strcpy( &out[j], value ); 
@@ -252,6 +274,8 @@ else if( strcmp( tag, "varsym" )==0 ) varsym = (char)value;
 else if( strcmp( tag, "omitws" )==0 ) omitws = value;
 else if( strcmp( tag, "shieldquotedvars" )==0 ) shieldquotedvars = value;
 else if( strcmp( tag, "showwithquotes" )==0 ) showwithquotes = value;
+else if( strcmp( tag, "sqlmode" )==0 ) sqlmode = value;
+else if( strcmp( tag, "omit_shell_meta" )==0 ) omit_shell_meta = value;
 else if( strcmp( tag, "dot_in_varnames" )==0 ) {
 	if( value ) strcpy( punctlist, "_." );
 	else strcpy( punctlist, "_" );
@@ -275,14 +299,16 @@ int i, j, k, len, instring, esc;
 char tok[DATAMAXLEN+1];
 char vartag[20];
 char quotecharused; /* added 3/29/01 */
+int truncflag;
 
 /* if( newset ) curvar = 1; */
 curvar = 1;
 
+truncflag = 0;
 
 len = strlen( in );
 
-sprintf( vartag, "_%s%02d", prefix, curvar );
+sprintf( vartag, "_%s%02d", prefix, curvar ); /* limitation (99 _QS vars) */
 
 instring = 0;
 for( i = 0, j = 0; i < len; i++ ) {
@@ -299,6 +325,8 @@ for( i = 0, j = 0; i < len; i++ ) {
 	/* unescaped quote encountered */
 	if( ( in[i] == '"' || in[i] == '\'' ) && !esc ) {
 		if( instring && in[i] == quotecharused ) {
+			if( sqlmode && in[i+1] != '\0' && !isspace( in[i+1] ) && !GL_member( in[i+1], ",)" ) )
+				return( err( 2734, "quote error", "" ));
 			tok[k] = '\0';
 			out[j++] = '@';
 			strcpy( &out[j], vartag );	
@@ -311,7 +339,10 @@ for( i = 0, j = 0; i < len; i++ ) {
 
 			instring = 0;
 			}
-		else if( instring ) tok[k++] = in[i];  /* other quote - treat as normal char.. */
+		else if( instring ) {	 /* other quote - treat as normal char.. */
+			if( k >= DATAMAXLEN-1 ) { tok[DATAMAXLEN-1] = '\0'; truncflag = 1; }
+			tok[k++] = in[i];  
+			}
 		else 	{
 			quotecharused = in[i];
 			instring = 1;
@@ -319,11 +350,15 @@ for( i = 0, j = 0; i < len; i++ ) {
 			}
 		continue;
 		}
-	if( instring ) tok[k++] = in[i];
+	if( instring ) {
+		if( k >= DATAMAXLEN-1 ) { tok[DATAMAXLEN-1] = '\0'; truncflag = 1; }
+		tok[k++] = in[i];
+		}
 	else out[j++] = in[i];
 	}
 
 if( instring ) { /* no ending quote.. */
+	if( sqlmode ) return( err( 2735, "mismatched quotes", "" ));
 	tok[k] = '\0';
 	out[j++] = '@';
 	strcpy( &out[j], vartag );	
@@ -335,5 +370,6 @@ if( instring ) { /* no ending quote.. */
 j--;
 while( j >= 0 && isspace( out[j] ) ) j-- ;
 out[j+1] = '\0';
+if( truncflag ) err( 1409, "value is too long and has been truncated", out );
 return( 0 );
 }
