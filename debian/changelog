@@ -1,3 +1,12 @@
+ploticus (2.20-3.1) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Remove Build-Dependency on xlibs-dev (Closes: #347101).
+  * Credit and Big Thanks to Justin Pryzby <justinpryzby@users.sourceforge.net>
+    for the patch and testing.
+
+ -- Amaya Rodrigo Sastre <amaya@debian.org>  Sat, 21 Jan 2006 21:03:28 +0100
+
 ploticus (2.20-3) unstable; urgency=low
   * Add "late fix" for errbarfields.  Fix found in
     http://groups.yahoo.com/group/ploticus/message/691.
