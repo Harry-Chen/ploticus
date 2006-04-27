@@ -12,6 +12,7 @@
    scg 1/21/00  - for 2-way dist, column tags are used to set getdata field names
 
 */
+
 #include "pl.h"
 
 #define WORDLEN 40

@@ -11,6 +11,7 @@
    If TDH_DB is set to 2, shsql calls will be made.  SHSQL has no concept of "connect".
 */
 
+#include <string.h>
 #include "tdhkit.h"
 
 #define SHSQL  2

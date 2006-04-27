@@ -4,6 +4,7 @@
 
 /* PROC PAGE - set page-wide attributes, and do a "page" break for pp 2 and up */
 
+#include <string.h>
 #include "pl.h"
 
 PLP_page( )

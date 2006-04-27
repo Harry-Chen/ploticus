@@ -29,6 +29,7 @@
 #ifndef NOPS
 
 #include <stdio.h>
+#include <string.h>
 #include "special_chars.h"
 
 #define Eerr(a,b,c)  TDH_err(a,b,c)

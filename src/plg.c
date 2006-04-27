@@ -6,6 +6,7 @@
 /* small, lowlevel routines re: scaled units */
 /* see also units.c which is a layer above this. */
 
+#include <string.h>
 #include "plg.h"
 
 struct plgc PLG;

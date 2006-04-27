@@ -6,6 +6,7 @@
 
 /* Jan 15 01 - went from dat2d to dat3d so that original data row is preserved */
 
+#include <string.h>
 #include "pl.h"
 #define MOVE 0
 #define LINE 1

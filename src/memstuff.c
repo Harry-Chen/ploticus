@@ -2,6 +2,7 @@
 
 /* warning: the *dataset routines will alter PL_bigbuf  */
 
+#include <stdlib.h>
 #include "pl.h"
 
 static int buflen;

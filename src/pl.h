@@ -5,6 +5,8 @@
 
 #define PLHEAD 1
 
+#include <string.h>
+
 #include "plg.h"
 
 #define PLVERSION "2.20"  	/* see also the Copyright page, and page headers and footers */
@@ -39,14 +41,6 @@
 
 #ifndef Eerr
   #define Eerr(a,b,c) TDH_err(a,b,c)
-#endif
-
-#ifdef LOCALE
- #define stricmp( s, t )        stricoll( s, t )
- #define strnicmp( s, t, n )     strnicoll( s, t, n )
-#else
- #define stricmp( s, t )        strcasecmp( s, t )
- #define strnicmp( s, t, n )     strncasecmp( s, t, n )
 #endif
 
 #define X 'x'

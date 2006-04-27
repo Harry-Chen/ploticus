@@ -20,4 +20,5 @@ install:  src/pl
 	install -m 644 pltestsuite/*  $(DESTDIR)/usr/share/doc/ploticus/examples
 	install -m 755 pltestsuite/run* $(DESTDIR)/usr/share/doc/ploticus/examples
 	install -m 644 pltestsuite/run_script_test.bat $(DESTDIR)/usr/share/doc/ploticus/examples
+	install -m 644 pltestsuite/run_prefabs_test.bat $(DESTDIR)/usr/share/doc/ploticus/examples
 	install -m 755 pltestsuite/testpf_* $(DESTDIR)/usr/share/doc/ploticus/examples

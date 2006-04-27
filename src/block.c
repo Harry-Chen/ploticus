@@ -5,6 +5,7 @@
 
 /* do a rectangle, with shading and/or outline */
 
+#include <string.h>
 #include "plg.h"
 
 static double box_x1 = 0.0, box_y1 = 0.0, box_x2 = 0.0, box_y2 = 0.0;

@@ -1,3 +1,21 @@
+ploticus (2.20-4) unstable; urgency=low
+
+  * New Maintainer.                                   closes: #361016
+  * updated the FSF address in debian/copyright
+  * removed debian/prerm which was for ploticus-doc
+  * updated standards version to 3.6.2 (No package changes required).
+  * changed depends for debhelper to >= 5.0.0
+  * added debian/compat (set to 5)
+  * clean up debian/rules
+  * install run_prefabs_test.bat without execute privs
+  * corrected section number in man page .TH entry
+  * fixed compiler warnings due to implict library 
+    function definitions (causes segfaults on 64bit) closes: #284080
+  * build with debug info, incorporated patch from
+    Peter Palfrader <weasel@debian.org>              closes: #284069
+
+ -- Colin Tuckley <colin@tuckley.org>  Thu, 27 Apr 2006 10:12:54 +0100
+
 ploticus (2.20-3.1) unstable; urgency=low
 
   * Non-maintainer upload.

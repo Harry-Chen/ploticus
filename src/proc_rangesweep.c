@@ -4,6 +4,7 @@
 
 /* PROC RANGESWEEP - render a sweep */
 
+#include <string.h>
 #include "pl.h"
 #define MOVE 0
 #define LINE 1

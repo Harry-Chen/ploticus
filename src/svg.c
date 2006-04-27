@@ -23,6 +23,7 @@
 #ifndef NOSVG
 
 #include <stdio.h>
+#include <string.h>
 
 #define Eerr(a,b,c)  TDH_err(a,b,c) 
 #define stricmp(a,b) strcasecmp(a,b) 

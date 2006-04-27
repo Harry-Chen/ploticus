@@ -2,6 +2,7 @@
  * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
  * Covered by GPL; see the file ./Copyright for details. */
 
+#include <stdlib.h>
 #include "pl.h"
 #include "tdhkit.h"
 

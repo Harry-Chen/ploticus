@@ -6,6 +6,7 @@
 /* secondaryops can be multi-line and are 
  * subordinate to flow-of-control operators.
  */
+#include <string.h>
 #include "tdhkit.h"
 #define SHELL 0
 #define SQL 1

@@ -10,6 +10,7 @@
   If there was an error in the expression, -1 is returned.
 */
 #include <stdio.h>
+#include <string.h>
 #define stricmp( s, t ) 	strcasecmp( s, t )
 #define strnicmp( s, t, u ) 	strncasecmp( s, t, u )
 #define err(a,b,c) 		TDH_err(a,b,c)

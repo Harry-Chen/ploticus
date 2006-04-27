@@ -11,6 +11,7 @@
 			but rather via SVG_beginobj and SVG_endobj.
  */
 
+#include <stdlib.h>
 #include "pl.h"
 #define MAXENTRIES 500
 #define SERVERSIDE 1

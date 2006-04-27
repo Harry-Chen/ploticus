@@ -3,7 +3,7 @@
  * This code is covered under the GNU General Public License (GPL);
  * see the file ./Copyright for details. */
 
-
+#include <string.h>
 #include "tdhkit.h"
 #define NL 0
 #define WS 1

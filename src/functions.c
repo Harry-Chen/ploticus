@@ -4,6 +4,7 @@
  * see the file ./Copyright for details. */
 
 #include <stdio.h>
+#include <string.h>
 #define PATH_SLASH '/'
 #define MAXARGS 64
 

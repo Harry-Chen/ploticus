@@ -6,6 +6,7 @@
 
 /* error msg handler */
 #include <stdio.h>
+#include <string.h>
 
 static char emode[20] = "stderr";
 static char progname[80] = "";

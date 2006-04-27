@@ -4,7 +4,7 @@
 
 /* DATETIME - datetime routines */
 #include <stdio.h>
-
+#include <string.h>
 
 static double Dtwinbegin = 0.0, Dtwinend = 1440.0, Dtwinsize = 1440.0; /* default: 24 hours */
 static int Suppress_twin_warn = 0;

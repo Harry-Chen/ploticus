@@ -17,6 +17,7 @@
  *
  *    data may be passed as NULL (recordid must be "")
  */
+#include "pl.h"
 #include "tdhkit.h"
 
 #ifndef TDH_DB

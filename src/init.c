@@ -5,6 +5,7 @@
 
 /* routines related to low level graphic initialization */
 
+#include <string.h>
 #include "plg.h"
 
 #ifndef NOX11

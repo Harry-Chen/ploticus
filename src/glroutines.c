@@ -9,6 +9,7 @@
 #include <ctype.h>
 #include <time.h>
 #include <stdlib.h>
+#include <string.h>
 #define stricmp( s, t ) 	strcasecmp( s, t )
 #define strnicmp( s, t, n )     strncasecmp( s, t, n )
 

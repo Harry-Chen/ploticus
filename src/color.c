@@ -5,6 +5,7 @@
 
 /* Routines for color conversions */
 #include <stdio.h>
+#include <string.h>
 #define Eerr(a,b,c)  TDH_err(a,b,c)
 
 #define MAXCOLORS 34

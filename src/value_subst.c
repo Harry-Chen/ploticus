@@ -17,6 +17,7 @@
 			generated.
 */
 
+#include <string.h>
 #include "tdhkit.h"
 
 static int involved[ MAXITEMS ];

@@ -4,6 +4,7 @@
 
 /* PROC PRINT - allow printing of variable or data field contents  */
 
+#include <string.h>
 #include "pl.h"
 
 PLP_print()

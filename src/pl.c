@@ -5,6 +5,7 @@
 
 /* PL - ploticus main module */
 
+#include <stdlib.h>
 #include "pl.h"
 #ifdef WIN32
 #include "fcntl.h"  /* for _O_BINARY */

@@ -2,7 +2,6 @@
  * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
  * Covered by GPL; see the file ./Copyright for details. */
 
-
 #include "pl.h"
 
 static int Supress_convmsg = 0;

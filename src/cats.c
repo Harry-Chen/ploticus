@@ -4,6 +4,7 @@
 
 /* routines related to categories.. */
 
+#include <stdlib.h>
 #include "pl.h"
 
 

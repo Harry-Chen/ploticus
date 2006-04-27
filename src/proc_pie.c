@@ -6,6 +6,7 @@
 
 /* 7/12/01 - scg - now renders each entire slice as a single polygon */
 
+#include <string.h>
 #include "pl.h"
 #define TORAD 0.0174532
 #define MAXSLICE 80

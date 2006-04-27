@@ -5,6 +5,7 @@
 
 #include "plg.h"
 #include <ctype.h>
+#include <string.h>
 /* Low level elib drawing stubs.. */
 /* These issue driver requests only when a parameter actually changes */
 

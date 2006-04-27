@@ -8,7 +8,7 @@
 	TDH_DB = select sql database (see dbinterface.c) (undefined if no sql database)
 */
 
-   
+#include "pl.h"   
 #include "tdhkit.h"
 
 char TDH_scriptdir[ MAXPATH] = "./";	/* root directory for scripts */

@@ -6,6 +6,7 @@
 
 /* Coded for Y axis.. axes are logically flipped when drawing an X axis */
 
+#include <string.h>
 #include "pl.h"
 
 #define INCREMENTAL 1

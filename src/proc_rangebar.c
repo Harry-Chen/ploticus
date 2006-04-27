@@ -10,6 +10,7 @@
  *		Similar for upper tail.
  */
 
+#include <string.h>
 #include "pl.h"
 
 static int calculate_stats();

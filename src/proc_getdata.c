@@ -5,6 +5,7 @@
 /* PROC GETDATA - get some data.  Data may be specified literally, or
 	gotten from a file or a command.  */
 
+#include <stdlib.h>
 #include "pl.h"
 #include "tdhkit.h"
 

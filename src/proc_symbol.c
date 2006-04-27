@@ -4,6 +4,7 @@
 
 
 /* PROC SYMBOL - render one symbol */
+
 #include "pl.h"
 
 PLP_symbol()

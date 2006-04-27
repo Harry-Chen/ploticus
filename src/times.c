@@ -4,6 +4,7 @@
  * see the file ./Copyright for details. */
 
 #include <stdio.h>
+#include <string.h>
 
 /* Compile flag NO_DT may be used to disable all date/time functionality.
 

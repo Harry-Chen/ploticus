@@ -6,6 +6,7 @@
 /* ================== */
 /* PROCESS_ARG - process one command line argument from pl */
 
+#include <string.h>
 #include "pl.h"
 extern char TDH_tmpdir[];
 

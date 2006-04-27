@@ -15,6 +15,7 @@
 */
 
 #include <stdio.h>
+#include <string.h>
 
 extern double PLG_xsca_inv(), PLG_ysca_inv();
 #define Exsca( h )      PLG_xsca( h )

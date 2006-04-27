@@ -90,8 +90,8 @@ struct sinterpstate {
 	} ;
 
 /* ==== macros ==== */
-#define stricmp( s, t ) 	strcasecmp( s, t )
-#define strnicmp( s, t, n )     strncasecmp( s, t, n )
+//#define stricmp( s, t ) 	strcasecmp( s, t )
+//#define strnicmp( s, t, n )     strncasecmp( s, t, n )
 #define err(a,b,c) 		TDH_err(a,b,c)
 
 /* ==== fseek defines ==== */

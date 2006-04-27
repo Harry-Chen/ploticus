@@ -50,6 +50,7 @@
 
 */
 
+#include <string.h>
 #include "plg.h"
 
 static int ps_new = 0, ps_drawing = 0;		/* used by postscript section */

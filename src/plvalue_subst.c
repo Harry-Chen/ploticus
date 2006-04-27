@@ -2,7 +2,7 @@
  * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
  * Covered by GPL; see the file ./Copyright for details. */
 
-
+#include <string.h>
 #include "tdhkit.h"
 
 /* This is similar to TDH_value_subst, but is stripped down and  accepts a data array that 
