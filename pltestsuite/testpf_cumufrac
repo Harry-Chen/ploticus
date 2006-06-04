@@ -9,12 +9,12 @@ fi
 
 
 echo "cumufrac1.."
-ploticus -prefab cumufrac data=cumufrac.dat x=1 x2=2 title="Cumulative fraction plot" \
+pl -prefab cumufrac data=cumufrac.dat x=1 x2=2 title="Cumulative fraction plot" \
 	name="set 1"  name2="set 2" header=yes \
 	-$DEV -o ${OUTDIR}cumufrac1.$DEV $ARGS
 
 echo "cumufrac2.."
-ploticus -prefab cumufrac data=cumufrac.dat logmode=log x=1 x2=2 title="Cumulative fraction plot w/ log scale" \
+pl -prefab cumufrac data=cumufrac.dat logmode=log x=1 x2=2 title="Cumulative fraction plot w/ log scale" \
 	linedet="color=blue width=1.5" linedet2="color=orange width=1.5 style=2 dashscale=3" header=yes \
 	-$DEV -o ${OUTDIR}cumufrac2.$DEV $ARGS
 

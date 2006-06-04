@@ -1,38 +1,43 @@
-/* SECONDARYOPS.C
- * Copyright 1998-2002 Stephen C. Grubb  (ploticus.sourceforge.net) .
- * This code is covered under the GNU General Public License (GPL);
- * see the file ./Copyright for details. */
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
-/* secondaryops can be multi-line and are 
+/* Secondary script ops such as "sql" and "shell".  These ops can be multi-line and are 
  * subordinate to flow-of-control operators.
  */
-#include <string.h>
 #include "tdhkit.h"
+#include <ctype.h>
+
+extern int TDH_sqlcommand(), TDH_sinterp(), TDH_shellcommand();
+extern int atoi();
+
 #define SHELL 0
 #define SQL 1
 
 static char bigbuf[ MAXRECORDLEN ];
 static int bblen;
+static int prohibit_shell = 0;
 
+int
 TDH_secondaryops( buf, ss, recordid, data )
 char *buf;
 struct sinterpstate *ss;
 char *recordid;
 char data[][DATAMAXLEN+1];
 {
-int i, j;
 char tok[ DATAMAXLEN+1 ];
 int ix;
 int buflen;
 int stat;
-int len;
 
 buflen = strlen( buf );
 
 strcpy( tok, "" );
 sscanf( buf, "%s", tok );
 
-if( ( strncmp( tok, "#sql", 4 )==0 && (tok[4] == '\0' || isdigit( tok[4] ))) || strcmp( tok, "#shell" )==0 ) {  
+if( ( strncmp( tok, "#sql", 4 )==0 && (tok[4] == '\0' || isdigit( (int) tok[4] ))) || strcmp( tok, "#shell" )==0 ) {  
 	/* #sql [ load | processrows | dump | dumptab | dumphtml | dumpsilent] sql command [#endsql] */
 	/* #shell [ #processrows | #dump | #dumptab | #dumphtml | #dumpsilent ] command [#endshell] */
 	int ixhold, capmode, opmode;
@@ -49,10 +54,24 @@ if( ( strncmp( tok, "#sql", 4 )==0 && (tok[4] == '\0' || isdigit( tok[4] ))) || 
 		}
 	ix = 0;
 	GL_getok( buf, &ix ); /* skip over 1st token..*/
+
+	SQL_DBC:
 	ixhold = ix;
 	strcpy( tok, GL_getok( buf, &ix ) );  
 
-	if( strcmp( tok, "load" )==0 || strcmp( tok, "#load" )==0 ) {
+	if( tok[0] == '\0' ) ; /* no 2nd token  - added scg 5/12/04 */
+
+	else if( opmode == SQL && atoi( tok ) > 1 ) {	 /* allow channel number to be a separate token - added scg 2/24/04 */
+								/* opmode == SQL added scg 5/12/04 */
+		ss->dbc = atoi( tok ) - 1;
+		goto SQL_DBC;
+		}
+	else if( tok[0] == '#' && atoi( &tok[1] ) > 1 ) {
+		ss->dbc = atoi( &tok[1] ) - 1;
+		goto SQL_DBC;
+		}
+
+	else if( strcmp( tok, "load" )==0 || strcmp( tok, "#load" )==0 ) {
 		capmode = 'l';
 		ixhold = ix;
 		strcpy( tok, GL_getok( buf, &ix ) );  
@@ -77,14 +96,6 @@ if( ( strncmp( tok, "#sql", 4 )==0 && (tok[4] == '\0' || isdigit( tok[4] ))) || 
 		strcpy( bigbuf, &buf[ixhold+1] ); /* 1 line command.. */
 
 		if( opmode == SHELL ) {
-		#ifdef CUT
-			ss->doingshellresult = capmode;
-
-			/* submit the shell command.. */
-			stat = TDH_shellcommand( bigbuf );
-			if( stat != 0 ) ss->doingshellresult = 0;
-		#endif
-
 			/* don't allow single-line construct - so we can treat vars during scan for cgi security */
 			return( err( 2488, "#shell: single line construct not allowed", "" ));
 			}
@@ -114,7 +125,8 @@ if( ( strncmp( tok, "#sql", 4 )==0 && (tok[4] == '\0' || isdigit( tok[4] ))) || 
 		if( strcmp( tok, "#endsql" )==0 ) {
 
 			/* printf( "submitting sql:\n%s\n\n", bigbuf ); */
-			ss->doingsqlresult = capmode;
+			ss->doingsqlresult = capmode;  /* set ss->doingsqlresult to the capture mode (load, processrows, etc);
+							  then this comes into play in sinterp.c */
 
 			/* submit the sql.. */
 			stat = TDH_sqlcommand( ss->dbc, bigbuf ); 
@@ -133,7 +145,8 @@ if( ( strncmp( tok, "#sql", 4 )==0 && (tok[4] == '\0' || isdigit( tok[4] ))) || 
 			ss->doingshellresult = capmode;
 
 			/* submit the shell command.. */
-			stat = TDH_shellcommand( bigbuf );
+			if( prohibit_shell ) return( err( 1231, "attempt to #shell but shell commands prohibited", "" ));
+			else stat = TDH_shellcommand( bigbuf );
 			if( stat != 0 ) ss->doingshellresult = 0;
 
 			TDH_valuesubst_settings( "omit_shell_meta", 0 ); /* restore */
@@ -158,3 +171,19 @@ else 	{
 	return( SINTERP_END_BUT_PRINT );  /* no more calls to sec needed this time */
 	}
 }
+
+/* ================================ */
+/* If mode is passed as 1, #shell commands are disabled (safety).  If mode is 0, #shell commands are re-enabled. */
+int
+TDH_prohibit_shell( mode )
+int mode;
+{
+prohibit_shell = mode;
+return( 0 );
+}
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

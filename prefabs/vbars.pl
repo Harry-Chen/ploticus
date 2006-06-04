@@ -19,6 +19,7 @@
 #endif
 #setifnotgiven errthick = 0.5
 #setifnotgiven errunder = no
+#setifnotgiven erroneway = @errunder
 #setifnotgiven erronly = no
 #setifnotgiven vals = ""
 
@@ -64,11 +65,12 @@
   #else
     yautorange: datafields=@y,@y2 incmult=2.0  nearest=@ynearest
   #endif
-#elseif @yrange = 0
+//#elseif @yrange = 0
+#elseif $ntoken( 2, @yrange ) = ""
   #if @y2 = ""
-    yautorange: datafields=@y,@err combomode=hilo incmult=2.0 lowfix=0 nearest=@ynearest
+    yautorange: datafields=@y,@err combomode=hilo incmult=2.0 mininit=@yrange nearest=@ynearest
   #else
-    yautorange: datafields=@y,@y2 incmult=2.0 lowfix=0 nearest=@ynearest
+    yautorange: datafields=@y,@y2 incmult=2.0 mininit=@yrange nearest=@ynearest
   #endif
 #else
   yrange: @yrange
@@ -122,25 +124,7 @@ stubcull: yes
   amount: -@sep
 #endif
 
-//// define errbar proc, do it either before or after..
-#procdef bars
-locfield: @x
-lenfield: @y
-errbarfield: @err
-thinbarline: color=@errcolor width=@errthick
-tails: @errwidth
-truncate: yes
-#if @erronly = yes
-  legendlabel: @name
-#endif
-#ifspec ptselect select
-#saveas: ERRBARS
 
-//// if error bars are to go under bar graph, do them now..
-#if @err != "" && @errunder = yes
-  #proc bars
-  #clone: ERRBARS
-#endif
 
 //// do bar graph
 #if @erronly != "yes"
@@ -162,11 +146,25 @@ truncate: yes
   #ifspec ptselect select
 #endif
 
-//// if error bars are to go on top of bar graph, do them now..
-#if @err != "" && @errunder != yes
+//// do error bars 
+#if @err != "" 
   #proc bars
-  #clone: ERRBARS
+  locfield: @x
+  lenfield: @y
+  #if @erroneway = yes
+    errbarfield: 0 @err
+  #else
+    errbarfield: @err
+  #endif
+  thinbarline: color=@errcolor width=@errthick
+  tails: @errwidth
+  truncate: yes
+  #if @erronly = yes
+    legendlabel: @name
+  #endif
+  #ifspec ptselect select
 #endif
+
 
 //// data points..
 #if @erronly = yes
@@ -188,25 +186,6 @@ truncate: yes
   axis: x
   amount: @sep
 
-  //// define errbar proc, do it either before or after..
-  #procdef bars
-  locfield: @x
-  lenfield: @y2
-  errbarfield: @err2
-  thinbarline: color=@errcolor2 width=@errthick
-  tails: @errwidth
-  truncate: yes
-  #if @erronly = yes
-    legendlabel: @name2
-  #endif
-  #ifspec ptselect2 select
-  #saveas: ERRBARS2
-
-  //// err bars under..
-  #if @err != "" && @errunder = yes
-    #proc bars
-    #clone: ERRBARS2
-  #endif
 
   //// bar graph..
   #if @erronly != "yes"
@@ -225,9 +204,22 @@ truncate: yes
   #endif
   
   //// err bars over..
-  #if @err != "" && @errunder != yes
+  #if @err != "" 
     #proc bars
-    #clone: ERRBARS2
+    locfield: @x
+    lenfield: @y2
+    #if @erroneway = yes
+      errbarfield: 0 @err2
+    #else
+      errbarfield: @err2
+    #endif
+    thinbarline: color=@errcolor2 width=@errthick
+    tails: @errwidth
+    truncate: yes
+    #if @erronly = yes
+      legendlabel: @name2
+    #endif
+    #ifspec ptselect2 select
   #endif
 
   //// data points
@@ -257,6 +249,13 @@ truncate: yes
   location: @legend
   #ifspec legendfmt format
   #ifspec legendsep sep
+  #ifspec legwrap wraplen
+  #ifspec legbreak extent
+  #ifspec legtitle title
+  #ifspec legbox backcolor
+  #ifspec legframe frame
+  #ifspec legtextdet textdetails
+
 #endif
 
 //// user post-plot include..

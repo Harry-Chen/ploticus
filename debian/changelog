@@ -1,3 +1,11 @@
+ploticus (2.33-1) unstable; urgency=low
+
+  * New Upstream release                              Closes: #262971
+  * Updated standards version to 3.7.2 (No package changes required)
+  * modified src/Makefile configuration options see debian/README.Debian
+
+ -- Colin Tuckley <colin@tuckley.org>  Sun,  4 Jun 2006 10:05:28 +0100
+
 ploticus (2.20-4) unstable; urgency=low
 
   * New Maintainer.                                   closes: #361016
@@ -9,7 +17,7 @@ ploticus (2.20-4) unstable; urgency=low
   * clean up debian/rules
   * install run_prefabs_test.bat without execute privs
   * corrected section number in man page .TH entry
-  * fixed compiler warnings due to implict library 
+  * fixed compiler warnings due to implict library
     function definitions (causes segfaults on 64bit) closes: #284080
   * build with debug info, incorporated patch from
     Peter Palfrader <weasel@debian.org>              closes: #284069

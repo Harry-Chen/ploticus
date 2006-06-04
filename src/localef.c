@@ -1,3 +1,5 @@
+/* LOCALE stuff - contributed code. */
+
 #include <string.h>
 #include <locale.h>
 #include <ctype.h>

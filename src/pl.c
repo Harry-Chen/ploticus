@@ -1,18 +1,23 @@
-/*
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
-
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 /* PL - ploticus main module */
 
-#include <stdlib.h>
 #include "pl.h"
+#include <unistd.h>
 #ifdef WIN32
-#include "fcntl.h"  /* for _O_BINARY */
+#include <fcntl.h>  /* for _O_BINARY */
 #endif
 
+extern int PLGG_setimfmt();
 
-version_msg( longmsg )
+
+/* ============================================= */
+int
+PL_version_msg( longmsg )
 int longmsg;
 {
 char outputformats[80];
@@ -27,7 +32,7 @@ fprintf( PLS.diagfp, "ploticus %s (win32) ", PLVERSION );
 #else
 fprintf( PLS.diagfp, "ploticus %s (unix) ", PLVERSION );
 #endif
-fprintf( PLS.diagfp, " Copyright 1998-2003 Steve Grubb, http://ploticus.sourceforge.net\n" );
+fprintf( PLS.diagfp, " Copyright 1998-2006 Steve Grubb, http://ploticus.sourceforge.net\n" );
 
 
 if( longmsg ) fprintf( PLS.diagfp, "\n\
@@ -45,11 +50,15 @@ for more details.\n" );
 exit( 1 );
 }
 
+/* ============================================= */
+/* MAIN */
+/* ============================================= */
+int
 main( argc, argv )
 int argc;
 char **argv;
 {
-int i, j, argi, use_stdin, vardec, stat, found, valused, stoparg, ci, cii;
+int i, argi, use_stdin, stat, found, valused, stoparg, ci, cii;
 char buf[256];
 char scriptfile[MAXPATH];
 char prefabname[80];
@@ -110,12 +119,12 @@ for( argi = 1; argi < stoparg; argi++ ) {
 
 	if( PLS.cgiargs != NULL ) {
 		/* parse next 2 args from QUERY_STRING.. */
-		GL_getcgiarg( PL_bigbuf, PLS.cgiargs, &ci, 252 );
+		GL_getcgiarg( PL_bigbuf, PLS.cgiargs, &ci, 252 ); 
 		if( PL_bigbuf[0] == '\0' ) break;
 		arg = PL_bigbuf;
 		cii = ci;
-		GL_getcgiarg( &PL_bigbuf[500], PLS.cgiargs, &cii, 252 ); /* share PL_bigbuf */
-		nextarg = &PL_bigbuf[500];
+		GL_getcgiarg( &PL_bigbuf[500], PLS.cgiargs, &cii, 252 );  /* share PL_bigbuf */
+		nextarg = &PL_bigbuf[500]; 
 		}
 	else	{
 		arg = argv[ argi ];
@@ -131,7 +140,7 @@ for( argi = 1; argi < stoparg; argi++ ) {
 		if( strlen( argv[0] ) >= 5 ) {
 			if( strcmp( &argv[0][strlen(argv[0])-5], "plpng" )==0 ) {
 				Eerr( 5279, "png not available in plpng", "" );
-				version_msg( 0 ); exit(1);
+				PL_version_msg( 0 ); exit(1);
 				}
 			}
 		p[0] = "plpng";
@@ -139,22 +148,25 @@ for( argi = 1; argi < stoparg; argi++ ) {
 		p[argc] = NULL;
 		execvp( "plpng", argv );
 		fprintf( PLS.errfp, "PNG not supported in this build (plpng not found).\n" );
-                version_msg( 0 ); exit(1);
+                PL_version_msg( 0 ); exit(1);
 		}
 
 	else if( strcmp( arg, "-f" )==0 ) {
 		if( strlen( nextarg ) > MAXPATH-10 ) { /* allow extra for output file suffix add */
 			fprintf( PLS.errfp, "pl: script file name too long" );
-			version_msg( 0 ); exit( 1 );
+			PL_version_msg( 0 ); exit( 1 );
 			}
 		strcpy( scriptfile, nextarg );
 		argi++;
 		}
 
-	else if( strcmp( arg, "-prefab" )==0 || strcmp( arg, "-quickplot" )==0 ) {
+	else if( strcmp( arg, "-prefab" )==0 ) {
+		if( PLS.cgiargs != NULL ) {
+			Eerr( 4916, "-prefab not available in direct cgi mode", "" ); PL_version_msg( 0 ); exit( 1 );
+			}
 		if( PLS.prefabsdir == NULL ) {
 			Eerr( 4899, "PLOTICUS_PREFABS environment var not found (pathname of dir where prefab files reside)", "" );
-			version_msg( 0 ); exit( 1 );
+			PL_version_msg( 0 ); exit( 1 );
 			}
 		sprintf( prefabname, "%s.pl", nextarg );
 		sprintf( scriptfile, "%s%c%s", PLS.prefabsdir, PATH_SLASH, prefabname );
@@ -162,7 +174,7 @@ for( argi = 1; argi < stoparg; argi++ ) {
 		argi++;
 		}
 
-	else if( GL_smember( arg, "-? -help -ver -version" ) ) { version_msg( 1 ); exit(0); }
+	else if( GL_smember( arg, "-? -help -ver -version" ) ) { PL_version_msg( 1 ); exit(0); }
 
 	else 	{
 		stat = PL_process_arg( arg, nextarg, &valused, &found );
@@ -171,7 +183,7 @@ for( argi = 1; argi < stoparg; argi++ ) {
 		else if( !found && scriptfile[0] == '\0' ) {
 			if( strlen( arg ) > MAXPATH-10 ) { /* allow extra for output file suffix add */
 				fprintf( PLS.errfp, "pl: script file name too long" );
-				version_msg( 0 ); exit( 1 );
+				PL_version_msg( 0 ); exit( 1 );
 				}
 			strcpy( scriptfile, arg  );  
 			}
@@ -184,21 +196,24 @@ for( argi = 1; argi < stoparg; argi++ ) {
 
 /* CGI header stuff.. */
 if( PLS.cgiargs != NULL ) {
-	char dd, imagetype[20];
+	char imagetype[20];
 	strcpy( PLS.outfile, "stdout" );
 	/* check for loopy script file names.. */
 	if( scriptfile[0] == '/' && prefabname[0] == '\0' ) {   /* changed scg 2/6/02 */
 		Eerr( 2740, "cgi mode: script file name may not begin with '/'", scriptfile );
-		version_msg( 0 ); exit(1);
+		PL_version_msg( 0 ); exit(1);
 		}
 	if( GL_slmember( scriptfile, "*..* .*" ) ) {
 		Eerr( 2740, "cgi mode: script file name may not begin with '.' or contain '..'", scriptfile );
-		version_msg( 0 ); exit(1);
+		PL_version_msg( 0 ); exit(1);
 		}
 	/* output the HTTP content-type header.. */
 	devnamemap( &(PLS.device), imagetype, 2 );
 	if( PLS.device == 's' ) printf( "Content-type: image/%s-xml\n\n", imagetype );
 	else printf( "Content-type: image/%s\n\n", imagetype );
+
+	/* be sure clickmap is off - incompatible with direct cgi mode.. */
+	PLS.clickmap = 0;
 	}
 
 
@@ -208,7 +223,7 @@ if( use_stdin ) {
 	FILE *tfp;
 	sprintf( scriptfile, "%s_I", PLS.tmpname );
 	tfp = fopen( scriptfile, "w" ); /* temp file, unlinked below */
-	if( tfp == NULL ) { Eerr( 102, "Cannot open tmp file for stdin script\n", scriptfile ); version_msg( 0 ); exit(1); }
+	if( tfp == NULL ) { Eerr( 102, "Cannot open tmp file for stdin script\n", scriptfile ); PL_version_msg( 0 ); exit(1); }
 	while( fgets( PL_bigbuf, MAXBIGBUF-1, stdin ) != NULL ) fprintf( tfp, "%s", PL_bigbuf ); /* was 255 scg 5/20/03 */
 	fclose( tfp );
 	}
@@ -216,7 +231,7 @@ if( use_stdin ) {
 
 if( scriptfile[0] == '\0' ) {
 	Eerr( 20, "No -prefab or scriptfile specified on command line", "" );
-	version_msg( 0 );
+	PL_version_msg( 0 );
 	}
 
 
@@ -225,13 +240,13 @@ if( scriptfile[0] == '\0' ) {
 
 if( TDH_getvar( "DEVICE", buf ) != 0 ) { /* DEVICE not given on command line, set DEVICE */
 	stat = devnamemap( &(PLS.device), buf, 2 );
-	if( stat != 0 ) { version_msg( 0 ); exit( 1 ); }
+	if( stat != 0 ) { PL_version_msg( 0 ); exit( 1 ); }
 	TDH_setvar( "DEVICE", buf );
 	}
 else	{ /* DEVICE given on command line, set PLS.device from DEVICE */
 	TDH_getvar( "DEVICE", buf );
 	stat = devnamemap( &(PLS.device), buf, 1 );
-	if( stat != 0 ) { version_msg( 0 ); exit( 1 ); }
+	if( stat != 0 ) { PL_version_msg( 0 ); exit( 1 ); }
 	}
 if( PLS.debug ) fprintf( PLS.diagfp, "Device code is %c\n", PLS.device );
 
@@ -263,7 +278,7 @@ PL_begin(); /* various other initializations that must be done after config & ar
 /* execute the script file to produce the plot.. */
 if( PLS.debug ) fprintf( PLS.diagfp, "Script file is: %s\n", scriptfile );
 stat = PL_exec_scriptfile( scriptfile );
-if( stat != 0 ) { version_msg( 0 ); exit( 1 ); }
+if( stat != 0 ) { PL_version_msg( 0 ); exit( 1 ); }
 
 
 /* finish up (x11: button, etc.) */
@@ -279,6 +294,7 @@ if( PLS.viewer[0] != '\0' && PLS.device != 'x' && PLS.cgiargs == NULL ) {
 	strcpy( &buf[len++], " " );
 	Egetoutfilename( &buf[ len ] );
 	if( strnicmp( &buf[ len ], "stdout", 6 )==0 ) fprintf( PLS.diagfp, "Cannot use -o stdout with -viewer\n" );
+	else if( PLS.noshell ) fprintf( PLS.diagfp, "-noshell prohibits -viewer" );
 	else 	{ 
 		fprintf( PLS.diagfp, "Executing '%s' to view results..\n", buf ); 
 		system( buf ); 
@@ -288,3 +304,9 @@ if( PLS.viewer[0] != '\0' && PLS.device != 'x' && PLS.cgiargs == NULL ) {
 PL_free();
 exit( 0 );
 }
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

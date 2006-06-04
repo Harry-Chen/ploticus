@@ -2,11 +2,11 @@
 #include top
 .ig >>
 
-== Begin ploticus 2.20 copyright notice ==
+== Begin ploticus 2.33 copyright notice ==
 <p>
 
-ploticus 2.20 data display engine.  Software, documentation, and examples.
-Copyright 1998-2004 Stephen C. Grubb  (scg@jax.org)
+ploticus 2.33 data display engine.  Software, documentation, and examples.
+Copyright 1998-2006 Stephen C. Grubb  (stevegrubb@gmail.com)
 <p>
 
 The home page for PLOTICUS is     http://ploticus.sourceforge.net
@@ -34,48 +34,86 @@ border=0></a>
 
 A copy of the GNU General Public License should be present with the code, in 
 file GPL.txt.  A copy of the GNU General Public License may also be obtained 
-from: Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  
-02111-1307, USA.
+from: Free Software Foundation, Inc., 51 Franklin St - Fifth Floor, 
+Boston, MA  02110-1301, USA.
+
+<br>
+<br>
+<h3>Clarifications:</h3>
+
+The following clarifications are based on my understanding of the GPL.
+In case of contradiction, the GPL is the final authority on all of these 
+matters.
+
+
+<h3>Q1. Can I make modifications to ploticus code?</h3>
+
+Yes, but any derivatives must be made freely available as GPL code.  
+This is because your modifications might be good ones that would be useful to
+the ploticus user community.  This makes things fair for all the developers 
+who have contributed to ploticus code thus far.
 <p>
+You must keep the GPL.txt and Copyright files intact in the source code
+directory (add your own "Modifications made by" language to the top of 
+the Copyright file).  It must be stated in an end-user-accessible copyright or 
+acknowledgements area that the package is "a GPL derivative of Ploticus 
+data display engine (c) 1998-2006 Stephen Grubb, freely available from 
+http://ploticus.sourceforge.net".  I request notification of the availability 
+of all such derivatives (stevegrubb@gmail.com) so that I can link to them from 
+the ploticus home page and consider possible inclusion in the main fork.  
 
+<br>
+<br>
 
-Clarification:
+<h3>Q2. Can ploticus be used as part of a commercial (for-profit) product or service?</h3>
+
+The GPL allows you to use ploticus to produce graphs for any lawful commercial or 
+noncommercial purpose, including providing services (automated or by hand) for a fee.
+For example, there's no problem with executing a standard unmodified version of ploticus 
+on your server to produce graphs as part of a fee-based service.
+
+<br>
+<br>
+
+<h3>Q3. Can ploticus be included/distributed as part of a non-GPL product?</h3>
+
+Selling or distributing ploticus as a non-GPL product offering is prohibited.
+Combining or intermingling of ploticus source code with non-GPL source code is 
+prohibited (thus the libploticus API cannot be used in this context).
 <p>
-
-My view is that the GPL places no restriction on _using_ ploticus to produce 
-graphs for any legal commercial, proprietary, public or private purpose,
-but that the GPL prohibits someone from taking the ploticus code and selling 
-it, or adding it into a larger software product that is to be sold or 
-distributed to other parties as non-GPL software.  Software that's freely
-distributed strictly within an organization for internal use only does not 
-have to be GPL.  I take an active interest in seeing that these rules are 
-adhered to, and request notification of any suspected violations - scg@jax.org
+However it is possible to distribute ploticus "along side of" non-GPL code if it is 
+partitioned ("kept at arm's length") from the non-GPL code.  The GPL addresses this issue 
+<a href="http://www.gnu.org/licenses/gpl-faq.html#GPLInProprietarySystem">here</a>.
 <p>
-
-Exception for bundling as a reporting utility:
-For situations where ploticus is to be bundled as an ancillary reporting 
-utility along with a larger software package, I interpret GPL section 2 as 
-requiring that GPL be attached only to ploticus, and not to the larger 
-package.  Prerequisites: 1) the rest of your product must be considered an 
-independent and viable work in its own right; 2) ploticus must be invoked 
-using the standard pl(1) executable, not the libploticus API; 3) ploticus 
-graphics capability may not be offered as an additional cost option; 
-4) ploticus source code may not be enhanced; 5) ploticus identity and 
-authorship must be clearly stated and be visible to users.
+Partitioning is likely to be sufficient if all of these conditions are met:
+1) ploticus (or GPL derivative) must be invoked as an executable, not via the libploticus API; 
+2) your product must be viable in its own right and essentially usable with or without ploticus;
+3) ploticus-supported graphics capability may not be sold as an additional cost option; 
+4) if you've made modifications to the ploticus code you must abide by section Q1 above.
+5) ploticus source code is kept in a separate directory, and the GPL.txt and Copyright files therein kept intact;
+6) ploticus identity and authorship must be clearly stated and visible.
+It must be stated in a end-user-accessible copyright or acknowledgements area that the product
+utilizes "Ploticus data display engine (c) 1998-2006 Stephen Grubb, GPL, freely available 
+from http://ploticus.sourceforge.net".  
 <p>
-
-If you have questions or need clarification please contact me - scg@jax.org
+I request notification of the availability of all such products (stevegrubb@gmail.com)so that 
+I can monitor compliance and link to them from the ploticus home page.
+<p>
+If you have questions or need clarification please contact me (stevegrubb@gmail.com) ....
+I take an active interest in seeing that these rules are 
+adhered to, and request notification of any suspected violations.
 <p>
 
 <pre>
+== end of clarifications ==
 
 
 SVG driver copyright 2001 Bill Traill  bill@traill.demon.co.uk 
 SWF driver copyright 2003 Bill Traill  bill@traill.demon.co.uk 
 
-ploticus 2.20 generates PNG and run-length-encoded GIF-compatible 
+Ploticus generates PNG and run-length-encoded GIF-compatible 
 output using portions of Thomas Boutell's gd library versions 
-1.6.3 and 1.3.  ploticus 2.20 does not read GIF files.
+1.6.3 and 1.3.  ploticus does not read GIF files.
 GD 1.6.3 and 1.3 (www.boutell.com) carry the following statements:
    |
    |	Portions copyright 1994, 1995, 1996, 1997, 1998, 1999 by 
@@ -122,7 +160,7 @@ GD 1.6.3 and 1.3 (www.boutell.com) carry the following statements:
    |
 
 
-== End of ploticus 2.20 Copyright Notice ==
+== End of ploticus 2.33 Copyright Notice ==
 
 </pre>
 .>>

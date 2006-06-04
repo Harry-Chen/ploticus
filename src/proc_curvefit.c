@@ -1,13 +1,15 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 /* PROC CURVEFIT - Fit a curve to the data.
    Result becomes the new data that plotting procedures access.  */
 
 #include "pl.h"
 
-#define MAXPTS 5000	/* max # input points for movingavg curve */
+#define MAXPTS 1000	/* default max # input points for movingavg curve */
 #define MAXORDER 21	/* max bspline order value (no limit for movingavg order) */
 #define MAXBSP_IN 100  /* max # input points for bspline curve */
 
@@ -17,32 +19,30 @@
 #define SIMPLEAVG	'a'
 #define INTERPOLATED	'i'
 
-static double in[MAXPTS][2];
+/* static double in[MAXPTS][2]; */
+
 /* the PLV vector is used for curve points */
 static int bspline(), mavg(), plainavg(), lregress();
-static int dblcompare(double *f, double *g);
 
+static int dblcompare(const void *a, const void *b);  
+/* static int dblcompare(double *f, double *g);   */
 
+int
 PLP_curvefit()
 {
 int i;
-char attr[40], val[256];
+char attr[NAMEMAXLEN], val[256];
 char *line, *lineval;
 int nt, lvp;
 int first;
 
-int j;
 int stat;
-int align;
-double adjx, adjy;
 
 int order;
 int xfield;
 int yfield;
 int npts; /* number of input points */
 int nresultpoints; /* number of result points */
-int curd;
-int davail;
 int irow;
 double resolution;
 int showresults;
@@ -51,12 +51,17 @@ double linestart, linestop;
 double calcstart, calcstop;
 int calcrangegiven;
 char curvetype[40];
-char legendlabel[120];
+char legendlabel[256]; /* raised (can contain urls for clickmap) scg 4/22/04 */
 int linerangegiven;
 int statsonly;
 char selectex[256];
 int selectresult;
 char numstr[100];
+int xsort;
+int maxinpoints;
+double *inpoints, *inp;
+double drawx, drawy, prevdrawx, prevdrawy;
+int doclip;
 
 TDH_errprog( "pl proc curvefit" );
 
@@ -76,6 +81,9 @@ strcpy( curvetype, "movingavg" );
 statsonly = 0;
 strcpy( selectex, "" );
 strcpy( legendlabel, "" ); /* added scg 7/28/03 */
+xsort = 0;
+maxinpoints = MAXPTS;
+doclip = 0;
 
 
 /* get attributes.. */
@@ -90,6 +98,9 @@ while( 1 ) {
 	else if( stricmp( attr, "yfield" )==0 ) yfield = fref( val ) - 1;
 	else if( stricmp( attr, "order" )==0 ) order = atoi( val );
 	else if( stricmp( attr, "resolution" )==0 ) resolution = atof( val );
+	else if( stricmp( attr, "xsort" )==0 ) {
+		if( strnicmp( val, YESANS, 1 )==0 ) xsort = 1;
+		}
 	else if( stricmp( attr, "linedetails" )==0 ) strcpy( linedetails, lineval );
 	else if( stricmp( attr, "legendlabel" )==0 ) strcpy( legendlabel, lineval );
 	else if( stricmp( attr, "select" )==0 ) strcpy( selectex, lineval );
@@ -105,9 +116,14 @@ while( 1 ) {
 		else calcrangegiven = 0;
 		}
 	else if( stricmp( attr, "curvetype" )==0 ) strcpy( curvetype, val );
+	else if( stricmp( attr, "maxinpoints" )==0 ) maxinpoints = atoi( val );
 	else if( stricmp( attr, "showresults" )==0 ) {
 		if( strnicmp( val, YESANS, 1 )==0 ) showresults = 1;
 		else showresults = 0;
+		}
+	else if( stricmp( attr, "clip" )==0 ) {
+		if( strnicmp( val, YESANS, 1 )==0 ) doclip = 1;
+		else doclip = 0;
 		}
 	else if( stricmp( attr, "statsonly" )==0 ) {
 		if( strnicmp( val, YESANS, 1 )==0 ) statsonly = 1;
@@ -133,6 +149,10 @@ if( strnicmp( legendlabel, "#usefname", 9 )==0 ) getfname( yfield+1, legendlabel
 /* now do the computation work.. */
 /* -------------------------- */
 
+/* allocate memory for the input points list.. */
+inpoints = (double *) malloc( maxinpoints * sizeof( double ) * 2 );
+inp = inpoints;
+
 /* process input data.. */
 npts = 0;
 for( irow = 0; irow < Nrecords; irow++ ) {
@@ -143,39 +163,47 @@ for( irow = 0; irow < Nrecords; irow++ ) {
                 if( selectresult == 0 ) continue; /* reject */
                 }
 
-	in[npts][1] = fda( irow, yfield, Y );
-	if( Econv_error() ) { conv_msg( irow, yfield, "yfield" ); continue; }
+	/* in[npts][1] = fda( irow, yfield, Y ); */
+	inp += 1;  /* because we're getting Y */
+	*inp = fda( irow, yfield, Y );
+	if( Econv_error() ) { conv_msg( irow, yfield, "yfield" ); inp -= 1; continue; }   /* bug - inp-=1 added scg 2/3/05 */
 
-	if( xfield < 0 ) in[npts][0] = (int)irow;
+	inp -= 1;  /* now back up one to get X */
+	if( xfield < 0 ) *inp = (double)irow;   /* in[npts][0] = (int)irow; */
 	else 	{
-		in[npts][0] = fda( irow, xfield, X );
+		/* in[npts][0] = fda( irow, xfield, X ); */
+		*inp = fda( irow, xfield, X );
 		if( Econv_error() ) { conv_msg( irow, xfield, "xfield" ); continue; }
 		}
 
 	/* compute curve only for points within calcrange */
 	if( calcrangegiven ) {
-		if( in[npts][0] < calcstart ) continue;
-		else if( in[npts][0] > calcstop ) break;
+		/* if( in[npts][0] < calcstart ) continue; */
+		/* else if( in[npts][0] > calcstop ) break; */
+		if( *inp < calcstart ) continue;
+		else if( *inp > calcstop ) break;
 		}
 
 	if( curvetype[0] == BSPLINE && npts >= MAXBSP_IN ) {
 		Eerr( 2599, "max of 100 input points allowed for bspline exceeded; curve truncated", "" );
 		break;
 		}
-	if( npts >= MAXPTS ) {
-		Eerr( 2599, "Sorry, max number of input points reached; curve truncated", "" );
+	if( npts >= maxinpoints ) {
+		Eerr( 2599, "maxinpoints exceeded, curve truncated (see maxinpoints attribute)", "" );
 		break;
 		}
 	npts++;
+	inp+=2; /* to next point slot */
 	}
 
+
 /* sort points on x - added scg 11/2000 */
-if( curvetype[0] != INTERPOLATED ) 
-	qsort( in, npts, sizeof(double)*2, dblcompare );
+if( curvetype[0] != INTERPOLATED || xsort ) 
+	qsort( inpoints, npts, sizeof(double)*2, dblcompare );
 
 
 if( curvetype[0] == MOVINGAVG ) { 
-	mavg( in, npts, PLV, order );
+	mavg( inpoints, npts, PLV, order );
 	nresultpoints = npts;
 	}
 
@@ -188,10 +216,11 @@ else if( curvetype[0] == REGRESSION ) {
 		rlinestop = linestop;
 		}
 	else	{
-		rlinestart = in[0][0];
-		rlinestop = in[npts-1][0];
+		/* rlinestart = in[0][0]; rlinestop = in[npts-1][0]; */
+		inp = inpoints; rlinestart = *inp; inp += (npts-1)*2; rlinestop = *inp;
+		/* fprintf( stderr, "[rlinestart=%g   rlinestop=%g ]\n", rlinestart, rlinestop ); */
 		}
-	lregress( in, npts, PLV, rlinestart, rlinestop );
+	lregress( inpoints, npts, PLV, rlinestart, rlinestop );
 	nresultpoints = 2;
 
 	/* vertical line (degenerate case) suppress.. */
@@ -210,25 +239,29 @@ else if( curvetype[0] == BSPLINE ) {
 		Eerr( 2158, "Using max bspline order of 20", "" );
 		order = 20;
 		}
-	if( npts < order ) 
+	if( npts < order ) {
+		if( inpoints != NULL ) free( inpoints );
 		return( Eerr( 4892, "Must have at least 'order' data points", "" ) );
+		}
 
 	/* do the computation.. */
-	bspline( in, npts, PLV, nresultpoints, order );
+	bspline( inpoints, npts, PLV, nresultpoints, order );
 	}
 
 else if( curvetype[0] == INTERPOLATED ) { 
-	stat = PL_smoothfit( in, npts, PLV, &nresultpoints );
+	stat = PL_smoothfit( inpoints, npts, PLV, &nresultpoints );
 	}
 
 else 	{ 	/* average curve (basic) */
-	plainavg( in, npts, PLV, order );
+	plainavg( inpoints, npts, PLV, order );
 	nresultpoints = npts;
 	}
 
+if( inpoints != NULL ) free( inpoints );
 
 
-/* draw the line.. */
+/* curve has been generated.. now draw the line.. */
+/* ---------------------------------------------- */
 linedet( "linedetails", linedetails, 1.0 );
 Emovu( dat2d(0,0), dat2d(0,1) );
 if( showresults ) fprintf( PLS.diagfp, "// generated curve points follow:\n%g %g\n", dat2d(0,0), dat2d(0,1) );
@@ -236,17 +269,25 @@ if( showresults ) fprintf( PLS.diagfp, "// generated curve points follow:\n%g %g
 
 for( i = 1; i < nresultpoints; i++ ) {
 
+	drawx = dat2d(i,0);
+	drawy = dat2d(i,1);
 
 	/* draw only within linerange.. */
-	if( i > 0 && (dat2d(i,0)) > linestart && (dat2d(i-1,0)) < linestart ) {
-		Emovu( dat2d(i,0), dat2d(i,1) );
+	if( i > 0 && drawx > linestart && (dat2d(i-1,0)) < linestart ) Emovu( drawx, drawy );
+
+	else if( drawx < linestart ) continue;
+	else if( drawx > linestop ) break;
+
+	if( doclip && !statsonly && i > 0 ) {
+		prevdrawx = dat2d(i-1,0);
+		prevdrawy = dat2d(i-1,1);
+		stat = Elineclip( &prevdrawx, &prevdrawy, &drawx, &drawy, EDXlo, EDYlo, EDXhi, EDYhi );
+		if( stat ) goto BOTTOM;
+		Emovu( prevdrawx, prevdrawy );
 		}
-
-	else if( dat2d(i,0) < linestart ) continue;
-	else if( dat2d(i,0) > linestop ) break;
-
-	if( !statsonly ) Elinu( dat2d(i,0), dat2d(i,1) );  
-	if( showresults ) fprintf( PLS.diagfp, "%g %g\n", dat2d(i,0), dat2d(i,1) );
+	if( !statsonly ) Elinu( drawx, drawy );  
+	BOTTOM:
+	if( showresults ) fprintf( PLS.diagfp, "%g %g\n", drawx, drawy );
 	}
 
 
@@ -260,7 +301,7 @@ setcharvar( "YFINAL", numstr );
 
 
 
-if( legendlabel[0] != '\0' ) add_legent( LEGEND_LINE, legendlabel, "", linedetails, "", "" );
+if( legendlabel[0] != '\0' ) PL_add_legent( LEGEND_LINE, legendlabel, "", linedetails, "", "" );
 
 return( 0 );
 }
@@ -382,7 +423,7 @@ double out[][2]; /* output points */
 int ncv;         /* number of output points to generate */
 int order;	 /* order of the curve  (2..n_in) */
 {
-int i, j, k, l, m, n;
+int i, j, k, n;
 int nknot; /* size of knot vector */
 double t; /* parameter */
 double N[MAXBSP_IN][MAXORDER]; /* weighting function */ 
@@ -453,12 +494,27 @@ return( 1 );
 }
 
 /* ============================= */
-static int
-dblcompare( f, g )
-double *f, *g;
+static int 
+dblcompare( a, b )
+const void *a, *b;
+
+/* dblcompare( f, g )
+ * double *f, *g;
+ */  /* changed to eliminate gcc warnings  scg 5/18/06 */
+
 {
+double *f, *g;
+f = (double *)a;
+g = (double *)b;
 if( *f > *g ) return( 1 );
 if( *f < *g ) return( -1 );
 return( 0 );
 }
+
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 

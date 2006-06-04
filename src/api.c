@@ -1,9 +1,16 @@
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
+
 /* PLOTICUS API */
 #include "pl.h"
 
 static int begin_needed = 1;
 
 /* ================================== */
+int
 ploticus_init( device, outfilename )
 char *device, *outfilename;
 {
@@ -21,6 +28,7 @@ return( 0 );
 
 
 /* =================================== */
+int
 ploticus_arg( name, value )
 char *name, *value;
 {
@@ -32,6 +40,7 @@ return( 0 );
 }
 
 /* =================================== */
+int
 ploticus_begin()
 {
 if( ! begin_needed ) return( 0 );
@@ -41,6 +50,7 @@ return( PL_begin() );
 
 
 /* ==================================== */ 
+int
 ploticus_execline( line )
 char *line;  /* a line of script, with or without trailing newline */
 {
@@ -54,6 +64,7 @@ return( PL_execline( line ));
 
 
 /* ==================================== */ 
+int
 ploticus_execscript( scriptfile, prefab ) 
 char *scriptfile;
 int prefab;
@@ -68,13 +79,14 @@ if( ! prefab ) return( PL_exec_scriptfile( scriptfile ));
 else 	{
 	prefabs_dir = getenv( "PLOTICUS_PREFABS" );
 	if( prefabs_dir == NULL ) return( Eerr( 7237, "PLOTICUS_PREFABS environment variable not found", "" ));
-	sprintf( filename, "%s/%s", prefabs_dir, filename );
+	sprintf( filename, "%s/%s", prefabs_dir, scriptfile );
 	return( PL_exec_scriptfile( filename ));
 	}
 }
 
 
 /* ==================================== */ 
+int
 ploticus_end()
 {
 int stat;
@@ -90,6 +102,7 @@ return( stat );
 
 
 /* ==================================== */ 
+int
 ploticus_setvar( name, value )
 char *name, *value;
 {
@@ -97,6 +110,7 @@ return( TDH_setvar( name, value ));
 }
 
 /* ==================================== */ 
+int
 ploticus_getvar( name, value )
 char *name, *value;
 {
@@ -115,3 +129,8 @@ a way to access gd working image
 
 #endif
 
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

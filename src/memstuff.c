@@ -1,18 +1,26 @@
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
+
 /* misc routines related to pl data structures */
 
 /* warning: the *dataset routines will alter PL_bigbuf  */
 
-#include <stdlib.h>
 #include "pl.h"
+#include <string.h>
 
 static int buflen;
 static int nfields, prevnfields, newds;
 static int highwater = -1;
 
 extern int TDH_midriff_flag;
+extern int PLGG_initstatic(), PLGP_initstatic(), PLGS_initstatic(), PLGF_initstatic();
 
 /* ================================== */
 /* INIT_MEM - initialize pl data structures */
+int
 PL_init_mem()
 {
 PLD.datarow = (char **) malloc( PLD.maxrows * sizeof( char * ) );
@@ -28,12 +36,14 @@ return( 0 );
 
 /* ================================== */
 /* INIT_STATICS - initialize static variables */
+int
 PL_init_statics()
 {
 PLG_cblock_initstatic();
 PLG_init_initstatic();
 PLG_mark_initstatic();
 PLG_pcode_initstatic();
+PLG_stub_initstatic();
 PL_execline_initstatic();
 PL_fieldnames_initstatic();
 PL_units_initstatic();
@@ -81,6 +91,7 @@ return( 0 );
 
 /* ================================== */
 /* FREE - free all mallocated memory.  */
+int
 PL_free( )
 {
 int i;
@@ -106,6 +117,7 @@ return( 0 );
  *	If ds has been used previously, free datarow memory and set currow and curdf back.
  *	We don't attempt to free procline memory for embedded data sets.
  */
+int
 PL_checkds( ds )
 int ds;
 {
@@ -130,6 +142,7 @@ return( 0 );
  * Note, this doesn't advance PLD.curds.  This must be done after the
  * new data set has been completely built.
  */
+int
 PL_newdataset( )
 {
 newds = PLD.curds + 1;
@@ -147,6 +160,7 @@ return( 0 );
    this is used to indicate the start of a new data row.
  */
 
+int
 PL_startdatarow()
 {
 buflen = 0;
@@ -160,6 +174,7 @@ return( 0 );
    this is used to append a new piece of data to the current row.
  */
 
+int
 PL_catitem( item )
 char *item;
 {
@@ -180,6 +195,7 @@ return( 0 );
    added to the pl data structures at this point.. 
  */
 
+int
 PL_enddatarow()
 {
 int i, state;
@@ -224,3 +240,8 @@ PLD.nfields[ newds ] = nfields;
 return( 0 );
 }
 
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

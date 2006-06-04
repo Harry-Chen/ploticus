@@ -8,11 +8,11 @@ if [ "$DEV" = "" ]; then
 fi
 
 echo dist1..
-ploticus -prefab dist x=1  data=data6  curve=yes  binsize=0.05 barwidth=0.08  ygrid=yes \
+pl -prefab dist x=1  data=data6  curve=yes  binsize=0.05 barwidth=0.08  ygrid=yes \
      title="Distribution of responses" \
 	-$DEV -o ${OUTDIR}dist1.$DEV $ARGS
 
 echo dist2..
-ploticus -prefab dist x=1  data=data8  cats=yes  yrange=0  stubvert=yes  barwidth=0.05  \
-	ylbl="# Hits"   order=rev  \
+pl -prefab dist x=1  data=data8  cats=yes  yrange=0  stubvert=yes  barwidth=0.05  \
+	ylbl="# Hits"   order=rev   \
 	-$DEV -o ${OUTDIR}dist2.$DEV $ARGS

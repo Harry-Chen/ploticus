@@ -1,5 +1,15 @@
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
+
 #include "pl.h"
 
+extern int sleep();
+#ifndef NOGD
+extern int PLGG_freetype_twidth();
+#endif
 
 /* ----------------------------- */
 /* CUSTOM_FUNCTION - returns 0 on success, 1 if named function not found */
@@ -20,7 +30,7 @@
  * }
  */
 
-
+int
 PL_custom_function( name, arg, nargs, result, typ )
 char *name;
 char *arg[];
@@ -56,7 +66,6 @@ if( strcmp( name, "inrange" )==0 ) {
 /* hash:564 $icolor( i ) - return one of 20 color entries, chosen for contrast */
 else if( strcmp( name, "icolor" )==0 ) {
 	int i;
-	char *c;
 	i = atoi( arg[0] );
 	if( i < 1 ) i = 1;
 	i--;
@@ -76,6 +85,7 @@ else if( strcmp( name, "dataitem" )==0 ) {
 	return( 0 );
 	}
 
+
 /* -------------------- */
 /* hash: 1306  $defaultinc(min,max) - get a default increment */
 else if( strcmp( name, "defaultinc" )==0 ) {
@@ -85,10 +95,19 @@ else if( strcmp( name, "defaultinc" )==0 ) {
 	return( 0 );
 	}
 
+/* ------------------- */
+/* hash: 1662  $boundingbox( on/off ) */
+else if( strcmp( name, "boundingbox" )==0 ) {
+	PLG_pcodeboundingbox( atoi( arg[0] ));
+	sprintf( result, "0" );
+	return( 0 );
+	}
+
 /* -------------------- */
 /* hash: 2959  $squelch_display(mode) */
 else if( strcmp( name, "squelch_display" )==0 ) {
-	PLG_squelch_display( atoi( arg[0] ) );
+	if( atoi( arg[0] ) == 1 ) Esquelch( "on" );
+	else Esquelch( "off" );
 	strcpy( result, "" );
 	return( 0 );
 	}
@@ -186,5 +205,42 @@ else if( strcmp( name, "notexists" )==0 ) {
 	return( 0 );
 	}
 
+/* ------------- */
+/* hash:1143 $errmsgpre(txt) - set the error message beginning - scg 3/25/04 */
+else if( strcmp( name, "errmsgpre" )==0 ) {
+	TDH_errprogsticky( arg[0] );
+	strcpy( result, "1" );
+	return( 0 );
+	}
+
+/* ------------- */
+/* hash:1170 $textwidth(text,font,size) */
+/* return horizontal width of freetype bounding box */
+/* this returns useful result only with freetype fonts, otherwise it returns 0. added 8/5/05 scg - sugg by Erik Zachte  */
+else if( strcmp( name, "textwidth" )==0 ) {
+	double twidth;
+	twidth = 0;
+#ifndef NOGD
+	PLGG_freetype_twidth( arg[0], arg[1], atof(arg[2]), &twidth );
+#endif
+	sprintf( result, "%.4f", twidth );
+	return( 0 );
+	}
+
+/* ------------- */
+/* hash:1488 $rewritenum(f) - return a displayable representation of number f,
+   applying  proc settings numbernotation */
+else if( strcmp( name, "rewritenum" )==0 ) {
+	strcpy( result, arg[0] );
+	PL_rewritenums( result );
+	return( 0 );
+	}
+
 return( 1 ); 
 }
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

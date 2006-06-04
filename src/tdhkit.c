@@ -1,15 +1,22 @@
-/* TDHKIT.C - read config file; global TDH vars 
- * Copyright 1998-2002 Stephen C. Grubb  (ploticus.sourceforge.net) .
- * This code is covered under the GNU General Public License (GPL);
- * see the file ./Copyright for details. */
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
+
+/* TDHKIT.C - read config file; global TDH vars  */
 
 /* compile defines:  
 	TDH_NOREC = omit FDF code   
 	TDH_DB = select sql database (see dbinterface.c) (undefined if no sql database)
 */
 
-#include "pl.h"   
+   
 #include "tdhkit.h"
+#include <ctype.h>
+
+extern int DT_setdateparms();
+extern int putenv();
 
 char TDH_scriptdir[ MAXPATH] = "./";	/* root directory for scripts */
 char TDH_configfile[ MAXPATH ] = "";	/* path name of config file */
@@ -22,8 +29,8 @@ char *TDH_dat = NULL;			/* points to data array for condex */
 char *TDH_recid = NULL;			/* points to recordid for condex */
 char TDH_progname[20] = "";
 int TDH_initialized = 0;
-char TDH_shellmetachars[30] = "\"'`$\\;"; /* shell meta characters to strip out of variables when building
-					    shell commands for security purposes */
+char TDH_shellmetachars[30] = "\"'`$\\;|"; /* shell meta characters to strip out of variables when building
+					    shell commands for security purposes */ 
 
 #ifndef TDH_NOREC
 char TDH_fdfpath[ MAXPATH ] =      "./";	/* directory where FDF files are kept */
@@ -38,6 +45,7 @@ static char putenvstring[MAXPE+2];
 static int pelen = 0;
 
 /* ================================ */
+int
 TDH_readconfig_initstatic()
 {
 TDH_initialized = 0;
@@ -47,7 +55,7 @@ return( 0 );
 
 
 /* ================================ */
-
+int
 TDH_readconfig( loc )
 char *loc; /* environment var or file=filename */
 {
@@ -57,7 +65,7 @@ char tag[80];
 char value[512];
 int nt;
 int stat;
-char *filename, *getenv();
+char *getenv();
 int slen;
 
 
@@ -73,7 +81,7 @@ TDH_decpt = '.';
 TDH_dat = NULL;
 TDH_recid = NULL;
 strcpy( TDH_progname, "" );
-strcpy( TDH_shellmetachars, "\"'`$\\;" );
+strcpy( TDH_shellmetachars, "\"'`$\\;|" );
 #ifndef TDH_NOREC
   strcpy( TDH_fdfpath, "./" );
 #endif
@@ -148,14 +156,14 @@ while( fgets( value, 511, fp ) != NULL ) {
 
 #ifndef SHSQL
 
-	/* this is shielded for SHSQL standalone applications.  Midriff needs functions code and thus
+	/* this is shielded for SHSQL standalone applications.  QUISP needs functions code and thus
 	   must be linked such that tdhkit.a has presidence over libshsql.a */
 
         else if( GL_slmember( tag, "dateformat: pivotyear: months* weekdays: omitweekends: lazydates: strictdatelengths:" )) {
 		int ix;
 		ix = 0;
 		GL_getok( buf, &ix ); /* skip tag.. */
-		while( isspace(buf[ix] )) ix++;
+		while( isspace( (int) buf[ix] )) ix++;
                 stat = DT_setdateparms( tag, &buf[ix] );
                 if( stat != 0 ) return( err( stat, "date parm error in config file", buf ) );
                 }
@@ -167,3 +175,8 @@ TDH_initialized = 1;
 return( 0 );
 }
 
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

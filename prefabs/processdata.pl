@@ -1,6 +1,7 @@
 #musthave action 
 
 #setifnotgiven data = "-"
+#setifnotgiven inlinedata = ""
 
 #include $chunk_read
 

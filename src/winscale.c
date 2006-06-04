@@ -1,12 +1,16 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
+
 #include <stdio.h>
 
 static double xscale, yscale;
 static int window_height, window_width;
 
 /* ====================== set up user coords */
+int
 PLG_setwinscale( width, height, x_max, y_max )
 int width, height;
 double x_max, y_max;
@@ -15,8 +19,10 @@ xscale = (double)(width) / (x_max);
 yscale = (double)(height) / (y_max);
 window_height = height;
 window_width = width;
+return( 0 );
 }
 /* ==================== scale in x to window size */
+int
 PLG_xsca( f )
 double f;
 {
@@ -36,6 +42,7 @@ return( out );
 }
 
 /* ==================== scale in y to window size */
+int
 PLG_ysca( f )
 double f;
 {
@@ -54,3 +61,8 @@ out = (double)(window_height-i) / yscale;
 return( out );
 }
 
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

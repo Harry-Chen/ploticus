@@ -21,7 +21,7 @@
 ######## SWF output can be enabled if desired (see Step 3).
 ########
 ######## PLOTICUS data display engine.  Software, documentation, and examples.  
-######## Copyright 1998-2004 Stephen C. Grubb  (scg@jax.org)
+######## Copyright 1998-2005 Stephen C. Grubb  (stevegrubb@gmail.com)
 ######## Covered by GPL; see the file ./Copyright for details. 
 
 
@@ -31,7 +31,7 @@ PLATFORM = UNIX
 RMCOM = rm -f
 XOBJ = x11.o interact.o
 PL = plgd18
-PLPNG = 
+PLPNG =
 BIN = ./
 # EXE = pl
 
@@ -44,6 +44,8 @@ BIN = ./
 #### For Linux uncomment the following.. #######################
 XLIBS = -L/usr/X11R6/lib -lX11
 INCLUDEDIRS = -I/usr/X11R6/include
+
+#### Note: for 64 bit platform I used: XLIBS = -L/usr/X11R6/lib64
 
 
 #### For Solaris 2.x uncomment the following.. #################
@@ -118,7 +120,9 @@ INCLUDEDIRS = -I/usr/X11R6/include
 ########	be commented out.                                   ########
 ############################################################################
 
-#### For PNG (only) uncomment the following.. (libpng and zlib required) ###########
+#### For PNG (only) uncomment the following.. (this will use a version of GD that comes
+#### bundled with ploticus; you need to have libpng and zlib ).  Set GD16H if your
+#### png.h or other header files are in a nonstandard place, eg GD16H = -I/home/scg/lib
 # ploticus: plpng 
 # PLPNG = pl 
 # GD16LIBS = -lpng -lz
@@ -126,19 +130,25 @@ INCLUDEDIRS = -I/usr/X11R6/include
 # ZFLAG = -DWZ
 
 
-#### For pseudo-GIF (only) uncomment the following..  (no libs required) ###########
+#### For pseudo-GIF (only) uncomment the following..  (this will use a version of GD that
+#### comes bundled with ploticus; no additional libs required) 
 # ploticus: pl 
 
 
-#### For both pseudo-GIF & PNG uncomment the following..  ##########################
+#### For both pseudo-GIF & PNG uncomment the following..  (this will use a version of GD
+#### that comes bundled with ploticus; no additional libs required).  Set GD16H if your 
+#### png.h or other header files are in a nonstandard place, eg GD16H = -I/home/scg/lib
 # ploticus: pl plpng 
+# EXE = pl plpng
 # GD16LIBS = -lpng -lz
 # GD16H = 
-# EXE = pl plpng
 
 
-#### For JPEG, WBMP, and PNG (without FreeType2), using your copy of GD 1.84+,  #####
-####  uncomment the following.. (gd 1.84+, libpng, zlib, libjpeg required)      #####
+
+#### For JPEG, WBMP, and PNG (without FreeType2), using your copy of GD 1.84+,  
+####  uncomment the following.. (gd 1.84+, libpng, zlib, libjpeg required).  Set GD18H if your 
+#### png.h or other header files are in a nonstandard place, eg GD18H = -I/home/scg/lib
+
 # ploticus: plgd18 
 # GD18LIBS = -lgd -lpng -lz -ljpeg 
 # GD18H = 
@@ -167,6 +177,18 @@ ZFLAG = -DWZ
 ########          want control over..               ############
 ################################################################
 
+
+#### If you want SWF (flash) output capability
+#### uncomment the following.  You need to have ming library.  If necessary change -lming to location of ming.
+#### Note, was successful with ming 0.2a... but problems were noted when attempting with later ming versions..
+# MING = -lming
+# ..and if your ming.h is in a nonstandard place add a line like this:
+# MINGH = -I/home/scg/lib
+####
+#### Otherwise, for no SWF capability, uncomment the following line..
+NOSWFFLAG = -DNOSWF 
+
+
 #### If you plan to do a "make install", where do you want the executable(s) to be moved to?
 BIN = /usr/local/bin
 
@@ -183,7 +205,7 @@ LOCALE_FLAG = -DLOCALE
 
 
 #### SVG output is always available by default.
-#### If you want compressed SVG (.svgz), and you selected "GIF only", "GIF & PNG", or "disable GD" above, 
+#### If you want compressed SVG (.svgz), and you selected "GIF only" or "disable GD" above, 
 #### uncomment the following.  You need to have zlib.  If necessary change -lz to location of zlib.
 ZLIB = -lz
 ZFLAG = -DWZ
@@ -203,17 +225,12 @@ ZFLAG = -DWZ
 # NOSVGFLAG = -DNOSVG 
 
 
-#### If you want SWF (flash) output capability
-#### uncomment the following.  You need to have ming library.  If necessary change -lming to location of ming.
-#MING = -lming
-# ..and if your ming.h is in a nonstandard place add a line like this:
-# MINGH = -I/home/fred/lib
-#### Otherwise, for no SWF capability, uncomment the following line
-NOSWFFLAG = -DNOSWF 
-
-
-#### To completely remove safety limits on cpu time uncomment the following..
+#### To completely remove safety limits on cpu time uncomment the following line..
 # NORLIMFLAG = -DNORLIMIT
+
+
+#### To see all possible compiler warnings, uncomment the following line..
+WALL = -Wall -g
 
 
 ###############################################################################
@@ -224,10 +241,11 @@ NOSWFFLAG = -DNOSWF
 ######## FYI... additional Makefile statement examples:
 ######## eg: GD16LIBS = /home/scg/lib/libpng.a /home/scg/lib/libz.a
 ######## eg: GD16H = -I/home/scg/lib
-######## eg: GD18LIBS = -L /home/scg/lib -lgd -lpng -lz -ljpeg -lfreetype
-######## eg: GD18H = -I/home/scg/lib/freetype-2.0.4/include
+######## GD18LIBS = -L /home/scg/lib -lgd -lpng -lz -ljpeg -lfreetype
+######## GD18H = -I/home/scg/lib/freetype-2.0.4/include -I/home/scg/lib/gd-1.8.4
 ######## eg: GD18H = -I/home/scg/lib/gd-1.8.4 -I/home/scg/lib/jpeg-6b -I/home/scg/lib -I/home/scg/lib/freetype-2.0.4/include
 ######## eg: MINGH = -I/home/scg/lib
+######## eg: MING = /home/scg/lib/libming.a
 
 ###############################################################################
 ###############################################################################
@@ -242,7 +260,7 @@ GD = gdfontg.o gdfontl.o gdfontmb.o gdfonts.o gdfontt.o
 
 LIBS = $(XLIBS) -lm $(ADDLIBS) 
 
-CFLAGS = -DPLOTICUS -D$(PLATFORM) -DTDH_NOREC $(ZFLAG) $(FLAGS) $(LOCALE_FLAG) \
+CFLAGS = $(WALL) -DPLOTICUS -D$(PLATFORM) -DTDH_NOREC $(ZFLAG) $(FLAGS) $(LOCALE_FLAG) \
   $(NOGDFLAG) $(NOXFLAG) $(NOPSFLAG) $(NOSVGFLAG) $(NOSWFFLAG) $(INCLUDEDIRS) \
   $(MINGH) $(NORLIMFLAG) -DPREFABS_DIR=\"$(PREFABS_DIR)\"
 
@@ -250,9 +268,9 @@ OBJ = proc_annotate.o proc_areadef.o proc_axis.o proc_bars.o proc_rect.o proc_br
   proc_categories.o proc_curvefit.o proc_settings.o proc_defineunits.o proc_drawcommands.o \
   proc_getdata.o proc_import.o proc_legend.o proc_legendentry.o proc_line.o proc_lineplot.o \
   proc_page.o proc_pie.o proc_print.o proc_rangebar.o proc_rangesweep.o proc_usedata.o \
-  proc_scatterplot.o proc_vector.o proc_symbol.o proc_processdata.o proc_tabulate.o clickmap.o\
+  proc_scatterplot.o proc_vector.o proc_symbol.o proc_processdata.o proc_tabulate.o proc_venndisk.o clickmap.o\
   plhead.o execscriptfile.o execline.o lib.o details.o parse.o units.o preliminaries.o \
-  process_arg.o plvalue_subst.o cats.o fieldnames.o autorange.o select.o memstuff.o \
+  process_arg.o plvalue_subst.o cats.o fieldnames.o autorange.o nearest.o select.o memstuff.o \
   color.o plg.o init.o arrow.o mark.o block.o pcode.o ps.o svg.o swf.o stub.o winscale.o lineclip.o smoothfit.o \
   condex.o dates.o dbinterface.o err.o functions.o glroutines.o reslimits.o secondaryops.o  \
   shell.o sinterp.o tdhkit.o times.o value.o value_subst.o variable.o custom.o datetime.o \
@@ -264,21 +282,26 @@ pl: pl.o $(OBJ) $(XOBJ) gd00files gd13files
 plpng: pl.o $(OBJ) $(XOBJ) gd00files gd16files
 	$(CC) pl.o $(FLAGS) $(OBJ) $(GD16) $(GD) $(XOBJ) $(GD16LIBS) $(LIBS) $(MING) -o $(PLPNG)
 
-gd00files: $(GD)
+gd00files: 
 	$(CC) -I./gd13 -I./ -c gdfontg.c gdfontl.c gdfontmb.c gdfonts.c gdfontt.c
 	echo "done with gd00files" > gd00files
 
 gd13files: 
-	$(CC) -c grgd.c -DGD13 -I./gd13 -o grgd13.o
+	$(CC) -c $(WALL) grgd.c -DGD13 -DPLOTICUS -I./gd13 -o grgd13.o
 	$(CC) -c $(CFLAGS) devstuff.c -DGD13 -o devstuff13.o
 	$(CC) -c gd13.c -I./gd13 
 	echo "done with gd13files" > gd13files
 
 gd16files: 
-	$(CC) -c grgd.c -DGD16 -I./ -I./gd16 -o grgd16.o
+	$(CC) -c $(WALL) grgd.c -DGD16 -DPLOTICUS -I./ -I./gd16 -o grgd16.o
 	$(CC) -c $(CFLAGS) devstuff.c -DGD16 -o devstuff16.o
 	$(CC) -c -I./gd16 -I./ $(GD16H) gd16.c gd_io.c gd_io_dp.c gd_io_file.c gd_png.c
 	echo "done with gd16files" > gd16files
+
+devgrgd:
+	$(CC) -c $(WALL) grgd.c -DGD13 -DPLOTICUS -I./gd13 -o grgd13.o
+	touch pcode.c
+	make
 
 # GD18: 
 plgd18: pl.o $(OBJ) $(XOBJ) gd18files

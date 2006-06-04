@@ -580,8 +580,8 @@ void gdImageCharUp(gdImagePtr im, gdFontPtr f,
 	}
 }
 
-void gdImageString(gdImagePtr im, gdFontPtr f, 
-	int x, int y, unsigned char *s, int color)
+void gdImageString(gdImagePtr im, gdFontPtr f, int x, int y, unsigned char *s, int color)
+/* void gdImageString(gdImagePtr im, gdFontPtr f, int x, int y, char *s, int color)   this avoids gcc4 warning */
 {
 	int i;
 	int l;
@@ -592,8 +592,8 @@ void gdImageString(gdImagePtr im, gdFontPtr f,
 	}
 }
 
-void gdImageStringUp(gdImagePtr im, gdFontPtr f, 
-	int x, int y, unsigned char *s, int color)
+void gdImageStringUp(gdImagePtr im, gdFontPtr f, int x, int y, unsigned char *s, int color)
+/* void gdImageStringUp(gdImagePtr im, gdFontPtr f, int x, int y, char *s, int color)   this avoids gcc4 warning */
 {
 	int i;
 	int l;
@@ -1477,7 +1477,7 @@ int gdImageCompare(gdImagePtr im1, gdImagePtr im2)
 	return cmpStatus;
 }
 
-int cost[] = {
+static int cost[] = {
   1024,
   1023,
   1023,
@@ -1840,7 +1840,7 @@ int cost[] = {
   1023
 };
 
-int sint[] = {
+static int sint[] = {
   0,
   17,
   35,

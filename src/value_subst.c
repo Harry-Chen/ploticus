@@ -1,7 +1,10 @@
-/* VALUE_SUBST.C - perform variable evaluation for one line
- * Copyright 1998-2002 Stephen C. Grubb  (ploticus.sourceforge.net) .
- * This code is covered under the GNU General Public License (GPL);
- * see the file ./Copyright for details. */
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
+
+/* VALUE_SUBST.C - perform variable evaluation for one line */
 
 /* Variables may be: 
 		Field numbers like @1, @2, @3, etc. (@1 is first field)
@@ -17,8 +20,9 @@
 			generated.
 */
 
-#include <string.h>
 #include "tdhkit.h"
+#include <ctype.h>
+extern int atoi();
 
 static int involved[ MAXITEMS ];
 static int ninvolved = 0;
@@ -33,8 +37,11 @@ static int showwithquotes = 0;
 static char punctlist[10] = "_";
 static int sqlmode = 0;  /* if 1, TDH_dequote will be more strict about quote errors.. */
 static int omit_shell_meta = 0;
+static int globqs = 0; /* if 1, TDH_dequote will only reset the var serial# when told (by a call to settings()) */
+static int curvar = 1; /* the var serial# */
 
 /* =============================== */
+int
 TDH_valuesubst_initstatic()
 {
 ninvolved = 0;
@@ -49,10 +56,12 @@ showwithquotes = 0;
 strcpy( punctlist, "_" );
 sqlmode = 0;
 omit_shell_meta = 0;
+globqs = 0;
 return( 0 );
 }
 
 /* =============================== */
+int
 TDH_value_subst( out, in, data, recordid, mode, erronbadvar )
 char *out; /* result buffer */
 char *in;  /* input buffer */
@@ -62,10 +71,10 @@ int mode;  /* either FOR_CONDEX, indicating that the line will be passed to cond
 		   (minor hooks related to this) or NORMAL */
 int erronbadvar;
 {
-int i, j, k, f;
+int i, j, k;
 char itemname[ 512 ]; /* big because arbitrary tokens are being stored in it */
 char value[ DATAMAXLEN+1 ];
-int found, stat, infunction, ifld, prec, inlen, inamelen, vlen;
+int found, stat, infunction, inlen, inamelen, vlen;
 int lineconvatt, lineconvdone, lastgoodoutpos;
 int dectab;
 char fillchar[10];
@@ -117,14 +126,14 @@ for( i = 0, inlen = strlen( in ); i < inlen; i++ ) {
 		}
 		
 
-	if( in[i] == varsym && !isspace( in[i+1] ) ) {  /* @fieldname or @fieldnum .. fill 'value'.. */
+	if( in[i] == varsym && !isspace( (int) in[i+1] ) ) {  /* @fieldname or @fieldnum .. fill 'value'.. */
 
 		sscanf( &in[i+1], "%s", itemname );
 
 		/* truncate itemname at first char which is not alphanumeric or _ (or . as of 4/24/01) */
 		inamelen = strlen( itemname );
 		for( k = 0; k < inamelen; k++ ) {
-			if( !isalnum( itemname[k] ) && !GL_member( itemname[k], punctlist )) { 
+			if( !isalnum( (int) itemname[k] ) && !GL_member( itemname[k], punctlist )) { 
 				itemname[k] = '\0';
 				break;
 				}
@@ -145,6 +154,7 @@ for( i = 0, inlen = strlen( in ); i < inlen; i++ ) {
 
 #ifndef TDH_NOREC
 			else 	{
+				int ifld;
 				/* do the following to add item to list of involved fields */
 				ifld = TDH_fieldmap( recordid, itemname );
 				if( ifld >= 0 ) involved[ ninvolved++ ] = ifld; 
@@ -184,7 +194,11 @@ for( i = 0, inlen = strlen( in ); i < inlen; i++ ) {
 			j += (vlen+2);
 			}
 		else if( omit_shell_meta ) {
-			for( k = 0; k < vlen; k++ ) if( ! GL_member( value[k], TDH_shellmetachars )) out[j++] = value[k];
+			for( k = 0; k < vlen; k++ ) {
+				if( strncmp( &value[k], "../", 3 )==0 ) { k+=2; continue; }  /* added scg 5/19/05 */
+				else if( GL_member( value[k], TDH_shellmetachars )) continue;
+				else out[j++] = value[k];
+				}
 			out[j] = '\0';
 			}
 		else 	{
@@ -196,30 +210,30 @@ for( i = 0, inlen = strlen( in ); i < inlen; i++ ) {
 
 		
 	else	{
-		if( in[i] == '$' && isalpha( in[i+1] ) ) infunction = 1;
-		if( isspace( in[i] ) ) infunction = 0;  /* ???? 3/22/01 */
+		if( in[i] == '$' && isalpha( (int) in[i+1] ) ) infunction = 1;
+		if( isspace( (int) in[i] ) ) infunction = 0;  /* ???? 3/22/01 */
 
 		if( allowinlinecodes && in[i] == ':' ) {
 			if( strncmp( &in[i], ":u+ ", 4 )==0 ) { hideund = 0; i += 3; continue; }
 			else if( strncmp( &in[i], ":u- ", 4 )==0 ) { hideund = 1; i += 3; continue; }
 			else if( strcmp( &in[i], ":c\n" ) == 0 ) break;
-			else if( strncmp( &in[i], ":col", 4 )== 0 && isdigit( in[i+4] )) {  /* col pos */
+			else if( strncmp( &in[i], ":col", 4 )== 0 && isdigit( (int) in[i+4] )) {  /* col pos */
 				int colnum;
 				colnum = atoi( &in[ i+4 ] );
 				for( k = (j-lastgoodoutpos); k < ((lastgoodoutpos+colnum)-2); k++ ) out[j++] = ' ';
 				if(colnum < 10)i+=5; else if(colnum < 100)i+=6; else if(colnum < 1000)i+=7;
 				}
-			else if( strncmp( &in[i], ":dot", 4 )== 0 && isdigit( in[i+4] )) { /* leader dots to pos */
+			else if( strncmp( &in[i], ":dot", 4 )== 0 && isdigit( (int) in[i+4] )) { /* leader dots to pos */
 				int colnum;
 				colnum = atoi( &in[ i+4 ] );
 				for( k = (j-lastgoodoutpos); k < ((lastgoodoutpos+colnum)-2); k++ ) out[j++] = '.';
 				if(colnum < 10)i+=5; else if(colnum < 100)i+=6; else if(colnum < 1000)i+=7;
 				}
-			else if( strncmp( &in[i], ":dec", 4 )== 0 && isdigit( in[i+4] )) { /* decimal tab at pos */
+			else if( strncmp( &in[i], ":dec", 4 )== 0 && isdigit( (int) in[i+4] )) { /* decimal tab at pos */
 				dectab = atoi( &in[ i+4 ] ); strcpy( fillchar, " " );
 				if(dectab < 10)i+=5; else if(dectab < 100)i+=6; else if(dectab < 1000)i+=7;
 				}
-			else if( strncmp( &in[i], ":dch", 4 )== 0 && isdigit( in[i+4] )) { /* decimal tab at pos */
+			else if( strncmp( &in[i], ":dch", 4 )== 0 && isdigit( (int) in[i+4] )) { /* decimal tab at pos */
 				dectab = atoi( &in[ i+4 ] ); strcpy( fillchar, "&nbsp;" );
 				if(dectab < 10)i+=5; else if(dectab < 100)i+=6; else if(dectab < 1000)i+=7;
 				}
@@ -234,7 +248,7 @@ for( i = 0, inlen = strlen( in ); i < inlen; i++ ) {
 			lastgoodoutpos = j+1; 
 			}
 
-		if( omitws && isspace( in[i] ) ) continue;
+		if( omitws && isspace( (int) in[i] ) ) continue;
 
 		out[j] = in[i];
 		j++;
@@ -252,6 +266,7 @@ return( found );
 /* GET_INVOLVED_ITEMS  - allow an application to access the field #s of all 
 	data items involved in the most recent value_subst call.  Tmp vars
 	are not included since they have no field # */
+int
 TDH_get_involved_items( n, list )
 int *n;
 int list[ MAXITEMS ];
@@ -263,6 +278,7 @@ return( 0 );
 }
 
 /* ========================= */
+int
 TDH_valuesubst_settings( tag, value )
 char *tag;
 int value; /* 1 = on, 0 = off */
@@ -277,6 +293,10 @@ else if( strcmp( tag, "shieldquotedvars" )==0 ) shieldquotedvars = value;
 else if( strcmp( tag, "showwithquotes" )==0 ) showwithquotes = value;
 else if( strcmp( tag, "sqlmode" )==0 ) sqlmode = value;
 else if( strcmp( tag, "omit_shell_meta" )==0 ) omit_shell_meta = value;
+else if( strcmp( tag, "globqs" )==0 ) { 
+	if( value == 2 ) { curvar = 1; return( 0 ); }  /* reset the var serial #   scg 10/28/04 */
+	else globqs = value;
+	}
 else if( strcmp( tag, "dot_in_varnames" )==0 ) {
 	if( value ) strcpy( punctlist, "_." );
 	else strcpy( punctlist, "_" );
@@ -287,13 +307,11 @@ return( 0 );
 /* ===================================== */
 /* DEQUOTE - scan a line and convert quoted "strings" */
 
-static int curvar = 1;
-
+int
 TDH_dequote( out, in, prefix )
 char *out;
 char *in;
 char *prefix;  /* keeps string constants from colliding: sql uses QS; sinterp uses SL */
-/* int mode;  */  /* NORMAL or FOR_CONDEX .. the latter converts "" to _null_ */
 {
 
 int i, j, k, len, instring, esc;
@@ -302,8 +320,8 @@ char vartag[20];
 char quotecharused; /* added 3/29/01 */
 int truncflag;
 
-/* if( newset ) curvar = 1; */
-curvar = 1;
+if( !globqs ) curvar = 1;  /* normally the var serial# is reset for every call (every line) 
+			      but w/ globqs it isn't - globqs added scg 10/28/04 */
 
 truncflag = 0;
 
@@ -326,10 +344,11 @@ for( i = 0, j = 0; i < len; i++ ) {
 	/* unescaped quote encountered */
 	if( ( in[i] == '"' || in[i] == '\'' ) && !esc ) {
 		if( instring && in[i] == quotecharused ) {
-			if( sqlmode && in[i+1] != '\0' && !isspace( in[i+1] ) && !GL_member( in[i+1], ",)" ) )
+			if( sqlmode && in[i+1] != '\0' && !isspace( (int) in[i+1] ) && !GL_member( in[i+1], ",)" ) )
 				return( err( 2734, "quote error", "" ));
 			tok[k] = '\0';
-			out[j++] = '@';
+			/* out[j++] = '@'; */ /* changed scg 10/28/04 */
+			out[j++] = varsym;
 			strcpy( &out[j], vartag );	
 			j+= strlen( vartag );
 			/* if( mode == FOR_CONDEX && strlen( tok ) == 0 ) strcpy( tok, "_null_" ); */
@@ -361,7 +380,8 @@ for( i = 0, j = 0; i < len; i++ ) {
 if( instring ) { /* no ending quote.. */
 	if( sqlmode ) return( err( 2735, "mismatched quotes", "" ));
 	tok[k] = '\0';
-	out[j++] = '@';
+	/* out[j++] = '@'; */ /* changed scg 10/28/04 */
+	out[j++] = varsym;
 	strcpy( &out[j], vartag );	
 	j+= strlen( vartag );
 	TDH_setvar( vartag, tok );
@@ -369,8 +389,14 @@ if( instring ) { /* no ending quote.. */
 
 /* back up j to last non-white-space */
 j--;
-while( j >= 0 && isspace( out[j] ) ) j-- ;
+while( j >= 0 && isspace( (int) out[j] ) ) j-- ;
 out[j+1] = '\0';
 if( truncflag ) err( 1409, "value is too long and has been truncated", out );
 return( 0 );
 }
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

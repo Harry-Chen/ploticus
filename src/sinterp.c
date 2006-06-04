@@ -1,7 +1,8 @@
-/* Copyright 1998-2002 Stephen C. Grubb  (ploticus.sourceforge.net) .
- * This code is covered under the GNU General Public License (GPL);
- * see the file ./Copyright for details. */
-
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 /*  
  *  Call sinterp_open() or sinterp_openmem() first.  Then repeatedly call sinterp().
@@ -17,11 +18,26 @@
  *
  *    data may be passed as NULL (recordid must be "")
  */
-#include "pl.h"
 #include "tdhkit.h"
+
+extern int TDH_shellresultrow(), TDH_shellclose(), TDH_sqlnames(), TDH_sqlrow(), TDH_dequote(), TDH_function_call();
+extern int TDH_function_listsep(), TDH_condex_listsep(), TDH_errmode();
+extern int atoi(); /* sure thing */
+
+#ifndef TDH_NOREC
+  extern int sqlbuild0(), sqlbuild1(), TDH_sqltabdef();
+#endif
+
+#ifndef PLOTICUS
+  extern int customforvect();
+#endif
 
 #ifndef TDH_DB
 #define TDH_DB 0
+#endif
+
+#if TDH_DB != 0
+  extern int TDH_sqlrow_nullrep();
 #endif
 
 static FILE *skiptoendloop();
@@ -29,6 +45,7 @@ static char *specialincludedir = "";
 
 /* -------------------------------------- */
 
+int
 TDH_sinterp( line, ss, recordid, data )
 char *line;	/* should be length of at least SCRIPTLINELEN */
 struct sinterpstate *ss;
@@ -44,11 +61,9 @@ char str[ DATAMAXLEN+1 ];
 char varname[40];
 char list[ SCRIPTLINELEN ];
 int len;
-FILE *popen();
 char conj[40];
 char delimstr[5];
 int typ;
-char linechar;
 
 TDH_dat = (char *)data;
 TDH_recid = recordid;
@@ -60,7 +75,7 @@ while( 1 ) {
 	if( ss->doingshellresult != 0 ) {
 		int nshfields;
 		char *shfields[MAXITEMS];
-		int delim, nf;
+		int delim;
 
 		/* get a row.. */
 		stat = TDH_shellresultrow( buf, shfields, &nshfields, SCRIPTLINELEN );
@@ -93,12 +108,13 @@ while( 1 ) {
 	if( ss->doingsqlresult != 0 ) {
 		int nsqlfields, nsqlnames;
 		char *sqlfields[MAXITEMS], *sqlnames[MAXITEMS];
-		int delim, nf;
+		int delim;
 
 		if( ss->doingsqlresult == 'l' ) {  /* load from 1st retrieved row.. */
 			TDH_sqlnames( ss->dbc, sqlnames, &nsqlnames );
 
 			stat = TDH_sqlrow( ss->dbc, sqlfields, &nsqlfields );
+
 			if( stat == 0 ) for( i = 0; i < nsqlfields; i++ ) {
 				if( stricmp( sqlfields[i], TDH_dbnull )==0 && ss->nullrep ) {
 					if( ss->nullrep == 1 ) TDH_setvar( sqlnames[i], "" );
@@ -554,9 +570,6 @@ while( 1 ) {
 		int nitems;
         	strcpy( table, GL_getok( buf, &ix ) );           /* 1st arg is tablename */
 		TDH_altfmap( 1 );
-/* dbfp = fopen( "/tmp/scg001", "w" );
- * fprintf( dbfp, "[before]", nitems ); fflush( dbfp );
- */
         	stat = TDH_sqltabdef( table, fnames, &nitems );	 /* caution - fnames points to info with limited lifespan */
 		TDH_altfmap( 0 );
         	if( stat != 0 ) return( err( stat, "sqlblankrow: no such table", table ));
@@ -664,12 +677,13 @@ while( 1 ) {
  * and, before calling TDH_sinterp_open(), set ss.nmemrows and ss.memrows.
  */
 
+int
 TDH_sinterp_open( filename, ss )
 char *filename;
 struct sinterpstate *ss;
 {
 int i;
-char buf[255];
+char buf[512];  /* was 256 .. scg 3/16/06 */
 
 ss->incnest = 0;
 
@@ -706,6 +720,7 @@ ss->nullrep = 1;
 return( 0 );
 }
 /* ============================== */
+int
 TDH_sinterp_openmem( memrows, nmemrows, ss )
 char **memrows;
 int nmemrows;
@@ -739,10 +754,17 @@ return( fp );
 }
 
 /* =============================== */
-/* SETSID - set special include directory */
-setsid( dir )
+/* SETSPECIALINCDIR - set special include directory */
+int
+TDH_setspecialincdir( dir )
 char *dir;
 {
 specialincludedir = dir;
 return( 0 );
 }
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

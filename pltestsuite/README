@@ -1,33 +1,6 @@
 This directory contains a set of script examples as well as scripts to 
 run prefab examples.
 
------
-
-On a Debian system you can run these examples by using
-(cd /usr/share/doc/ploticus/examples; ./run_script_test)
-
-There are also examples of "prefabs" in this directory.  The suite of
-prefab examples can be run by:
-((cd /usr/share/doc/ploticus/examples; ./run_prefabs_test)
-
-Each file in /usr/share/doc/ploticus/examples ending in .htm is an
-example file run by run_script_test.   They are named for the kind of
-graph produced.  Study of these examples can be a great aid in learning 
-to use ploticus efficiently.  To run one of these, say the quarters.htm
-file, you can use.
-(cd /usr/share/doc/ploticus/examples; ploticus quarters.htm)
-
-The files beginning with testpf_ are the prefab examples.  Again, you
-run these individually, as in:
-(cd  /usr/share/doc/ploticus/examples; ./testpf_pie)
-
-You have to be in the examples directory to run many of these examples,
-they often have a data file that must be in the current working directory.
-That is why all examples are shown running in a subshell.
-
------
-
-
 It is assumed that pl (pl.exe on win32) is in your command PATH or else 
 copied into this directory.
 

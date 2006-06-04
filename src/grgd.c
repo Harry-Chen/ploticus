@@ -1,23 +1,42 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
-
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 /* 
- Graphcore interface to gd library.
- Notes: gd renders text such that the TOP of the character box is at x, y
+ ploticus interface to GD library by Thomas Boutell (www.boutell.com)
 
- This module supports these #defines: 
+ Notes: 
+
+ * For development, "make devgrgd" can be used
+
+ * This module supports these #defines: 
 	GD13  (create GIF only using GD 1.3; no import)
 	GD16  (create PNG only using GD 1.6; also can import PNG)
-	GD18   (use GD 1.8 to create PNG, JPEG, or WBMP; also can import these formats)
+	GD18   (use GD 1.8+ to create PNG, JPEG, or WBMP; also can import these formats)
 	GDFREETYPE (use FreeType font rendering; may be used only when GD18 is in effect)
+
+ * GD renders text such that the TOP of the character box is at x, y
+
 */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
+#ifdef WIN32
+#include <fcntl.h>  /* for _O_BINARY */
+#endif
+
+#include "pixpt.h"  /* circle ptlists */
 
 extern double PLG_xsca_inv(), PLG_ysca_inv();
+extern int TDH_err(), GL_member(), GL_goodnum();
+extern int PLGG_color(), PLG_xsca(), PLG_ysca(), PLGG_linestyle(), PLGG_fill(), PLG_xrgb_to_rgb(), PLG_colorname_to_rgb();
+extern int PLG_bb(), PL_clickmap_getdemomode(), PL_clickmap_show(), PL_clickmap_inprogress(), PL_clickmap_out();
+extern int atoi(), chmod();
+
 #define Exsca( h )      PLG_xsca( h )
 #define Eysca( h )      PLG_ysca( h )
 #define Exsca_inv( h )  PLG_xsca_inv( h )
@@ -30,8 +49,8 @@ static char g_fmt[20] = "";
 
 /* ================================= */
 /* SETIMFMT - set the image format that we will be creating.. 
-   allowable values for fmt are "gif", "png", "jpeg", etc.
- */
+   allowable values for fmt are "gif", "png", "jpeg", etc.  */
+int
 PLGG_setimfmt( fmt )
 char *fmt;
 {
@@ -41,6 +60,7 @@ return( 0 );
 /* ================================= */
 /* GETIMFMT - allow other modules to find out the image format.
    Format name is copied into fmt. */
+int
 PLGG_getimfmt( fmt )
 char *fmt;
 {
@@ -59,7 +79,7 @@ return( 0 );
 #include "gdfonts.h"
 #include "gdfontt.h"
 
-#define MAX_D_ROWS 1000
+/* #define MAX_D_ROWS 1000 */
 #define NBRUSH 8
 #define CHARHW 1.75 /* 2.0 */
 #define MINTEXTSIZE 4 /* anything less than this is rendered as a line for thumbnails */
@@ -72,13 +92,18 @@ static double Gm2xscale = 1.0;
 static double Gm2yscale = 1.0;
 static gdFontPtr Gfont;  /* current font */
 static int Gxmax, Gymax; /* drawing area image size */
-static double Goldx = 0.0, Goldy = 0.0; /* last x,y */
+static double Goldx = 0.0, Goldy = 0.0; /* last passed x,y */
 static double Gcharwidth;
 static int Gvertchar = 0;
 static int Gtextsize;
+static char Gcurcolorname[40];
 static int Gcurcolor;
-static gdPoint Gptlist[MAX_D_ROWS];
+
+/* static gdPoint Gptlist[MAX_D_ROWS]; */
+static gdPoint *Gptlist = NULL;
+static int Gmax_pts;
 static int Gnpts = 0;
+
 static int Gcurlinestyle = 0;
 static double Gcurlinewidth = 1.0;
 static double Gcurdashscale = 1.0;
@@ -91,11 +116,17 @@ static int Ginitialized = 0;
 static int Gtransparent_color = -1; 
 static int Gblack = 0;		    
 static char GFTfont[80] = "";
-static int GFTbox[8];
-static double GFTsize;
+#ifdef GDFREETYPE
+  static int GFTbox[8];
+  static double GFTsize;
+#endif
+
+static int Gpixelsinch;
+
 
 
 /* ================================= */
+int
 PLGG_initstatic() 
 {
 strcpy( g_fmt, "" );
@@ -112,6 +143,7 @@ Ginitialized = 0;
 Gtransparent_color = -1;
 Gblack = 0;
 strcpy( GFTfont, "" );
+strcpy( Gcurcolorname, "" );
 
 return( 0 );
 }
@@ -131,11 +163,13 @@ return( Gm );
 
 
 /* ================================ */
-PLGG_setup( name, pixelsinch, ux, uy, upleftx, uplefty )
+int
+PLGG_setup( name, pixelsinch, ux, uy, upleftx, uplefty, maxdrivervect )
 char *name;
 int pixelsinch;
 double ux, uy; /* size of image in inches x y */
 int upleftx, uplefty; /* position of window - not used by this driver */
+int maxdrivervect;
 {
 int i;
 
@@ -145,6 +179,7 @@ if( Ginitialized ) { /* could be if a late setsize was issued.. */
 	}
 Ginitialized = 1;
 
+Gpixelsinch = pixelsinch;
 Gxmax = (int)(ux * pixelsinch );
 Gymax = (int)(uy * pixelsinch );
 
@@ -152,7 +187,7 @@ Gymax = (int)(uy * pixelsinch );
 Gm = gdImageCreate( Gxmax, Gymax );
 if( Gm == NULL ) return( Eerr( 12003, "Cannot create working image", "" ) );
 for( i = 0; i < NBRUSH; i++ ) {
-	Gbrush[i] = gdImageCreate( i+1, i+1 );
+	Gbrush[i] = gdImageCreate( i+1, i+1 ); 
 	if( Gbrush[i] == NULL ) return( Eerr( 12004, "Cannot create brush image", "" ) );
 	}
 
@@ -161,10 +196,16 @@ PLGG_color( "white" );
 PLGG_color( "black" );
 gdImageSetBrush( Gm, Gbrush[0] );
 
+
+Gmax_pts = maxdrivervect;
+if( Gptlist != NULL ) free( Gptlist );
+Gptlist = (gdPoint *) malloc( Gmax_pts * sizeof( gdPoint ) );
+
 return( 0 );
 }
 
 /* ================================ */
+int
 PLGG_moveto( x, y )
 double x, y;
 {
@@ -173,6 +214,7 @@ Goldy = y;
 return( 0 );
 }
 /* ================================ */
+int
 PLGG_lineto( x, y )
 double x, y;
 {
@@ -186,6 +228,7 @@ return( 0 );
 }
 
 /* ================================ */
+int
 PLGG_rawline( a, b, c, d )
 int a, b, c, d;
 {
@@ -194,6 +237,7 @@ return( 0 );
 }
 
 /* ================================ */
+int
 PLGG_linetype( s, x, y )
 char *s;
 double x, y;
@@ -204,6 +248,7 @@ return( PLGG_linestyle( style, x, y ) );
 }
 
 /* ================================ */
+int
 PLGG_linestyle( style, linewidth, dashscale )
 int style;
 double linewidth, dashscale;
@@ -245,17 +290,17 @@ Gcurlinewidth = linewidth;
 return( 0 );
 }
 /* ================================ */
+int
 PLGG_pathto( px, py )
 double px, py;
 {
+
+if( (Gnpts+2) > Gmax_pts ) PLGG_fill(); /* fill what we have so far, then start again.  scg 5/4/04 */
+	
 if( Gnpts == 0 ) {
 	Gptlist[ Gnpts ].x = Exsca( Goldx );
 	Gptlist[ Gnpts ].y = Eysca( Goldy );
 	Gnpts++;
-	}
-if( Gnpts >= MAX_D_ROWS ) { 
-	Eerr( 12006, "img: too many data points", "" );
-	return( 1 );
 	}
 Gptlist[ Gnpts ].x = Exsca( px );
 Gptlist[ Gnpts ].y = Eysca( py );
@@ -263,9 +308,9 @@ Gnpts++;
 return( 0 );
 }
 /* ================================ */
+int
 PLGG_fill()
 {
-int i;
 if( Gnpts < 3 ) { 
 	Eerr( 12007, "warning, not enough points", "" );
 	return( 0 ); 
@@ -279,6 +324,7 @@ return( 0 );
 }
 /* ================================ */
 /* note: caller must restore previous color after this routine returns. */
+int
 PLGG_rect( x1, y1, x2, y2, color )
 double x1, y1, x2, y2;
 char *color;
@@ -295,18 +341,26 @@ return( 0 );
 
 /* ================================ */
 /* set a freetype font */
+int
 PLGG_font( s )
 char *s;
 {
 #ifdef GDFREETYPE
+char *fontpath;
   if( s[0] == '/' ) return( 0 ); /* ignore postscript fonts */
   if( stricmp( s, "ascii" )==0 ) strcpy( GFTfont, "" );
-  else strcpy( GFTfont, s );
+  else 	{
+	fontpath = getenv( "GDFONTPATH" );
+	if( fontpath == NULL ) Eerr( 12358, "warning: environment var GDFONTPATH not found. See ploticus fonts docs.", "" );
+	if( strcmp( &s[ strlen(s) - 4 ], ".ttf" )==0 ) s[ strlen( s)-4 ] = '\0'; /* strip off .ttf ending - scg 1/26/05 */
+	strcpy( GFTfont, s );
+	}
 #endif
 return( 0 );
 }
 
 /* ================================ */
+int
 PLGG_textsize( p )
 int p;
 {
@@ -327,9 +381,11 @@ else if( p >= 10 && p <= 12 ) { Gfont = gdFontMediumBold; Gcharwidth = 0.070; } 
 else if( p >= 13 && p <= 15 ) { Gfont = gdFontLarge; Gcharwidth = 0.08; }
 else if( p >= 15 ) { Gfont = gdFontGiant; Gcharwidth = 0.09; } /* was 0.0930232 */
 Gtextsize = p;
+
 return( 0 );
 }
 /* ================================ */
+int
 PLGG_chardir( d )
 int d;
 {
@@ -338,12 +394,15 @@ else Gvertchar = 0;
 return( 0 );
 }
 /* ================================ */
+int
 PLGG_text( s )
 char *s;
 {
 int a, b, c, d;
-double x, y, ptsize;
-char *err;
+double x, y;
+#ifdef GDFREETYPE
+  char *err;
+#endif
 
 a = Exsca( Goldx ); b = Eysca( Goldy );
 if( Gvertchar ) {
@@ -389,12 +448,15 @@ Goldy = y;
 return( 0 );
 }
 /* ================================ */
+int
 PLGG_centext( s )
 char *s;
 {
 double halflen, x, y;
 int a, b, c, d;
-char *err;
+#ifdef GDFREETYPE
+  char *err;
+#endif
 
 halflen = (Gcharwidth * (double)(strlen( s ))) / 2.0;
 if( Gvertchar ) {
@@ -455,13 +517,15 @@ Goldy = y;
 return( 0 );
 }
 /* ================================ */
+int
 PLGG_rightjust( s )
 char *s;
 {
 double len, x, y;
 int a, b, c, d;
-char *err;
-
+#ifdef GDFREETYPE
+  char *err;
+#endif
 
 len = Gcharwidth * strlen( s );
 if( Gvertchar ) {
@@ -521,6 +585,31 @@ return( 0 );
 }
 
 /* ================================ */
+/* find the width of the given txt using given freetype font and size */
+/* added 8/5/05 - sugg by Erik Zachte */
+int
+PLGG_freetype_twidth( txt, font, size, twidth )
+char *txt, *font;
+double size;
+double *twidth;
+{
+
+*twidth = 0.0;
+
+#ifdef GDFREETYPE 
+if( font[0] ) {
+	char *err;
+	err = gdImageStringFT( NULL, GFTbox, 0, font, size, 0.0, 0, 0, txt );
+	if( err ) { fprintf( stderr, "%s (%s) (width calc)\n", err, font ); return( 0 ); }
+	*twidth = (GFTbox[2] - GFTbox[0]) / 100.0;
+	}
+#endif
+return(0);
+}
+
+
+/* ================================ */
+int
 PLGG_color( color )
 char *color;
 {
@@ -529,6 +618,12 @@ double r, g, b;
 int ir, ig, ib, len;
 int bc; /* brush color */
 double atof();
+
+
+/* request to load the color we currently have.. ignore - scg 6/18/04 */
+/* this is necessary even with pcode lazy color change, because of rectangles */
+if( strcmp( color, Gcurcolorname ) ==0 ) return( 0 );
+else strcpy( Gcurcolorname, color );
 
 
 /* parse graphcore color spec.. */
@@ -547,7 +642,6 @@ else if( strncmp( color, "gray", 4 )==0 || strncmp( color, "grey", 4 )==0 ) {
         }
 else if( strcmp( color, "transparent" )==0 ) {  /* added scg 12/29/99 */
 	if( Gtransparent_color < 0 ) {
-		int t;
 		/* allocate transparent color.. */
 		Gtransparent_color = gdImageColorAllocate( Gm, 254, 254, 254 ); /* white fallbk */
 		/* gdImageColorTransparent( Gm, Gtransparent_color ); */
@@ -559,6 +653,9 @@ else if( strcmp( color, "transparent" )==0 ) {  /* added scg 12/29/99 */
 	   transparent lines.  Brushes remain set to previous color. */
 	return( 0 );
 	}
+else if( strncmp( color, "xrgb", 4 )==0 ) {
+        if (PLG_xrgb_to_rgb( &color[5], &r, &g, &b)) return(1);
+        }
 else if( GL_goodnum( color, &i ) ) {
         r = atof( color );
         g = b = r;
@@ -614,7 +711,103 @@ gdImageSetBrush( Gm, Gbrush[i] );
 return( 0 );
 }
 
+/* ================================ */
+/* PIXPT - pixel data point - clean data points rendered by setting GD pixels directly */
+/* added 5/29/06 scg */
+/* note: color already set by symboldet() */
+int
+PLGG_pixpt( x, y, symcode )
+double x, y;
+char *symcode;
+{
+int a, b;
+int i, j, irow, icol, radius, iw, omode, scanend;
+double atof();
+
+/* Note - this code is essentially replicated in x11.c */
+
+if( symcode[0] == 'o' ) { omode = 1; symcode[0] = 'p'; }
+else omode = 0;
+
+a = Exsca( x ); b = Eysca( y ); /* convert to pixel coordinates */
+
+if( strncmp( symcode, "pixsquare", 9 )==0 ) {
+	radius = (int) (atof( &symcode[9] ) * Gpixelsinch);
+	if( radius < 1 ) radius = 3;
+	if( omode ) { /* do top and bottom lines */
+		irow = b-radius; for( icol = a-radius; icol < a+radius; icol++ ) gdImageSetPixel( Gm, icol, irow, gdStyledBrushed );
+		irow = b+radius; for( icol = a-radius; icol <= a+radius; icol++ ) gdImageSetPixel( Gm, icol, irow, gdStyledBrushed );
+		}
+	for( irow = b-radius; irow < b+radius; irow++ ) {
+		if( omode ) { gdImageSetPixel( Gm, a-radius, irow, gdStyledBrushed ); gdImageSetPixel( Gm, a+radius, irow, gdStyledBrushed ); }
+		else { for( icol = a-radius; icol < a+radius; icol++ ) gdImageSetPixel( Gm, icol, irow, gdStyledBrushed ); }
+		}
+	}
+else if( strncmp( symcode, "pixcircle", 9 )==0 ) {
+	radius = (int) (atof( &symcode[9] ) * Gpixelsinch);
+	if( radius <= 2 ) goto DO_DIAMOND;
+	else if( radius > 9 ) radius = 9;
+	for( i = circliststart[radius]; ; i+= 2 ) {
+		scanend = circpt[i+1];
+		if( circpt[i] == 0 && scanend == 0 ) break;
+		for( j = 0; j <= scanend; j++ ) {
+			if( omode && !( j == scanend )) continue;
+			gdImageSetPixel( Gm, a-j, b+circpt[i], gdStyledBrushed ); 
+			if( j > 0 ) gdImageSetPixel( Gm, a+j, b+circpt[i], gdStyledBrushed );
+			gdImageSetPixel( Gm, a-j, b-circpt[i], gdStyledBrushed ); 
+			if( j > 0 ) gdImageSetPixel( Gm, a+j, b-circpt[i], gdStyledBrushed );
+			if( omode ) {
+				gdImageSetPixel( Gm, a+circpt[i], b-j, gdStyledBrushed ); 
+				if( j > 0 ) gdImageSetPixel( Gm, a+circpt[i], b+j, gdStyledBrushed );
+				gdImageSetPixel( Gm, a-circpt[i], b-j, gdStyledBrushed ); 
+				if( j > 0 ) gdImageSetPixel( Gm, a-circpt[i], b+j, gdStyledBrushed );
+				}
+			}
+		}
+	}
+else if( strncmp( symcode, "pixdiamond", 10 )==0 ) {
+	radius = (int) (atof( &symcode[10] ) * Gpixelsinch);
+	DO_DIAMOND:
+	if( radius < 1 ) radius = 3;
+	radius++;  /* improves consistency w/ other shapes */
+	for( irow = b-radius, iw = 0; irow <= (b+radius); irow++, iw++ ) {
+	    scanend = a+abs(iw);
+	    for( icol = a-abs(iw), j = 0; icol <= scanend; icol++, j++ ) {
+		if( omode && !( j == 0 || icol == scanend )) ;
+		else gdImageSetPixel( Gm, icol, irow, gdStyledBrushed );
+		}
+	    if( irow == b ) iw = (-radius);
+	    }
+	}
+else if( strncmp( symcode, "pixtriangle", 11 )==0 ) {
+	radius = (int) (atof( &symcode[11] ) * Gpixelsinch);
+	if( radius < 1 ) radius = 3;
+	for( irow = b-radius, iw = 0; irow <= b+radius; irow++, iw++ ) {
+	    scanend = a+abs(iw/2);
+	    for( icol = a-abs(iw/2), j = 0; icol <= scanend; icol++, j++ ) {
+		if( omode && irow == b+radius ) gdImageSetPixel( Gm, icol, irow-1, gdStyledBrushed );
+		else if( omode && !( j == 0 || icol == scanend ));
+		else gdImageSetPixel( Gm, icol, irow-1, gdStyledBrushed );
+		}
+	    }
+	}
+else if( strncmp( symcode, "pixdowntriangle", 15 )==0 ) {
+	radius = (int) (atof( &symcode[15] ) * Gpixelsinch);
+	if( radius < 1 ) radius = 3;
+	for( irow = b+radius, iw = 0; irow >= (b-radius); irow--, iw++ ) {
+	    scanend = a+abs(iw/2);
+	    for( icol = a-abs(iw/2), j = 0; icol <= scanend; icol++, j++ ) {
+		if( omode && irow == b-radius ) gdImageSetPixel( Gm, icol, irow-1, gdStyledBrushed );
+		else if( omode && !(j == 0 || icol == scanend ));
+		else gdImageSetPixel( Gm, icol, irow, gdStyledBrushed );
+		}
+	    }
+	}
+return( 0 );
+}
+
 /* ============================== */
+int
 PLGG_imload( imgname, xscale, yscale )
 char *imgname;
 double xscale, yscale;
@@ -644,6 +837,7 @@ return( 0 );
 	align may be:	 "center" to center image around x, y
 			 "topleft" to put top left corner of image at x, y
 			 "bottomleft" to put bottom left corner of image at x, y */
+int
 PLGG_implace( x, y, align, xscale, yscale )
 double x, y;
 char *align;
@@ -685,13 +879,15 @@ PLG_bb( Exsca_inv( gx + neww ), Eysca_inv( gy + newh ) );
 return( 0 );
 }
 
+
 /* ================================ */
 /* EOF - crop image to bounding box size, and create output file */
 /* scg 11/23/01 added click map support */
 
+int
 PLGG_eof( filename, x1, y1, x2, y2 )
 char *filename;
-double x1, y1, x2, y2;
+double x1, y1, x2, y2; /* rectangle of the image that we will be copying into to do the final cropping */
 {
 int i, width, height, ux, uy;
 gdImagePtr outim;
@@ -701,10 +897,16 @@ int t;
 
 if( x1 < 0.0 ) x1 = 0.0;
 if( y1 < 0.0 ) y1 = 0.0;
-if( x2 < 0.0 ) x2 = 0.0;
-if( y2 < 0.0 ) y2 = 0.0;
+/* if( x2 < 0.0 ) x2 = 0.0; */ 
+/* if( y2 < 0.0 ) y2 = 0.0; */
 
+/* final area may not be larger than originally defined 'pagesize' - added scg 5/8/06 */
+if( x2 > (Gxmax/(double)Gpixelsinch) || x2 < 0.0 ) x2 = Gxmax/(double)Gpixelsinch ;
+if( y2 > (Gymax/(double)Gpixelsinch) || y2 < 0.0 ) y2 = Gymax/(double)Gpixelsinch ;
+
+#ifdef PLOTICUS
 if( PL_clickmap_getdemomode() ) PL_clickmap_show( 'g' ); /* 11/23/01 */
+#endif
 
 width = Exsca( x2 ) - Exsca( x1 );
 height = Eysca( y1 ) - Eysca( y2 );
@@ -728,7 +930,13 @@ if( Gtransparent_color >= 0 ) {
 
 /* Open a file for writing. "wb" means "write binary", important
    under MSDOS, harmless under Unix. */
-if( stricmp( filename, "stdout" )==0 ) outfp = stdout;
+if( stricmp( filename, "stdout" )==0 ) {
+	fflush( stdout );
+#ifdef WIN32
+	_setmode( _fileno( stdout ), _O_BINARY ); /* use binary mode stdout */
+#endif
+	outfp = stdout;
+	}
 else outfp = fopen( filename, "wb");
 if( outfp == NULL ) return( Eerr( 12014, "Cannot open for write", filename ) );
 
@@ -751,6 +959,12 @@ if( stricmp( filename, "stdout" )!=0 ) {
 	chmod( filename, 00644 );
 #endif
 	}
+else	{
+	fflush( stdout );
+#ifdef WIN32
+	_setmode( _fileno( stdout ), _O_TEXT ); /* if using stdout, restore stdout to text mode */
+#endif
+	}
 
 /* free memory (other ims freed in EGSetup() for subsequent pages) */
 gdImageDestroy( Gm );
@@ -758,8 +972,10 @@ for( i = 0; i < NBRUSH; i++ ) gdImageDestroy( Gbrush[i] );
 gdImageDestroy( outim );
 Ginitialized = 0;
 
+#ifdef PLOTICUS
 /* write map file */
-if( PL_clickmap_inprogress() ) PL_clickmap_out( ux, uy ); /* 11/23/01 */
+if( PL_clickmap_inprogress() ) PL_clickmap_out( ux, uy ); 
+#endif
 
 return( 0 );
 }
@@ -768,3 +984,9 @@ return( 0 );
 
 
 #endif /* NOGD */
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

@@ -8,6 +8,6 @@ if [ "$DEV" = "" ]; then
 fi
 
 echo multidist1..
-ploticus -prefab multidist overlay=yes data=data21 rotate=yes xrange="0 2000" yrange="0 20" \
+pl -prefab multidist overlay=yes data=data21 rotate=yes xrange="0 2000" yrange="0 20" \
 	-$DEV -o ${OUTDIR}multidist1.$DEV $ARGS 
 

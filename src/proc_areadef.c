@@ -1,6 +1,8 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 /* PROC AREADEF - Set up a graphics area with scaling */
 
@@ -28,18 +30,18 @@ static char *areas[17] = {
 "lifetab      1.0 1.0 7.0 4.5   1.5 1.0 7.5 4.5",
 };
 
-
+int
 PLP_areadef()
 {
 int i;
-char attr[40], val[256];
+char attr[NAMEMAXLEN], val[256];
 char *line, *lineval;
 int nt, lvp;
 int first;
 
 int stat;
 double xlo, xhi, ylo, yhi;
-char areaname[50];
+char areaname[NAMEMAXLEN];
 char xscaletype[50], yscaletype[50];
 char title[256];
 char title2[256];
@@ -53,9 +55,9 @@ int align;
 double adjx, adjy;
 int gotarea, gotxrange, gotyrange;
 int doxaxis, doyaxis;
-char areacolor[40];
-char xminstr[120], xmaxstr[120];
-char yminstr[120], ymaxstr[120];
+char areacolor[COLORLEN];
+char xminstr[256], xmaxstr[120];  /* was xminstr[120]  - needs bigger if big autorange datafield list given - scg 10/25/04 */
+char yminstr[256], ymaxstr[120];  /* was yminstr[120]  -  '' - scg 10/25/04 */
 double height, width;
 int locspec;
 char linebottom[256];
@@ -65,7 +67,7 @@ double autohf, autohmin, autohmax;
 char mapurl[MAXPATH];
 double cmadj;
 int docats;
-char maplabel[256];
+char maplabel[MAXTT];
 int clickmap_on;
 
 TDH_errprog( "pl proc areadef" );
@@ -205,6 +207,9 @@ while( 1 ) {
 	else if( stricmp( attr, "clickmaplabel" )==0 ) {
 		if( PLS.clickmap ) { strcpy( maplabel, lineval ); clickmap_on = 1 ; }
 		}
+        else if( stricmp( attr, "clickmaplabeltext" )==0 ) {
+                if( PLS.clickmap ) { getmultiline( "clickmaplabeltext", lineval, MAXTT, maplabel ); clickmap_on = 1; }
+                }
 
 	else if( stricmp( attr, "axes" )==0 ) {
 		if( stricmp( val, "none" )==0 ) { doxaxis = 0; doyaxis = 0; }
@@ -215,7 +220,7 @@ while( 1 ) {
 	else if( GL_slmember( attr, "?axis.stubs ?axis.selflocatingstubs" )) {
 		if( strnicmp( attr, "xaxis.", 6 )==0 ) doxaxis = 1; 
 		if( strnicmp( attr, "yaxis.", 6 )==0 ) doyaxis = 1; 
-		if( GL_slmember( val, "none inc* file datafield* list categories usecategories" )) ;
+		if( GL_slmember( val, "none inc* dat*matic file datafield* list categories usecategories" )) ;
 		else getmultiline( "stubtext", lineval, MAXBIGBUF-5, PL_bigbuf ); /* just to skip past it..*/
 		}
 	else if( strnicmp( attr, "xaxis.", 6 )==0 ) { doxaxis = 1; continue; }
@@ -238,7 +243,7 @@ while( 1 ) {
 
 /* now do the plotting work.. */
 
-resetstacklist();  /* (obscure) - reset the bar graph list that tries to
+PL_resetstacklist();  /* (obscure) - reset the bar graph list that tries to
 			keep track of fields for automatic stacking */
 
 /* go set up category sets if needed.. */
@@ -368,7 +373,7 @@ if( PLS.debug ) fprintf( PLS.diagfp, "areadef:   xrange is %s to %s.   yrange is
 
 if( stat != 0 ) return( stat );
 	
-suppress_twin_warn( 0 );
+DT_suppress_twin_warn( 0 );
 
 
 /* set variables to hold plot area bounds and scale min/max.. */
@@ -419,7 +424,7 @@ if( lineside[0] != '\0' ) {
 
 /* title */
 if( title[0] != '\0' ) {
-	textdet( "titledetails", titledet, &align, &adjx, &adjy, 0, "R" );
+	textdet( "titledetails", titledet, &align, &adjx, &adjy, 0, "R", 1.0 );
 	measuretext( title, &nlines, &maxlen );
 	if( align == '?' ) align = 'L';
 	if( align == 'L' ) Emov( EXlo + adjx, 
@@ -433,7 +438,7 @@ if( title[0] != '\0' ) {
 	}
 /* title 2 */
 if( title2[0] != '\0' ) {
-	textdet( "title2details", title2det, &align, &adjx, &adjy, 0, "R" );
+	textdet( "title2details", title2det, &align, &adjx, &adjy, 0, "R", 1.0 );
 	measuretext( title2, &nlines, &maxlen );
 	if( align == '?' ) align = 'L';
 	if( align == 'L' ) Emov( EXlo + adjx, 
@@ -453,3 +458,9 @@ if( doyaxis ) PLP_axis( 'y', 6 );
 
 return( 0 );
 }
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

@@ -1,26 +1,24 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 /* PROC CATEGORIES - define or set attribute(s) for a set of categories */
 
 #include "pl.h"
 
+int
 PLP_categories()
 {
-int i;
-char attr[40], val[256];
+char attr[NAMEMAXLEN], val[256];
 char *line, *lineval;
 int nt, lvp;
 int first;
 
-int stat;
-int align;
-double adjx, adjy;
-
 char axis;
 double slideamount;
-char dfield[40];
+char dfield[NAMEMAXLEN];
 char selex[255];
 
 TDH_errprog( "pl proc categories" );
@@ -99,17 +97,17 @@ while( 1 ) {
 
 	else if( stricmp( attr, "checkuniq" )==0 ) {
 		if( axis == '\0' ) return( Eerr( 2795, "'axis' expected as first attribute", "" ));
-		if( tolower( val ) == 'y' ) PL_setcatparms( axis, "checkuniq", 1 );
+		if( tolower( val[0] ) == 'y' ) PL_setcatparms( axis, "checkuniq", 1 );
 		else PL_setcatparms( axis, "checkuniq", 0 );
 		}
 
 	else if( stricmp( attr, "roundrobin" )==0 ) {
 		if( axis == '\0' ) return( Eerr( 2795, "'axis' expected as first attribute", "" ));
-		if( tolower( val ) == 'y' ) PL_setcatparms( axis, "roundrobin", 1 );
+		if( tolower( val[0] ) == 'y' ) PL_setcatparms( axis, "roundrobin", 1 );
 		else PL_setcatparms( axis, "roundrobin", 0 );
 		}
 
-	/* else Eerr( 1, "attribute not recognized", attr ); */ /* ??? */
+	/* else Eerr( 1, "attribute not recognized", attr ); */ /* can't do this because we could be processing an areadef block */
 	}
 
 if( slideamount > -100.0 && slideamount < 100.0 ) {
@@ -119,3 +117,9 @@ if( slideamount > -100.0 && slideamount < 100.0 ) {
 
 return( 0 );
 }
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

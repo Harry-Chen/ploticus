@@ -1,12 +1,13 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 /* PROC AXIS - Draw an X or Y axis.  astart parameter allows areadef xaxis.* or yaxis.* parameters */
 
 /* Coded for Y axis.. axes are logically flipped when drawing an X axis */
 
-#include <string.h>
 #include "pl.h"
 
 #define INCREMENTAL 1
@@ -16,13 +17,13 @@
 #define FROMCATS 5
 #define MONTHS 100
 
-
+int
 PLP_axis( xory, astart )
 char xory; /* either 'x' or 'y' */
 int astart;
 {
 int i;
-char attr[40], val[256];
+char attr[NAMEMAXLEN], val[256];
 char *line, *lineval;
 int nt, lvp;
 int first;
@@ -30,12 +31,11 @@ int first;
 int stat;
 int align;
 double adjx, adjy;
-char s1[256], s2[256];
 
 char buf[256];
 int j;
 char opax;
-double x, y;
+double y;
 double f;
 double pos; /* distance of axis in absolute units from scale-0 */
 double stubstart, stubstop; /* start and stop of stubs and tics in data units */
@@ -53,7 +53,6 @@ int isrc;
 FILE *stubfp;
 double axlinestart, axlinestop;
 double max, min;
-int textloc;
 char axislabel[300];
 char axislabeldet[256];
 double axislabelofs;
@@ -74,15 +73,12 @@ int ibb;
 double overrun;
 int bigbuflen;
 int doingtics;
-double diff;
 int stubrangegiven;
 int stubreverse_given;
 int specialunits;
 int doinggrid;
 double stubslide;
 char scaleunits[30];
-int hours, minutes;
-double sec;
 char gridskip[20];
 char scalesubtype[20];
 char autoyears[20];
@@ -91,7 +87,7 @@ double ticslide;
 int revsign;
 char glemins[40], glemaxs[40];
 double glemin, glemax;
-char gbcolor1[40], gbcolor2[40];
+char gbcolor1[COLORLEN], gbcolor2[COLORLEN];
 double gbylast;
 int gbstate;
 double stubcull, prevstub;
@@ -104,11 +100,19 @@ char cmvalfmt[80], cmtxt[100];
 int logx, logy, stubexp;
 int stublen;
 char autodays[40], automonths[40];
-char labelurl[256], labelinfo[256];
+char labelurl[256], labelinfo[MAXTT];
 double stubmult;
 double stubmininc;
 char firststub[80], laststub[80];
 char stubsubpat[80], stubsubnew[80];
+int sanecount, stubhide;
+int curyr, curday, curmon;
+int circuit_breaker_disable;
+int axis_arrow;
+double arrowheadsize;
+char nearest[30];
+char stubround[30];
+int prec;
 
 TDH_errprog( "pl proc axis" );
 
@@ -171,7 +175,15 @@ strcpy( labelurl, "" ); strcpy( labelinfo, "" );
 stubmult = 1.0; stubmininc = 0.0;
 strcpy( firststub, "" ); strcpy( laststub, "" );
 strcpy( stubsubpat, "" ); strcpy( stubsubnew, "" );
+stubhide = 0;
+curyr = curmon = curday = 0;
+circuit_breaker_disable = 0;
+axis_arrow = 0;
+arrowheadsize = 0.15;
+strcpy( nearest, "" );
+strcpy( stubround, "" );
 
+Egetunits( xory, scaleunits );  /* moved from below - scg 1/27/05 */
 
 /* get attributes.. */
 first = 1;
@@ -192,21 +204,40 @@ while( 1 ) {
 		}
 	else if( stricmp( &attr[astart], "labelurl" )==0 ) strcpy( labelurl, val );
 	else if( stricmp( &attr[astart], "labelinfo" )==0 ) strcpy( labelinfo, lineval );
+        else if( stricmp( attr, "labelinfotext" )==0 ) {
+                if( PLS.clickmap ) { getmultiline( "labelinfotext", lineval, MAXTT, labelinfo ); }
+                }
 
-	else if( stricmp( &attr[astart], "stubs" )==0 || 
-		 stricmp( &attr[astart], "selflocatingstubs" )==0 ) {
+
+	else if( stricmp( &attr[astart], "stubs" )==0 || stricmp( &attr[astart], "selflocatingstubs" )==0 ) {
 
 		if( stricmp( &attr[astart], "selflocatingstubs" )==0 ) selfloc = 1;	
 		else selfloc = 0;
 
-		if( strnicmp( val, "inc", 3 )==0 ) {
+		if( strnicmp( val, "inc", 3 )==0 || GL_slmember( val, "dat*matic" )) {
 			isrc = INCREMENTAL;
 			strcpy( incunits, "" );
 			nt = sscanf( lineval, "%*s %lf %s", &incamount, incunits );
-			if( nt < 1 ) {
-				/* Eerr( 2796, "usage:   stub: incremental amount [units]", "" ); */
-				incamount = 0.0;
+			if( nt < 1 || incamount == 0.0 ) {
+				if( strncmp( scaleunits, "date", 4 )== 0 || strcmp( scaleunits, "time" )==0 ) {
+					DT_reasonable( scaleunits, min, max, &incamount, incunits, stubformat, automonths, 
+						autoyears, autodays, &minorticinc, minorticunits, nearest );
+					}
+				else incamount = 0.0;
 				}
+			}
+		else if( stricmp( val, "minmaxonly" )==0 ) {
+			isrc = INCREMENTAL;
+			incamount = max - min;
+			}
+		else if( stricmp( val, "minonly" )==0 ) {
+			isrc = INCREMENTAL;
+			incamount = (max - min) * 2.0;
+			}
+		else if( stricmp( val, "maxonly" )==0 ) {
+			isrc = INCREMENTAL;
+			stubstart = max;
+			incamount = (max - min) * 2.0;
 			}
 		else if( stricmp( val, "file" )==0 ) {
 			isrc = FROMFILE;
@@ -231,8 +262,7 @@ while( 1 ) {
 			if( nstubdf == 2 ) stubdf2 = fref( fnames[1] );
 			}
 
-		else if( stricmp( val, "categories" )==0 || 
-			 stricmp( val, "usecategories" )==0 ) isrc = FROMCATS;
+		else if( stricmp( val, "categories" )==0 || stricmp( val, "usecategories" )==0 ) isrc = FROMCATS;
 			
 		else if( stricmp( val, "list" )==0 ) {
 			isrc = HERE;
@@ -265,6 +295,7 @@ while( 1 ) {
 		getrange( lineval, &stubstart, &stubstop, xory, min, max );
 		stubrangegiven = 1;
 		}
+	else if( stricmp( &attr[astart], "stubround" )==0 ) strcpy( stubround, val );  /* added 5/29/06 scg */
 
 	else if( stricmp( &attr[astart], "stubreverse" )==0 ) {
 		if( strnicmp( val, YESANS, 1 )==0 )stubreverse = 1;
@@ -292,6 +323,11 @@ while( 1 ) {
 	else if( stricmp( &attr[astart], "stubmult" )==0 ) stubmult = atof( val );
 
 	else if( stricmp( &attr[astart], "stubmininc" )==0 ) stubmininc = atof( val );
+
+	else if( stricmp( &attr[astart], "stubhide" )==0 ) {
+		if( strnicmp( val, YESANS, 1 )==0 ) stubhide = 1;
+		else stubhide = 0;
+		}
 
 	else if( stricmp( &attr[astart], "ticslide" )==0 )  Elenex( val, xory, &ticslide );
 
@@ -334,7 +370,7 @@ while( 1 ) {
 		}
 
 	else if( stricmp( &attr[astart], "minortics" )==0 ) {
-		if( strnicmp( val, "no", 2 )==0 ) strcpy( mtics, "none" );
+		if( strnicmp( val, "no", 2 )==0 ) { strcpy( mtics, "none" ); minorticinc = 0.0; }   /* set ticinc = 0 scg 1/28/05 */
 		else strcpy( mtics, lineval );
 		}
 	else if( stricmp( &attr[astart], "minorticinc" )==0 ) {
@@ -420,6 +456,16 @@ while( 1 ) {
 		}
 	else if( stricmp( &attr[astart], "clickmapextent" )==0 ) nt = sscanf( lineval, "%s %s", cmemins, cmemaxs );
 	else if( stricmp( &attr[astart], "clickmapvalformat" )==0 ) strcpy( cmvalfmt, lineval );
+	else if( stricmp( &attr[astart], "nolimit" )==0 ) {
+		if( strnicmp( val, YESANS, 1 )==0 ) circuit_breaker_disable = 1;
+		}
+	else if( stricmp( &attr[astart], "arrow" )==0 ) {
+		if( strnicmp( val, YESANS, 1 )==0 ) axis_arrow = 1;
+		}
+	else if( stricmp( &attr[astart], "arrowheadsize" )==0 ) {
+		arrowheadsize = atof( val );
+		if( PLS.usingcm ) arrowheadsize /= 2.54;
+		}
 	else if( astart == 0 || strnicmp( attr, "xaxis.", 6 )==0 || 
 	       strnicmp( attr, "yaxis.", 6 )==0 )
 			Eerr( 301, "axis attribute not recognized", attr );
@@ -444,12 +490,13 @@ if( stubevery == 0 ) stubevery = 1;
 /* now do the plotting work.. */
 /* -------------------------- */
 
-Egetunits( xory, scaleunits );
+/* Egetunits( xory, scaleunits ); */ /* moved up - scg 1/27/05 */
+
 
 /* do the label.. easier if we do it before the Eflip below.. */
 if( axislabel[0] != '\0' ) {
 	double xpos, ypos, txtsize;
-	textdet( "labeldetails", axislabeldet, &align, &adjx, &adjy, 0, "R" );
+	textdet( "labeldetails", axislabeldet, &align, &adjx, &adjy, 0, "R", 1.0 );
 	txtsize = (double)(strlen( axislabel )) * Ecurtextwidth;
 
 	if( xory == 'x' ) {
@@ -479,6 +526,10 @@ if( xory == 'x' ) Eflip = 1; /* reverse sense of x and y for draw operations */
 
 
 
+/* avoid "circuit breaker" message when just doing label and/or line..  added scg 5/24/06 */
+if( isrc == 0 && !doingtics && !doinggrid ) goto SKIPLOOP;   
+
+
 /* --------------------- */
 /* tics and axis preliminaries.. */
 /* --------------------- */
@@ -492,6 +543,7 @@ specialunits = 0;
 /* ----------------- */
 /* helpful overrides */
 /* ----------------- */
+
 
 /* if user didn't specify stub range, and 
    if isrc indicates text stubs, and not doing stubreverse, start at 1.0 */
@@ -507,10 +559,13 @@ if( xory == 'y' && !stubreverse_given && stubreverse == 0 &&
 	if( !stubrangegiven ) stubstop = max - 1.0;
 	}
 
-
 if( stubformat[0] != '\0' && isrc == 0 )
 	Eerr( 2749, "warning, stubformat but no stubs specification", "" );
 
+/* if( strncmp( scaleunits, "date", 4 )==0 && stubformat[0] == '\0' ) 
+ *	Eerr( 319, "warning, no stubformat specified.. using current notation.. for better results try 'stubs: datematic'", "" );
+ */
+	
 
 if( minorticinc > 0.0 && strnicmp( mtics, "no", 2 ) == 0 ) strcpy( mtics, "yes" );
 
@@ -530,6 +585,28 @@ if( PLS.clickmap && clickmap ) {
 	Eposex( "min", xory, &cmylast );
 	}
 
+
+/* stubround stuff..   added scg 5/29/06 */
+if( stubround[0] != '\0' ) {    /* stubround is useful when user requires min and max to be at exact oddball locations, 
+				 * but want the stubs to fall on round locations.  Shouldn't come into play with 'datematic' 
+				 * since dm sets min and max to round (nearest) locations. */
+	char minval[40], maxval[40];
+	double ninc;
+	if( GL_smember( scaleunits, "date datetime time" )) {
+		Euprint( buf, xory, stubstart, "" );
+		PLP_findnearest( buf, buf, xory, stubround, minval, maxval );  
+		stubstart = Econv( xory, maxval );
+		}
+	else if( stricmp( stubround, "useinc" )==0 ) {   /* base it on whatever the axis increment value is/will be.. */
+		if( incamount > 0.0 ) stubstart = GL_numgroup( stubstart, incamount, "high" );
+		else	{
+			PL_defaultinc( min, max, &ninc );
+			stubstart = GL_numgroup( stubstart, ninc, "high" );
+			}
+		}
+	else if( GL_goodnum( stubround, &prec )) stubstart = GL_numgroup( stubstart, atof( stubround ), "high" );
+	}
+
 	
 
 /* render minor tics.. */
@@ -541,11 +618,15 @@ if( isrc == INCREMENTAL && strnicmp( mtics, "no", 2 )!= 0 ) {
 		}
 	else if( stricmp( scaleunits, "datetime" )==0 && 
 		(strnicmp( minorticunits, "hour", 4 ) ==0 || strnicmp( minorticunits, "minute", 3 )==0 )) {
-		double winsize; /* window size in hours */
+		double winsize, mm; /* window size in hours */
 		DT_getwin( &winsize );
-		strcpy( minorticunits, "" );
-		minorticinc = minorticinc / winsize;
-		if( strnicmp( minorticunits, "minute", 3 )==0 ) minorticinc = minorticinc / 60.0;
+		mm = ((24.0/winsize) / 24.0);
+		if( strnicmp( minorticunits, "minute", 3 )==0 ) mm /= 60.0;
+		minorticinc *= mm;
+		/* minorticinc = minorticinc / winsize;
+		 * if( strnicmp( minorticunits, "minute", 3 )==0 ) minorticinc = minorticinc / 60.0;
+		 * strcpy( minorticunits, "" );
+		 */
 		}
 	else if( stricmp( scaleunits, "time" )==0 && strnicmp( minorticunits, "second", 3 ) ==0 ) {
 		strcpy( minorticunits, "" );
@@ -574,7 +655,7 @@ if( isrc == INCREMENTAL && strnicmp( mtics, "no", 2 )!= 0 ) {
 		}
 	} 
 
-	
+
 
 
 /* --------------------------------- */
@@ -586,7 +667,7 @@ if( isrc == HERE ) bigbuflen = strlen( PL_bigbuf );
 if( isrc == FROMFILE ) {  /* if taking from file, read the file into PL_bigbuf */
 	stubfp = fopen( filename, "r" );
 	if( stubfp == NULL ) {
-		Eerr( 303, "Cannot open specified stub file", filename );
+		Eerr( 303, "warning, cannot open specified stub file.. using incremental stubs.", filename );
 		isrc = INCREMENTAL; /* fallback */
 		}
 	else	{
@@ -602,6 +683,7 @@ if( isrc == FROMFILE ) {  /* if taking from file, read the file into PL_bigbuf *
 
 if( isrc == FROMDATA ) {
 	if( nstubdf >= 1 ) stubdf1--;  /* off-by-one */
+
 	if( nstubdf >= 2 ) { 
 		stubdf2--;
 		nstubdf = 2;
@@ -646,6 +728,7 @@ else if( stricmp( scaleunits, "date" )==0 && strnicmp( incunits, "year", 4 ) ==0
 else if( strnicmp( incunits, "month", 5 )!=0 && 
 	atof( incunits ) == 0.0 ) strcpy( incunits, "" ); /* prevent racecon */
 
+
 Egetunitsubtype( xory, scalesubtype );
 
 /* yymm (etc) implies inc unit of "months" (yy implies years) */
@@ -662,8 +745,8 @@ if( isrc == INCREMENTAL || ( isrc == 0 && (doingtics || doinggrid )) ) {
 	/* for special units, initialize */
 	if( strnicmp( incunits, "month", 5 )==0 ) {
 		long l;
-		if( ! GL_smember( scaleunits, "date" )) 
-			return( Eerr( 2476, "month increment only valid with date scale type", "" ) );
+		if( ! GL_smember( scaleunits, "date datetime" ))  /* changed to include datetime as well as date - scg 8/11/05 */
+			return( Eerr( 2476, "month increment only valid with date or datetime scale type", "" ) );
 		specialunits = MONTHS;
 		selfloc = 0; /* for rendering purposes don't treat month stubs as self locating.. */
 		/* do the following to get starting m, d, y.. */
@@ -728,11 +811,18 @@ irow = 0;
 if( vertstub ) Etextdir(90);
 prevstub = NEGHUGE;
 
+
 firsttime = 1;
+
+
     
-while( 1 ) {
+for( sanecount = 0; sanecount < 2000; sanecount++ ) {
+
+	if( circuit_breaker_disable ) sanecount = 0;
 
 	strcpy( txt, "" );
+
+	/* if( isrc == 0 ) goto DOTIC;  */ /* no stubs */
 
 	if( isrc == INCREMENTAL ) {
 
@@ -750,8 +840,9 @@ while( 1 ) {
 
 		/* when generating incremental axes moving from negative to positive, for zero sprintf sometimes
            	gives -0.00 or very tiny values like -5.5579e-17.  The following is a workaround.. scg 7/5/01 */
-		/* moved here from Euprint() scg 10/1/03 */
-		if( stubstart < 0.0 && stubstop > 0.0 && yy < 0.0000000000001 && yy > -0.0000000000001 ) yy = 0.0; 
+		/* if( stubstart < 0.0 && stubstop > 0.0 && yy < 0.0000000000001 && yy > -0.0000000000001 ) yy = 0.0;  */
+		/* 5/18/06 scg - problem still occurring.. adjusting to: */
+		if( stubstart < 0.00001 && stubstop >= 0.0 && yy < 0.000000001 && yy > -0.000000001 ) yy = 0.0; 
 
 		if( stubmult != 1.0 ) yy = yy * stubmult; /* added scg 10/2/03 */
 
@@ -779,12 +870,10 @@ while( 1 ) {
 		}
 
 	if( isrc == FROMCATS ) {
-		char *catp, *PL_getcat();
-		catp = PL_getcat( xory, irow );
-		if( catp == NULL ) break;  /* reached end of cat list */
+		stat = PL_getcat( xory, irow, txt, 255 );
+		if( stat ) break;  /* reached end of cat list */
 		if( ( irow % stubevery ) != 0 ) { irow++; goto NEXTSTUB; }
-		y = Econv( xory, catp ); /* error checking not needed */
-		strcpy( txt, catp );
+		y = Econv( xory, txt ); /* error checking not needed */
 		if( PLS.clickmap && clickmap ) strcpy( cmtxt, txt );
 		irow++;
 		}
@@ -802,8 +891,21 @@ while( 1 ) {
 		if( ( y - stubstop ) > overrun ) break;
 		DT_formatdate( buf, stubformat, txt ); /* buf holds date string made above */
 		if( PLS.clickmap && clickmap ) DT_formatdate( buf, cmvalfmt, cmtxt ); /* buf holds date string made above */
-		/* autoyears */
-		if( autoyears[0] != '\0' && ( (firsttime && mon < 11) || mon == 1) ) { /* mon<11 added scg 9/12/01 */
+		}
+
+	/* autoyears */
+	if( autoyears[0] != '\0' ) {
+		int doit;
+		doit = 0;
+		if( specialunits == MONTHS ) {
+			if( (firsttime && mon < 11) || yr != curyr ) doit = 1; /* mon<11 added scg 9/12/01 */
+			}
+		else 	{
+			DT_getmdy( &mon, &day, &yr );
+			if( (firsttime && (mon < 11 || day < 18 )) || yr != curyr ) doit = 1;
+			}
+		curyr = yr;
+		if( doit ) { 
 			if( strlen( autoyears ) == 2 ) sprintf( buf, "%s\n%02d", txt, yr % 100 );
 			else if( strlen( autoyears ) == 3 ) sprintf( buf, "%s\n'%02d", txt, yr % 100 );
 			else	{
@@ -823,12 +925,13 @@ while( 1 ) {
 			char dt[40];
 			datepart = floor( y );
 			timepart = y - datepart;
-			if( firsttime || fabs(timepart) < 0.000001 ) { /* render date  */
+			if( firsttime || datepart != curday ) { /* render date  */
 				DT_fromjul( (long)datepart, dt );
 				DT_formatdate( dt, autodays, buf );
 				strcat( txt, "\n" );
 				strcat( txt, buf );
 				}
+			curday = datepart;
 			}
 		}
 
@@ -840,11 +943,12 @@ while( 1 ) {
 		DT_fromjul( (long) y, dt );
 		DT_jdate( dt, &foo ); /* to get m d y */
 		DT_getmdy( &imon, &iday, &iyr );
-		if( firsttime || iday == 1 ) {
+		if( firsttime || imon != curmon ) {
 			DT_formatdate( dt, automonths, buf );
 			strcat( txt, "\n" );
 			strcat( txt, buf );
 			}
+		curmon = imon;
 		}
 	
 
@@ -886,7 +990,8 @@ while( 1 ) {
 	/* too close to previous stub.. supress.. */
 	if( stubcull > 0.0 ) {
 		double fabs();
-		if( fabs( Ea( Y, y ) - Ea( Y, prevstub ) ) < stubcull ) goto NEXTSTUB;
+		if( fabs( Ea( Y, y ) - Ea( Y, prevstub )) < stubcull && prevstub != NEGHUGE ) goto NEXTSTUB; 
+		/* fixed bug.. in log space, NEGHUGE becomes 1, sometimes causing 1st stub to be culled ... scg 9/21/04 */
 		else prevstub = y;
 		}
 
@@ -925,12 +1030,15 @@ while( 1 ) {
 			/* halfdist = ( Ea( Y, y+inc ) - Ea( Y, y ) ) / 2.0; */
 			}
 
+		/* urlencode the value now.. scg 5/29/06 */
+		GL_urlencode( cmtxt, buf );
+
 		if( Eflip ) {
-			clickmap_entry( 'r', cmtxt, clickmap, (Ea(Y,y)-halfdown)+stubslide, cmemin, 
+			clickmap_entry( 'r', buf, clickmap, (Ea(Y,y)-halfdown)+stubslide, cmemin, 
 				Ea(Y,y)+halfup+stubslide, cmemax, 0, 1, "" );
 			}
 		else 	{
-			clickmap_entry( 'r', cmtxt, clickmap, cmemin, (Ea(Y,y)-halfdown)+stubslide, 
+			clickmap_entry( 'r', buf, clickmap, cmemin, (Ea(Y,y)-halfdown)+stubslide, 
 				cmemax, Ea(Y,y)+halfup+stubslide, 0, 2, "" );
 			}
 		cmylast = Ea( Y, y );
@@ -940,8 +1048,8 @@ while( 1 ) {
 	convertnl( txt );
 
 	/* determine exact position and render stub text.. */ 
-	if( isrc > 0 && ! GL_slmember( txt, stubomit ) ) {   /* stub can't be in omit list.. */ 
-		textdet( "stubdetails", stubdetails, &align, &adjx, &adjy, -2, "R" );
+	if( isrc > 0 && !stubhide && ! GL_slmember( txt, stubomit ) ) {   /* stub can't be in omit list.. */ 
+		textdet( "stubdetails", stubdetails, &align, &adjx, &adjy, -2, "R", 1.0 );
 		if( vertstub && xory == 'x' ) { 
 			if( align == '?' ) align = 'R';
 			ofsx = adjx + (ticout * -2.0) ;
@@ -1013,15 +1121,26 @@ while( 1 ) {
 if( vertstub ) Etextdir(0);
 
 
+SKIPLOOP:
+
 /* make the line..  do it last of all for appearance sake.. */
 if( stricmp( axisline, "none" )!= 0 ) {
 	linedet( "axisline", axisline, 0.5 );
 	Emov( pos, Ea( Y, axlinestart ) ); Elin( pos, Ea( Y, axlinestop ) );
+	if( axis_arrow ) PLG_arrow( pos, Ea( Y, axlinestop), pos, Ea( Y, axlinestop)+(arrowheadsize*2.0), arrowheadsize, 0.3, Ecurcolor );
 	}
 
 
 Eflip = 0;
+
+if( sanecount >= 2000 ) return( Eerr( 5729, "warning, too many stubs/major tics, circuit breaker tripped", "" ));
+
 return( 0 );
 }
 
 
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

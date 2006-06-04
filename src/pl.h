@@ -5,11 +5,11 @@
 
 #define PLHEAD 1
 
-#include <string.h>
-
+#include <stdlib.h>
 #include "plg.h"
 
-#define PLVERSION "2.20"  	/* see also the Copyright page, and page headers and footers */
+
+#define PLVERSION "2.33-Jun'06" 	/* see also the Copyright page, and page headers and footers */
 
 /* =========== working limits.. ============ */
 #define CPULIMIT 30		/* default max amount of cpu (seconds) - setrlimit() - may be overridden */
@@ -24,13 +24,17 @@
 #define MAXBIGBUF  100000 	/* size of PL_bigbuf (chars) */
 #define MAXNCATS 250		/* default max # of categories - may be overriden using proc categories listsize */
 
-#define MAXOBJ 40		/* max # of #saved procs in one run */
+#define MAXOBJ 40		/* max # of currently "active" procs.. includes all #saved procs and #proc getdata with inline data */
 #define MAXDS 5			/* max # of stacked datasets in memory - maintain code instances when raising */
 #define MAXCLONES 5		/* max # of #clone that may be used in one proc */
 
 #define MAXPATH 256		/* pathname max */
 
+#define MAXTT 1500		/* max size of a tooltip text chunk */
+
 #define NORMAL 0
+
+#define NAMEMAXLEN  50		/* also in tdhkit.h */
 
 /* ============ other defines ============= */
 #define dat2d(i,j)	(PLV[((i)*2)+(j)])    /* access PLV vector as an Nx2 array */
@@ -41,6 +45,14 @@
 
 #ifndef Eerr
   #define Eerr(a,b,c) TDH_err(a,b,c)
+#endif
+
+#ifdef LOCALE
+ #define stricmp( s, t )        stricoll( s, t )
+ #define strnicmp( s, t, n )     strnicoll( s, t, n )
+#else
+ #define stricmp( s, t )        strcasecmp( s, t )
+ #define strnicmp( s, t, n )     strncasecmp( s, t, n )
 #endif
 
 #define X 'x'
@@ -55,7 +67,11 @@
 #define LEGEND_LINE 2
 #define LEGEND_SYMBOL 4
 #define LEGEND_TEXT 8
+#define LEGEND_LINEMARK 16
 
+#ifndef URL_ENCODED
+  #define URL_ENCODED 2
+#endif
 
 /* ============ pathname portability ============ */
 #ifdef WIN32
@@ -67,10 +83,6 @@
 #endif
 
 
-/* ================ functions ======================= */
-extern char *PL_da();
-extern double PL_fda(), PL_conv(), PL_u();
-extern char *PL_getnextattr();
 
 
 /* ================ structures ====================== */
@@ -100,6 +112,7 @@ struct plstate {
 	FILE *errfp;		/* error message stream */
 	char *cgiargs;		/* CGI args */
 	int echolines;		/* echo evaluated script lines to 1 = stdout  2 = stderr */
+	int noshell;		/* 1 if shell command deployment is prohibited */
 	};
 
 struct proclines {
@@ -143,6 +156,8 @@ extern int PLVsize, PLVhalfsize, PLVthirdsize;
 extern char PL_bigbuf[];
 
 
+
+
 /* ================ function redefines =========================== */
 /* internally, functions usually don't use the PL_ prefix.. */
 #define getmultiline(parmname,firstline,maxlen,result)	PL_getmultiline(parmname,firstline,maxlen,result)
@@ -159,7 +174,6 @@ extern char PL_bigbuf[];
 #define setintvar( v, n )				PL_setintvar( v, n )
 #define setcharvar( v, s )				PL_setcharvar( v, s )
 #define conv_msg( r, c, a )				PL_conv_msg( r, c, a )
-#define oth_mst( m )					PL_oth_msg( m )
 #define suppress_convmsg( m )				PL_suppress_convmsg( m )
 #define zero_convmsgcount()				PL_zero_convmsgcount()
 #define report_convmsgcount()				PL_report_convmsgcount()
@@ -179,7 +193,7 @@ extern char PL_bigbuf[];
 #define clickmap_out( tx, ty )				PL_clickmap_out( tx, ty )
 #define clickmap_show( dev )				PL_clickmap_show( dev )
 
-#define textdet( p, s, a, adjx, adjy, szh, sth )	PL_textdet( p, s, a, adjx, adjy, szh, sth )
+#define textdet( p, s, a, adjx, adjy, szh, sth, seph )	PL_textdet( p, s, a, adjx, adjy, szh, sth, seph )
 #define linedet( p, s, d )				PL_linedet( p, s, d )
 #define symdet( p, s, sc, r )				PL_symdet( p, s, sc, r )
 
@@ -210,5 +224,250 @@ extern char PL_bigbuf[];
 #define Esetcatslide( axis, amount )			PL_setcatslide( axis, amount )
 #define Es_inr( axis, val )				PL_s_inr( axis, val )
 #define Ef_inr( axis, val )				PL_f_inr( axis, val )
+
+/* ================ non-int functions ======================= */
+extern char *PL_da();
+extern double PL_fda(), PL_conv(), PL_u();
+extern char *PL_getnextattr();
+
+/* ================ int functions =========================== */
+extern int PL_getmultiline();
+extern int PL_num();
+extern int PL_getcoords();
+extern int PL_getbox();
+extern int PL_getrange();
+extern int PL_file_to_buf();
+extern int PL_setfloatvar();
+extern int PL_setintvar();
+extern int PL_setcharvar();
+extern int PL_conv_msg();
+extern int PL_suppress_convmsg();
+extern int PL_zero_convmsgcount();
+extern int PL_report_convmsgcount();
+extern int PL_scalebeenset();
+extern int PL_catitem();
+extern int PL_defaultinc();
+extern int PL_rewritenums();
+extern int PL_convertnl();
+extern int PL_measuretext();
+extern int PL_clickmap_init();
+extern int PL_clickmap_inprogress();
+extern int PL_clickmap_debug();
+extern int PL_clickmap_setdefaulturl();
+extern int PL_clickmap_seturlt();
+extern int PL_clickmap_entry();
+extern int PL_clickmap_out();
+extern int PL_clickmap_show();
+extern int PL_textdet();
+extern int PL_linedet();
+extern int PL_symdet();
+extern int PL_devavail();
+extern int PL_devnamemap();
+extern int PL_makeoutfilename();
+extern int PL_definefieldnames();
+extern int PL_fref();
+extern int PL_getfname();
+extern int PL_fref_error();
+extern int PL_fref_showerr();
+extern int PL_do_select();
+extern int PL_do_subst();
+extern int PL_setunits();
+extern int PL_getunits();
+extern int PL_getunitsubtype();
+extern int PL_setscale();
+extern int PL_conv_error();
+extern int PL_uprint();
+extern int PL_posex();
+extern int PL_lenex();
+extern int PL_evalbound();
+extern int PL_setdatesub();
+extern int PL_setcatslide();
+extern int PL_s_inr();
+extern int PL_f_inr();
+extern int PL_addcat();
+extern int PL_begin();
+extern int PL_catfree();
+extern int PL_checkds();
+extern int PL_clickmap_demomode();
+extern int PL_clickmap_free();
+extern int PL_clickmap_getdemomode();
+extern int PL_clickmap_inprogress();
+extern int PL_clickmap_out();
+extern int PL_custom_function();
+extern int PL_devstring();
+extern int PL_do_preliminaries();
+extern int PL_do_x_button();
+extern int PL_encode_fnames();
+extern int PL_enddatarow();
+extern int PL_exec_scriptfile();
+extern int PL_execline();
+extern int PL_execline_initstatic();
+extern int PL_fieldnames_initstatic();
+extern int PL_findcat();
+extern int PL_free();
+extern int PL_getcat();
+extern int PL_holdmem();
+extern int PL_init_mem();
+extern int PL_lib_initstatic();
+extern int PL_ncats();
+extern int PL_newdataset();
+extern int PL_nextcat();
+extern int PL_parsedata();
+extern int PL_process_arg();
+extern int PL_setcatparms();
+extern int PL_setcats();
+extern int PL_sharedsettings();
+extern int PL_smoothfit();
+extern int PL_startdatarow();
+extern int PL_units_initstatic();
+extern int PL_value_subst();
+extern int PL_add_legent();
+extern int PL_get_legent();
+extern int PL_get_legent_rg();
+extern int PL_resetstacklist();
+extern int PL_getdata_specialmode();
+
+extern int PLP_annotate();
+extern int PLP_areadef();
+extern int PLP_autorange();
+extern int PLP_axis();
+extern int PLP_bars();
+extern int PLP_bars_initstatic();
+extern int PLP_breakaxis();
+extern int PLP_categories();
+extern int PLP_curvefit();
+extern int PLP_defineunits();
+extern int PLP_drawcommands();
+extern int PLP_getdata();
+extern int PLP_getdata_initstatic();
+extern int PLP_import();
+extern int PLP_legend();
+extern int PLP_legend_initstatic();
+extern int PLP_legendentry();
+extern int PLP_line();
+extern int PLP_lineplot();
+extern int PLP_page();
+extern int PLP_pie();
+extern int PLP_print();
+extern int PLP_processdata();
+extern int PLP_processdata_initstatic();
+extern int PLP_rangebar();
+extern int PLP_rangebar_initstatic();
+extern int PLP_rangesweep();
+extern int PLP_rect();
+extern int PLP_scatterplot();
+extern int PLP_settings();
+extern int PLP_symbol();
+extern int PLP_tabulate();
+extern int PLP_usedata();
+extern int PLP_vector();
+extern int PLP_venndisk();
+extern int PLP_findnearest();
+
+extern int GL_addmember();
+extern int GL_changechars();
+extern int GL_close_to();
+extern int GL_commonmembers();
+extern int GL_contains();
+extern int GL_deletechars();
+extern int GL_deletemember();
+extern int GL_encode();
+extern int GL_getcgiarg();
+extern int GL_getchunk();
+extern int GL_getseg();
+extern int GL_goodnum();
+extern int GL_initstatic();
+extern int GL_make_unique_string();
+extern int GL_member();
+extern int GL_ranger();
+extern int GL_slmember();
+extern int GL_smember();
+extern int GL_smemberi();
+extern int GL_substitute();
+extern int GL_substring();
+extern int GL_sysdate();
+extern int GL_systime();
+extern int GL_varsub();
+extern int GL_wildcmp();
+extern int GL_wraptext();
+extern double GL_numgroup();
+extern int GL_urlencode();
+extern int GL_urldecode();
+
+extern int DT_build_dt();
+extern int DT_checkdatelengths();
+extern int DT_datefunctions();
+extern int DT_datetime2days();
+extern int DT_datetime_initstatic();
+extern int DT_days2datetime();
+extern int DT_formatdate();
+extern int DT_formatdatetime();
+extern int DT_formattime();
+extern int DT_frame_mins();
+extern int DT_fromjul();
+extern int DT_frommin();
+extern int DT_getdatefmt();
+extern int DT_gethms();
+extern int DT_getmdy();
+extern int DT_getwin();
+extern int DT_initstatic();
+extern int DT_jdate();
+extern int DT_makedate();
+extern int DT_maketime();
+extern int DT_setdatefmt();
+extern int DT_setdateparms();
+extern int DT_setdatetimefmt();
+extern int DT_setdtsep();
+extern int DT_setlazydates();
+extern int DT_settimefmt();
+extern int DT_time_initstatic();
+extern int DT_timefunctions();
+extern int DT_tomin();
+extern int DT_weekday();
+extern int DT_suppress_twin_warn();
+extern int DT_reasonable();
+extern int DT_getdtparts();
+extern int DT_dateadd();
+
+extern int TDH_condex();
+extern int TDH_condex_initstatics();
+extern int TDH_condex_listsep();
+extern int TDH_dequote();
+extern int TDH_err();
+extern int TDH_err_initstatic();
+extern int TDH_errfile();
+extern int TDH_errmode();
+extern int TDH_errprog();
+extern int TDH_errprogsticky();
+extern int TDH_function_call();
+extern int TDH_function_listsep();
+extern int TDH_functioncall_initstatic();
+extern int TDH_geterrprog();
+extern int TDH_getvalue();
+extern int TDH_getvar();
+extern int TDH_readconfig();
+extern int TDH_readconfig_initstatic();
+extern int TDH_reslimits();
+extern int TDH_secondaryops();
+extern int TDH_setvalue();
+extern int TDH_setvar();
+extern int TDH_setvar_initstatic();
+extern int TDH_setvarcon();
+extern int TDH_shell_initstatic();
+extern int TDH_shellclose();
+extern int TDH_shellcommand();
+extern int TDH_shellresultrow();
+extern int TDH_shfunctions();
+extern int TDH_sinterp();
+extern int TDH_sinterp_open();
+extern int TDH_sinterp_openmem();
+extern int TDH_sqlcommand();
+extern int TDH_sqlnames();
+extern int TDH_sqlrow();
+extern int TDH_value_subst();
+extern int TDH_valuesubst_initstatic();
+extern int TDH_valuesubst_settings();
+extern int TDH_setspecialincdir();
+extern int TDH_prohibit_shell();
 
 #endif /* PLHEAD */

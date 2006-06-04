@@ -1,17 +1,22 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 /* PROC PAGE - set page-wide attributes, and do a "page" break for pp 2 and up */
 
-#include <string.h>
 #include "pl.h"
+#ifndef NOSVG
+  extern int PLGS_setparms();
+#endif
 
+
+int
 PLP_page( )
 {
-int i;
 char buf[256];
-char attr[40], val[256];
+char attr[NAMEMAXLEN], val[256];
 char *line, *lineval;
 int nt, lvp, first;
 
@@ -30,6 +35,7 @@ int pagesizegiven;
 char devval[20];
 double scalex, scaley;
 double sx, sy;
+int clickmap_enabled_here;
 
 TDH_errprog( "pl proc page" );
 
@@ -46,7 +52,7 @@ if( PLS.device == 'e' ) dobackground = 0;
 pagesizegiven = 0;
 strcpy( devval, "" );
 scalex = scaley = 1.0;
-
+clickmap_enabled_here = 0;
 
 /* get attributes.. */
 first = 1;
@@ -112,8 +118,19 @@ while( 1 ) {
 		pagesizegiven = 1;
 		}
 	else if( stricmp( attr, "outfilename" )==0 ) strcpy( outfilename, val );
-	else if( stricmp( attr, "mapfilename" )==0 ) strcpy( mapfilename, val );
+
 	else if( stricmp( attr, "clickmapdefault" )==0 ) clickmap_setdefaulturl( val );
+
+	else if( strcmp( attr, "map" )==0 ) {	/* added 2/3/05 - scg */
+		if( strnicmp( val, YESANS, 1 )==0 ) { PLS.clickmap = 1; clickmap_enabled_here = 1; }
+		else PLS.clickmap = 0; 
+		}
+	else if( strcmp( attr, "csmap" )==0 ) {	/* added 2/3/05 - scg */
+		if( strnicmp( val, YESANS, 1 )==0 ) { PLS.clickmap = 2; clickmap_enabled_here = 1; }
+		else PLS.clickmap = 0;
+		}
+	else if( strnicmp( attr, "mapfile", 7 )==0 ) strcpy( mapfilename, val );
+
 	else Eerr( 1, "page attribute not recognized", attr );
 	}
 
@@ -131,6 +148,21 @@ if( PLS.npages == 0 ) {
 	if( pagesizegiven ) Esetsize( PLS.winw * sx, PLS.winh * sy, PLS.winx, PLS.winy );
 	else if( landscapemode && !PLS.winsizegiven ) Esetsize( 11.0, 8.5, PLS.winx, PLS.winy ); /* landscape */
 
+	/* clickmap (must come before init for eg. svg - scg 2/7/05) */
+	if( clickmap_enabled_here ) {
+		if( mapfilename[0] == '\0' ) {
+        		if( PLS.clickmap == 2 ) strcpy( PLS.mapfile, "stdout" );  /* csmap defaults to stdout..  scg 8/26/04  */
+        		else if( PLS.outfile[0] != '\0' ) makeoutfilename( PLS.outfile, PLS.mapfile, 'm', 1);
+        		else strcpy( PLS.mapfile, "unnamed.map" );
+        		}
+		PL_clickmap_init();
+#ifndef NOSVG
+		/* must update this now too.. scg 2/7/05  */
+		if( PLS.device == 's' ) PLGS_setparms( PLS.debug, PLS.tmpname, PLS.clickmap );
+#endif
+		}
+	else if( mapfilename[0] != '\0' ) strcpy( PLS.mapfile, mapfilename );
+
 	/* initialize and give specified output file name .. */
 	if( outfilename[0] != '\0' ) Esetoutfilename( outfilename );
 	stat = Einit( PLS.device );
@@ -139,8 +171,6 @@ if( PLS.npages == 0 ) {
 	/* set paper orientation */
 	if( landscapemode ) Epaper( 1 );
 
-	/* clickmap file */
-	if( mapfilename[0] != '\0' ) strcpy( PLS.mapfile, mapfilename );
 	}
 
 
@@ -166,6 +196,7 @@ else if( PLS.npages > 0 ) {
 			if( mapfilename[0] != '\0' ) strcpy( PLS.mapfile, mapfilename );
 			else makeoutfilename( PLS.outfile, PLS.mapfile, 'm', (PLS.npages)+1 );
 			PL_clickmap_init();
+
 			}
 
 
@@ -196,7 +227,6 @@ else if( PLS.npages > 0 ) {
 /* now do other work.. */
 /* -------------------------- */
 
-
 /* do background.. */
 /* if( dopagebox ) Ecblock( 0.0, 0.0, EWinx, EWiny, Ecurbkcolor, 0 ); */ /* does update bb */
 if( dopagebox ) Ecblock( 0.0, 0.0, PLS.winw, PLS.winh, Ecurbkcolor, 0 ); /* does update bb */
@@ -208,7 +238,7 @@ else if( dobackground ) {
 	}
 
 if( PL_bigbuf[0] != '\0' ) {
-	textdet( "titledetails", titledet, &align, &adjx, &adjy, 3, "B" );
+	textdet( "titledetails", titledet, &align, &adjx, &adjy, 3, "B", 1.0 );
 	if( align == '?' ) align = 'C';
 	measuretext( PL_bigbuf, &nlines, &maxlen );
 	if( align == 'L' ) Emov( 1.0 + adjx, (PLS.winh-0.8) + adjy );
@@ -219,3 +249,9 @@ if( PL_bigbuf[0] != '\0' ) {
 
 return( 0 );
 }
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

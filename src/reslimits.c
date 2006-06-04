@@ -1,4 +1,9 @@
-/* ================================================================= */
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
+
 /* RESLIMITS - set system resource limits for current process and all child processes.  
    cpu sets max cpu time in seconds
    filesize sets max size in bytes of created files
@@ -12,6 +17,7 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 
+int
 TDH_reslimits( type, value )
 char *type;
 int value;

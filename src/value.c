@@ -1,24 +1,31 @@
-/* VALUE.C - assign / get value of data array field or variable
- * Copyright 1998-2002 Stephen C. Grubb  (ploticus.sourceforge.net) .
- * This code is covered under the GNU General Public License (GPL);
- * see the file ./Copyright for details. */
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
-#include <string.h>
+/* VALUE.C - assign / get value of data array field or variable */
+
 #include "tdhkit.h"
+extern int atoi();
+#ifdef PLOTICUS
+  extern int PL_fref_showerr(), PL_fref(), PL_fref_error();
+#endif
 
 /* ======================== */
 /* SETVALUE - set the named variable to the given value.
 		Returns 0 if ok, 1 if itemname not recognized.  */
 
+int
 TDH_setvalue( itemname, value, data, recordid )
 char *itemname, *value;
 char data[ MAXITEMS ][ DATAMAXLEN+1 ];	/* data array */
 char *recordid;  /* see top of this file */
 {
 int j;
-int ival;
 int stat;
 int p;
+
 
 /* see if itemname is an integer field number; 
    if so set it and return.. scg 2-18-98 */
@@ -32,6 +39,7 @@ if( stat && p <= 0 ) {
 if( strcmp( recordid, "" )==0 ) j = -1;
 #ifndef TDH_NOREC
 else if( recordid[0] == '@' ) {
+	int ival;
 	ival = atoi( &recordid[1] );
 	if( ival > 0 && ival < MAXITEMS ) {
 		if( data == NULL ) return( 1302 );
@@ -62,6 +70,7 @@ return( 0 );
 	4/30/01 - now handles field#s, e.g. itemname = 2
  */
 
+int
 TDH_getvalue( value, itemname, data, recordid )
 char *value;
 char *itemname;
@@ -71,6 +80,7 @@ char *recordid;  /* see top of this file */
 int j;
 int stat;
 int ival;
+
 
 if( GL_goodnum( itemname, &stat ) ) {  /* @3, etc. */
 	ival = atoi( itemname );
@@ -94,6 +104,7 @@ if( j < 0 ) {
 		PL_fref_showerr( 1 );
 		if( PL_fref_error() ) return( 1308 );
 			/* return( err( 1308, "unrecognized variable or data field name", itemname )); */
+		if( data == NULL ) return( 1308 );
 		strcpy( value, data[ j ] );
 		return( 0 );
 		}
@@ -106,3 +117,9 @@ else 	{
 	}
 return( 0 );
 }
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

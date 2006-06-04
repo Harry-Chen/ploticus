@@ -1,16 +1,14 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
-
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 /* routines related to low level graphic initialization */
 
-#include <string.h>
 #include "plg.h"
 
-#ifndef NOX11
-/* #include <X11/Xlib.h> */ /* ??? */
-#endif
+extern int GL_sysdate(), GL_systime(), PLGP_setup(), PLGS_setup(), PLGX_setup(), PLGG_setup(), PLGF_setup();
 
 #define DEFAULT_WIN_WIDTH 8
 #define DEFAULT_WIN_HEIGHT 9
@@ -21,9 +19,11 @@ static double pagewidth = DEFAULT_WIN_WIDTH, pageheight = DEFAULT_WIN_HEIGHT;
 static int initialized = 0;
 static char outfilename[ MAXPATH ] = "";
 static char outlabel[80] = "ploticus-graphic";
+static int maxdrivervect = 500;
 
 
 /* ========================================== */
+int
 PLG_init_initstatic()
 {
 uplefttx = 0;
@@ -33,21 +33,19 @@ pageheight = DEFAULT_WIN_HEIGHT;
 initialized = 0;
 strcpy( outfilename, "" );
 strcpy( outlabel, "ploticus-graphic" );
+maxdrivervect = 500;
 return( 0 );
 }
 
 /* ========================================== */
 /* INIT - initialize device */
 
+int
 PLG_init( dev )
 char dev;     /* device code */
 {
-char msg[100];
-int yr, mon, day, hr, min, sec, i;
-char host[30]; 
-FILE *lfp;
+int yr, mon, day, hr, min, sec;
 char sdev[8];
-double sx, sy;
 int stat;
 
 GL_sysdate( &mon, &day, &yr ); GL_systime( &hr, &min, &sec );
@@ -82,21 +80,22 @@ else if( dev == 'x' ) {
 #ifdef NOX11
 	return( Eerr( 12016, "X11 capability was not included in this build.", "" ) );  
 #else
+	double sx, sy;
 	Epixelsinch = 75; 
 	Esetwinscale( (int)(pagewidth*Epixelsinch), (int)(pageheight*Epixelsinch), pagewidth, pageheight );
 	Egetglobalscale( &sx, &sy );
-	stat = PLGX_setup( outlabel, Epixelsinch, pagewidth, pageheight, uplefttx, upleftty );
+	stat = PLGX_setup( outlabel, Epixelsinch, pagewidth, pageheight, uplefttx, upleftty, maxdrivervect );
 	if( stat ) return( stat );
 #endif
 	}
 else if( dev == 'g' ) {
 #ifdef NOGD
-	return( Eerr( 12016, "GIF/PNG capability was not included in this build.", "" ) );  
+	return( Eerr( 12016, "GD image capability was not included in this build.", "" ) );  
 	
 #else
 	Epixelsinch = 100;
 	Esetwinscale( (int)(pagewidth*Epixelsinch), (int)(pageheight*Epixelsinch), pagewidth, pageheight );
-	stat = PLGG_setup( outlabel, Epixelsinch, pagewidth, pageheight, uplefttx, upleftty );
+	stat = PLGG_setup( outlabel, Epixelsinch, pagewidth, pageheight, uplefttx, upleftty, maxdrivervect );
 	if( stat ) return( stat );
 	Edev = 'g';
 #endif
@@ -108,18 +107,20 @@ else if( dev == 'f' ) {
 #else
          Epixelsinch = 72; 
          Esetwinscale( (int)(pagewidth*Epixelsinch), (int)(pageheight*Epixelsinch), pagewidth, pageheight );
-         stat = PLGF_setup( outlabel, dev, outfilename, Epixelsinch, pagewidth, pageheight, uplefttx, upleftty );
+         stat = PLGF_setup( outlabel, dev, outfilename, Epixelsinch, pagewidth, pageheight, uplefttx, upleftty, maxdrivervect );
          if( stat ) return( stat );
 #endif
          }
 
+else if( dev == 'n' ) ; /* null device */
 
 else 	{ 
 	sprintf( sdev, "%c", dev );
 	return( Eerr( 12016, "Unsupported display device code", sdev ) );  
 	}
 
-initialized = 1;
+if( dev != 'n' ) initialized = 1;
+
 EWinx = pagewidth;  EWiny = pageheight;
 PLG_setdefaults(); 
 return( 0 );
@@ -128,11 +129,13 @@ return( 0 );
 /* ================================== */
 /* SETSIZE - set the size and position of the display.  Should be called before init()
 */
+
+int
 PLG_setsize( ux, uy, upleftx, uplefty )
 double ux, uy;  /* size of window in inches.. */
 int upleftx, uplefty; /* point (in native window system coords ) of upper-left corner of window */
 {
-
+extern int PLGX_resizewin();
 
 if( ! initialized ) { /* getting ready to initialize-- set size parameters */
 	pagewidth = ux; pageheight = uy; uplefttx = upleftx; upleftty = uplefty;
@@ -165,6 +168,7 @@ return( 0 );
 
 
 /* ====================================== */
+int
 PLG_setdefaults()
 {
 Efont( Estandard_font );
@@ -172,6 +176,7 @@ Etextsize( 10 );
 Etextdir( 0 );
 Elinetype( 0, 0.6, 1.0 );
 Ecolor( Estandard_color );
+strcpy( Ecurcolor, Estandard_color );  /* added scg 7/28/04 ... related to pcode color change optimization */
 Ebackcolor( Estandard_bkcolor );
 Escaletype( "linear", 'x' );
 Escaletype( "linear", 'y' );
@@ -182,6 +187,7 @@ return( 0 );
 }
 
 /* =================== */
+int
 PLG_setoutfilename( name )
 char *name;
 {
@@ -191,6 +197,7 @@ return( 0 );
 }
 
 /* =================== */
+int
 PLG_getoutfilename( name )
 char *name;
 {
@@ -199,6 +206,7 @@ return( 0 );
 }
 
 /* ==================== */
+int
 PLG_setoutlabel( name )
 char *name;
 {
@@ -207,12 +215,35 @@ outlabel[78] = '\0';
 return( 0 );
 }
 
+/* ===================== */
+/* added scg 5/4/04 */
+int
+PLG_setmaxdrivervect( j )
+int j;
+{
+maxdrivervect = j;
+return( 0 );
+}
+
 
 /* ========================= */
+int
 PLG_handle_events( x, y, e )
 double x, y;
 int e;
 {
+/* fprintf( stderr, "[event %d]\n", e );  */
 if( e == E_EXPOSE || e == E_RESIZE ) Erestorewin();
+
+#ifdef GETGUI
+  getgui_late_refresh();
+#endif
+
 return( 0 );
 }
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

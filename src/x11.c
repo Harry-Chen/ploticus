@@ -1,10 +1,11 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
-
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 /* ===========================
-   X11 xlib driver (c) 1989-96 Stephen C. Grubb
+   X11 xlib driver for ploticus.
 
    No checking for redundant calls is made here.
 
@@ -17,15 +18,23 @@
 
    ===========================
 */
-	
+
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xos.h>
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include "x11shades.h"
+#include "pixpt.h"  /* circle ptlists */
 
-#define MAX_D_ROWS 1000		/* LIMIT: max# points in one polygon */
+extern int TDH_err(), PLG_he(), PLGX_loadfont(), PLGX_pointsize(), PLGX_dot(), PLG_xsca(), PLG_ysca();
+extern int PLGX_stroke(), PLGX_fill(), GL_member(), PLG_xrgb_to_rgb(), GL_goodnum(), PLG_colorname_to_rgb();
+extern int atoi();
+
+
+/* #define MAX_D_ROWS 1000 */		/* LIMIT: max# points in one polygon */
 #define DEFAULT_FONT "-adobe-courier-bold-r-normal"
 #define MISC_FONT "-misc-fixed-medium-r-normal"    /* available on NDG xterminals */
 #define LAST_RESORT_FONT "9x15"
@@ -49,17 +58,18 @@ static char x_dash[10][6]= {
 		  {1}, {1,1}, {3,1}, {5,1}, {2,1,1,1}, {4,1,1,1}, {6,1,1,1}, 
 		  {2,1,1,1,1,1}, {4,1,1,1,1,1}, {6,1,1,1,1,1} };
 static int x_ndash[10] = { 1, 2, 2, 2, 4, 4, 4, 6, 6, 6 };
+static int x_pixelsinch;
 
 /* create pixmap tiles for shading.. */
 static Pixmap x_s_00, x_s_10, x_s_20, x_s_30, x_s_40, x_s_50, x_s_60, x_s_70, x_s_80, x_s_90, x_s1_0;
 static Pixmap x_shadetile;
 
 /* polygon vertexes */
-static XPoint x_vlist[MAX_D_ROWS];
-static int x_nvtx = 0;
+/* static XPoint x_vlist[MAX_D_ROWS]; */
+static XPoint *x_ptlist;
+static int x_npt = 0, x_maxpt;
 
 static int x_winheight, x_winwidth;   /* current size of window */
-static int x_winheight0, x_winwidth0; /* original size of window */
 static int x_upperleftx, x_upperlefty; /* screen pixel position of upper left of window */
 static double x_textscale = 1.0;
 static int x_mapped; /* 1 if window mapped (visible) 0 if not */
@@ -88,6 +98,7 @@ static int x_colormessagedone = 0; /* 1 if the "Failure to allocate color" messa
 static Pixmap x_backstore;
 static int x_backstoreused = 0;
 
+static int x_mapflag = 1;	/* 1 if window should be mapped initally, 0 if it should be hidden initially - added 9/17/04 scg */
 
 /***** functions *****/
 extern double PLG_xsca_inv(), PLG_ysca_inv();
@@ -101,6 +112,7 @@ extern double PLG_xsca_inv(), PLG_ysca_inv();
 
 /* =========================== */
 /* get the graphcore environment handles.. */
+int
 PLGX_gethandle( display, window, gc )
 Display *display;
 Window *window;
@@ -109,21 +121,22 @@ GC *gc;
 display = x_disp;
 window = &x_win;
 gc = &x_gc;
+return( 0 );
 }
 
 /* ========================== */
 /* ========================== */
 /* ========================== */
-PLGX_setup( name, pixels_inch, x_max, y_max, upperleftx, upperlefty )
+int
+PLGX_setup( name, pixels_inch, x_max, y_max, upperleftx, upperlefty, maxdrivervect )
 char name[];
 int pixels_inch;
 double x_max, y_max;
-int upperleftx, upperlefty;
+int upperleftx, upperlefty;  /* may be passed as -1, -1 for automatic centering on screen */
+int maxdrivervect;
 {
-char inbuf[20];
 XSizeHints win_size;
 XEvent event;
-int n = 1;
 int nplanes; /* # of planes of display */
 unsigned long fg, bg; /* forground and background for setting pixmaps */
 char *userfont;
@@ -144,14 +157,9 @@ ptsizes[5] = 24;
 /* get window size in pixels */
 x_winwidth =  (int)(x_max * pixels_inch ); 
 x_winheight = (int)(y_max * pixels_inch );
+x_pixelsinch = pixels_inch;
 
-/* remember original size.. */
-x_winwidth0 = x_winwidth; 
-x_winheight0 = x_winheight;
 
-/* remember position */
-x_upperleftx = upperleftx;
-x_upperlefty = upperlefty;
 
 /* initialize parameters */
 x_font = NULL;
@@ -163,8 +171,19 @@ if(( x_disp = XOpenDisplay( NULL )) == NULL ) return( Eerr( 12040, "X Display no
 /* see if user font env variable is defined.. */
 userfont = getenv( "GRAPHCORE_XFONT" );
 
+/* malloc the drawing vector.. scg 5/4/04 */
+x_maxpt = maxdrivervect;
+x_ptlist = (XPoint *) malloc( x_maxpt * sizeof( XPoint ) );
+
 /* window size */
 x_screen = DefaultScreen( x_disp );
+
+
+if( upperleftx < 0 ) x_upperleftx = ( DisplayWidth( x_disp, x_screen ) / 2 ) - (x_winwidth / 2); /* center in screen */
+else x_upperleftx = upperleftx;
+
+if( upperlefty < 0 ) x_upperlefty = ( DisplayHeight( x_disp, x_screen ) / 2 ) - (x_winheight / 2); /* center in screen */
+else x_upperlefty = upperlefty;
 
 win_size.flags = PPosition | PSize;
 win_size.x = x_upperleftx;
@@ -193,6 +212,7 @@ XStoreName( x_disp, x_win, name );
 /* determine whether screen is monochrome or color.. */
 x_display_depth = DefaultDepth( x_disp, x_screen );
 x_default_cmap = DefaultColormap( x_disp, x_screen );
+/* x_default_cmap = XCreateColormap( x_disp, x_win, x_screen, AllocAll ); */ /* use this to create a private colormap */
 if( x_display_depth > 1 ) x_colordisplay = 1;
 else 	{
 	x_colordisplay = 0; 
@@ -275,22 +295,25 @@ XSelectInput (
 
 
 /* map the window */
-XMapWindow( x_disp, x_win );
-x_mapped = 1;
+if( x_mapflag ) {
+	XMapWindow( x_disp, x_win );
+	x_mapped = 1;
 
-/* wait for initial expose event to draw.. */
-while( 1 ) {
-	XNextEvent( x_disp, &event );
-	if( event.type == Expose ) break;
+	/* wait for initial expose event to draw.. */
+	while( 1 ) {
+		XNextEvent( x_disp, &event );
+		if( event.type == Expose ) break;
+		}
 	}
 
 return( 0 );
 }
 /* ============================== */
 /* save window to backing store.. */
+int
 PLGX_savewin( )
 {
-XFlush( x_disp );
+
 XCopyArea( x_disp, x_win, x_backstore, x_gc, 0, 0, x_winwidth, x_winheight, 0, 0 );
 x_backstoreused = 1;
 return( 0 );
@@ -298,28 +321,26 @@ return( 0 );
 }
 /* ============================== */
 /* restore window from backing store.. */
-
+int
 PLGX_restorewin( )
 {
+if( ! x_backstoreused ) return( 0 );
 XCopyArea( x_disp, x_backstore, x_win, x_gc, 0, 0, x_winwidth, x_winheight, 0, 0 );
 return( 0 );
 }
 
 /* =============================== */
+int
 PLGX_event( event )
 XEvent event;
 {
 int x, y;
 unsigned eid;
-char s[10];
-XEvent fooevent;
-int index, status;
-FILE *fp;
 int charcount;
 KeySym ks;
 XComposeStatus compose; /* not used */
 char buf[80];
-int i;
+
 
 if( event.type == KeyPress ) {
 	x = event.xkey.x;
@@ -336,8 +357,7 @@ if( event.type == KeyPress ) {
 
 
 		/* arrow keys, pg up, pg dn  - added scg 9/9/98 */
-		/* home=550  left = 551   up = 552   right = 553    down = 554   
-		   pg up=555   pg down=556  end=557 */
+		/* home=550  left = 551   up = 552   right = 553    down = 554   pg up=555   pg down=556  end=557 */
 		if( ks >= 0xFF50 && ks <= 0xFF58 ) {
 			ks &= 0x00FF;
 			eid = ks + 470;
@@ -368,6 +388,9 @@ else if( event.type == Expose ) {
 	}
 
 else if( event.type == ConfigureNotify ) { 
+
+#ifdef SUSPENDED
+	/* seems to work better without.. scg 9/24/04 */
 
 	/* on openwin, this event is generated when window is moved, and when it is
 	 * resized.  We need do nothing when it is simply moved; when it is resized
@@ -412,28 +435,37 @@ else if( event.type == ConfigureNotify ) {
 
 		PLGX_savewin( );
 		}
+#endif
 	}
 else if( event.type == MappingNotify ) { 
 	XRefreshKeyboardMapping( (XMappingEvent *) &event );
 	}
+return( 0 );
 }
+
+
 /* ============================== */
 /* Code driven resize of window.
    To use this, caller must be prepared to redraw display when this routine returns.
    All parameters (except pixels_inch) may be sent as -1 = don't change */
    
-PLGX_resizewin( pixels_inch, x, y, x_max, y_max )
-int pixels_inch, x, y;
+int
+PLGX_resizewin( pixels_inch, upperleftx, upperlefty, x_max, y_max )
+int pixels_inch, upperleftx, upperlefty;
 double x_max, y_max;
 {
+#ifdef SUSPENDED /* on linux x11R6 .. this routine leads to instability apparently related to x_backstore.. */
+
 XSizeHints win_size;
 
-/* get window size in pixels, and consider it 'original' */
-if( x_max > 0 ) { x_winwidth =  (int)(x_max * pixels_inch ); x_winwidth0 = x_winwidth; }
-if( y_max > 0 ) { x_winheight = (int)(y_max * pixels_inch ); x_winheight0 = x_winheight; }
+/* get window size in pixels */
+if( x_max > 0 ) x_winwidth =  (int)(x_max * pixels_inch ); 
+if( y_max > 0 ) x_winheight = (int)(y_max * pixels_inch ); 
 
-if( x > 0 ) x_upperleftx = x; 
-if( y > 0 ) x_upperlefty = y;
+if( upperleftx < 0 ) x_upperleftx = ( DisplayWidth( x_disp, x_screen ) / 2 ) - (x_winwidth / 2); /* center on screen */
+if( upperlefty < 0 ) x_upperlefty = ( DisplayHeight( x_disp, x_screen ) / 2 ) - (x_winheight / 2); /* center on screen */
+if( upperleftx > 0 ) x_upperleftx = upperleftx;
+if( upperlefty > 0 ) x_upperlefty = upperlefty;
 
 win_size.x = x_upperleftx; win_size.y = x_upperlefty; 
 win_size.width = x_winwidth; win_size.height = x_winheight;
@@ -444,14 +476,17 @@ XMoveResizeWindow ( x_disp, x_win, win_size.x, win_size.y, win_size.width, win_s
 /* free and reallocate backing store at new size.. */
 XFreePixmap( x_disp, x_backstore );
 x_backstore = XCreatePixmap( x_disp, x_win, x_winwidth, x_winheight, x_display_depth );
-
+fprintf( stderr, "[created new pixmap %d]", x_backstore );
 
 /* XSetWMNormalHints( x_disp, x_win, &win_size ); */
 XFlush( x_disp ); /* scg 2-13-96 */
+
+#endif
 return( 0 );
 }
 
 /* =============================== */
+int
 PLGX_wait()
 {
 XEvent event;
@@ -460,36 +495,63 @@ while( ! x_waitflag ) {
 	XNextEvent( x_disp, &event );
 	PLGX_event( event );
         }
+return( 0 );
 }
 
 /* ==================== dot */
+int
 PLGX_dot( x, y )
 double x, y;
 {
 XDrawPoint( x_disp, x_win, x_gc, Exsca( x ), Eysca( y ) );
+return( 0 );
 }
 
 /* ====================  line to */
+int
 PLGX_lineto(x,y)
 double x, y;
 {
-int a, b, c, d;
 
-a = Exsca( x_oldx ); b = Eysca( x_oldy ); c = Exsca( x ); d = Eysca( y );
-XDrawLine( x_disp, x_win, x_gc, a, b, c, d );
+
+if( x_npt >= x_maxpt ) PLGX_stroke();  /* stroke what we have so far then begin a new line.. */
+
+if( x_npt == 0 ) { x_ptlist[0].x = Exsca( x_oldx ); x_ptlist[0].y = Eysca( x_oldy ); x_npt++; }
+x_ptlist[ x_npt ].x = Exsca(x);
+x_ptlist[ x_npt ].y = Eysca(y);
+x_npt++;
+
+/* rewritten 5/4/04 scg.. was:
+ * a = Exsca( x_oldx ); b = Eysca( x_oldy ); c = Exsca( x ); d = Eysca( y );
+ * XDrawLine( x_disp, x_win, x_gc, a, b, c, d );
+ */
+
 x_oldx=x;
 x_oldy=y;
+return( 0 );
 }
 
 /* =====================  moveto */
+int
 PLGX_moveto(x,y)
 double x, y;
 {
 x_oldx = x;
 x_oldy = y;
+return( 0 );
+}
+
+/* ======================== stroke */
+int
+PLGX_stroke()
+{
+XDrawLines( x_disp, x_win, x_gc, x_ptlist, x_npt, CoordModeOrigin );
+x_npt = 0;
+return( 0 );
 }
 
 /* ===================== raw line - no conversion on coords */
+int
 PLGX_rawline( a, b, c, d )
 int a, b, c, d;
 {
@@ -499,11 +561,12 @@ return( 0 );
 
 /* ===================== set point size of type */
 /* pointsize */
+int
 PLGX_pointsize( p, aw )
 int p;
 double *aw; /* width of one character -- returned */
 {
-int stat;
+
 Font fnt;
 int i;
 
@@ -535,6 +598,7 @@ return( 0 );
 /* When this routine returns successfully, Font is returned in fnt, and
    XFontStruct is placed in x_font. */
 
+int
 PLGX_loadfont( f, size, fnt )
 char *f;
 int size;
@@ -570,13 +634,16 @@ return( 0 );
 }
 
 /* ==================== x_scaletext - when window is resized, to adjust text size */
+int
 PLGX_scaletext( f )
 double f;
 {
 x_textscale = f;
+return( 0 );
 }
 
 /* ==================== x_display left adjusted text starting at current position */
+int
 PLGX_text( s, aw )
 char s[];
 double *aw; /* actual string width in inches (sent back) */
@@ -586,9 +653,11 @@ XDrawString( x_disp, x_win, x_gc, Exsca( x_oldx ), Eysca( x_oldy ), s, strlen( s
 /* XSetFillStyle( x_disp, x_gc, FillTiled ); */  /* added SCG 950907 */
 *aw = Exsca_inv( XTextWidth( x_font, s, strlen( s ) ) );
 x_oldx += ( *aw );
+return( 0 );
 }
 
 /* ==================== x_display centered text */
+int
 PLGX_centext( s, w, x, aw )
 char s[];
 double w;
@@ -597,14 +666,16 @@ double *aw; /* actual string width in inches (sent back) */
 {
 double width;
 
-GL_strip_ws( s );
+/* GL_strip_ws( s ); */ /* removed scg 8/23/04 (suscript) */
 width = Exsca_inv( XTextWidth( x_font, s, strlen( s ) ) );
 PLGX_moveto( x_oldx+((w-width)/2.0), x_oldy );
 PLGX_text( s, aw );
 *x = Exsca_inv((int)( x_oldx+((w-width)/2.0) ) );
+return( 0 );
 }
 
 /* ==================== x_display right-justified text */
+int
 PLGX_rightjust( s, w, x, aw )
 char s[];
 double w;
@@ -613,20 +684,22 @@ double *aw; /* actual string width in inches (sent back) */
 {
 double width;
 
-GL_strip_ws( s );
+/* GL_strip_ws( s ); */ /* removed scg 8/23/04 (suscript) */
 width = Exsca_inv( XTextWidth( x_font, s, strlen( s ) ) );
 PLGX_moveto( x_oldx+(w-width), x_oldy );
 PLGX_text( s, aw );
 *x = Exsca_inv((int)(x_oldx+(w-width) ));
+return( 0 );
 }
 
 /* ========= set line thickness and dash pattern attribs ============= */
 
+int
 PLGX_linetype( t, w, mag )
 char t[];
 double w, mag;
 {
-int i, j, k;
+int i, j;
 int linewidth;
 char dashlist[12];
 int style;
@@ -648,24 +721,27 @@ else	{
 	XSetDashes( x_disp, x_gc, 0, dashlist, x_ndash[ atoi(t)%10 ] );
 	XSetLineAttributes( x_disp, x_gc, linewidth, LineOnOffDash, CapButt, JoinMiter );
 	}
+return( 0 );
 }
 
 /* ==================== add to "fill path" */
+int
 PLGX_path( x, y )
 double x, y;
 {
-if( x_nvtx == 0 ) { x_vlist[0].x = Exsca( x_oldx ); x_vlist[0].y = Eysca( x_oldy ); x_nvtx++; }
-if( x_nvtx >= MAX_D_ROWS ) {
-	Eerr( 12045, "X polygon: Too many points ", "" );
-	return( 1 );
-	}
-x_vlist[ x_nvtx ].x = (short) (Exsca(x));
-x_vlist[ x_nvtx ].y = (short) (Eysca(y));
-x_nvtx++;
+
+if( x_npt >= x_maxpt ) PLGX_fill(); /* fill what we have so far then start over.. */
+
+if( x_npt == 0 ) { x_ptlist[0].x = Exsca( x_oldx ); x_ptlist[0].y = Eysca( x_oldy ); x_npt++; }
+x_ptlist[ x_npt ].x = Exsca(x);
+x_ptlist[ x_npt ].y = Eysca(y);
+x_npt++;
+return( 0 );
 }
 
 
 /* ==================== fill prev. defined polygon path with current color */
+int
 PLGX_fill( )
 {
 if( !x_colordisplay ) {
@@ -673,7 +749,7 @@ if( !x_colordisplay ) {
 	XSetFillStyle( x_disp, x_gc, FillTiled );   /* added SCG 11-10-95 */
 	}
 
-XFillPolygon( x_disp, x_win, x_gc, x_vlist, x_nvtx, Complex, CoordModeOrigin );
+XFillPolygon( x_disp, x_win, x_gc, x_ptlist, x_npt, Complex, CoordModeOrigin );
 
 /* set fillstyle back to solid and set tile back to black.. */
 if( !x_colordisplay ) {
@@ -681,10 +757,12 @@ if( !x_colordisplay ) {
 	XSetTile( x_disp, x_gc, x_s_00 );
 	}
 /* reset vertex counter */
-x_nvtx = 0;
+x_npt = 0;
+return( 0 );
 }
 
 /* ==================== set drawing color */
+int
 PLGX_color( color )
 char *color;
 {
@@ -694,6 +772,7 @@ int slen;
 
 /* color parameter can be in any of these forms:
    "rgb(R,G,B)"  where R(ed), G(reen), and B(lue) are 0.0 (none) to 1.0 (full)
+   "xrgb(xxxxxx)" or "xrgb(xxxxxxxxxxxx)"
    "hsb(H,S,B)"  where H(ue), S(aturation), and B(rightness) range from 0.0 to 1.0.
    "gray(S)"	 where S is 0.0 (black) to 1.0 (white)
    "S"		 same as above
@@ -712,6 +791,9 @@ else if( strncmp( color, "gray", 4 )==0 || strncmp( color, "grey", 4 )==0 ) {
 	if( n != 1 ) { Eerr( 24780, "Invalid color", color ); return(1); }
 	g = b = r;
 	}
+else if( strncmp( color, "xrgb", 4 )==0 ) {
+        if (PLG_xrgb_to_rgb( &color[5], &r, &g, &b)) return(1);
+        }
 else if( GL_goodnum( color, &i ) ) {
 	r = atof( color );
 	g = b = r;
@@ -789,27 +871,125 @@ else	{
 		return( 1 );
 		}
 	}
+return( 0 );
+}
+
+/* ================================ */
+/* PIXPT - pixel data point - clean data points rendered by setting pixels directly */
+/* added scg 5/29/06 */
+/* note: color already set by symboldet() */
+int
+PLGX_pixpt( x, y, symcode )
+double x, y;
+char *symcode;
+{
+int a, b;
+int i, j, irow, icol, radius, iw, omode, scanend;
+double atof();
+
+/* Note - this code is essentially replicated in grgd.c */
+
+if( symcode[0] == 'o' ) { omode = 1; symcode[0] = 'p'; }
+else omode = 0;
+
+a = Exsca( x ); b = Eysca( y ); /* convert to pixel coordinates */
+
+if( strncmp( symcode, "pixsquare", 9 )==0 ) {
+	radius = (int) (atof( &symcode[9] ) * x_pixelsinch);
+	if( radius < 1 ) radius = 3;
+	if( omode ) { /* do top and bottom lines */
+		irow = b-radius; for( icol = a-radius; icol < a+radius; icol++ ) XDrawPoint( x_disp, x_win, x_gc,  icol, irow );
+		irow = b+radius; for( icol = a-radius; icol <= a+radius; icol++ ) XDrawPoint( x_disp, x_win, x_gc,  icol, irow );
+		}
+	for( irow = b-radius; irow < b+radius; irow++ ) {
+		if( omode ) { XDrawPoint( x_disp, x_win, x_gc,  a-radius, irow ); XDrawPoint( x_disp, x_win, x_gc, a+radius, irow ); }
+		else { for( icol = a-radius; icol < a+radius; icol++ ) XDrawPoint( x_disp, x_win, x_gc,  icol, irow ); }
+		}
+	}
+else if( strncmp( symcode, "pixcircle", 9 )==0 ) {
+	radius = (int) (atof( &symcode[9] ) * x_pixelsinch);
+	if( radius <= 2 ) goto DO_DIAMOND;
+	else if( radius > 9 ) radius = 9;
+	for( i = circliststart[radius]; ; i+= 2 ) {
+		scanend = circpt[i+1];
+		if( circpt[i] == 0 && scanend == 0 ) break;
+		for( j = 0; j <= scanend; j++ ) {
+			if( omode && !( j == scanend )) continue;
+			XDrawPoint( x_disp, x_win, x_gc,  a-j, b+circpt[i] ); 
+			if( j > 0 ) XDrawPoint( x_disp, x_win, x_gc,  a+j, b+circpt[i] );
+			XDrawPoint( x_disp, x_win, x_gc,  a-j, b-circpt[i] ); 
+			if( j > 0 ) XDrawPoint( x_disp, x_win, x_gc,  a+j, b-circpt[i] );
+			if( omode ) {
+				XDrawPoint( x_disp, x_win, x_gc,  a+circpt[i], b-j ); 
+				if( j > 0 ) XDrawPoint( x_disp, x_win, x_gc,  a+circpt[i], b+j );
+				XDrawPoint( x_disp, x_win, x_gc,  a-circpt[i], b-j ); 
+				if( j > 0 ) XDrawPoint( x_disp, x_win, x_gc,  a-circpt[i], b+j );
+				}
+			}
+		}
+	}
+else if( strncmp( symcode, "pixdiamond", 10 )==0 ) {
+	radius = (int) (atof( &symcode[10] ) * x_pixelsinch);
+	DO_DIAMOND:
+	if( radius < 1 ) radius = 3;
+	radius++;  /* improves consistency w/ other shapes */
+	for( irow = b-radius, iw = 0; irow <= (b+radius); irow++, iw++ ) {
+	    scanend = a+abs(iw);
+	    for( icol = a-abs(iw), j = 0; icol <= scanend; icol++, j++ ) {
+		if( omode && !( j == 0 || icol == scanend )) ;
+		else XDrawPoint( x_disp, x_win, x_gc,  icol, irow );
+		}
+	    if( irow == b ) iw = (-radius);
+	    }
+	}
+else if( strncmp( symcode, "pixtriangle", 11 )==0 ) {
+	radius = (int) (atof( &symcode[11] ) * x_pixelsinch);
+	if( radius < 1 ) radius = 3;
+	for( irow = b-radius, iw = 0; irow <= b+radius; irow++, iw++ ) {
+	    scanend = a+abs(iw/2);
+	    for( icol = a-abs(iw/2), j = 0; icol <= scanend; icol++, j++ ) {
+		if( omode && irow == b+radius ) XDrawPoint( x_disp, x_win, x_gc,  icol, irow-1 );
+		else if( omode && !( j == 0 || icol == scanend ));
+		else XDrawPoint( x_disp, x_win, x_gc,  icol, irow-1 );
+		}
+	    }
+	}
+else if( strncmp( symcode, "pixdowntriangle", 15 )==0 ) {
+	radius = (int) (atof( &symcode[15] ) * x_pixelsinch);
+	if( radius < 1 ) radius = 3;
+	for( irow = b+radius, iw = 0; irow >= (b-radius); irow--, iw++ ) {
+	    scanend = a+abs(iw/2);
+	    for( icol = a-abs(iw/2), j = 0; icol <= scanend; icol++, j++ ) {
+		if( omode && irow == b-radius ) XDrawPoint( x_disp, x_win, x_gc,  icol, irow-1 );
+		else if( omode && !(j == 0 || icol == scanend ));
+		else XDrawPoint( x_disp, x_win, x_gc,  icol, irow );
+		}
+	    }
+	}
+return( 0 );
 }
 
 /* ==================== asynchronous */
+int
 PLGX_async()
 {
 XEvent event;
 while( 1 ) {
 	if( XCheckMaskEvent( x_disp, ButtonPressMask | ExposureMask | 
-		KeyPressMask | StructureNotifyMask , &event ) != True ) return(1);
+		KeyPressMask | StructureNotifyMask , &event ) != True ) return(1); 
 	PLGX_event( event );
         }
 }
 /* ==================== */
-
+int
 PLGX_flush()
 {
 XFlush( x_disp );
+return( 0 );
 }
 
 /* ===================== */
-
+int
 PLGX_appear()
 {
 XEvent event;
@@ -820,11 +1000,19 @@ if( x_mapped ) return( 0 );
 XMapWindow( x_disp, x_win );
 x_mapped = 1;
 
+/* wait for initial expose event to draw.. */
+/* added scg 9/17/04 */
+while( 1 ) {
+        XNextEvent( x_disp, &event );
+        if( event.type == Expose ) break;
+        }
+
 /* redraw everything.. */
 XFlush( x_disp );
+return( 0 );
 }
 /* ====================== */
-
+int
 PLGX_disappear()
 {
 if( ! x_mapped ) return( 0 );
@@ -833,4 +1021,32 @@ if( ! x_mapped ) return( 0 );
 XUnmapWindow( x_disp, x_win );
 x_mapped = 0;
 XFlush( x_disp );
+return( 0 );
 }
+
+/* ======================= */
+/* allow various obscure settings to be done.. */
+int
+PLGX_flag( what, val )
+char *what;
+int val;
+{
+if( strcmp( what, "initial_map" )==0 ) x_mapflag = val;
+return( 0 );
+}
+
+/* ======================= */
+int
+PLGX_screen_dimensions( height, width )
+int *height, *width;
+{
+*height = DisplayHeight( x_disp, x_screen );
+*width = DisplayWidth( x_disp, x_screen );
+return( 0 );
+}
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

@@ -1,10 +1,30 @@
-/* FUNCTIONS.C 
- * Copyright 1998-2002 Stephen C. Grubb  (ploticus.sourceforge.net) .
- * This code is covered under the GNU General Public License (GPL);
- * see the file ./Copyright for details. */
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
+
+extern int GL_getchunk(), TDH_err(), TDH_value_subst(), TDH_getvalue(), GL_goodnum(), GL_member(), GL_getseg();
+extern int GL_substitute(), GL_ranger(), GL_wildcmp(), GL_contains(), GL_addmember(), TDH_errmode(), GL_substring();
+extern int GL_autoround(), TDH_setvalue(), GL_make_unique_string(), GL_changechars(), GL_deletechars(), GL_deletemember();
+extern int GL_urlencode(), GL_urldecode();
+extern int GL_commonmembers(), GL_checksum_functions(), DT_datefunctions(), DT_timefunctions(), TDH_shfunctions();
+extern int atoi(), sleep(), geteuid(), getegid(); /* sure thing or return value not used */
+
+#ifdef PLOTICUS
+  extern int PL_custom_function();
+#else
+  extern int custom_function();
+#endif
+
+#ifdef TDH_DB
+  extern int TDH_dbfunctions();
+#endif
+
 #define PATH_SLASH '/'
 #define MAXARGS 64
 
@@ -29,6 +49,7 @@ static int eval_function();
 char *GL_getok();
 
 /* =============================================== */
+int
 TDH_functioncall_initstatic()
 {
 strcpy( Sep, "," );
@@ -41,6 +62,7 @@ return( 0 );
 /* FUNCTION_CALL - parse function name, and any arguments, then call
    function evaluator.  V is returned with the result value. */
 
+int
 TDH_function_call( v, typ, eval )
 char *v;
 int *typ;  /* sent back.. describes basic type of result.. either NUMBER or ALPHA */
@@ -127,6 +149,7 @@ if( hash < 1000 ) {
 	if( hash == 165 ) {     /* $def( varname ) - return 1 if variable has been defined, 0 if not */
 		if( TDH_getvalue( result, arg[0], TDH_dat, TDH_recid ) == 0 ) sprintf( result, "1" );
 		else sprintf( result, "0" );
+		*typ = NUMBER;
 		return( 0 );
 		}
 
@@ -183,20 +206,31 @@ if( hash < 1000 ) {
 	}
   else if( hash < 500 ) {
 	if( hash == 385 ) { /* $arith() and $arithl() - L to R arithmetic expression evaluator */
+		/* improved to accomodate scientific notation operands eg 1.27e-4  .... scg 7/29/04 */
+		int j;
 		ARITH:
 		i = 0;
 		accum = 0.0;
 		curop = '+';
 		s = arg[0];
 		strcpy( fmt, arg[1] );
-		s[ strlen( s ) + 1 ] = '\0'; /* add extra null so loop terminates correctly */
-		if( s[0] == '-' ) tok[0] = '-'; /* check for unary minus on first arg */
+		if( s[i] == '-' ) { tok[0] = '-'; i++; } /* check for unary minus on first arg */
 		else tok[0] = '+';
 		while( 1 ) {
-			GL_getchunk( &tok[1], s, &i, "+-/*%" ); /* tok[1] because sign is always in tok[0] */
-			if( strlen( &tok[1] ) < 1 ) break;
-			if( ! GL_goodnum( tok, &stat ) && name[6] != 'l' )  
-				{ err( 1603, "arith: bad value", tok ); return( 1 ); }
+
+			/* parse next numeric operand */
+			for( j = 1; s[i] != '\0'; i++ ) {
+				if( GL_member( s[i] , "+-/*%" ) && ( i > 0 && tolower(s[i-1]) != 'e' )) break;
+				else tok[j++] = s[i];
+				}
+			tok[j] = '\0';
+					
+			if( tok[1] == '\0' ) break; /* end of expression */
+
+			/* check that operand is a valid numeric (allow w/ $arithl.. atof() will return 0.0 below) */
+			if( ! GL_goodnum( tok, &stat ) && name[6] != 'l' ) { err( 1603, "arith: bad value", tok ); return( 1 ); }
+
+			/* do arithmetic operation.. */
 			if( curop == '+' ) accum = accum + atof( tok );
 			else if( curop == '-' ) accum = accum - atof( tok );
 			else if( curop == '/' ) {
@@ -209,9 +243,12 @@ if( hash < 1000 ) {
 			else if( curop == '*' ) accum = accum * atof( tok );
 			else if( curop == '%' ) accum = (int)(accum) % (int)(atof( tok ));
 			else { err( 1604, "arith:bad operator", "" ); return( 1 ); }
+
+			/* get next arith operator..  and check for unary minus on next operand, if any.. */
 			curop = s[i];
-			if( s[i+1] == '-' ) tok[0] = '-'; /* check for unary minus on next operand */
+			if( s[i+1] == '-' ) { tok[0] = '-'; i++; }
 			else tok[0] = '+';
+
 			i++;
 			}
 		if( nargs > 1 ) sprintf( result, fmt, accum );
@@ -286,6 +323,26 @@ if( hash < 1000 ) {
 		return( 0 );
 		}
 
+	if( hash == 514 ) { /* $ranger( rangespec )  - take a rangespec and return list of all members */
+		int ilist[256], nlist, rlen;
+		if( !isdigit( (int) arg[0][0] ) ) { /* just return the arg without expanding it.. */
+			strcpy( result, arg[0] );
+			return( 0 ); 
+			}
+		nlist = 255;
+		strcpy( result, "" );
+		stat = GL_ranger( arg[0], ilist, &nlist );
+		if( stat != 0 ) return( stat );
+		rlen = 0;
+		for( i = 0; i < nlist; i++ ) {
+			sprintf( tok, "%d,", ilist[i] );
+			strcpy( &result[rlen], tok );
+			rlen += strlen( tok );
+			}
+		result[rlen] = '\0';
+		return( 0 );
+		}
+
 	if( hash == 520 ) { /* $random() - return a random number between 0 and 1 */
 		double GL_rand();
 		sprintf( result, "%g", GL_rand() );
@@ -309,6 +366,11 @@ if( hash < 1000 ) {
 	if( hash == 525 ) goto ARITH;   /* $arithl() */
 	if( hash == 537 ) goto LEN;	/* $strlen() - same as $len() */
 	if( hash == 540 ) goto EXT_DATE; /* $dateadd() */
+	if( hash == 551 ) {  /* $fflush() */
+		fflush( stdout );
+		strcpy( result, "0" );
+		return( 0 );
+		}
 	if( hash == 552 ) { /* $strcmp(s,t) - return difference of s and t */
 		sprintf( result, "%d", strcmp( arg[0], arg[1] ) );
 		*typ = NUMBER;
@@ -317,7 +379,6 @@ if( hash < 1000 ) {
 
 	if( hash == 569 ) { 	/*  $getenv(envvarname) - get the contents of shell environment variable */
 		char *getenv(), *s;
-		int len;
 		s = getenv( arg[0] );
 		if( s == NULL ) strcpy( result, "" );
 		else 	{ 
@@ -348,7 +409,12 @@ if( hash < 1000 ) {
 		return( 0 );
 		}
 
+
 	if( hash == 665 ) goto EXT_DATE;  /* $datecmp() */
+	if( hash == 673 ) {   /* $wildcmp( s, t ) .. mostly for testing wildcmp() */
+		sprintf( result, "%d", GL_wildcmp( arg[0], arg[1], strlen( arg[1] ), 0 ) );
+		return( 0 );
+		}
 	if( hash == 706 ) goto EXT_TIME;  /* $frommin() */
 	if( hash == 753 ) goto EXT_TIME;  /* $timediff() */
 	if( hash == 795 ) goto EXT_DATE;  /* $daysdiff() */
@@ -357,10 +423,21 @@ if( hash < 1000 ) {
 
   else if( hash < 1000 ) {
 
-	if( hash == 827 ) {  /* $stripws(s) - strip off leading and trailing white space */
+	if( hash == 827 ) {  /* $stripws(s,mode) - remove white space from string.. 2 modes */
 		int state;
+
+		if( strcmp( arg[1], "any" )==0 ) {  /*  mode == any ... remove whitespace anywhere in string - added scg 5/10/06 */
+			for( i = 0, j = 0; arg[0][i] != '\0'; i++ ) {
+				if( isspace( (int) arg[0][i] )) continue;
+				else result[j++] = arg[0][i];
+				}
+			result[j] = '\0';
+			return( 0 );
+			}
+
+		/* otherwise, remove leading and trailing whitespace only (original use) */
 		for( i = 0, j = 0, state = 0; arg[0][i] != '\0'; i++ ) {
-			if( state == 0 && isspace( arg[0][i] ) ) continue;
+			if( state == 0 && isspace( (int) arg[0][i] ) ) continue;
 			else	{
 				result[j++] = arg[0][i];
 				state = 1;
@@ -369,7 +446,7 @@ if( hash < 1000 ) {
 		result[j] = '\0';
 		/* now strip off trailing blanks.. */
 		for( i = j; i >= 0; i-- ) {
-			if( !isspace( result[i] ) && result[i] != '\0' ) {
+			if( !isspace( (int) result[i] ) && result[i] != '\0' ) {
 				result[i+1] = '\0';
 				break;
 				}
@@ -388,10 +465,17 @@ if( hash < 1000 ) {
 
 	if( hash == 881 ) goto EXT_DATE; /* $yearsold() */
 
+	if( hash == 913 ) goto EXT_SQL; /* $sqltabdef() */
+
 	if( hash == 916 ) { /* $contains(clist,s) - if string s contains any of chars in clist, result is position
  			     *	(first=1) of first occurance.  Result is 0 if none found. */
 		sprintf( result, "%d", GL_contains( arg[0], arg[1] ) );
 		*typ = NUMBER;
+		return( 0 );
+		}
+
+	if( hash == 940 ) { /* $urldecode( s ) - perform url DEcoding on s */
+		GL_urldecode( arg[0], result );
 		return( 0 );
 		}
 
@@ -405,6 +489,19 @@ if( hash < 1000 ) {
 			if( tok[ strlen( tok ) - 1 ] == ',' ) tok[ strlen( tok ) - 1 ] = '\0'; 
 			GL_addmember( tok, result );
 			}
+		return( 0 );
+		}
+
+	if( hash == 963 ) { /* $cleanname( s ) - remove everything but chars, digits, and underscores.. */
+		strcpy( result, "" );
+		for( i = 0, j = 0; arg[0][i] != '\0'; i++ ) {
+			if( isalnum( (int) arg[0][i] ) || arg[0][i] == '_' ) result[j++] = arg[0][i];
+			}
+		result[j] = '\0';
+		return( 0 );
+		}
+	if( hash == 979 ) { /* $urlencode( s ) - perform url encoding on s */
+		GL_urlencode( arg[0], result );
 		return( 0 );
 		}
 
@@ -430,15 +527,10 @@ else {
 	if( hash == 1011 ) { /* $numgroup( f, h, mode )   truncate f to the nearest multiple of h that is less than f.  
  			* mode may be either low, middle, or high.   For example, if f is 73 and h is 10, function
 			* returns 70, 75, or 80 for modes low, middle, high respectively */
-		double fmod();
-		double ofs, f, h, modf;
-		ofs = 0.0;
+		double f, h, GL_numgroup();
 		f = atof( arg[0] );
 		h = atof( arg[1] );
-		if( arg[2][0] == 'm' ) ofs = h / 2.0;
-		else if( arg[2][0] == 'h' ) ofs = h;
-		modf = fmod( f, h );
-		sprintf( result, "%g", (f - modf) + ofs );
+		sprintf( result, "%g", GL_numgroup( f, h, arg[2] ) );
 		*typ = NUMBER;
 		return( 0 );
 		}
@@ -513,7 +605,7 @@ else {
 
 	if( hash == 1461 ) { /* $extractnum( s ) - extract the first numeric entity embedded anywhere in s */
 		int len;
-		for( i = 0, len = strlen( arg[0] ); i < len; i++ ) if( isdigit( arg[0][i] ) ) break;
+		for( i = 0, len = strlen( arg[0] ); i < len; i++ ) if( isdigit( (int) arg[0][i] ) ) break;
 		if( i == len ) strcpy( result, "" );
 		else sprintf( result, "%g", atof( &arg[0][i] ) );
 		return( 0 );
@@ -534,6 +626,8 @@ else {
 		sprintf( result, "%s", tok );
 		return( 0 );
 		}
+
+	if( hash == 1523 ) goto EXT_SQL;  /* $sqlwritable() */
 
 	if( hash == 1528 ) { /* $fileexists( dir, name ) - return 1 if the requested file can be opened, 0 if not.  
 			      * dir is a symbol indicating what directory name is relative to (see docs) */
@@ -567,6 +661,8 @@ else {
 
   else if( hash < 2000 ) {
 
+	if( hash == 1604 ) goto EXT_SQL; /* $sqlpushrow() */
+
 	if( hash == 1607 ) goto EXT_SQL; /* $sqlgetnames */
 
 	if( hash == 1625 ) { /* $formatfloat(n,format) */
@@ -576,7 +672,7 @@ else {
 
 	if( hash == 1708 ) { /* $htmldisplay( var1, .. varN ) - convert embedded HTML problem chars (<,>,&) 
 			      * to their html esc sequences for all variables given */
-		char *strchr();
+		/* char *strchr(); */
 		for( i = 0; i < nargs; i++ ) {
         		stat = TDH_getvalue( tok, arg[i], TDH_dat, TDH_recid );
 			if( strchr( tok, '&' ) != NULL ) GL_substitute( "&", "&amp;", tok );
@@ -680,6 +776,7 @@ EXT_CHKSUM:
 }
 
 /* ==================== */
+int
 TDH_function_listsep( sepchar )
 char sepchar;
 {
@@ -689,6 +786,7 @@ return( 0 );
 }
 
 /* ====================== */
+int
 TDH_function_set( what, val )
 char *what;
 int val;
@@ -696,3 +794,9 @@ int val;
 if( strcmp( what, "textsaved" )==0 ) textsaved = val;
 return( 0 );
 }
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

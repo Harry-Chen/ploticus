@@ -3,13 +3,13 @@ all:  src/pl
 DESTDIR=
 BIN    =$(DESTDIR)/usr/bin
 
-src/pl: 
+src/pl:
 	cd src; make
 
 clean:
 	rm -f ./src/*.o ./src/plgd18
 	rm -Rf debian/ploticus
-	rm -f configure.stamp build.stamp
+	rm -f configure-stamp build-stamp
 	rm -f pltestsuite/out
 
 install:  src/pl

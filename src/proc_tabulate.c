@@ -1,6 +1,8 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 /* PROC TABULATE - do frequency distributions, 1-D or 2-D */
 
@@ -11,8 +13,9 @@
                   added accumfield option.
    scg 1/21/00  - for 2-way dist, column tags are used to set getdata field names
 
-*/
+   scg 4/2/04   - added numfmt - %g doesn't give correct results for sets of very small values
 
+*/
 #include "pl.h"
 
 #define WORDLEN 40
@@ -23,10 +26,11 @@
 
 static int fsort(), freqsort();
 
+int
 PLP_tabulate()
 {
 int i;
-char attr[40], val[256];
+char attr[NAMEMAXLEN], val[256];
 char *line, *lineval;
 int nt, lvp;
 int first;
@@ -36,25 +40,22 @@ double tab[MAXROWS][MAXCOLS];
 double total[2][MAXROWS];
 double grantotal;
 char list[2][MAXROWS][WORDLEN];
-int stat, j, m, fld, nlist[3], select[3], ndim;
-int order[2][MAXROWS], valuesgiven[2], nval, dopercents;
+int stat, j, nlist[3], select[3], ndim;
+int order[2][MAXROWS], valuesgiven[2], dopercents;
 int forcevertical, forcehorizontal;
 char ordering[2];
 char tmp[WORDLEN];
 char *GL_getok();
-double atof(), f;
+double atof();
 /* --- */
 char valuelist[2][256];
 int field[2];
 int ix;
-double tmpd;
 int showresults;
-int len;
 int irow;
 double gran[2];
-int davail;
 char numbuf[80];
-char selectex[80];
+char selectex[256];
 int result;
 int doranges[2];
 char axis[2];
@@ -64,13 +65,13 @@ double hiv[MAXBINS], lowv[MAXBINS];
 double fval;
 char rangesepchar[5];
 char showrange[20];
-FILE *sfp;
 char rangespec[2][80];
 int axisset[2]; /* added 1/11/00 scg */
 char tag[80];   /* added 1/11/00 scg */
 char fieldnamelist[256]; /* added 1/21/00 scg */
 int accumfield;
 double inc;
+char numfmt[20];
 
 
 TDH_errprog( "pl proc tabulate" );
@@ -95,6 +96,7 @@ strcpy( rangespec[1], "" );
 axisset[0] = axisset[1] = 0; /* was axis1 or axis2 set explicitly - added 1/11/00 scg */
 accumfield = -1;
 showresults = 0;
+strcpy( numfmt, "%g" );
 
 
 /* get attributes.. */
@@ -164,6 +166,8 @@ while( 1 ) {
 	else if( stricmp( attr, "rangespec1" )==0 ) strcpy( rangespec[0], lineval );
 	else if( stricmp( attr, "rangespec2" )==0 ) strcpy( rangespec[1], lineval );
 
+	else if( stricmp( attr, "numfmt" )==0 ) strcpy( numfmt, val );
+
 	else Eerr( 1, "tabulate attribute not recognized", attr );
 	}
 
@@ -194,9 +198,12 @@ for( i = 0; i < MAXROWS; i++ ) {
 	order[0][i] = order[1][i] = i;
         }
 
+
 /* get value list (a comma or space delimited list of values; output distribution will
    be for only these values (in the order given?) */
 for( j = 0; j < ndim; j++ ) { /* for all dimensions (1 or 2).. */
+
+
 	if( valuelist[j][0] != '\0' ) {
 	    int ix;
 	    for( i = 0, ix = 0;  ; i++ ) {
@@ -217,9 +224,11 @@ for( j = 0; j < ndim; j++ ) { /* for all dimensions (1 or 2).. */
 				}
 			else 	{
 				hiv[i] = Econv( axis[j], hival );
-				Euprint( lowval, axis[j], lowv[i], "" );
+				/* Euprint( lowval, axis[j], lowv[i], "" ); */
+				Euprint( lowval, axis[j], lowv[i], numfmt );
 				if( tolower(showrange[0]) == 'l' ) strcpy( list[j][i], lowval );
-				else if( tolower(showrange[0]) == 'a' ) Euprint( list[j][i], axis[j], (lowv[i]+hiv[i])/2.0, "" );
+				/* else if( tolower(showrange[0]) == 'a' ) Euprint( list[j][i], axis[j], (lowv[i]+hiv[i])/2.0, "" ); */
+				else if( tolower(showrange[0]) == 'a' ) Euprint( list[j][i], axis[j], (lowv[i]+hiv[i])/2.0, numfmt );
 
 				else sprintf( list[j][i], "%s%s%s", lowval, rangesepchar, hival );
 				}
@@ -252,7 +261,8 @@ for( j = 0; j < ndim; j++ ) { /* for all dimensions (1 or 2).. */
 			Euprint( lowval, axis[j], lowv[i], "" );
 			Euprint( hival, axis[j], hiv[i], "" );
 			if( tolower(showrange[0]) == 'l' ) strcpy( list[j][i], lowval );
-			else if( tolower(showrange[0]) == 'a' ) Euprint( list[j][i], axis[j], (lowv[i]+hiv[i])/2.0, "" );
+			/* else if( tolower(showrange[0]) == 'a' ) Euprint( list[j][i], axis[j], (lowv[i]+hiv[i])/2.0, "" ); */
+			else if( tolower(showrange[0]) == 'a' ) Euprint( list[j][i], axis[j], (lowv[i]+hiv[i])/2.0, numfmt ); 
 			else sprintf( list[j][i], "%s%s%s", lowval, rangesepchar, hival );
 			nlist[j]++;
 			if( rw > hilimit ) break;
@@ -345,6 +355,7 @@ for( irow = 0; irow < Nrecords; irow++ ) {
                 else if( doranges[i] ) {
 			fval = Econv( axis[i], val );
 
+
 			/* go through list backwards so that boundary values are 
 			   put into higher category.. */
 			for( j = nlist[i] - 1; j >= 0; j-- ) {
@@ -434,11 +445,11 @@ if( ndim == 1 ) {
 		PL_catitem( tag ); /* label */
 
 		/* n */
-		sprintf( buf, "%g", tab[0][order[0][i]] ); 
+		sprintf( buf, numfmt, tab[0][order[0][i]] ); 
 		PL_catitem( buf );
 
 		if( dopercents ) {
-			sprintf( buf, "%g", (double)(tab[0][order[0][i]])/(total[0][0]+0.0001)*100  );
+			sprintf( buf, numfmt, (double)(tab[0][order[0][i]])/(total[0][0]+0.0001)*100  );
 			PL_catitem( buf );
 			}
 		PL_enddatarow();
@@ -467,22 +478,22 @@ else if( ndim == 2 ) {
                 for( i = 0; i < nlist[1]; i++ ) {
 
 			/* n */
-			sprintf( numbuf, "%g", tab[order[0][j]] [order[1][i]] );
+			sprintf( numbuf, numfmt, tab[order[0][j]] [order[1][i]] );
 			PL_catitem( numbuf );
 
 			if( dopercents ) {
-				sprintf( numbuf, "%g", 
+				sprintf( numbuf, numfmt, 
 				  	(double)(tab[order[0][j]][order[1][i]])/ (total[1][order[1][i]]+0.00001) * 100 ); 
 				PL_catitem( numbuf );
 				}
 			}
 		
 		/* row total */
-		sprintf( numbuf, "%g", total[0][order[0][j]] );
+		sprintf( numbuf, numfmt, total[0][order[0][j]] );
 		PL_catitem( numbuf );
 
 		if( dopercents ) {
-			sprintf( numbuf, "%g", (double)(total[0][order[0][j]]) / (grantotal+0.00001) * 100 ); 
+			sprintf( numbuf, numfmt, (double)(total[0][order[0][j]]) / (grantotal+0.00001) * 100 ); 
 			PL_catitem( numbuf );
 			}
 		
@@ -543,6 +554,8 @@ for( i = 0; i < nd; i++ ) {
         order[i] = mincell;
         used[mincell] = 1;
         }
+
+return( 0 );
 }
 
 /* ================ */
@@ -571,4 +584,11 @@ for( i = 0; i < nd; i++ ) {
         order[i] = firstcell;
         used[firstcell] = 1;
         }
+return( 0 );
 }
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

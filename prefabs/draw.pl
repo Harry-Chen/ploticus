@@ -3,6 +3,16 @@
 // Covered by GPL; see the file 'Copyright' for details. 
 // http://ploticus.sourceforge.net
 
+// ability to display dumpfile .... scg 8/5/04
+#setifnotgiven dumpfile = ""
+#if @dumpfile != ""
+  #proc drawcommands
+    dumpfile: @dumpfile
+
+  // blank line and endproc added - scg 9/16/05
+  #endproc
+  #exit
+#endif
 
 #setifnotgiven xrange = "0 8"
 #setifnotgiven yrange = "0 8"

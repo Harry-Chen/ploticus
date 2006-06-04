@@ -1,16 +1,17 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
-
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 /* small, lowlevel routines re: scaled units */
 /* see also units.c which is a layer above this. */
 
-#include <string.h>
 #include "plg.h"
 
 struct plgc PLG;
 
+int
 PLG_set_early_defaults()
 {
 /* overall settings - these can be set by application program before Einit() */
@@ -30,6 +31,7 @@ Ecurpaper = -1;
 Ecurlinewidth = -1.0;
 Ecurlinetype = -1;
 Ecurpatternfactor = 0.0;
+strcpy( Ecurcolor, "" ); /* scg 6/18/04 */
 
 EScale_x = 1; EScale_y = 1; 
 Escaletype_x = E_LINEAR;	
@@ -46,12 +48,11 @@ return( 0 );
 /* ============================ */
 /* SCALETYPE - select the scaling method */
 
+int
 PLG_scaletype( typ, axis )
 char typ[];
 char axis;
 {
-char buf[80];
-int stat;
 
 if( stricmp( typ, "linear" )==0 ) {
 	/* Esetunits( axis, "linear" ); */
@@ -60,6 +61,7 @@ if( stricmp( typ, "linear" )==0 ) {
 	return( 0 );
 	}
 
+#ifndef NOSCALE
 else if( stricmp( typ, "log" )==0 ) {
 	/* Esetunits( axis, "linear" ); */ /* linear ok */
 	if( axis == 'x' ) Escaletype_x = E_LOG;
@@ -86,11 +88,14 @@ else	{
 	else Escaletype_y = E_LINEAR;
 	return( 0 );
 	}
+#endif
 }
 
+#ifndef NOSCALE
 /* =========================== */
 /* SCALE_X - for setting up scaling in x */
 
+int
 PLG_scale_x( xlow, xhi, datalow, datahi )
 double 	xlow, 	/* absolute x location of left side of the area */
 	xhi, 	/* absolute x location of the right side of the area */
@@ -126,13 +131,13 @@ return( 0 );
 /* =========================== */
 /* SCALE_Y - for setting up scaling in y */
 
+int
 PLG_scale_y( ylow, yhi, datalow, datahi )
 double 	ylow, 	/* absolute y location of low side of the area */
 	yhi, 	/* absolute y location of high side of the area */
 	datalow, /* data-units y at the low side */
 	datahi;	 /* data-units y at the high side */
 {
-double logpart, linpart;
 char msgbuf[100];
 
 EYlo = ylow;
@@ -188,8 +193,6 @@ double
 PLG_ax( d )
 double d;
 {
-double f, g;
-
 
 if( Escaletype_x == E_LINEAR ) 
 	return( EXlo + (( d - EDXlo ) * EScale_x ));
@@ -203,6 +206,7 @@ else if( Escaletype_x == E_LOGPLUS1 ) {
 	else if( EDXlo <= 0.0 ) return( EXlo + (( log( d+1.0 ) - log( 1.0 ) ) * EScale_x ) );
 	else return( EXlo + (( log( d+1.0 ) - log( EDXlo ) ) * EScale_x ) );
 	}
+return(0.0);
 }
 
 /* =========================== */
@@ -222,6 +226,7 @@ else if( Escaletype_y == E_LOGPLUS1 ) {
 	else if( EDYlo <= 0.0 ) return( EYlo + (( log( d+1.0 ) - log( 1.0 ) ) * EScale_y ) );
 	else return( EYlo + (( log( d+1.0 ) - log( EDYlo ) ) * EScale_y ) );
 	}
+return(0.0);
 }
 
 
@@ -249,6 +254,7 @@ else if( Escaletype_x == E_LOGPLUS1 ) {
 	h = log( a ) - log( EDXlo );
 	return( (EDXlo + ( h / EScale_x ) ) - 1.0 ); /* ??? */
 	}
+return(0.0);
 }
 
 /* =========================== */
@@ -273,6 +279,7 @@ else if( Escaletype_y == E_LOGPLUS1 ) {
 	h = log( a ) - log( EDYlo );
 	return( (EDYlo + ( h / EScale_y ) ) - 1.0 ); /* ??? */
 	}
+return(0.0);
 }
 
 
@@ -301,3 +308,10 @@ if( axis == 'y' ) {
 Eerr( 12015, "warning, bad values passed to Elimit", "" );
 return( 0.0 );
 }
+#endif
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

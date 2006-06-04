@@ -32,4 +32,7 @@ pause
 
 %PL% -gif -prefab multidist overlay=yes data=data21 rotate=yes xrange="0 2000" yrange="0 20" -o multidist1.gif
 
+%PL% -gif -prefab vdist data=data6 data2=data6b y=1 y2=1 dist=hist title="Set 1" title2="Set 2" -o vdist1.gif
+
+%PL% -gif -prefab compare data=dexa.dat header=yes catfields=strain,sex y=RFbmc y2=LFbmc leftsub=f rightsub=m stubvert=yes title="Comparison of two variables, with f & m subcats" titledet="adjust=0,+0.4"  -o compare1.gif
 

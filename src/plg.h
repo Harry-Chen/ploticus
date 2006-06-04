@@ -10,12 +10,14 @@
 
 #include <stdio.h>
 #include <math.h>
+#include <string.h>
+#include <ctype.h>
 
 #define YES 1
 #define NO 0
 #define MAXPATH 256
 #define FONTLEN 60
-#define COLORLEN 30
+#define COLORLEN 40
 
 #define E_LINEAR 0
 #define E_LOG 1
@@ -25,6 +27,7 @@
 #ifdef LOCALE
  #define stricmp( s, t )         stricoll( s, t )
  #define strnicmp( s, t, n )     strnicoll( s, t, n )
+ extern int stricoll(), strnicoll();   /* added scg 5/31/06 gcc4 */
 #else
  #define stricmp( s, t )         strcasecmp( s, t )
  #define strnicmp( s, t, n )     strncasecmp( s, t, n )
@@ -61,8 +64,8 @@ struct plgc {
 	int curpen; 
 	char curcolor[COLORLEN];
 	char curbkcolor[COLORLEN];
-	char curhilitedraw[COLORLEN]; 
-	char curhilitebk[COLORLEN];  
+	char nextcolor[COLORLEN]; 
+	char sparecolor[COLORLEN];  
 	
 	/* event information */
 	int event;
@@ -88,34 +91,37 @@ struct plgc {
 extern struct plgc PLG;
 
 
-/* ========== non-int function defines ================= */
-double atof(), sqrt(), log();
-extern double PLG_a(), PLG_ax(), PLG_ay(), PLG_dx(), PLG_dy(), PLG_limit(), PLG_conv(), PLG_u();
-extern double  PLG_xsca_inv(), PLG_ysca_inv();
-extern char *GL_getok(), *GL_autoround(), *GL_autoroundf();
 
 
 /* ========== function mappings - map E functions (used in most code) to PLG_ names  ================ */
 #define Emovu( x , y )		PLG_pcode( 'M', Eax((double) x ) , Eay((double) y ), "" )
 #define Elinu( x , y )		PLG_pcode( 'L', Eax((double) x ) , Eay((double) y ), "" )
 #define Epathu( x , y )		PLG_pcode( 'P', Eax((double) x ) , Eay((double) y ), "" ) 
-#define Eclosepath()		PLG_pcode( 'c', 0.0, 0.0, "" )
+/* #define Eclosepath()		PLG_pcode( 'c', 0.0, 0.0, "" ) */
 #define Efill( )		PLG_pcode( 's', 0.0, 0.0, "" )
 #define Etext( s )		PLG_dotext( s, 'T' )
 #define Ecentext( s )		PLG_dotext( s, 'C' )
 #define Erightjust( s )		PLG_dotext( s, 'J' )
 #define Esavewin( )		PLG_pcode( 'b', 0.0, 0.0, "" );
+#define PLG_savewin( )		PLG_pcode( 'b', 0.0, 0.0, "" );
 #define Erestorewin( )		PLG_pcode( 'B', 0.0, 0.0, "" );
+#define PLG_restorewin( )	PLG_pcode( 'B', 0.0, 0.0, "" );
 #define Escaletext( x )		PLG_pcode( 'e', x, 0.0, "" )
 #define Eprint()		PLG_getclick()
 #define Eshow()			PLG_pcode( 'Z', 0.0, 0.0, "" )
 #define Esit()		 	PLG_pcode( 'W', 0.0, 0.0, "" )
 #define Easync()	 	PLG_pcode( 'w', 0.0, 0.0, "" )
 #define Eflush()		PLG_pcode( 'U', 0.0, 0.0, "" )
+#define PLG_flush()		PLG_pcode( 'U', 0.0, 0.0, "" )
 #define Ewinappear()		PLG_pcode( 'a', 0.0, 0.0, "" )
+#define PLG_winappear()		PLG_pcode( 'a', 0.0, 0.0, "" )
 #define Ewindisappear()		PLG_pcode( 'd', 0.0, 0.0, "" )
 #define Eendoffile()		PLG_pcode( 'Q', 0.0, 0.0, "" )
+#define Esquelch( s )		PLG_pcode( 'H', 0.0, 0.0, s )
+#define PLG_squelch( s )	PLG_pcode( 'H', 0.0, 0.0, s )
+#define PLG_forcecolorchg( )	PLG_pcode( 'v', 0.0, 0.0, "" )
 #define Eerr( n, s, p )		TDH_err( n, s, p )
+#define Epixpt( x, y, s )	PLG_pcode( '.', x, y, s )           /* direct pixel data point 5/25/06 */
 
 
 #define Earrow( x1, y1, x2, y2, r, w, color )		PLG_arrow( x1, y1, x2, y2, r, w, color )
@@ -180,7 +186,7 @@ extern char *GL_getok(), *GL_autoround(), *GL_autoroundf();
 #define Ecolor( s )					PLG_color( s )
 #define Ebackcolor( s )					PLG_backcolor( s )
 #define Ecolorfill( c )					PLG_colorfill( c )
-#define Eshade( s )					PLG_shade( s )
+/* #define Eshade( s )					PLG_shade( s ) */
 #define Esetwinscale( width, height, x_max, y_max )	PLG_setwinscale( width, height, x_max, y_max )
 #define Exsca( f )					PLG_xsca( f )
 #define Exsca_inv( i )					PLG_xsca_inv( i )
@@ -216,8 +222,7 @@ extern char *GL_getok(), *GL_autoround(), *GL_autoroundf();
 #define Ecurpen			PLG.curpen
 #define Ecurcolor		PLG.curcolor
 #define Ecurbkcolor		PLG.curbkcolor
-#define Ecurhilitedraw		PLG.curhilitedraw
-#define Ecurhilitebk		PLG.curhilitebk
+#define Enextcolor		PLG.nextcolor
 #define EEvent			PLG.event
 #define EEventx			PLG.eventx
 #define EEventy			PLG.eventy
@@ -268,5 +273,95 @@ extern char *GL_getok(), *GL_autoround(), *GL_autoroundf();
 				resizing, a delay seems to be necessary before the window manager 
 				responds to subsequent instructions.. This is in microseconds.  */
 
+/* ========== non-int function defines ================= */
+double atof(), sqrt(), log();
+extern double PLG_a(), PLG_ax(), PLG_ay(), PLG_dx(), PLG_dy(), PLG_limit(), PLG_conv(), PLG_u();
+extern double  PLG_xsca_inv(), PLG_ysca_inv();
+extern char *GL_getok(), *GL_autoround(), *GL_autoroundf();
+
+
+/* ========== int function declares =================== */
+extern int PLG_pcode();
+extern int PLG_arrow();
+extern int PLG_cblock();
+extern int PLG_cblockdress();
+extern int PLG_setlastbox();
+extern int PLG_getlastbox();
+extern int PLG_scaletype();
+extern int PLG_scale_x();
+extern int PLG_scale_y();
+extern int PLG_init();
+extern int PLG_set_early_defaults();
+extern int PLG_setsize();
+extern int PLG_setdefaults();
+extern int PLG_setoutfilename();
+extern int PLG_getoutfilename();
+extern int PLG_setoutlabel();
+extern int PLG_handle_events();
+extern int PLG_getkey();
+extern int PLG_getclick();
+extern int PLG_he();
+extern int PLG_savekey();
+extern int PLG_retrievekey();
+extern int PLG_setsemfile();
+extern int PLG_semfile();
+extern int PLG_mark();
+extern int PLG_pcode();
+extern int PLG_bb();
+extern int PLG_resetbb();
+extern int PLG_getbb();
+extern int PLG_gettextsize();
+extern int PLG_verttextsim();
+extern int PLG_tightbb();
+extern int PLG_specifycrop();
+extern int PLG_gifrect();
+extern int PLG_imload();
+extern int PLG_implace();
+extern int PLG_setglobalscale();
+extern int PLG_getglobalscale();
+extern int PLG_setposterofs();
+extern int PLG_pcodedebug();
+extern int PLG_colorname_to_rgb();
+extern int PLG_rgb_to_gray();
+extern int PLG_icolor();
+extern int PLG_clr();
+extern int PLG_mov();
+extern int PLG_lin();
+extern int PLG_path();
+extern int PLG_dotext();
+extern int PLG_font();
+extern int PLG_textsize();
+extern int PLG_textdir();
+extern int PLG_paper();
+extern int PLG_linetype();
+extern int PLG_normline();
+extern int PLG_color();
+extern int PLG_backcolor();
+extern int PLG_colorfill();
+extern int PLG_setwinscale();
+extern int PLG_xsca();
+extern int PLG_ysca();
+extern int PLG_lineclip();
+extern int TDH_err();
+
+extern int PLG_cblock_initstatic();
+extern int PLG_colorname_to_rgb();
+extern int PLG_ellipse();
+extern int PLG_he();
+extern int PLG_init_initstatic();
+extern int PLG_mark_initstatic();
+extern int PLG_pcode_initstatic();
+extern int PLG_pcodeboundingbox();
+extern int PLG_perptail();
+extern int PLG_setdumpfile();
+extern int PLG_setmaxdrivervect();
+extern int PLG_stub_initstatic();
+extern int PLG_textsupmode();
+extern int PLG_xrgb_to_rgb();
+extern int PLG_xsca();
+extern int PLG_ysca();
+
+
 
 #endif 	/* PLGHEAD */
+

@@ -1,40 +1,40 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 /* PROC RANGESWEEP - render a sweep */
 
-#include <string.h>
 #include "pl.h"
 #define MOVE 0
 #define LINE 1
 #define PATH 2
 
-
+int
 PLP_rangesweep()
 {
 int i;
-char attr[40], val[256];
+char attr[NAMEMAXLEN], val[256];
 char *line, *lineval;
 int nt, lvp;
 int first;
 
 int stat;
-int align;
-double adjx, adjy;
 
 int xfield;
 int lofield, hifield;
 double start, stop;
 double xstart;  /* when no X values are given, can be specified as to where to start */
-char color[40];
+char color[COLORLEN];
 int j;
 int npoints;
 double f;
 double x, lo, hi, lastx, lastlo, lasthi;
-char legendlabel[128];
+char legendlabel[256]; /* raised (can contain urls for clickmap) scg 4/22/04 */
 char selectex[256];
 int result;
+char oldcolor[COLORLEN];
 
 TDH_errprog( "pl proc rangesweep" );
 
@@ -125,16 +125,17 @@ for( i = 0; i < Nrecords; i++ ) {
 	if( Econv_error() ) { 
 		conv_msg( i, lofield, "yfield" ); 
 		PLV[j] = NEGHUGE;
-		continue;
+		/* continue; */
 		}
 	j++;
+
 
 	/* HI */
 	PLV[j] = fda( i, hifield, Y );
 	if( Econv_error() ) { 
 		conv_msg( i, hifield, "hifield" ); 
 		PLV[j] = NEGHUGE;
-		continue;
+		/* continue; */
 		}
 	j++;
 
@@ -157,6 +158,10 @@ first = 1;
 lastlo = 0.0;
 lasthi = 0.0;
 lastx = 0.0;
+
+strcpy( oldcolor, Ecurcolor );
+Ecolor( color );
+
 for( i = 0; i < npoints; i++ ) {
 	if( !first && (hi > (NEGHUGE+1) && lo > (NEGHUGE+1) && 
 	       x > (NEGHUGE+1) && x < (PLHUGE-1) ) )  { 
@@ -204,16 +209,25 @@ for( i = 0; i < npoints; i++ ) {
 		Emovu( x, lo ); Epathu( lastx, lastlo ); 
 		Epathu( lastx, lasthi ); 
 		Epathu( x, hi );
-		Ecolorfill( color );
+		/* Ecolorfill( color ); */ /* using Efill  scg 6/18/04 */
+		Efill();
 		continue;
 		}
 	}
 
+Ecolor( oldcolor );
 
  
 if( legendlabel[0] != '\0' ) {
-	add_legent( LEGEND_COLOR, legendlabel, "", color, "", "" );
+	PL_add_legent( LEGEND_COLOR, legendlabel, "", color, "", "" );
 	}
 
 return( 0 );
 }
+
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
