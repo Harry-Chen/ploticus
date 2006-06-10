@@ -1,3 +1,15 @@
+ploticus (2.33-2) unstable; urgency=low
+
+  * Fixed possible 64-bit problem in svg.c
+  * Modified X11 paths in src/Makefile for Xorg transition
+  * Fixed compiler warnings about redefinition of stricmp and strnicmp
+  * Reverted upstream change of char * to unsigned char * in various
+    places to fix "differ in signedness" compiler warnings
+  * Include patch from Thomer M. Gil to fix segfault in swf.c Closes: #372511
+  * Added a Recommends for ploticus-doc
+
+ -- Colin Tuckley <colin@tuckley.org>  Sat, 10 Jun 2006 17:03:18 +0100
+
 ploticus (2.33-1) unstable; urgency=low
 
   * New Upstream release                              Closes: #262971

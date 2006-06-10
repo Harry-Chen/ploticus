@@ -7,7 +7,7 @@
 int strnicoll(char *s1, char *s2, int maxlen) {
 
 int len1, len2, len, i, c;
-unsigned char t1[2],t2[2];
+char t1[2],t2[2];
 
 len1=strlen(s1);
 len2=strlen(s2);
@@ -31,7 +31,7 @@ return (0);
 int stricoll(char *s1, char *s2) {
 
 int len1, len2, len, i, c;
-unsigned char t1[2],t2[2];
+char t1[2],t2[2];
 
 /* printf (">> %s %s\n",s1,s2); */
 len1=strlen(s1);

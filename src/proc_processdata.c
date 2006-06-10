@@ -6,8 +6,8 @@
 
 /* PROC PROCESSDATA - perform various processing to the data set */
 
-#include "tdhkit.h" /* for MAXITEMS */
 #include "pl.h"
+#include "tdhkit.h" /* for MAXITEMS */
 
 extern int unlink();
 

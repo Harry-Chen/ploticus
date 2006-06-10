@@ -623,7 +623,7 @@ double x1, y1, x2, y2;
 {
 char *buf;
 #ifdef WZ
-  FILE *outfp;
+  gzFile outfp;
 #endif
 
 if (svg_style_in_prog) fprintf( svg_fp, "</g>");
@@ -678,8 +678,8 @@ if( svg_tmpfile_used ) {
 	if( svg_fp == NULL ) return( Eerr( 2487, "cannot reopen temp file", svg_tmpfilename ) );
 #ifdef WZ
 	if( svg_compress ) {
-		if( svg_stdout ) outfp = (FILE *) gzdopen( 1, svg_compressmode );  /* stdout = 1 */
-		else outfp = (FILE *) gzopen( svg_filename, svg_compressmode );
+		if( svg_stdout ) outfp = gzdopen( 1, svg_compressmode );  /* stdout = 1 */
+		else outfp = gzopen( svg_filename, svg_compressmode );
 		if( outfp == NULL ) return( Eerr( 2488, "cannot open output file", svg_filename ) );
 		} 
 #endif

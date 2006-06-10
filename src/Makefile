@@ -42,8 +42,8 @@ BIN = ./
 #############################################################
 
 #### For Linux uncomment the following.. #######################
-XLIBS = -L/usr/X11R6/lib -lX11
-INCLUDEDIRS = -I/usr/X11R6/include
+XLIBS = -lX11
+INCLUDEDIRS = -I/usr/include/X11
 
 #### Note: for 64 bit platform I used: XLIBS = -L/usr/X11R6/lib64
 

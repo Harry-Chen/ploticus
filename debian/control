@@ -6,6 +6,7 @@ Build-Depends: debhelper (>= 5.0.0), zlib1g-dev, libgd2-noxpm-dev, libjpeg62-dev
 Standards-Version: 3.7.2
 
 Package: ploticus
+Recommends: ploticus-doc
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: script driven business graphics package

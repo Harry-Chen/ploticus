@@ -421,7 +421,7 @@ if( Gvertchar ) {
 			if( err ) { fprintf( stderr, "%s (%s)\n", err, GFTfont ); return( 1 ); }
 			}
 #endif
-		if( GFTfont[0] == '\0' ) gdImageStringUp( Gm, Gfont, a, b, s, Gcurcolor );
+		if( GFTfont[0] == '\0' ) gdImageStringUp( Gm, Gfont, a, b, (unsigned char *)s, Gcurcolor );
 		}
 	}
 else 	{
@@ -439,7 +439,7 @@ else 	{
 			if( err ) { fprintf( stderr, "%s (%s)\n", err, GFTfont ); return( 1 ); }
 			}
 #endif
-		if( GFTfont[0] == '\0' ) gdImageString( Gm, Gfont, a, b, s, Gcurcolor );
+		if( GFTfont[0] == '\0' ) gdImageString( Gm, Gfont, a, b, (unsigned char *)s, Gcurcolor );
 		}
 	}
 Goldx = x;
@@ -482,7 +482,7 @@ if( Gvertchar ) {
 			x = Goldx - (Gcharwidth*CHARHW);  /* adjust for top loc */
 			y = Goldy - halflen;
 			a = Exsca( x ); b = Eysca( y ); 
-			gdImageStringUp( Gm, Gfont, a, b, s, Gcurcolor );
+			gdImageStringUp( Gm, Gfont, a, b, (unsigned char *)s, Gcurcolor );
 			}
 		}
 	}
@@ -508,7 +508,7 @@ else	{
 			x = (Goldx - halflen) + (Gcharwidth/4.0); /* not sure why the extra is needed..*/
 			y = Goldy + (Gcharwidth*CHARHW);  /* adjust for top loc */
 			a = Exsca( x ); b = Eysca( y ); 
-			gdImageString( Gm, Gfont, a, b, s, Gcurcolor );
+			gdImageString( Gm, Gfont, a, b, (unsigned char *)s, Gcurcolor );
 			}
 		}
 	}
@@ -550,7 +550,7 @@ if( Gvertchar ) {
 			x = Goldx - (Gcharwidth*CHARHW);  /* adjust for top loc */
 			y = Goldy - len;
 			a = Exsca( x ); b = Eysca( y ); 
-			gdImageStringUp( Gm, Gfont, a, b, s, Gcurcolor );
+			gdImageStringUp( Gm, Gfont, a, b, (unsigned char *)s, Gcurcolor );
 			}
 		}
 	}
@@ -575,7 +575,7 @@ else	{
 			x = Goldx - len;
 			y = Goldy + (Gcharwidth*CHARHW);  /* adjust for top loc */
 			a = Exsca( x ); b = Eysca( y ); 
-			gdImageString( Gm, Gfont, a, b, s, Gcurcolor );
+			gdImageString( Gm, Gfont, a, b, (unsigned char *)s, Gcurcolor );
 			}
 		}
 	}

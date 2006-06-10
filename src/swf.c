@@ -592,7 +592,7 @@ char *s;
 
 	if (!swf_path_in_prog) swf_path_in_prog =1;
 
-	if( (path_count-2) > max_pts ) return; /* scg 5/4/04 */
+	if (path_count >= max_pts ) return; /* scg 5/4/04 and crt 10-Jun-06 */
 
 	path_x[path_count] = x;
 	path_y[path_count] = y;

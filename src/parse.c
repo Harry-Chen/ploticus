@@ -28,8 +28,7 @@
 /* ============================================ */
 int
 PL_parsedata( data, delimmethod, comsym, field, maxd, nr, nf, nd )
-unsigned char *data; 	/* for LOCALE scg 3/15/00 */
-/* char *data;  	// for LOCALE scg 3/15/00 //   this avoids gcc4 warning */
+char *data;  	// for LOCALE scg 3/15/00
 char *delimmethod;	/* one of: space (whitespace w/ quotes), whitespace (no quotes), tab, comma */
 char *comsym;		/* user symbol signifying beginning of comment */
 char *field[]; 		/* array of pointers to fields */

@@ -93,12 +93,24 @@ struct sinterpstate {
 	} ;
 
 /* ==== macros ==== */
-#ifndef stricmp
-#define stricmp( s, t ) 	strcasecmp( s, t )
+
+#ifdef LOCALE
+ #ifndef stricmp
+ #define stricmp( s, t )         stricoll( s, t )
+ #endif
+ #ifndef strnicmp
+ #define strnicmp( s, t, n )     strnicoll( s, t, n )
+ #endif
+ extern int stricoll(), strnicoll();   /* added scg 5/31/06 gcc4 */
+#else
+ #ifndef stricmp
+ #define stricmp( s, t )         strcasecmp( s, t )
+ #endif
+ #ifndef strnicmp
+ #define strnicmp( s, t, n )     strncasecmp( s, t, n )
+ #endif
 #endif
-#ifndef strnicmp
-#define strnicmp( s, t, n )     strncasecmp( s, t, n )
-#endif
+
 #define err(a,b,c) 		TDH_err(a,b,c)
 
 /* ==== fseek defines ==== */
