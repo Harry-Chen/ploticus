@@ -349,8 +349,9 @@ for( irow = datastart; irow < datastart+ndatarows; irow++ ) {
 	first = 0;
 
 	
-	/* if field names given and nfields not given, set expected # fields using # field names.. scg 3/15/06 */
-	if( reqnfields <= 0 && nfldnames > 0 ) reqnfields = nfldnames; 
+//  Bugfix from scg 30-jun-06 http://tech.groups.yahoo.com/group/ploticus/message/1860
+//	/* if field names given and nfields not given, set expected # fields using # field names.. scg 3/15/06 */
+//	if( reqnfields <= 0 && nfldnames > 0 ) reqnfields = nfldnames; 
 
 
 	/* optional select */

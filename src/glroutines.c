@@ -1102,7 +1102,8 @@ char *in, *out;
 int i, j, c;
 for( i = 0, j = 0; in[i] != '\0'; i++ ) {
 	c = in[i];
-	if( GL_member( c, "$-_.+!*'()," ));
+//  Bugfix from scg 8 Sep 06 http://tech.groups.yahoo.com/group/ploticus/message/1905
+    if( GL_member( c, "$-_.+!*'()," )) out[j++] = in[i];
 	else if( c <= 47 || c >= 123 || (c >= 58 && c <= 64 ) || ( c >= 91 && c <= 96 ) ) {
 		sprintf( &out[j], "%%%X", c );
 		j += 3;

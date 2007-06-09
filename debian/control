@@ -6,6 +6,7 @@ Build-Depends: debhelper (>= 5.0.0), zlib1g-dev, libgd2-noxpm-dev, libjpeg62-dev
 Standards-Version: 3.7.2
 
 Package: ploticus
+Section: misc
 Recommends: ploticus-doc
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
@@ -24,7 +25,45 @@ Description: script driven business graphics package
  display data crisply without extra decoration and distracting
  "dingbats" that cloud the picture.
  .
- Ploticus supports awide range of output options, including jpeg
+ Ploticus supports a wide range of output options, including jpeg
  (Joint Photographics Experts Group format), png (Portable Network
  Graphics format), svg (Simple Vector Graphics), bmp (Microsoft BitMaP),
  ps (PostScript), swf (Flash), and X11.
+ .
+  Homepage: http://ploticus.sourceforge.net
+
+Package: libploticus0
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: script driven business graphics library
+ libploticus is not a function or mathematical plotting package like
+ gnuplot, nor would it be a good choice for applications where
+ mathematical formulas or scientific notations are to be rendered
+ as an integral part of the data display.  libploticus is also not
+ intended as a "marketing" graphics package.  Its goal is to
+ display data crisply without extra decoration and distracting
+ "dingbats" that cloud the picture.
+ .
+ libploticus supports a wide range of output options, including jpeg
+ (Joint Photographics Experts Group format), png (Portable Network
+ Graphics format), svg (Simple Vector Graphics), bmp (Microsoft BitMaP),
+ ps (PostScript), swf (Flash), and X11.
+ .
+  Homepage: http://ploticus.sourceforge.net
+
+Package: libploticus0-dev
+Section: devel
+Architecture: any
+Depends: libploticus0 (= ${Source-Version})
+Description: Development files for the ploticus library
+ libploticus is not a function or mathematical plotting package like
+ gnuplot, nor would it be a good choice for applications where
+ mathematical formulas or scientific notations are to be rendered
+ as an integral part of the data display.  libploticus is also not
+ intended as a "marketing" graphics package.  Its goal is to
+ display data crisply without extra decoration and distracting
+ "dingbats" that cloud the picture.
+ .
+  Homepage: http://ploticus.sourceforge.net
+

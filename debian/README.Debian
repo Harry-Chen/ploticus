@@ -14,13 +14,9 @@ FreeType2 font support is also compiled in.
 
 Locale support has been compiled in.
 
-Libploticus support is not offered by this package.  The real reason is
-so-name issues will require interdistribution coordination.  A secondary
-reason is that I know of no "in the wild" programs that need this support.
-If you can point to a program which needs libploticus and which offers at
-least a 5% performance benefit, then I will start the necessary coordination.
+libploticus support is now offered by this source package.
 
 I strongly urge that you install ploticus-doc. This package will
 be hard to use without it.
 
- -- Colin Tuckley <colin@tuckley.org>, Sat, 03 June 2006 15:28:51 +0100
+ -- Colin Tuckley <colin@tuckley.org>, Wed, 16 May 2007 16:00:35 +0100

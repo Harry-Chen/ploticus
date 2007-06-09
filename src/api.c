@@ -7,6 +7,8 @@
 /* PLOTICUS API */
 #include "pl.h"
 
+int PL_init_statics();
+
 static int begin_needed = 1;
 
 /* ================================== */

@@ -124,7 +124,6 @@ int labelmaxlen;
 TDH_errprog( "pl proc bars" );
 
 
-
 /* initialize */
 axis = 'y';
 lenfield = -1;
@@ -437,9 +436,11 @@ if( colorlist[0] != '\0' ) {
 
 linedet( "outline", outline, 0.5 );
 /* "draw" something so that line color is persistent - related to recent color chg opt - scg 10/21/04 */
-PLG_pcodeboundingbox( 0 );
-Emovu( 0.0, 0.0 ); Elinu( 0.0, 0.0 );   /* CC-DOT */
-PLG_pcodeboundingbox( 1 );
+/* PLG_pcodeboundingbox( 0 );
+ * Emovu( 0.0, 0.0 ); Elinu( 0.0, 0.0 );   // CC-DOT //
+ * PLG_pcodeboundingbox( 1 );
+ */
+PLG_forcecolorchg();
 
 if( thinbarline[0] != '\0' && strnicmp( thinbarline, "no", 2 ) != 0 ) 
 	linedet( "thinbarline", thinbarline, 0.3 );
@@ -604,7 +605,7 @@ for( irow = 0; irow < Nrecords; irow++ ) {
   	else 	{
 		Ecblock( xleft, Ea( Y, y0 ), xright, Ea( Y, y ), color, 0 ); 
 
-		if( overlapcolor != "" && segmentflag ) {   /* not documented in 2.33 - color change glitches on GD */
+		if( overlapcolor[0] != '\0' && segmentflag ) {   /* not documented in 2.33 - color change glitches on GD */
 			/* See if segments overlap.. if so show the overlap region. Do this before outline.  added scg 5/11/06 */
 			if( y0 < prev_y ) Ecblock( xleft, Ea( Y, y0 ), xright, Ea( Y, prev_y ), overlapcolor, do_outline );
 			}
@@ -807,11 +808,11 @@ if( showvals || labelfld >= 0 ) {
 		        if( baseax == Y ) x += ((halfw+clustsep) * (ncluster-clusterpos)*2.0);
 			else x += ((halfw+clustsep) * (clusterpos-1)*2.0);
 			x += halfw;
-			if( lwl ) do_lwl( labelstr, x+adjx, Ea(Y,y)+adjy, Ea(Y,fval), align, reverse, lwl_mustfit );
+			if( lwl ) do_lwl( labelstr, x+adjx, Ea(Y,y)+adjy, Ea(Y,fval)+adjy, align, reverse, lwl_mustfit );
 			else do_label( labelstr, x+adjx, laby, align, backbox, reverse );
 			}
 		else 	{
-			if( lwl ) do_lwl( labelstr, Ea(X,x)+adjx, Ea(Y,y)+adjy, Ea(Y,fval), align, reverse, lwl_mustfit );
+			if( lwl ) do_lwl( labelstr, Ea(X,x)+adjx, Ea(Y,y)+adjy, Ea(Y,fval)+adjy, align, reverse, lwl_mustfit );
 			else do_label( labelstr, Ea(X,x)+adjx, laby, align, backbox, reverse );
 			}
 		}
@@ -827,6 +828,7 @@ if( legendlabel[0] != '\0' ) {
 	}
 
 if( baseax == 'y' ) Eflip = 0;
+
 return( 0 );
 }
 

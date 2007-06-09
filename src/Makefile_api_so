@@ -1,19 +1,19 @@
 ######## This Makefile will build the libploticus C API library.  
-######## This currently supports static libraries on unix platforms only.
+######## This version supports shared libraries on unix platforms only.
 ######## X11, postscript, and svg are disabled by default (you can enable in step 3)
 ######## Root is not required to do this build.
 ########
 ######## Follow the simple 4-step procedure below to choose OS platform, options, etc.
 ########
-######## Then type:  make clean;  make -f Makefile_api
+######## Then type:  make clean;  make -f Makefile_api_so
 ########
-######## The result (libploticus.a) will be placed into this directory.  You can move
+######## The result (libploticus.so) will be placed into this directory.  You can move
 ######## it manually to the desired lib directory or do "make install" (root may be required)
 ########
 ######## Applications will need environment variable PLOTICUS_PREFABS set to the full pathname
 ######## of the ./prefabs directory.  
 ########
-######## Note: if you build both libploticus.a and the pl executable from the same source code,
+######## Note: if you build both libploticus.so and the pl executable from the same source code,
 ######## you MUST do a 'make clean' in between...
 ########
 ######## PLOTICUS data display engine.  Software, documentation, and examples.  
@@ -27,8 +27,11 @@ PLATFORM = UNIX
 RMCOM = rm -f
 XOBJ = x11.o interact.o
 ZFLAG = -DWZ
-LIBEXT = a
+LIBEXT = so.0.0.0
 GDLIB =
+FPIC = -fPIC
+SONAME = libploticus.so.0
+SHAREFLAG = -shared -Wl,-soname,$(SONAME)
 
 
 ######## Step 1. What's your OS platform?
@@ -126,7 +129,7 @@ GDFREETYPE = -DGDFREETYPE
 
 #### Additional libraries you must have available:
 #### If you're using GD 1.6 you will also need libpng and zlib.
-#### If you're using GD 1.84+ you will also need libpng, zlib, libjpeg, and maybe libfreetype.
+#### If you're using GD 1.84+ you may also need libpng, zlib, libjpeg, and maybe libfreetype.
 #### If you're using GD 1.3 no additional libs are required.
 GDLIB = -lgd
 
@@ -134,7 +137,7 @@ GDLIB = -lgd
 ######## Step 4. Other options and exclusions
 ########
 
-#### Where do you want libploticus.a to be moved if you do a "make install" ?
+#### Where do you want libploticus.so to be moved if you do a "make install" ?
 LIBDIR = /usr/local/lib
 
 #### If ZLIB will NOT be available, uncomment the following..
@@ -181,8 +184,8 @@ WALL = -Wall -g
 
 
 
-CFLAGS = $(WALL) -DPLOTICUS -D$(PLATFORM) -DTDH_NOREC $(ZFLAG) $(FLAGS) $(LOCALE_FLAG) $(GDLEVEL) $(GDHEADERS) $(GDINC)\
-  $(NOGDFLAG) $(NOXFLAG) $(NOPSFLAG) $(NOSVGFLAG) $(NOSWFFLAG) $(XINCLUDEDIR) $(MINGH) $(NORLIMFLAG) \
+CFLAGS = $(FPIC) $(WALL) -DPLOTICUS -D$(PLATFORM) -DTDH_NOREC $(ZFLAG) $(FLAGS) $(LOCALE_FLAG) $(GDLEVEL) $(GDHEADERS) \
+  $(GDINC) $(NOGDFLAG) $(NOXFLAG) $(NOPSFLAG) $(NOSVGFLAG) $(NOSWFFLAG) $(XINCLUDEDIR) $(MINGH) $(NORLIMFLAG) \
   -DPREFABS_DIR=\"$(PREFABS_DIR)\"
 
 OBJ = proc_annotate.o proc_areadef.o proc_axis.o proc_bars.o proc_rect.o proc_breakaxis.o \
@@ -200,22 +203,21 @@ OBJ = proc_annotate.o proc_areadef.o proc_axis.o proc_bars.o proc_rect.o proc_br
 
 libploticus: $(OBJ) $(GDOBJ) $(XOBJ)
 	$(RMCOM) libploticus.$(LIBEXT)
-	$(ARCOM) libploticus.$(LIBEXT) $(OBJ) $(GDOBJ) $(XOBJ)
+	$(CC) $(SHAREFLAG) -o libploticus.$(LIBEXT) $(OBJ) $(GDOBJ) $(XOBJ)
 
 
 install: libploticus
 	mv libploticus.$(LIBEXT) $(LIBDIR)
+	ln -s $(LIBDIR)/libploticus.$(LIBEXT) $(LIBDIR)/$(SONAME)
+	ln -s $(LIBDIR)/$(SONAME) $(LIBDIR)/libploticus.so
 
 api_test: api_test.o
-	echo "note: you may need to edit Makefile_api to specify additional libs for the following command.."
-#	$(CC) api_test.o libploticus.$(LIBEXT) -lm -o api_test
-	$(CC) api_test.o libploticus.$(LIBEXT) $(XLIBS) $(GDLIB) /usr/lib/libpng.a /usr/lib/libz.a -lm -o api_test
 
-#         some additional libraries likely will be required here..
+	$(CC) api_test.o libploticus.$(LIBEXT) $(XLIBS) $(GDLIB) -lm -o api_test
 
 clean:
 	$(RMCOM) *.o
 
 distclean: clean
-	$(RMCOM) *.$(LIBEXT) api_test
+	$(RMCOM) *.so* api_test
 

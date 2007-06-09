@@ -2,7 +2,14 @@
 
 /* execute this in the ./pltestsuite directory! */
 
+#include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+#include "libploticus.h"
 
 #define NSCRIPTS 34
 
@@ -42,7 +49,7 @@ char *scriptfiles[NSCRIPTS+1] = {
 "vector1.htm",
 "windbarbs.htm" };
 
-main()
+int main()
 {
 int i, stat;
 char outfilename[128], oname[128], buf[512];
@@ -58,9 +65,9 @@ for( i = 0; i < NSCRIPTS; i++ ) {
 
 	strcpy( oname, scriptfiles[i] );
 	oname[ strlen( oname )-4 ] = '\0';
-	sprintf( outfilename, "api_test_output/%s.swf", oname );
+	sprintf( outfilename, "api_test_output/%s.png", oname );
 
-	stat = ploticus_init( "swf", outfilename );
+	stat = ploticus_init( "png", outfilename );
 	if( stat ) { fprintf( stderr, "error %d on ploticus_init\n", stat ); exit(1); }
 
 	/* for the clickmap example, specify -map .. */

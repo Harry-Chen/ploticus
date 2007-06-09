@@ -43,19 +43,19 @@ BIN = ./
 
 #### For Linux uncomment the following.. #######################
 XLIBS = -lX11
-INCLUDEDIRS = -I/usr/include/X11
+XINCLUDEDIR = -I/usr/include/X11
 
 #### Note: for 64 bit platform I used: XLIBS = -L/usr/X11R6/lib64
 
 
 #### For Solaris 2.x uncomment the following.. #################
 # XLIBS = -L/usr/openwin/lib -lX11
-# INCLUDEDIRS = -I/usr/openwin/include
+# XINCLUDEDIR = -I/usr/openwin/include
 
 
 #### For FreeBSD uncomment the following.. #####################
 # XLIBS = -L/usr/X11R6/lib -lX11
-# INCLUDEDIRS = -I/usr/X11R6/include -I/usr/local/include
+# XINCLUDEDIR = -I/usr/X11R6/include -I/usr/local/include
 # ADDLIBS = -L/usr/local/lib
 
 
@@ -71,7 +71,7 @@ INCLUDEDIRS = -I/usr/include/X11
 # CC = cc
 #### with X11..
 # XLIBS = -L/usr/X11R6/lib -lX11
-# INCLUDEDIRS = -I/usr/X11R6/include
+# XINCLUDEDIR = -I/usr/X11R6/include
 #### without X11..
 # XLIBS =
 # NOXFLAG = -DNOX11
@@ -79,33 +79,33 @@ INCLUDEDIRS = -I/usr/include/X11
 
 #### For AIX 3.2.5, HP-UX 10.20 uncomment the following.. ########
 # XLIBS = -L /usr/X11/lib -lX11
-# INCLUDEDIRS = -I/usr/X11/include
+# XINCLUDEDIR = -I/usr/X11/include
 ## ..note for HP-UX it was necessary to do: ln gd_io.h gd16 by hand to get the png compiled
 
 
 #### For SunOS4, Irix, other BSD uncomment the following.. #######
 # XLIBS = -L/usr/lib -lX11
-# INCLUDEDIRS = -I/usr/include
+# XINCLUDEDIR = -I/usr/include
 ## ..note the following additional lines were necessary on the Irix system we used:  CC = cc    FLAGS = -o32
 
 
 #### For UnixWare uncomment the following.. ######################
 # XLIBS = -L/usr/X11/lib -lX11
-# INCLUDEDIRS = -I/usr/X11/include
+# XINCLUDEDIR = -I/usr/X11/include
 # ADDLIBS = -lnsl -lresolv -L/usr/ucblib -lucb
 ## ..note: the following was necessary on the UnixWare system we used: CC = cc
 
 
 #### For MPE/iX uncomment the following.. ########################
 # XLIBS = -L/usr/local/lib -lX11
-# INCLUDEDIRS = -I/usr/local/include
+# XINCLUDEDIR = -I/usr/local/include
 # FLAGS = -D_POSIX_SOURCE
 # CC = /usr/local/bin/gcc  
 
 #### For Cygwin uncomment the following.. ########################
 # PLATFORM = WIN32
 # XLIBS = -L/usr/X11R6/lib -lX11
-# INCLUDEDIRS = -I/usr/X11R6/include
+# XINCLUDEDIR = -I/usr/X11R6/include
 # NORLIMFLAG = -DNORLIMIT
 
 
@@ -261,7 +261,7 @@ GD = gdfontg.o gdfontl.o gdfontmb.o gdfonts.o gdfontt.o
 LIBS = $(XLIBS) -lm $(ADDLIBS) 
 
 CFLAGS = $(WALL) -DPLOTICUS -D$(PLATFORM) -DTDH_NOREC $(ZFLAG) $(FLAGS) $(LOCALE_FLAG) \
-  $(NOGDFLAG) $(NOXFLAG) $(NOPSFLAG) $(NOSVGFLAG) $(NOSWFFLAG) $(INCLUDEDIRS) \
+  $(NOGDFLAG) $(NOXFLAG) $(NOPSFLAG) $(NOSVGFLAG) $(NOSWFFLAG) $(XINCLUDEDIR) \
   $(MINGH) $(NORLIMFLAG) -DPREFABS_DIR=\"$(PREFABS_DIR)\"
 
 OBJ = proc_annotate.o proc_areadef.o proc_axis.o proc_bars.o proc_rect.o proc_breakaxis.o \
@@ -322,8 +322,11 @@ nogdfiles:
 
 
 install:
-	mv $(EXE) $(BIN)
+	cp $(PL) $(BIN)
 
 clean:
 	$(RMCOM) *.o gd??files 
+
+distclean:  clean
+	$(RMCOM) $(PL)
 

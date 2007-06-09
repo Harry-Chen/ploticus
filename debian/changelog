@@ -1,3 +1,17 @@
+ploticus (2.33-3) unstable; urgency=low
+
+  * upstream bugfixes
+    proc_getdata.c filter attribute - # data fields
+    glroutines.c clickmap urls - certain punct chars dropped
+    cumufrac.pl cumufrac prefab - no curve produced for certain input data
+    proc_bars.c floating segment bars glitches
+    chunk_title prefab title align giving incorrect results
+    stub.c crosshatch fill weird linewidth interaction with -scale
+  * packaged libploticus Closes: #420735
+  * added homepage refs to descriptions in debian/control
+
+ -- Colin Tuckley <colin@tuckley.org>  Sat, 09 Jun 2007 11:29:57 +0100
+
 ploticus (2.33-2) unstable; urgency=low
 
   * Fixed possible 64-bit problem in svg.c

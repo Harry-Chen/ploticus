@@ -262,7 +262,8 @@ if( linewidth != Ecurlinewidth ||
 
 	sprintf( buf, "%d", pattern );
 	Epcode( 'Y', linewidth, pat_dens, buf );
-	Ecurlinewidth = linewidth; 
+//  Bugfix scg 19 Apr 07 http://tech.groups.yahoo.com/group/ploticus/message/1991
+	Ecurlinewidth = linewidth / Estandard_lwscale; 
 	Ecurlinetype = pattern; 
 	Ecurpatternfactor = pat_dens;
 	}

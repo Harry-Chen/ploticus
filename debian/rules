@@ -45,7 +45,7 @@ install: build
 	dh_clean -k 
 	dh_installdirs
 
-	$(MAKE) install DESTDIR=$(CURDIR)/debian/ploticus
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp
 
 # Build architecture-independent files here.
 binary-indep: build install
@@ -55,16 +55,20 @@ binary-indep: build install
 binary-arch: build install
 	dh_testdir
 	dh_testroot
+	dh_movefiles
+	dh_install
 	dh_installchangelogs 
-	dh_installdocs
+	dh_installdocs -A
 	dh_installexamples
 	dh_installman
+	chmod 644 $(CURDIR)/debian/ploticus/usr/share/doc/ploticus/examples/run_script_test.bat
 	dh_link
 	dh_strip
 	dh_compress
 	dh_fixperms
+	dh_makeshlibs -V
 	dh_installdeb
-	dh_shlibdeps
+	dh_shlibdeps -L libploticus0 -l debian/libploticus0/usr/lib/
 	dh_gencontrol
 	dh_md5sums
 	dh_builddeb

@@ -421,7 +421,7 @@ if( Gvertchar ) {
 			if( err ) { fprintf( stderr, "%s (%s)\n", err, GFTfont ); return( 1 ); }
 			}
 #endif
-		if( GFTfont[0] == '\0' ) gdImageStringUp( Gm, Gfont, a, b, (unsigned char *)s, Gcurcolor );
+		if( GFTfont[0] == '\0' ) gdImageStringUp( Gm, Gfont, a, b, (unsigned char*)s, Gcurcolor );
 		}
 	}
 else 	{
@@ -439,7 +439,7 @@ else 	{
 			if( err ) { fprintf( stderr, "%s (%s)\n", err, GFTfont ); return( 1 ); }
 			}
 #endif
-		if( GFTfont[0] == '\0' ) gdImageString( Gm, Gfont, a, b, (unsigned char *)s, Gcurcolor );
+		if( GFTfont[0] == '\0' ) gdImageString( Gm, Gfont, a, b, (unsigned char*)s, Gcurcolor );
 		}
 	}
 Goldx = x;
