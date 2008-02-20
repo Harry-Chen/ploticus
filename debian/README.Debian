@@ -14,9 +14,9 @@ FreeType2 font support is also compiled in.
 
 Locale support has been compiled in.
 
-libploticus support is now offered by this source package.
+libploticus support is offered by this source package.
 
 I strongly urge that you install ploticus-doc. This package will
 be hard to use without it.
 
- -- Colin Tuckley <colin@tuckley.org>, Wed, 16 May 2007 16:00:35 +0100
+ -- Colin Tuckley <colint@debian.org>, Sun, 17 Feb 2008 12:23:35 +0100

@@ -1,5 +1,5 @@
 /* ======================================================= *
- * Copyright 1998-2005 Stephen C. Grubb                    *
+ * Copyright 1998-2008 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */
@@ -14,26 +14,21 @@
 int
 PLP_line()
 {
-char attr[NAMEMAXLEN], val[256];
-char *line, *lineval;
-int nt, lvp;
-int first;
+char attr[NAMEMAXLEN], *line, *lineval;
+int lvp, first;
 
 char buf[256];
 double x, y, ancx, ancy;
-char linedetails[256];
+char *linedetails, *drawpoints;
 char notation;
 char a[40], b[40], c[40], d[40];
-int ix;
-int buflen;
-int ancgiven;
+int nt, ix, buflen, ancgiven;
 
 
 TDH_errprog( "pl proc line" );
 
 /* initialize */
-strcpy( PL_bigbuf, "" );
-strcpy( linedetails, "" );
+linedetails = "";
 notation = LOCVAL;
 x = 0.0; y = 0.0;
 ancx = 0.0; ancy = 0.0;
@@ -42,29 +37,21 @@ ancgiven = 0;
 /* get attributes.. */
 first = 1;
 while( 1 ) {
-	line = getnextattr( first, attr, val, &lvp, &nt );
+	line = getnextattr( first, attr, &lvp );
 	if( line == NULL ) break;
 	first = 0;
 	lineval = &line[lvp];
 
-	if( stricmp( attr, "points" )==0 ) 
-		getmultiline( "points", lineval, MAXBIGBUF, PL_bigbuf );
-		
-
-	else if( stricmp( attr, "linedetails" )==0 ) strcpy( linedetails, lineval );
-	else if( stricmp( attr, "notation" )==0 ) notation = tolower( (int) val[0] );
-	else if( stricmp( attr, "anchor" )==0 ) {
-		getcoords( "anchor", lineval, &ancx, &ancy );
-		ancgiven = 1;
-		}
-
+	if( strcmp( attr, "points" )==0 ) drawpoints = getmultiline( lineval, "get" );
+	else if( strcmp( attr, "linedetails" )==0 ) linedetails = lineval;
+	else if( strcmp( attr, "notation" )==0 ) notation = lineval[0];
+	else if( strcmp( attr, "anchor" )==0 ) { getcoords( "anchor", lineval, &ancx, &ancy ); ancgiven = 1; }
 	else Eerr( 1, "attribute not recognized", attr );
 	}
 
-
 /* overrides & sanity checks.. */
-if( notation != ABSOLUTE && notation != SCALED && notation != LOCVAL ) {
-	notation = LOCVAL;
+if( notation != ABSOLUTE && notation != SCALED && notation != LOCVAL ) { 
+	notation = LOCVAL; 
 	Eerr( 479, "warning: invalid 'notation'.. using locval", "" );
 	}
 
@@ -73,15 +60,14 @@ if( ancgiven && notation == SCALED ) {
 	ancx = ancy = 0.0; 
 	} 
 
-
 /* now do the plotting work.. */
 linedet( "linedetails", linedetails, 1.0 );
 
 ix = 0;
 first = 1;
-buflen = strlen( PL_bigbuf );
+buflen = strlen( drawpoints );
 while( 1 ) {
-	GL_getchunk( buf, PL_bigbuf, &ix, "\n" );
+	GL_getchunk( buf, drawpoints, &ix, "\n" );
 	nt = sscanf( buf, "%s %s %s %s", a, b, c, d );
 
 	if( nt == 4 || first ) { 
@@ -121,7 +107,7 @@ return( 0 );
 }
 
 /* ======================================================= *
- * Copyright 1998-2005 Stephen C. Grubb                    *
+ * Copyright 1998-2008 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */

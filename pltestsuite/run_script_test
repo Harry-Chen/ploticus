@@ -1,94 +1,89 @@
 #!/bin/sh
 #
 PL="pl"
-OUT=Diag.out
-
+echo "You will be invoking this instance of ploticus:"
 which $PL
+
+echo
 echo "Enter an output format, one of: x11, gif, png, svg, (svgz), (jpeg), or eps: \c"
 read MODE
+if [ "$MODE" = "" ]; then
+  MODE=x11
+fi
 
-echo "Diagnostic output will be placed into file $OUT.  Press Enter to begin..\c"
-read X
 
-
-which $PL > $OUT
-date >> $OUT
+which $PL 
+date 
 
 OPTS=
 
-echo "--------- stock2..." >> $OUT
-$PL -$MODE $OPTS  stock2.htm 2>> $OUT
-echo "--------- timely..." >> $OUT
-$PL -$MODE $OPTS  timely.htm 2>> $OUT
-echo "Note: some numbers should have appeared above..
-" >> $OUT
+echo "--------- stock2..." 
+$PL -$MODE $OPTS  stock2.htm 
 
-echo "--------- clickmap_mouse... (should produce a server-side image map file clickmap_mouse.map ..)" >> $OUT
-$PL -$MODE $OPTS clickmap_mouse.htm -map -mapfile mouse.map >> $OUT
-wc -l mouse.map >> $OUT
-
-echo "--------- kmslide..." >> $OUT
-$PL -$MODE $OPTS  kmslide.htm 2>> $OUT
-echo "--------- propbars1..." >> $OUT
-$PL -$MODE $OPTS  propbars1.htm 2>> $OUT
-echo "--------- td..." >> $OUT
-$PL -$MODE $OPTS  td.htm 2>> $OUT
-echo "5 plots done"
-echo "--------- distrib..." >> $OUT
-$PL -$MODE $OPTS  distrib.htm 2>> $OUT
-echo "--------- errbar5..." >> $OUT
-$PL -$MODE $OPTS  errbar5.htm 2>> $OUT
+echo "--------- kmslide..." 
+$PL -$MODE $OPTS  kmslide.htm 
+echo "--------- propbars1..." 
+$PL -$MODE $OPTS  propbars1.htm 
+echo "--------- td..." 
+$PL -$MODE $OPTS  td.htm 
+echo "--------- errbar5..." 
+$PL -$MODE $OPTS  errbar5.htm 
 echo "Note: some warnings are ok in errbar5..
-" >> $OUT
-echo "--------- scatterplot10..." >> $OUT
-$PL -$MODE $OPTS  scatterplot10.htm 2>> $OUT
-echo "--------- errbar1..." >> $OUT
-$PL -$MODE $OPTS  errbar1.htm 2>> $OUT
-echo "--------- devol..." >> $OUT
-$PL -$MODE $OPTS  devol.htm 2>> $OUT
-echo "10 plots done"
-echo "--------- lineplot4..." >> $OUT
-$PL -$MODE $OPTS  lineplot4.htm 2>> $OUT
-echo "--------- lineplot5..." >> $OUT
-$PL -$MODE $OPTS  lineplot5.htm 2>> $OUT
-echo "--------- pie1..." >> $OUT
-$PL -$MODE $OPTS  pie1.htm 2>> $OUT
-echo "--------- bars3..." >> $OUT
-$PL -$MODE $OPTS  bars3.htm 2>> $OUT
-echo "--------- quarters..." >> $OUT
-$PL -$MODE $OPTS  quarters.htm 2>> $OUT
-echo "15 plots done"
-echo "--------- timeline2..." >> $OUT
-$PL -$MODE $OPTS  timeline2.htm 2>> $OUT
-echo "--------- scatterplot4..." >> $OUT
-$PL -$MODE $OPTS  scatterplot4.htm 2>> $OUT
-echo "--------- annot2..." >> $OUT
-$PL -$MODE $OPTS  annot2.htm 2>> $OUT
-echo "--------- drawcom..." >> $OUT
-$PL -$MODE $OPTS  drawcom.htm 2>> $OUT
-echo "--------- hitcount3..." >> $OUT
-$PL -$MODE $OPTS  hitcount3.htm 2>> $OUT
+" 
+echo "--------- scatterplot10..." 
+$PL -$MODE $OPTS  scatterplot10.htm 
+echo "--------- devol..." 
+$PL -$MODE $OPTS  devol.htm 
+echo "--------- lineplot4..." 
+$PL -$MODE $OPTS  lineplot4.htm 
+echo "--------- lineplot5..." 
+$PL -$MODE $OPTS  lineplot5.htm 
+echo "--------- pie1..." 
+$PL -$MODE $OPTS  pie1.htm 
+echo "--------- bars3..." 
+$PL -$MODE $OPTS  bars3.htm
+echo "--------- quarters..." 
+$PL -$MODE $OPTS  quarters.htm 
+echo "--------- timeline2..." 
+$PL -$MODE $OPTS  timeline2.htm 
+echo "--------- scatterplot4..." 
+$PL -$MODE $OPTS  scatterplot4.htm 
+echo "--------- annot2..." 
+$PL -$MODE $OPTS  annot2.htm 
+echo "--------- drawcom..." 
+$PL -$MODE $OPTS  drawcom.htm 
+echo "--------- hitcount3..." 
+$PL -$MODE $OPTS  hitcount3.htm 
 echo "Note: there should be 8 'warning: time is outside of window range' msgs above..
-" >> $OUT
-echo "20 plots done"
-echo "--------- lineplot20..." >> $OUT
-$PL -$MODE $OPTS  lineplot20.htm 2>> $OUT
-echo "--------- colorgrid..." >> $OUT
-$PL -$MODE $OPTS  colorgrid.htm 2>> $OUT
-echo "--------- heatmap3..." >> $OUT
-$PL -$MODE $OPTS  heatmap3.htm 2>> $OUT
-echo "--------- vector1..." >> $OUT
-$PL -$MODE $OPTS  vector1.htm 2>> $OUT
-echo "--------- windbarbs..." >> $OUT
-$PL -$MODE $OPTS  windbarbs.htm 2>> $OUT
-echo "--------- supstubs..." >> $OUT
-$PL -$MODE $OPTS  supstubs.htm 2>> $OUT
+" 
+echo "--------- lineplot20..." 
+$PL -$MODE $OPTS  lineplot20.htm 
 
-echo "25 plots done.. "
+echo "--------- colorgrid2... (should produce client size imagemap to file csmap.out)" 
+$PL -$MODE $OPTS  colorgrid2.htm -csmap > csmap.out
+head -3 csmap.out
 
-echo "--------- legends232..." >> $OUT
-$PL -$MODE $OPTS  legends232.htm 2>> $OUT
-echo "--------- venn..." >> $OUT
-$PL -$MODE $OPTS  venn.htm 2>> $OUT
+echo "--------- heatmap3..." 
+$PL -$MODE $OPTS  heatmap3.htm 
+echo "--------- vector1..." 
+$PL -$MODE $OPTS  vector1.htm 
+echo "--------- windbarbs..." 
+$PL -$MODE $OPTS  windbarbs.htm 
+echo "--------- supstubs..." 
+$PL -$MODE $OPTS  supstubs.htm 
+echo "--------- legends232..." 
+$PL -$MODE $OPTS  legends232.htm 
+echo "--------- venn..." 
+$PL -$MODE $OPTS  venn.htm 
+echo "--------- catlines1..."
+$PL -$MODE $OPTS catlines1.htm
+echo "--------- tree1..."
+$PL -$MODE $OPTS tree1.htm
+echo "--------- dtfut..."
+$PL -$MODE $OPTS dtfut.htm
+echo "--------- rangesweep2_dostext..."
+$PL -$MODE $OPTS rangesweep2_dostext.htm
+echo "--------- sar-cpu..."
+$PL -$MODE $OPTS sar-cpu.htm
 
-echo "27 plots done.. Finished."
+echo "Finished."

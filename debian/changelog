@@ -1,3 +1,15 @@
+ploticus (2.40-1) unstable; urgency=low
+
+  * New Upstream version.
+  * Update maintainer Email address.
+  * Bump Standards-Version (No changes required).
+  * Add Homepage field to debian/control.
+  * Incorporate fix to proc_axis.c from upstream.
+  * Incorporate fix to gd13.c from upstream to fix compiler errors.
+  * Incorporate fix to execline.c from upstream.
+
+ -- Colin Tuckley <colint@debian.org>  Wed, 20 Feb 2008 09:54:35 +0000
+
 ploticus (2.33-3) unstable; urgency=low
 
   * upstream bugfixes

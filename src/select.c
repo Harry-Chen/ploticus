@@ -13,7 +13,7 @@
    Returns 0 if ok or an error code > 1 */
 int
 PL_do_select( selectex, row, result )
-char *selectex;
+const char *selectex;
 int row;
 int *result;
 {
@@ -40,7 +40,7 @@ return( 0 );
 int
 PL_do_subst( out, in, row, mode )
 char *out; /* result */
-char *in;	/* template with variable references e.g. @1 */
+const char *in;	/* template with variable references e.g. @1 */
 int row;	/* row of data to access */
 int mode;	/* either FOR_CONDEX (1) or NORMAL (0) */
 {

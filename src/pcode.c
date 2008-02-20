@@ -1,5 +1,5 @@
 /* ======================================================= *
- * Copyright 1998-2005 Stephen C. Grubb                    *
+ * Copyright 1998-2008 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */
@@ -27,7 +27,7 @@
 	L		lineto
 	M		moveto
 	P		path to
-	T, C, J		text, centered text, right justified text
+	T, C, J		left-adusted Text, Centered text, right Justified text
 	r		set pending current color - color change actually occurs on next line/text or 'v'
 	v		force color change immediately (can be done by app code)
 	  k		   execute set current color (recursive call from pcode - never done by app code)
@@ -76,6 +76,7 @@ extern int GL_member(), PL_clickmap_inprogress(), PL_clickmap_out();
 #ifndef NOSVG
   extern int PLGS_stroke(), PLGS_moveto(), PLGS_lineto(), PLGS_path(), PLGS_text(), PLGS_fill(), PLGS_color();
   extern int PLGS_pointsize(), PLGS_font(), PLGS_chardir(), PLGS_linetype(), PLGS_trailer();
+  extern int PLGS_showimg(), PLGS_setimg();
 #endif
 #ifndef NOSWF
   extern int PLGF_stroke(), PLGF_moveto(), PLGF_lineto(), PLGF_path(), PLGF_text(), PLGF_fill(), PLGF_color();
@@ -192,10 +193,12 @@ if( Edev == 'p' && virginpage && !GL_member( op, "Q" ) ) {
 if( pcodedebug == 2 ) fprintf( stderr, "%c %g %g %s\n", op, x, y, s );
 
 /* use this chunk to step thru one op code at a time - press any key to continue */
-/* fprintf( stderr, "%c %g %g %s\n", op, x, y, s );
+/*  // if( op != 'w' ) 
+ * fprintf( stderr, "%c %g %g %s\n", op, x, y, s );
  * PLGX_flush(); 
  * PLGX_wait(); 
  */
+
 
 
 /* lazy color set .. only execute a color change when line, text, or fill is imminent.. scg 6/18/04 */
@@ -252,9 +255,8 @@ if( op == 'Q' ) {
 	/* allow clickmap to be generated on any device.. */
 	if( Edev != 'g' && Edev != 's' && PL_clickmap_inprogress() ) PL_clickmap_out( 0, 0 ); /* GD & SWF handled in drivers.. */
 #endif
-	if( pcodedebug ) fprintf( pcodedebugfp, 
-		"Done with page.  Writing out result file.  Computed bounding box is: %-5.2f, %-5.2f to %-5.2f, %-5.2f\n", 
-			bb_x1, bb_y1, bb_x2, bb_y2 );
+	if( pcodedebug ) fprintf( pcodedebugfp, "Done with page.  Bounding box is: %-5.2f, %-5.2f to %-5.2f, %-5.2f\n", 
+					bb_x1, bb_y1, bb_x2, bb_y2 );
 	}
 	
 
@@ -277,7 +279,7 @@ if( dumpfp != NULL && !susp_dump ) {
 
 
 if( op == 'H' ) {  /* moved up - scg 8/12/05 */
-	if( stricmp( s, "on" )==0 ) squelched = 1;
+	if( strcmp( s, "on" )==0 ) squelched = 1;
 	else squelched = 0;
 	return( 0 );
 	}
@@ -640,17 +642,16 @@ return( 0 );
 
 
 /* ============================================= */
-/* bb_ - keep an overall bounding box for the entire image.
+/* BB - keep an overall bounding box for the entire image.
 	 Also call Echeckbb() to maintain nested object bounding boxes.. */
 int
 PLG_bb( x, y )
 double x, y;
 {
 if( keeping_bb ) {
-	/* if( pcodedebug ) {
- 	 *	if( ( x < bb_x1 && x < 0.0 ) || (x > bb_x2 && x > 8.0 ) ) fprintf( pcodedebugfp, "draw out X = %g\n", x );
-	 *	if( ( y < bb_y1 && y < 0.0 ) || (y > bb_y2 && y > 8.0 ) ) fprintf( pcodedebugfp, "draw out Y = %g\n", y );
-	 *	}
+ 	/* if( ( x < bb_x1 && x < 0.0 ) || (x > bb_x2 && x > 8.0 ) ) fprintf( pcodedebugfp, "draw out X = %g\n", x ); 
+	 * if( ( y < bb_y1 && y < 0.0 ) || (y > bb_y2 && y > 8.0 ) ) fprintf( pcodedebugfp, "draw out Y = %g\n", y );
+	 *	} 
 	 */
 	if( x < bb_x1 ) { bb_x1 = x; if( pcodedebug == 2 ) { fprintf( pcodedebugfp, "(new x min %g)\n", x ); }}
 	if( x > bb_x2 ) { bb_x2 = x; if( pcodedebug == 2 ) { fprintf( pcodedebugfp, "(new x max %g)\n", x ); }}
@@ -849,42 +850,67 @@ Ecolor( oldcolor );
 return( 0 );
 }
 /* ==================================================== */
-/* IMLOAD - tell the GD driver to load an image */
+/* IMLOAD - for GD this loads the named image file... 
+ *	  - for SVG this tells the svg driver to remember image filename for later 
+ */
 int
-PLG_imload( filename, scalex, scaley )
+PLG_imload( filename, width, height )
 char *filename;
-double scalex, scaley;
+int width, height;  /* optional, may be given if known here but not known at time of implace() (eg. symboldetails)... otherwise 0, 0 */
 {
-#ifndef NOGD
+int stat;
+stat = 1;
+
 if( globalscale != 1.0 || globalscaley != 1.0 ) {
-	scalex *= globalscale;
-	scaley *= globalscaley;
+	width = (int) (width * globalscale); height = (int) (height * globalscaley); 
 	}
-return( PLGG_imload( filename, scalex, scaley ) );
-#else
-return( 1 );
+
+if( Edev == 'g' ) {
+#ifndef NOGD
+  	stat = PLGG_imload( filename, width, height );
 #endif
+	}
+else if( Edev == 's' && width != 0 && height != 0 ) { 
+#ifndef NOSVG
+	stat = PLGS_setimg( filename, width, height );
+#endif
+	}
+return( stat );
 }
 
 /* ==================================================== */
-/* IMPLACE - tell the gif driver to place a GIF image */
+/* IMPLACE - for GD this places the currently loaded image file at x,y (filename not used).
+ *	   - for SVG this adds an <image> tag to the svg output file (image filename 
+ */
 int
-PLG_implace( x, y, imalign, xscale, yscale )
+PLG_implace( x, y, filename, align, width, height )
 double x, y;
-char *imalign;
-double xscale, yscale;
+char *filename; /* image file, used by svg only .. but not required if filename was set earlier using imload() */
+char *align;    /* alignment, used by gd and svg */
+int width, height;  /* render the image in this width and height (in pixels) */
 {
-#ifndef NOGD
+int stat;
+stat = 1;
 if( globalscale != 1.0 || globalscaley != 1.0 ) {
-	x *= globalscale;
-	y *= globalscaley;
-	/* xscale and yscale are always passed as 1.0; 
-		do not scale here as image is scaled when read */
+	x *= globalscale; y *= globalscaley;
+	width = (int) (width * globalscale); height = (int) (height * globalscaley); 
 	}
-return( PLGG_implace( x, y, imalign, xscale, yscale ) );
-#else
-return( 1 );
+if( Edev == 'g' ) {
+#ifndef NOGD
+	stat = PLGG_implace( x, y, align, width, height );
 #endif
+	}
+else if( Edev == 's' ) {
+	if( line_drawing ) PLGS_stroke();
+        line_drawing = 0;
+	width = (int) (width * 0.72 );  /* svg wants image dimensions in svg pixels (72 per inch) */
+	height = (int) (height * 0.72 );
+
+#ifndef NOSVG
+	stat = PLGS_showimg( filename, x, y, align, width, height );
+#endif
+	}
+return( stat );
 }
 
 
@@ -962,11 +988,12 @@ char *dumpfile;
 char *filemode;
 {
 dumpfp_closable = 0;
-if( stricmp( dumpfile, "stdout" )==0 ) dumpfp = stdout;
+if( strcmp( dumpfile, "stdout" )==0 ) dumpfp = stdout;
 else 	{
 	dumpfp = fopen( dumpfile, filemode );
 	if( dumpfp == NULL ) return( Eerr( 57202, "cannot open dump file", dumpfile ) );
 	dumpfp_closable = 1;
+	fprintf( dumpfp, "A 0 0 init-graphics\n" );  /* added scg 5/24/07 */
 	}
 ndumplines = 0;
 return( 0 );
@@ -991,7 +1018,7 @@ return( 0 );
 
 
 /* ======================================================= *
- * Copyright 1998-2005 Stephen C. Grubb                    *
+ * Copyright 1998-2008 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */

@@ -78,31 +78,31 @@ PL_devstring( s )
 char *s;
 {
 /* Added svg option - BT 05/11/01 */
-strcpy( s, "This build can produce: ps eps " );
+strcpy( s, "This build can produce: PS EPS " );
 #ifndef NOSVG
- strcat( s, "svg " );
+ strcat( s, "SVG " );
  #if WZ || GD16 || GD18
-       	strcat( s, "svgz " );
+       	strcat( s, "SVGZ " );
  #endif
 #endif
 #ifndef NOX11
- strcat( s, "x11 " );
+ strcat( s, "X11 " );
 #endif
 #ifdef GD13
- strcat( s, "gif (png) " );
+ strcat( s, "GIF " );
 #endif
 #ifdef GD16
- strcat( s, "png " );
+ strcat( s, "PNG " );
 #endif
 #ifdef GD18
- strcat( s, "png jpeg wbmp " );
+ strcat( s, "PNG JPEG WBMP " );
 #endif
 #ifdef GDFREETYPE
  strcat( s, "FreeType2 " );
 #endif
 /* Added swf option - BT 13/01/03 */
 #ifndef NOSWF
- strcat( s, "swf " );
+ strcat( s, "SWF " );
 #endif
 
 return( 0 );
@@ -155,7 +155,7 @@ if( mode == 1 ) {
 	/* GD image formats */
 	else if( GL_smember( t, "gif png jpeg wbmp" ) ) { 
 		*s = 'g'; 
-		if( !devavail( t )) return( Eerr( 5974, "format not supported in this build", t  ));
+		if( !devavail( t )) return( Eerr( 5974, "requested output format not supported in this build", t  ));
 		/* Png = 1;  */
 #ifndef NOGD
 		PLGG_setimfmt( t );

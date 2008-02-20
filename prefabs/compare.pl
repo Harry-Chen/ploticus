@@ -7,6 +7,15 @@
 //
 #musthave y catfields
 
+#write stdout
+  As of 2.34 the 'compare' prefab is nonfunctional.. support for it is suspended... 
+  I'm not sure if there's any user interest out there... if there is, this prefab
+  needs to be rewritten, probably to use proc processdata action: summary  (the 
+  old proc rangebar functionality is no longer supported).  Community involvement 
+  in accomplishing this is solicited.
+#endwrite
+#exit
+
 #set catfields = $change( " ", ",", @catfields )
 #set nbf = $count( "*", @catfields )
 #set catf = $nmember( 1, @catfields )
@@ -165,12 +174,17 @@ pathname: @tmpstats
 #endproc 
 
 
+#proc categories
+axis: x
+datafield: @catf
+
+
 
 //// plotting area..
 #include $chunk_area
 xscaletype: categories
-xcategories: datafield=@catf
-catcompmethod: exact
+// xcategories: datafield=@catf
+// catcompmethod: exact
 #if @yrange = ""
   yautorange: datafields=mean,sd  incmult=2.0  nearest=@ynearest
 //#elseif @yrange = 0

@@ -1,5 +1,5 @@
 /* ======================================================= *
- * Copyright 1998-2005 Stephen C. Grubb                    *
+ * Copyright 1998-2008 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */
@@ -14,67 +14,41 @@
 int
 PLP_rangesweep()
 {
-int i;
-char attr[NAMEMAXLEN], val[256];
-char *line, *lineval;
-int nt, lvp;
-int first;
+char attr[NAMEMAXLEN], *line, *lineval;
+int lvp, first;
 
-int stat;
-
-int xfield;
-int lofield, hifield;
-double start, stop;
-double xstart;  /* when no X values are given, can be specified as to where to start */
-char color[COLORLEN];
-int j;
-int npoints;
-double f;
-double x, lo, hi, lastx, lastlo, lasthi;
-char legendlabel[256]; /* raised (can contain urls for clickmap) scg 4/22/04 */
-char selectex[256];
-int result;
+int i, j, stat, npoints, result, xfield, lofield, hifield;
+double start, stop, xstart, f; double x, lo, hi, lastx, lastlo, lasthi;
+char *color, *legendlabel, *selectex;
 char oldcolor[COLORLEN];
 
 TDH_errprog( "pl proc rangesweep" );
 
 /* initialize */
-xfield = -1;
-lofield = -1;
-hifield = -1;
+xfield = -1; lofield = -1; hifield = -1;
+start = EDXlo; stop = EDXhi; xstart = EDXlo;
 
-start = EDXlo; stop = EDXhi;
-xstart = EDXlo;
-
-strcpy( color, "gray(0.9)" );
-strcpy( legendlabel, "" );
-strcpy( selectex, "" );
-
+color = "gray(0.9)";
+legendlabel = "";
+selectex = "";
 
 /* get attributes.. */
 first = 1;
 while( 1 ) {
-	line = getnextattr( first, attr, val, &lvp, &nt );
+	line = getnextattr( first, attr, &lvp );
 	if( line == NULL ) break;
 	first = 0;
 	lineval = &line[lvp];
 
-	if( stricmp( attr, "xfield" )==0 ) xfield = fref( val ) - 1;
-	else if( stricmp( attr, "lofield" )==0 ) lofield = fref( val ) - 1;
-	else if( stricmp( attr, "hifield" )==0 ) hifield = fref( val ) - 1;
-	else if( stricmp( attr, "legendlabel" )==0 ) strcpy( legendlabel, lineval );
-	else if( stricmp( attr, "sweeprange" )==0 ) {
-		getrange( lineval, &start, &stop, 'x', EDXlo, EDXhi );
-		}
-	else if( stricmp( attr, "xstart" )==0 ) {
-		xstart = Econv( X, val );
-		if( Econv_error() ) xstart = EDXlo;
-		}
-	else if( stricmp( attr, "select" )==0 ) strcpy( selectex, lineval );
-
-	else if( stricmp( attr, "color" )==0 ) strcpy( color, val );
-
-	else Eerr( 1, "rangesweep attribute not recognized", attr );
+	if( strcmp( attr, "xfield" )==0 ) xfield = fref( lineval ) - 1;
+	else if( strcmp( attr, "lofield" )==0 ) lofield = fref( lineval ) - 1;
+	else if( strcmp( attr, "hifield" )==0 ) hifield = fref( lineval ) - 1;
+	else if( strcmp( attr, "legendlabel" )==0 ) legendlabel = lineval;
+	else if( strcmp( attr, "sweeprange" )==0 ) getrange( lineval, &start, &stop, 'x', EDXlo, EDXhi );
+	else if( strcmp( attr, "xstart" )==0 ) { xstart = Econv( X, lineval ); if( Econv_error() ) xstart = EDXlo; }
+	else if( strcmp( attr, "select" )==0 ) selectex = lineval;
+	else if( strcmp( attr, "color" )==0 ) color = lineval;
+	else Eerr( 1, "attribute not recognized", attr );
 	}
 
 /* -------------------------- */
@@ -227,7 +201,7 @@ return( 0 );
 
 
 /* ======================================================= *
- * Copyright 1998-2005 Stephen C. Grubb                    *
+ * Copyright 1998-2008 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */

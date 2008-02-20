@@ -1,9 +1,10 @@
 Source: ploticus
 Section: misc
 Priority: optional
-Maintainer: Colin Tuckley <colin@tuckley.org>
+Maintainer: Colin Tuckley <colint@debian.org>
+Homepage: http://ploticus.sourceforge.net
 Build-Depends: debhelper (>= 5.0.0), zlib1g-dev, libgd2-noxpm-dev, libjpeg62-dev, libfreetype6-dev, libx11-dev, x-dev, libpng12-dev
-Standards-Version: 3.7.2
+Standards-Version: 3.7.3
 
 Package: ploticus
 Section: misc
@@ -29,8 +30,6 @@ Description: script driven business graphics package
  (Joint Photographics Experts Group format), png (Portable Network
  Graphics format), svg (Simple Vector Graphics), bmp (Microsoft BitMaP),
  ps (PostScript), swf (Flash), and X11.
- .
-  Homepage: http://ploticus.sourceforge.net
 
 Package: libploticus0
 Section: libs
@@ -49,13 +48,11 @@ Description: script driven business graphics library
  (Joint Photographics Experts Group format), png (Portable Network
  Graphics format), svg (Simple Vector Graphics), bmp (Microsoft BitMaP),
  ps (PostScript), swf (Flash), and X11.
- .
-  Homepage: http://ploticus.sourceforge.net
 
 Package: libploticus0-dev
-Section: devel
+Section: libdevel
 Architecture: any
-Depends: libploticus0 (= ${Source-Version})
+Depends: libploticus0 (= ${binary:Version})
 Description: Development files for the ploticus library
  libploticus is not a function or mathematical plotting package like
  gnuplot, nor would it be a good choice for applications where
@@ -64,6 +61,3 @@ Description: Development files for the ploticus library
  intended as a "marketing" graphics package.  Its goal is to
  display data crisply without extra decoration and distracting
  "dingbats" that cloud the picture.
- .
-  Homepage: http://ploticus.sourceforge.net
-

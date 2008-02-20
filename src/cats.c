@@ -58,21 +58,20 @@ return( 0 );
 /* ================================================= */
 /* SETCATS - fill categories list */
 int
-PL_setcats( ax, bigbuf )
+PL_setcats( ax, inbuf )
 char ax;
-char *bigbuf;
+const char *inbuf;
 {
 int df;
 int axi, textloc;
 int i, j;
 char buf[200];
 char fname[NAMEMAXLEN];
-int bigbuflen, buflen, ix, ixhold;
+int inbuflen, buflen, ix, ixhold;
 char fieldspec[80], selex[256];
 int stat, result;
 char *s, *t;
 int tlen;
-
 
 if( ax == 'x' ) axi = 0;
 else axi = 1;
@@ -87,11 +86,12 @@ if( !sys_init[axi] ) {
 else if( ncats[axi] > 0 && !dont_init_ncats[axi] ) {
 	/* free malloced category labels */
 	for( i = 0; i < ncats[axi]; i++ ) free( cats[axi][i] );
+	ncats[axi] = 0;
 	}
 
 strcpy( selex, "" );
 
-if( strnicmp( bigbuf, "datafield", 9 )==0 ) {  /* fill cats list from a data field.. */
+if( strnicmp( inbuf, "datafield", 9 )==0 ) {  /* fill cats list from a data field.. */
 
 	if( Nrecords < 1 ) 
 		return( Eerr( 3895, "cannot get categories from data field, no data has been read yet", "" ) );
@@ -100,16 +100,16 @@ if( strnicmp( bigbuf, "datafield", 9 )==0 ) {  /* fill cats list from a data fie
 		ix = 0;
 
 		/* datafield=xxxxx */  
-		strcpy( fieldspec, GL_getok( bigbuf, &ix ) );
+		strcpy( fieldspec, GL_getok( inbuf, &ix ) );
 		if( GL_smember( fieldspec, "datafield datafields" )) /* handle old syntax 'datafield[s] xxx' */
-			strcpy( fname, GL_getok( bigbuf, &ix ) ); 
+			strcpy( fname, GL_getok( inbuf, &ix ) ); 
 		else strcpy( fname, &fieldspec[10] ); 
 
 		/* optional selectrows=xxx xx xxx */ /* scg 2/28/02 */
-		while( isspace( (int) bigbuf[ix] ) && bigbuf[ix] != '\0' ) ix++ ;  /* advance */
+		while( isspace( (int) inbuf[ix] ) && inbuf[ix] != '\0' ) ix++ ;  /* advance */
 		ixhold = ix;
-		strcpy( buf, GL_getok( bigbuf, &ix ) );
-		if( strnicmp( buf, "selectrows=", 11 )==0 ) strcpy( selex, &bigbuf[ixhold+11] );
+		strcpy( buf, GL_getok( inbuf, &ix ) );
+		if( strnicmp( buf, "selectrows=", 11 )==0 ) strcpy( selex, &inbuf[ixhold+11] );
 
 		df = fref( fname );
 
@@ -152,11 +152,12 @@ if( strnicmp( bigbuf, "datafield", 9 )==0 ) {  /* fill cats list from a data fie
 else	{		/* fill cats list from literal text chunk.. */
 	if( !dont_init_ncats[ axi ] ) ncats[ axi ] = 0;
 
+
 	textloc = 0;
-	bigbuflen = strlen( bigbuf );
+	inbuflen = strlen( inbuf );
 	while( 1 ) {
-		if( textloc >= bigbuflen ) break;
-		GL_getseg( buf, bigbuf, &textloc, "\n" );
+		if( textloc >= inbuflen ) break;
+		GL_getseg( buf, inbuf, &textloc, "\n" );
 		buflen = strlen( buf );
 
 
@@ -181,6 +182,15 @@ else	{		/* fill cats list from literal text chunk.. */
 dont_init_ncats[ axi ] = 0; /* for future go-rounds */
 nextcat[ axi ] = 0;
 curcat[ axi ] = 0;
+
+if( PLS.debug ) fprintf( PLS.diagfp, "categories in %c: setting up %d categories\n", ax, ncats[axi] );
+
+/* fprintf( PLS.diagfp, "[cat axis=%d  ncats=%d]", axi, ncats[axi] );
+ * for( i = 0; i < ncats[axi]; i++ ) fprintf( PLS.diagfp, "[%s]", cats[axi][i] );
+ * fprintf( PLS.diagfp, "\n" );
+ */
+
+
 return( 0 );
 }
 

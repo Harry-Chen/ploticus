@@ -54,7 +54,7 @@
   #exit
 #endif
 
-#write stderr
-Got @NRECORDS records, @NFIELDS fields per record.  
-#endwrite
+// #write stderr
+// Got @NRECORDS records, @NFIELDS fields per record.  
+// #endwrite
 

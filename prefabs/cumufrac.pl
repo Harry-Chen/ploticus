@@ -45,8 +45,8 @@
 #include $chunk_area
 yrange: 0 @NRECORDS
 #if @logmode = linear
-// bugfix scb 20 feb 07 http://tech.groups.yahoo.com/group/ploticus/message/1974
-  xautorange: datafield=@x,@x2 mininit=0 nearest=@xnearest
+  // xautorange: datafield=@x,@x2 nearest=@xnearest  // changed as below, scg 2/20/07...
+  xautorange: datafield=@x,@x2 mininit=0 nearest=@xnearest 
 #else
   xautorange: datafield=@x,@x2 mininit=0.05 nearest=@xnearest 
 #endif

@@ -19,49 +19,22 @@
 #define SIMPLEAVG	'a'
 #define INTERPOLATED	'i'
 
-/* static double in[MAXPTS][2]; */
-
 /* the PLV vector is used for curve points */
 static int bspline(), mavg(), plainavg(), lregress();
-
 static int dblcompare(const void *a, const void *b);  
-/* static int dblcompare(double *f, double *g);   */
+
 
 int
 PLP_curvefit()
 {
-int i;
-char attr[NAMEMAXLEN], val[256];
-char *line, *lineval;
-int nt, lvp;
-int first;
+char attr[NAMEMAXLEN], *line, *lineval;
+int lvp, first;
 
-int stat;
-
-int order;
-int xfield;
-int yfield;
-int npts; /* number of input points */
-int nresultpoints; /* number of result points */
-int irow;
-double resolution;
-int showresults;
-char linedetails[256];
-double linestart, linestop;
-double calcstart, calcstop;
-int calcrangegiven;
-char curvetype[40];
-char legendlabel[256]; /* raised (can contain urls for clickmap) scg 4/22/04 */
-int linerangegiven;
-int statsonly;
-char selectex[256];
-int selectresult;
+char *linedetails, *curvetype, *legendlabel, *selectex;
 char numstr[100];
-int xsort;
-int maxinpoints;
-double *inpoints, *inp;
-double drawx, drawy, prevdrawx, prevdrawy;
-int doclip;
+int i, stat, order, xfield, yfield, npts, nresultpoints, irow, showresults, calcrangegiven;
+int linerangegiven, statsonly, selectresult, xsort, maxinpoints, doclip;
+double resolution, linestart, linestop, calcstart, calcstop, *inpoints, *inp, drawx, drawy, prevdrawx, prevdrawy, curveshift;
 
 TDH_errprog( "pl proc curvefit" );
 
@@ -71,79 +44,65 @@ xfield = -1;
 yfield = -1;
 nresultpoints = -1;
 resolution = 5.0;
-showresults = 0;
-strcpy( linedetails, "" );
+linedetails = "";
 linestart = EDXlo;
 linestop = EDXhi;
-calcrangegiven = 0;
-linerangegiven = 0;
-strcpy( curvetype, "movingavg" );
-statsonly = 0;
-strcpy( selectex, "" );
-strcpy( legendlabel, "" ); /* added scg 7/28/03 */
-xsort = 0;
+showresults = 0; calcrangegiven = 0; linerangegiven = 0; xsort = 0; doclip = 0; statsonly = 0;
+curvetype = "movingavg";
+selectex = "";
+legendlabel = ""; /* added scg 7/28/03 */
 maxinpoints = MAXPTS;
-doclip = 0;
+curveshift = 0.0;
 
 
 /* get attributes.. */
 first = 1;
 while( 1 ) {
-	line = getnextattr( first, attr, val, &lvp, &nt );
+	line = getnextattr( first, attr, &lvp );
 	if( line == NULL ) break;
 	first = 0;
 	lineval = &line[lvp];
 
-	if( stricmp( attr, "xfield" )==0 ) xfield = fref( val ) - 1;
-	else if( stricmp( attr, "yfield" )==0 ) yfield = fref( val ) - 1;
-	else if( stricmp( attr, "order" )==0 ) order = atoi( val );
-	else if( stricmp( attr, "resolution" )==0 ) resolution = atof( val );
-	else if( stricmp( attr, "xsort" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 ) xsort = 1;
-		}
-	else if( stricmp( attr, "linedetails" )==0 ) strcpy( linedetails, lineval );
-	else if( stricmp( attr, "legendlabel" )==0 ) strcpy( legendlabel, lineval );
-	else if( stricmp( attr, "select" )==0 ) strcpy( selectex, lineval );
-	else if( stricmp( attr, "linerange" )==0 ) {
+	if( strcmp( attr, "xfield" )==0 ) xfield = fref( lineval ) - 1;
+	else if( strcmp( attr, "yfield" )==0 ) yfield = fref( lineval ) - 1;
+	else if( strcmp( attr, "order" )==0 ) order = itokncpy( lineval );
+	else if( strcmp( attr, "resolution" )==0 ) resolution = ftokncpy( lineval );
+	else if( strcmp( attr, "xsort" )==0 ) xsort = getyn( lineval );
+	else if( strcmp( attr, "linedetails" )==0 ) linedetails = lineval;
+	else if( strcmp( attr, "legendlabel" )==0 ) legendlabel = lineval;
+	else if( strcmp( attr, "select" )==0 ) selectex = lineval;
+	else if( strcmp( attr, "linerange" )==0 ) {
 		if( lineval[0] != '\0' ) linerangegiven = 1;
 		getrange( lineval, &linestart, &linestop, 'x', EDXlo, EDXhi );
 		}
-	else if( stricmp( attr, "calcrange" )==0 ) {
+	else if( strcmp( attr, "calcrange" )==0 ) {
 		if( lineval[0] != '\0' ) {
 			calcrangegiven = 1;
 			getrange( lineval, &calcstart, &calcstop, 'x', EDXlo, EDXhi );
 			}
 		else calcrangegiven = 0;
 		}
-	else if( stricmp( attr, "curvetype" )==0 ) strcpy( curvetype, val );
-	else if( stricmp( attr, "maxinpoints" )==0 ) maxinpoints = atoi( val );
-	else if( stricmp( attr, "showresults" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 ) showresults = 1;
-		else showresults = 0;
-		}
-	else if( stricmp( attr, "clip" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 ) doclip = 1;
-		else doclip = 0;
-		}
-	else if( stricmp( attr, "statsonly" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 ) statsonly = 1;
-		else statsonly = 0;
-		}
-	else Eerr( 1, "curvefit attribute not recognized", attr );
+	else if( strcmp( attr, "curvetype" )==0 ) curvetype = lineval;
+	else if( strcmp( attr, "curveshift" )==0 ) curveshift = ftokncpy( lineval ); /* added scg 6/2/06 */
+	else if( strcmp( attr, "maxinpoints" )==0 ) maxinpoints = itokncpy( lineval );
+	else if( strcmp( attr, "showresults" )==0 ) showresults = getyn( lineval );
+	else if( strcmp( attr, "clip" )==0 ) doclip = getyn( lineval );
+	else if( strcmp( attr, "statsonly" )==0 ) statsonly = getyn( lineval );
+	else Eerr( 1, "attribute not recognized", attr );
 	}
 
 
 /* overrides and degenerate cases */
-if( Nrecords < 1 ) 
- 	return( Eerr( 17, "No data has been read yet w/ proc getdata", "" ) );
+if( Nrecords < 1 ) return( Eerr( 17, "No data has been read yet w/ proc getdata", "" ) );
 
 if( yfield < 0 || yfield >= Nfields ) return( Eerr( 601, "yfield not specified or out of range", "" ) );
-if( xfield < 0 || xfield >= Nfields ) return( Eerr( 601, "xfield not specified or out of range", "" ) );
+/* if( xfield < 0 || xfield >= Nfields ) return( Eerr( 601, "xfield not specified or out of range", "" ) ); */ 
+/* xfield can be unspecified - scg 6/2/06 (post 2.33 release) */
 
 if( !scalebeenset() )
          return( Eerr( 51, "No scaled plotting area has been defined yet w/ proc areadef", "" ) );
  
-if( strnicmp( legendlabel, "#usefname", 9 )==0 ) getfname( yfield+1, legendlabel );
+if( strncmp( legendlabel, "#usefname", 9 )==0 ) getfname( yfield+1, legendlabel );
 
 
 /* now do the computation work.. */
@@ -169,10 +128,10 @@ for( irow = 0; irow < Nrecords; irow++ ) {
 	if( Econv_error() ) { conv_msg( irow, yfield, "yfield" ); inp -= 1; continue; }   /* bug - inp-=1 added scg 2/3/05 */
 
 	inp -= 1;  /* now back up one to get X */
-	if( xfield < 0 ) *inp = (double)irow;   /* in[npts][0] = (int)irow; */
+	if( xfield < 0 ) *inp = (double)irow + curveshift;   /* in[npts][0] = (int)irow; */
 	else 	{
 		/* in[npts][0] = fda( irow, xfield, X ); */
-		*inp = fda( irow, xfield, X );
+		*inp = fda( irow, xfield, X ) + curveshift;
 		if( Econv_error() ) { conv_msg( irow, xfield, "xfield" ); continue; }
 		}
 

@@ -17,7 +17,7 @@ file: hitcount.dat
 // the following filter strips seconds from the time value,
 // then builds a ddMmmyyyy date and connects it with the time
 // value (separated by a dot)
-fieldnames: datetime nbytes
+pf_fieldnames: datetime nbytes
 filter: 
  	##set TIME = @@4
 	##set TIME = $substring(@@TIME,1,5)
@@ -27,10 +27,10 @@ filter:
 #proc processdata
 action: count
 fields: datetime nbytes
-showresults: no
+fieldnames: datetime nbytes
 
-#proc print
-label: After transform: nrecords=@NRECORDS nfields=@NFIELDS
+// #proc print
+// label: After transform: nrecords=@NRECORDS nfields=@NFIELDS
 
 // set up plotting area with datetime in X and autorange on the y axis.
 // do x axis showing day of week and y axis

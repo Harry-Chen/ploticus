@@ -1,5 +1,5 @@
 /* ======================================================= *
- * Copyright 1998-2005 Stephen C. Grubb                    *
+ * Copyright 1998-2008 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */
@@ -7,44 +7,28 @@
 /* PROC PAGE - set page-wide attributes, and do a "page" break for pp 2 and up */
 
 #include "pl.h"
-#ifndef NOSVG
-  extern int PLGS_setparms();
-#endif
 
+extern int PLGS_setparms(), PLGG_setimpixsize();
 
 int
 PLP_page( )
 {
-char buf[256];
-char attr[NAMEMAXLEN], val[256];
-char *line, *lineval;
-int nt, lvp, first;
+int lvp, first;
+char attr[NAMEMAXLEN], *line, *lineval;
 
-int stat;
-int align;
-double adjx, adjy;
-int nlines, maxlen;
-
-int landscapemode;
-char titledet[80];
-int dobackground;
-int dopagebox;
-char outfilename[ MAXPATH ];
-char mapfilename[ MAXPATH ];
-int pagesizegiven;
-char devval[20];
-double scalex, scaley;
-double sx, sy;
-int clickmap_enabled_here;
+char buf[512], devval[20];
+char *outfilename, *mapfilename, *titledet, *pagetitle, *url;
+int stat, nt, align, nlines, maxlen, landscapemode, dobackground, dopagebox, pagesizegiven, clickmap_enabled_here, tight, map;
+double adjx, adjy, scalex, scaley, sx, sy;
 
 TDH_errprog( "pl proc page" );
 
 /* initialize */
 landscapemode = PLS.landscape; /* from command line */
-strcpy( titledet, "normal" );
-strcpy( outfilename, "" );
-strcpy( mapfilename, "" );
-strcpy( PL_bigbuf, "" );
+titledet = "";
+outfilename = "";
+mapfilename = "";
+pagetitle = "";
 dobackground = 1;
 dopagebox = 1;
 if( GL_member( PLS.device, "gesf" )) dopagebox = 0; /* bounding box shouldn't include entire page for gif , eps */
@@ -57,52 +41,37 @@ clickmap_enabled_here = 0;
 /* get attributes.. */
 first = 1;
 while( 1 ) {
-	line = getnextattr( first, attr, val, &lvp, &nt );
-	if( line == NULL ) break;
-	first = 0;
-	lineval = &line[lvp];
+        line = getnextattr( first, attr, &lvp );
+        if( line == NULL ) break;
+        first = 0;
+        lineval = &line[lvp];
 
 
 	/* if an attribute is given on command line, it overrides anything here.. */
 	if( GL_slmember( attr, PLS.cmdlineparms )) continue;
-	if( stricmp( attr, "landscape" )==0 && GL_slmember( "portrait", PLS.cmdlineparms )) continue;
-	if( stricmp( attr, "outfilename" )==0 && GL_slmember( "o", PLS.cmdlineparms )) continue;
+	if( strcmp( attr, "landscape" )==0 && GL_slmember( "portrait", PLS.cmdlineparms )) continue;
+	if( strcmp( attr, "outfilename" )==0 && GL_slmember( "o", PLS.cmdlineparms )) continue;
 
-	if( stricmp( attr, "landscape" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 ) landscapemode = 1;
-		else landscapemode = 0;
+	if( strcmp( attr, "landscape" )==0 ) landscapemode = getyn( lineval );
+	else if( strcmp( attr, "title" )==0 ) pagetitle = getmultiline( lineval, "get" ); 
+	else if( strcmp( attr, "titledetails" )==0 ) titledet = lineval;
+	else if( strcmp( attr, "color" )==0 ) tokncpy( Estandard_color, lineval, COLORLEN );
+	else if( strcmp( attr, "scale" )==0 ) { 
+		nt = sscanf( lineval, "%lf %lf", &scalex, &scaley ); 
+		if( nt == 1 ) scaley = scalex; 
 		}
-	else if( stricmp( attr, "title" )==0 ) getmultiline( "title", lineval, MAXBIGBUF, PL_bigbuf );
-	else if( stricmp( attr, "titledetails" )==0 ) strcpy( titledet, lineval );
-	else if( stricmp( attr, "outlabel" )==0 ) Esetoutlabel( lineval );
-	else if( stricmp( attr, "color" )==0 ) strcpy( Estandard_color, val );
-	else if( stricmp( attr, "scale" )==0 ) {
-		nt = sscanf( val, "%lf %lf", &scalex, &scaley );
-		if( nt == 1 ) scaley = scalex;
-		}
-	else if( stricmp( attr, "backgroundcolor" )==0 ) {
-		strcpy( Estandard_bkcolor, val );
-		Ebackcolor( val );
+	else if( strcmp( attr, "backgroundcolor" )==0 ) {
+		tokncpy( Estandard_bkcolor, lineval, COLORLEN );
+		Ebackcolor( Estandard_bkcolor );
 		dobackground = 1; /* added scg 9/27/99 */
 		}
-	else if( stricmp( attr, "linewidth" )==0 ) Estandard_lwscale = atof( val );
-	else if( stricmp( attr, "textsize" )==0 ) {
-		Estandard_textsize = atoi( val );
-		}
-	else if( stricmp( attr, "font" )==0 ) strcpy( Estandard_font, lineval );
-	else if( stricmp( attr, "dobackground" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 ) dobackground = 1;
-		else dobackground = 0;
-		}
-	else if( stricmp( attr, "dopagebox" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 ) dopagebox = 1;
-		else dopagebox = 0;
-		}
-	else if( stricmp( attr, "tightcrop" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 ) Etightbb( 1 );
-		else Etightbb( 0 );
-		}
-	else if( strnicmp( attr, "crop", 4 )==0 ) {
+	else if( strcmp( attr, "linewidth" )==0 ) Estandard_lwscale = ftokncpy( lineval );
+	else if( strcmp( attr, "textsize" )==0 ) Estandard_textsize = itokncpy( lineval );
+	else if( strcmp( attr, "font" )==0 ) tokncpy( Estandard_font, lineval, FONTLEN );
+	else if( strcmp( attr, "dobackground" )==0 ) dobackground = getyn( lineval );
+	else if( strcmp( attr, "dopagebox" )==0 ) dopagebox = getyn( lineval );
+	else if( strcmp( attr, "tightcrop" )==0 ) { tight = getyn( lineval ); Etightbb( tight ); }
+	else if( strncmp( attr, "crop", 4 )==0 ) {
 		double cropx1, cropy1, cropx2, cropy2;
 		nt = sscanf( lineval, "%lf %lf %lf %lf", &cropx1, &cropy1, &cropx2, &cropy2 );
 		if( nt != 4 ) Eerr( 2707, "usage: crop x1 y1 x2 y2 OR croprel left bottom right top", "" );
@@ -113,27 +82,40 @@ while( 1 ) {
 			}
 		}
 
-	else if( stricmp( attr, "pagesize" )==0 ) {
+	else if( strcmp( attr, "pixsize" ) ==0 ) {  /* added scg 1/9/08 */
+		int reqwidth, reqheight;
+		nt = sscanf( lineval, "%d %d", &reqwidth, &reqheight );
+		if( nt != 2 ) Eerr( 57233, "pixsize ignored.. it requires width and height (in pixels)", "" );
+#ifndef NOGD
+        	PLGG_setimpixsize( reqwidth, reqheight );
+#endif
+        	if( PLS.device != 'g' ) Eerr( 24795, "pixsize ignored.. it's only applicable when generating png/gif/jpeg images", "" ); 
+		}
+
+	else if( strcmp( attr, "pagesize" )==0 ) {
 		getcoords( "pagesize", lineval, &(PLS.winw), &(PLS.winh) );
 		pagesizegiven = 1;
 		}
-	else if( stricmp( attr, "outfilename" )==0 ) strcpy( outfilename, val );
-
-	else if( stricmp( attr, "clickmapdefault" )==0 ) clickmap_setdefaulturl( val );
-
-	else if( strcmp( attr, "map" )==0 ) {	/* added 2/3/05 - scg */
-		if( strnicmp( val, YESANS, 1 )==0 ) { PLS.clickmap = 1; clickmap_enabled_here = 1; }
-		else PLS.clickmap = 0; 
+	else if( strcmp( attr, "outfilename" )==0 ) {
+		outfilename = lineval;
+		if( strlen( outfilename ) > MAXPATH-1 ) { PLS.skipout = 1; return( Eerr( 57932, "outfilename too long", "" ) ); }  
 		}
-	else if( strcmp( attr, "csmap" )==0 ) {	/* added 2/3/05 - scg */
-		if( strnicmp( val, YESANS, 1 )==0 ) { PLS.clickmap = 2; clickmap_enabled_here = 1; }
-		else PLS.clickmap = 0;
+	else if( strncmp( attr, "mapfile", 7 )==0 ) {
+		mapfilename = lineval;
+		if( strlen( mapfilename ) > MAXPATH-1 ) { Eerr( 57932, "mapfile name too long", "" ); mapfilename = ""; }
 		}
-	else if( strnicmp( attr, "mapfile", 7 )==0 ) strcpy( mapfilename, val );
 
+	else if( strcmp( attr, "clickmapdefault" )==0 ) { 
+		url = lineval;
+		if( strlen( url ) > MAXURL-1 ) Eerr( 57933, "clickmapdefault url too long", "" );
+		else clickmap_setdefaulturl( url ); 
+		}
+
+	else if( strcmp( attr, "map" )==0 ) { map = getyn( lineval ); if( map ) { PLS.clickmap = 1; clickmap_enabled_here = 1; }}
+	else if( strcmp( attr, "csmap" )==0 ){ map = getyn( lineval ); if( map ) { PLS.clickmap = 2; clickmap_enabled_here = 1; }} 
+	else if( strcmp( attr, "outlabel" )==0 ) Esetoutlabel( lineval );
 	else Eerr( 1, "page attribute not recognized", attr );
 	}
-
 
 
 
@@ -161,12 +143,12 @@ if( PLS.npages == 0 ) {
 		if( PLS.device == 's' ) PLGS_setparms( PLS.debug, PLS.tmpname, PLS.clickmap );
 #endif
 		}
-	else if( mapfilename[0] != '\0' ) strcpy( PLS.mapfile, mapfilename );
+	else if( mapfilename[0] != '\0' ) strcpy( PLS.mapfile, mapfilename ); /* PPP */
 
 	/* initialize and give specified output file name .. */
 	if( outfilename[0] != '\0' ) Esetoutfilename( outfilename );
 	stat = Einit( PLS.device );
-	if( stat ) return( stat );
+	if( stat ) { PLS.skipout = 1; return( stat ); }
 
 	/* set paper orientation */
 	if( landscapemode ) Epaper( 1 );
@@ -227,6 +209,7 @@ else if( PLS.npages > 0 ) {
 /* now do other work.. */
 /* -------------------------- */
 
+
 /* do background.. */
 /* if( dopagebox ) Ecblock( 0.0, 0.0, EWinx, EWiny, Ecurbkcolor, 0 ); */ /* does update bb */
 if( dopagebox ) Ecblock( 0.0, 0.0, PLS.winw, PLS.winh, Ecurbkcolor, 0 ); /* does update bb */
@@ -237,21 +220,21 @@ else if( dobackground ) {
         else Eclr(); /* doesn't update bb */
 	}
 
-if( PL_bigbuf[0] != '\0' ) {
+if( pagetitle[0] != '\0' ) {
 	textdet( "titledetails", titledet, &align, &adjx, &adjy, 3, "B", 1.0 );
 	if( align == '?' ) align = 'C';
-	measuretext( PL_bigbuf, &nlines, &maxlen );
+	measuretext( pagetitle, &nlines, &maxlen );
 	if( align == 'L' ) Emov( 1.0 + adjx, (PLS.winh-0.8) + adjy );
 	else if ( align == 'C' ) Emov( (PLS.winw / 2.0 ) + adjx, (PLS.winh-0.8) + adjy );
 	else if( align == 'R' ) Emov( (PLS.winw-1.0) + adjx, (PLS.winh-0.8) + adjy );
-	Edotext( PL_bigbuf, align );
+	Edotext( pagetitle, align );
 	}
 
 return( 0 );
 }
 
 /* ======================================================= *
- * Copyright 1998-2005 Stephen C. Grubb                    *
+ * Copyright 1998-2008 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */

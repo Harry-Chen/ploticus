@@ -7,6 +7,8 @@ if [ "$DEV" = "" ]; then
   DEV=x11
 fi
 
+echo "the 'compare' prefab is currently non-functional pending rewrite."
+exit
 
 
 echo compare1..

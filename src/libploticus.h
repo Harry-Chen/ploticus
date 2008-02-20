@@ -17,10 +17,6 @@ int ploticus_execline( char *line );
 
 int ploticus_execscript( char *scriptfile, int prefabflag );
 
-int ploticus_getvar( char *name, char *value );
-
-int ploticus_setvar( char *name, char *value );
-
 int ploticus_end();
 
 #endif

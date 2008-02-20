@@ -1,5 +1,5 @@
 /* ======================================================= *
- * Copyright 1998-2005 Stephen C. Grubb                    *
+ * Copyright 1998-2008 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */
@@ -7,31 +7,30 @@
 /* PROC PROCESSDATA - perform various processing to the data set */
 
 #include "pl.h"
-#include "tdhkit.h" /* for MAXITEMS */
+#define MAXFLD 80
 
 extern int unlink();
+extern int DT_group();
 
-#define MAXFLD MAXITEMS
 #define MAXBREAKFLDS 5
 
-static int rejfld[MAXFLD];
-static int nrejfld;
-static int kpfld[MAXFLD];
-static int nkpfld;
-
-static int stackmode = 1;
+static int rejfld[MAXFLD], nrejfld, kpfld[MAXFLD], nkpfld, breakcurrow = 0, eofcount = 0;
+static char *outfile;
 static FILE *outfp;
-static int breakcurrow = 0;
-static int eofcount = 0;
+static int bor(), out(), eor(), dofld(), jadvance();
 
-static int bor(), out(), eor(), dofld();
-static int jadvance();
+#ifdef NONANSI
+static int dblcompare();
+#else
+static int dblcompare(const void *a, const void *b);
+#endif
+
 
 /* ================================= */
 int
 PLP_processdata_initstatic()
 {
-stackmode = 1;
+outfile = "";
 breakcurrow = 0;
 eofcount = 0;
 return(0);
@@ -43,77 +42,50 @@ return(0);
 int
 PLP_processdata( )
 {
-int i, j, k;
-char attr[NAMEMAXLEN], val[256];
+int i, j, k, lvp, first;
+char attr[NAMEMAXLEN];
 char *line, *lineval;
-int nt, lvp;
-int first;
 
-char buf[256];
-int stat;
-char tmpfile[256];
-char action[NAMEMAXLEN];
-int showresults;
-int nfld;
-int fld[MAXFLD];
-double accum[MAXFLD];
-char rformat[40];
-int keepall;
-/* char outfmt[40]; */
-char outbuf[256];
-char selectex[256];
-char tok[256];
-int dispformatnum;
-int resetbns;
+char *action, *selectex, *select1, *select2, *curcon, *startval, *binsize, *binmod, *fieldnames;
+char buf[256], tok[256], outbuf[256];
 char breakbuf[ MAXBREAKFLDS ][52];
-double atof();
-int outfile;
-char curcon[256], startval[256];
-double count;
-int istart;
-int select_result, select_error;
-int nocloseoutfp;
-char select1[256], select2[256];
-char nacode[20];
-int tagfld;
+char rformat[40], nacode[20];
+int ix, stat, showdata, nfld, keepall, dispformatnum, resetbns, istart;
+int select_result, select_error, nocloseoutfp, tagfld, breakfound, valfld, complen;
+int fld[MAXFLD];
+double accum[MAXFLD], count;
 
 TDH_errprog( "pl proc processdata" );
 
 
-
 /* initialize */
-showresults = 0;
+selectex = ""; select1 = ""; select2 = "";
+action = ""; outfile = "";
+binsize = ""; binmod = "mid";
+fieldnames = "";
+strcpy( nacode, "=" );
 nfld = 0;
 strcpy( rformat, "%g" );
-keepall = 0;
-nrejfld = 0;
-nkpfld = 0;
-strcpy( action, "" );
-stackmode = 1;
-strcpy( selectex, "" );
-strcpy( select1, "" );
-strcpy( select2, "" );
-dispformatnum = 0;
-strcpy( tmpfile, "" );
-outfile = 0;
-select_error = 0;
-nocloseoutfp = 0;
-strcpy( nacode, "=" );
+keepall = nrejfld = nkpfld = 0;
+showdata = dispformatnum = select_error = nocloseoutfp = 0;
 tagfld = -1;
+valfld = -1;
+complen = 50;
 
+	
 
 /* get attributes.. */
 first = 1;
 while( 1 ) {
-	line = getnextattr( first, attr, val, &lvp, &nt );
+        line = getnextattr( first, attr, &lvp );
 	if( line == NULL ) break;
 	first = 0;
 	lineval = &line[lvp];
 
-	if( stricmp( attr, "action" )==0 ) strcpy( action, val );
-	else if( stricmp( attr, "fieldnames" )==0 ) definefieldnames( lineval );
-	else if( strnicmp( attr, "field", 5 )==0 ) {
-		int ix; ix = 0; i = 0; 
+	if( strcmp( attr, "action" )==0 ) action = lineval;
+	else if( strcmp( attr, "fieldnames" )==0 ) fieldnames = lineval;
+	else if( strncmp( attr, "field", 5 )==0 ) {
+		ix = 0; i = 0; 
 		while( 1 ) {
 			strcpy( tok, GL_getok( lineval, &ix ) );
 			if( tok[0] == '\0' ) break;
@@ -123,8 +95,8 @@ while( 1 ) {
 			}
 		nfld = i;
 		}
-	else if( stricmp( attr, "keepfields" )==0 ) {
-		int ix; ix = 0; i = 0; 
+	else if( strcmp( attr, "keepfields" )==0 ) {
+		ix = 0; i = 0; 
 		while( 1 ) {
 			strcpy( tok, GL_getok( lineval, &ix ) );
 			if( tok[0] == '\0' ) break;
@@ -134,8 +106,8 @@ while( 1 ) {
 			}
 		nkpfld = i;
 		}
-	else if( stricmp( attr, "rejectfields" )==0 ) {
-		int ix; ix = 0; i = 0; 
+	else if( strcmp( attr, "rejectfields" )==0 ) {
+		ix = 0; i = 0; 
 		while( 1 ) {
 			strcpy( tok, GL_getok( lineval, &ix ) );
 			if( tok[0] == '\0' ) break;
@@ -145,33 +117,25 @@ while( 1 ) {
 			}
 		nrejfld = i;
 		}
-	else if( stricmp( attr, "tagfield" )==0 ) tagfld = fref( val )-1;
-
-	else if( stricmp( attr, "resultformat" )==0 ) strcpy( rformat, lineval );
-	else if( stricmp( attr, "select" )==0 ) strcpy( selectex, lineval );
-	else if( stricmp( attr, "leftselect" )==0 ) strcpy( select1, lineval );
-	else if( stricmp( attr, "rightselect" )==0 ) strcpy( select2, lineval );
-	else if( stricmp( attr, "missingdatacode" )==0 ) strcpy( nacode, val );
-	else if( stricmp( attr, "showresults" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 ) showresults = 1;
-		else showresults = 0;
-		}
-        else if( stricmp( attr, "keepall" )==0 ) {
-                if( strnicmp( val, YESANS, 1 ) ==0 ) keepall = 1;
-                else keepall = 0;
-                }
-        else if( stricmp( attr, "stack" )==0 ) {
-                if( strnicmp( val, YESANS, 1 ) ==0 ) stackmode = 1;
-                else stackmode = 0;
-                }
-        else if( stricmp( attr, "outfile" )==0 ) {
-                strcpy( tmpfile, val );
-                outfile = 1;
-                }
-
+	else if( strcmp( attr, "tagfield" )==0 ) tagfld = fref( lineval )-1;
+	else if( strcmp( attr, "valfield" )==0 ) valfld = fref( lineval )-1; 
+	else if( strcmp( attr, "complen" )==0 ) { complen = itokncpy( lineval ); if( complen > 50 || complen < 1 ) complen = 50; }
+	else if( strcmp( attr, "resultformat" )==0 ) tokncpy( rformat, lineval, 40 );
+	else if( strcmp( attr, "select" )==0 ) selectex = lineval; /* used by join */
+	else if( strcmp( attr, "leftselect" )==0 ) select1 = lineval; /* used by join */
+	else if( strcmp( attr, "rightselect" )==0 ) select2 = lineval; /* used by join */
+	else if( strcmp( attr, "missingdatacode" )==0 ) tokncpy( nacode, lineval, 20 ); /* used by join */
+	else if( strcmp( attr, "showresults" )==0 || strcmp( attr, "showdata" )==0 ) showdata = getyn( lineval );
+        else if( strcmp( attr, "keepall" )==0 ) keepall = getyn( lineval );
+        else if( strcmp( attr, "outfile" )==0 ) outfile = lineval;
+	else if( strcmp( attr, "binsize" )==0 ) binsize = lineval;
+	else if( strcmp( attr, "binmod" )==0 ) binmod = lineval;
         else Eerr( 1, "attribute not recognized", attr );
-
 	}
+
+
+
+if( strcmp( action, "" )==0) { Eerr( 7395, "warning, no action specified, defaulting to action: echo", "" ); action = "echo"; }
 
 if( strcmp( action, "breakreset" )!= 0 ) {
 	if( Nrecords < 1 ) return( Eerr( 17, "Current data set is empty, nothing to process", "" ) );
@@ -189,49 +153,34 @@ if( strcmp( action, "segment" )==0 && ( nfld < 1 || nfld > 2 ) )
 if( strcmp( action, "select" )== 0 && selectex[0] == '\0' ) 
 	return( Eerr( 3879, "if action is 'select' a selection expression must be given", "" ));
 
-/* if( strcmp( action, "select" )!= 0 && selectex[0] != '\0' )
- *	return( Eerr( 3880, "a selection expression may not be given unless action is select", "" ));
- */
 
-/* tmp file specified, implies stack:no */
-if( tmpfile[0] != '\0' ) stackmode = 0;
 
 
 /* now do the work.. */
 /* -------------------------- */
 
+
 if( rformat[0] == 'n' ) {  /* if resultformat begins with 'n', user wants rewritenum to be applied.. */
 	dispformatnum = 1; 
 	strcpy( rformat, &rformat[1] );
 	}
-/* sprintf( outfmt, "\"%s\" ", rformat ); */  /* pulled scg 5/18/06, unsure why quoting was used.. */  
 for( i = 0; i < MAXFLD; i++ ) accum[i] = 0.0;
 
-if( stackmode ) {
-	stat = PL_newdataset();
+if( outfile == "" ) {
+	stat = PL_begindataset(); 
 	if( stat != 0 ) return( stat );
 	}
-else	{
-	if( !outfile ) sprintf( tmpfile, "%s_S", PLS.tmpname );
-	if( stricmp( tmpfile, "stdout" )==0 ) {
-		outfp = stdout;
-		nocloseoutfp = 1;
-		outfile = 1;
-		}
-	else if( stricmp( tmpfile, "stderr" )==0 ) {
-		outfp = stderr;
-		nocloseoutfp = 1;
-		outfile = 1;
-		}
-	else outfp = fopen( tmpfile, "w" ); /* temp file, unlinked below */
-	if( outfp == NULL ) return( Eerr( 2987, "Cannot open tmp file", tmpfile ) );
+else 	{
+	outfp = fopen( outfile, "w" );
+	if( outfp == NULL ) { PLS.skipout = 1; return( Eerr( 75925, "cannot open outfile", outfile ) ); }
 	}
 
+/* rejectfields, keepfields, and keepall will make any current field names wrong, so clear the field names. */
+if( nrejfld != 0 || nkpfld != 0 || keepall != 0 ) definefieldnames( "" );
 
 
-/* break processing - calling script can detect when end is reached by looking at NRECORDS or BREAKFIELD1 */
+/* action: breaks ... break processing - calling script can detect when end is reached by looking at NRECORDS or BREAKFIELD1 */
 if( strcmp( action, "breaks" )==0 ) { 
-	int breakfound;
 	char breakvarname[20];
 
 	/* start at current row */
@@ -248,11 +197,13 @@ if( strcmp( action, "breaks" )==0 ) {
 	/* save initial contents of break fields.. */
 	/* also set vars BREAKFIELD1 .. N */
 	for( j = 0; j < nfld; j++ ) {
-		strncpy( breakbuf[j], da( i, fld[j] ), 50 );
-		breakbuf[j][50] = '\0';
+		strncpy( breakbuf[j], da( i, fld[j] ), complen );
+		breakbuf[j][complen] = '\0';
 		sprintf( breakvarname, "BREAKFIELD%d", j+1 );
 		setcharvar( breakvarname, breakbuf[j] );
 		}
+
+
 	for( ; i < Nrecords; i++ ) {
 
 		if( selectex[0] != '\0' ) { /* process against selection condition if any.. */
@@ -264,7 +215,7 @@ if( strcmp( action, "breaks" )==0 ) {
 		/* compare against contents of break fields.. when any differences found, break.. */
 		breakfound = 0;
 		for( j = 0; j < nfld; j++ ) {
-			if( strncmp( breakbuf[j], da( i, fld[j] ), 50 ) != 0 ) {
+			if( strncmp( breakbuf[j], da( i, fld[j] ), complen ) != 0 ) {
 				breakfound = 1;
 				break;
 				}
@@ -282,7 +233,7 @@ if( strcmp( action, "breaks" )==0 ) {
 	SKIPBREAK: ;
 	}
 
-/* breakreset */
+/* action: breakreset */
 else if( strcmp( action, "breakreset" )==0 ) {
 	breakcurrow = 0;
 	eofcount = 0;
@@ -290,8 +241,8 @@ else if( strcmp( action, "breakreset" )==0 ) {
 	}
 
 
-/* reverse */
-else if( strncmp( action, "rev", 3 )==0 ) { 
+/* action: reverse */
+else if( strcmp( action, "reverse" )==0 ) { 
 	for( i = Nrecords-1; i >= 0; i-- ) {
 		
 		if( selectex[0] != '\0' ) { /* process against selection condition if any.. */
@@ -307,8 +258,9 @@ else if( strncmp( action, "rev", 3 )==0 ) {
 	}
 
 
-/* rotate */
-else if( strncmp( action, "rot", 3 )==0 ) {     
+/* action: rotate */
+else if( strcmp( action, "rotate" )==0 ) {     
+	definefieldnames( "" );  /* any existing field names will be wrong */
 	for( j = 0; j < Nfields; j++ ) {
 		if( dofld( j )) {
 			bor();
@@ -326,8 +278,8 @@ else if( strncmp( action, "rot", 3 )==0 ) {
 	}
 
 
-/* percents */
-else if( strncmp( action, "per", 3 )==0 ) {    
+/* action: percents */
+else if( strncmp( action, "percent", 7 )==0 ) {    
 	/* find all totals.. */
 	for( i = 0; i < nfld; i++ ) {
 		for( j = 0; j < Nrecords; j++ ) {
@@ -357,7 +309,6 @@ else if( strncmp( action, "per", 3 )==0 ) {
 				for( k = 0; k < nfld; k++ ) if( j == fld[k] ) break;
 				if( k != nfld ) {
 				    if( keepall ) out( da( i, j ) );
-				    /* sprintf( outbuf, outfmt, (atof(da( i, j )) / accum[k]) * 100.0 ); */
 				    sprintf( outbuf, rformat, (atof(da( i, j )) / accum[k]) * 100.0 ); /* changed scg 5/18/06 - quoted
 														values not plottable */
 				    out( outbuf );
@@ -370,8 +321,8 @@ else if( strncmp( action, "per", 3 )==0 ) {
 	}
 
 
-/* accumulate */
-else if( strncmp( action, "acc", 3 )==0 ) {     
+/* action: accumulate */
+else if( strncmp( action, "accum", 5 )==0 ) {     
 
 	for( i = 0; i < Nrecords; i++ ) {
 
@@ -400,19 +351,84 @@ else if( strncmp( action, "acc", 3 )==0 ) {
 		}
 	}
 
-/* count - may be used with one or two fields.
- * If one field, result has these fields: 1) field contents 2) count
- * If two fields, result has these fields: 1) field1 contents 2) sum of field 2 */
 
-/* segment - may be used with one or two fields.
+/* action: count - may be used with one or two fields.
+ * If one field, result has these fields: 1) field contents 2) count
+ * If two fields, result has these fields: 1) field1 contents 2) sum of field 2 
+ * Output has a fixed number of fields; kpfld and nkpfld do not apply to this action.. 
+ * 'binsize' and 'binmod' attributes can be used in order to do numeric or date-based grouping.
+ * 'complen' attribute can be used to dictate number of significant chars in string comparisons.
+ */
+else if( strcmp( action, "count" )==0 ) {
+	double fval, fbin;
+	char *adjval, *curval, snum[80];
+
+	if( nfld == 1 ) definefieldnames( "bin count" );
+	else if( nfld == 2 ) definefieldnames( "bin sum" );
+	adjval = tok;
+	curval = buf;
+	count = 0.0;
+	strcpy( curval, "" );
+	for( i = 0; i < Nrecords; i++ ) {
+
+		if( selectex[0] != '\0' ) { /* process against selection condition if any.. */
+	              	stat = do_select( selectex, i, &select_result );
+			if( stat ) select_error += stat;
+	               	if( select_result == 0 || stat ) continue; /* reject */
+	               	}
+
+		if( binsize != "" ) {
+			fbin = atof( binsize );
+			if( fbin != 0.0 ) {
+				fval = atof( da( i, fld[0] ));
+				sprintf( adjval, "%g", GL_numgroup( fval, fbin, binmod ) );
+				}
+			else	{
+				stat = DT_group( binsize[0], binmod[0], da( i, fld[0] ), adjval );
+				if( stat != 0 ) { PLS.skipout = 1; return( Eerr( 27395, "invalid date/time data, or invalid binsize or binmod", "" )); }
+				}
+			}
+		else 	{
+			strncpy( adjval, da( i, fld[0] ), complen );
+			adjval[ complen ] = '\0';
+			}
+
+
+		if( strcmp( adjval, curval )!=0 ) {
+			if( i == 0 ) strcpy( curval, adjval );
+			else	{
+				bor();
+				out( curval );
+				sprintf( snum, "%g", count ); out( snum ); 
+				eor();
+				}
+			strcpy( curval, adjval );
+			count = 0.0;
+			}
+		if( nfld == 1 ) count = count + 1.0;
+		else if( nfld == 2 && action[0] == 'c' ) count = count + atof( da( i, fld[1] ) );
+		}
+	/* last round.. */
+	bor();
+	out( curval );
+	sprintf( snum, "%g", count ); out( snum ); 
+	eor();
+	}
+
+
+/* action: segment - may be used with one or two fields.
  * If one field, result has these fields: 1) field contents 2) beginning record# 3) ending record#
  * If two fields, result has these fields: 1) field1 contents 2) beginning record field2 value 3) ending record field2 value
  *
- * segmentb - same as segment, but segments butt up against each other (end point coincides with beginning point of next seg)
+ * action: segmentb - same as segment, but segments butt up against each other (end point coincides with beginning point of next seg)
+ * 
+ * output has a fixed number of fields; kpfld and nkpfld do not apply to this action.. 
  */
-else if( strncmp( action, "cou", 3 )==0 || strnicmp( action, "seg", 3 ) ==0 ) {    
+else if( strncmp( action, "segment", 7 ) ==0 ) {    
+	if( nfld == 1 ) definefieldnames( "bin startrow endrow" );
+	else if( nfld == 2 ) definefieldnames( "bin startval endval" );
 	count = 0.0;
-	strcpy( curcon, "" );
+	curcon = "";
 	for( i = 0; i < Nrecords; i++ ) {
 
 		if( selectex[0] != '\0' ) { /* process against selection condition if any.. */
@@ -422,71 +438,176 @@ else if( strncmp( action, "cou", 3 )==0 || strnicmp( action, "seg", 3 ) ==0 ) {
 	               	}
 
 		if( strcmp( da( i, fld[0] ), curcon )!=0 ) {
-			if( i == 0 ) { 
-				strcpy( curcon, da( i, fld[0] ) ); 
-				}
+			if( i == 0 ) curcon = da( i, fld[0] ); 
 			else	{
 				bor();
 				out( curcon );
-				if( action[0] == 's' ) {
-					if( nfld == 2 ) {
-						out( startval );
-						if( action[7] == 'b' ) out( da( i, fld[1] ));
-						else out( da( i-1, fld[1] ));
-						}
-					else	{
-						sprintf( buf, "%d", istart ); 
-						out( buf );
-						if( action[7] == 'b' ) sprintf( buf, "%d", i+1 );
-						else sprintf( buf, "%d", i ); 
-						out( buf );
-						}
+				if( nfld == 2 ) {
+					out( startval );
+					if( action[7] == 'b' ) out( da( i, fld[1] ));
+					else out( da( i-1, fld[1] ));
 					}
-				else 	{ sprintf( buf, "%g", count ); out( buf ); }
+				else	{
+					sprintf( buf, "%d", istart ); 
+					out( buf );
+					if( action[7] == 'b' ) sprintf( buf, "%d", i+1 );
+					else sprintf( buf, "%d", i ); 
+					out( buf );
+					}
 				eor();
-				strcpy( curcon, da( i, fld[0] ) );
+				curcon = da( i, fld[0] );
 				count = 0.0;
 				}
 
 			if( action[0] == 's' ) {
-				if( nfld == 2 ) strcpy( startval, da( i, fld[1] )); 
+				if( nfld == 2 ) startval = da( i, fld[1] ); 
 				else istart = i+1;
 				}
-			}
-		/* bug - counts off by one - moved from above the if .. scg 1/25/02 */
-		if( action[0] == 'c' ) {
-			if( nfld == 1 ) count = count + 1.0;
-			else if( nfld == 2 && action[0] == 'c' ) count = count + atof( da( i, fld[1] ) );
 			}
 		}
 	/* last round.. */
 	bor();
 	out( curcon );
-	if( action[0] == 's' ) {
-		if( nfld == 2 ) {
-			out( startval );
-			out( da( i-1, fld[1] ));
-			}
-		else	{
-			sprintf( buf, "%d", istart ); out( buf );
-			sprintf( buf, "%d", i ); out( buf );
-			}
-		}
-	else 	{ sprintf( buf, "%g", count ); out( buf ); }
+	if( nfld == 2 ) { out( startval ); out( da( i-1, fld[1] )); }
+	else	{ sprintf( buf, "%d", istart ); out( buf ); sprintf( buf, "%d", i ); out( buf ); }
 	eor();
-
-	/* bor();
-	 * out( curcon );
-	 * sprintf( buf, "%g", count );
-	 * out( buf );
-	 * eor();
-	 */
 	}
 
 
+/* action: summary  and action: summaryplus  */
+else if( strncmp( action, "summary", 7 )==0 ) {  
+	int icount, prec, lastdone, nvect;
+	double fval, mean, sd, se, min, max, pctile;
+	char *val;
 
-/* total */
-else if( strncmp( action, "tot", 3 )==0 )  {
+	if( valfld < 0 ) return( Eerr( 5723, "action: summary requires valfield", "" ) );
+
+ 	/* note: output has a fixed number of fields; kpfld and nkpfld do not apply to this action.. */
+
+	/* initialize breakfields.. */
+	for( j = 0; j < nfld; j++ ) { strncpy( breakbuf[j], da( 0, fld[j] ), complen ); breakbuf[j][complen] = '\0'; }
+
+	/* set up usable field names for result:  id1 .. idN  mean sd se n_obs sum   */
+	strcpy( tok, "" );
+	for( j = 0; j < nfld; j++ ) { sprintf( outbuf, "id%d ", j+1 ); strcat( tok, outbuf ); }
+	if( action[7] == 'p' ) strcat( tok, "mean sd se n_obs min max sum pctl5th pctl25th median pctl75th pctl95th" );
+	else strcat( tok, "mean sd se n_obs min max sum" );
+	definefieldnames( tok );  /* what about stackmode? */
+
+	/* go thru the data records.. */
+	lastdone = 0; 
+	accum[0] = 0.0; accum[1] = 0.0; icount = 0; min = PLHUGE; max = NEGHUGE; nvect = 0;
+	for( i = 0; i < Nrecords; i++ ) {
+
+                if( selectex[0] != '\0' ) { /* process against selection condition if any.. */
+                        stat = do_select( selectex, i, &select_result );
+                        if( stat ) select_error += stat;
+                        if( select_result == 0 || stat ) continue; /* reject */
+                        }
+
+                /* compare against contents of break fields.. when any differences found, break.. */
+                breakfound = 0;
+                for( j = 0; j < nfld; j++ ) {
+                        if( strncmp( breakbuf[j], da( i, fld[j] ), complen ) != 0 ) {
+                                breakfound = 1;
+                                break;
+                                }
+                        }
+
+                if( breakfound ) {  /* write out mean, sd, etc. */
+			LASTCASE:
+			if( icount > 0 ) {
+                        	bor();
+                		for( j = 0; j < nfld; j++ ) out( breakbuf[j] );	/* identifiers */
+				mean = accum[0] / (double)icount;
+				sprintf( outbuf, rformat, mean ); out( outbuf ); /* mean */
+				if( icount == 1 ) sd = 0.0;
+				else sd = sqrt( (accum[1] - (accum[0]*accum[0] / (double)icount ) ) / (double)(icount-1) );
+				sprintf( outbuf, rformat, sd ); out( outbuf ); /* sd */
+				se = sd / sqrt( (double) icount );
+				sprintf( outbuf, rformat, se ); out( outbuf ); /* se */
+				sprintf( outbuf, "%d", icount ); out( outbuf ); /* N */
+				sprintf( outbuf, rformat, min ); out( outbuf ); /* min */
+				sprintf( outbuf, rformat, max ); out( outbuf ); /* max */
+				sprintf( outbuf, rformat, accum[0] ); out( outbuf ); /* summation */
+				if( action[7] == 'p' ) {  /* compute median and quartiles/percentiles */
+					int n;
+					n = nvect;
+
+					qsort( &PLV[1], nvect, sizeof(double), dblcompare);
+
+					/* these formulas depend on values being placed into array at cells PLV[1] thru PLV[n] 
+					   (probably because they were translated from fortran or similar */
+					pctile = (n % 20 ) ? PLV[(n/20) + 1] :  (PLV[n/20] + PLV[(n/20) + 1] ) /2.0 ;  /* 5th */
+					sprintf( outbuf, rformat, pctile ); out( outbuf );
+					pctile = ( n % 4 ) ?  PLV[(n/4) + 1]  :  (PLV[n/4] + PLV[(n/4) + 1])/2.0 ;      /* 25 */
+					sprintf( outbuf, rformat, pctile ); out( outbuf );
+					pctile = ( n % 2 ) ?  PLV[(n+1) / 2]  :  (PLV[n/2] + PLV[(n/2)+1])/2.0 ;   /* median/ 50th */
+					sprintf( outbuf, rformat, pctile ); out( outbuf );
+					pctile = ( n % 4 )  ? PLV[n - (n/4)]  :  (PLV[(n+1) - (n/4)] + PLV[n-(n/4)])/2.0 ;   /* 75 */
+					sprintf( outbuf, rformat, pctile ); out( outbuf );
+					pctile = ( n % 20 ) ? PLV[n - (n/20)] : (PLV[(n+1) - (n/20)] + PLV[n - (n/20)]) / 2.0 ;  /* 95 */
+					sprintf( outbuf, rformat, pctile ); out( outbuf );
+					}
+                        	eor();
+				if( lastdone ) break;
+				}
+			/* get ready to continue.. */
+			for( j = 0; j < nfld; j++ ) { strncpy( breakbuf[j], da( i, fld[j] ), complen ); breakbuf[j][complen] = '\0'; }
+			accum[0] = 0.0; accum[1] = 0.0; icount = 0; min = PLHUGE; max = NEGHUGE; nvect = 0;
+			}
+
+                /* add to accum.. (accum[0] holds sum,  accum[1] holds sum squared) */
+		val = da( i, valfld );
+		if( GL_goodnum( val, &prec )) {
+			fval = atof( val );
+			accum[0] += fval;
+			accum[1] += fval*fval;
+			if( fval < min ) min = fval;
+			if( fval > max ) max = fval;
+			if( action[7] == 'p' ) {
+				if( nvect <= PLVsize-1 ) { nvect++; PLV[nvect] = fval; } /* save for median/quartiles computation */
+                		else return( Eerr( 248, "cannot compute median, vector capacity exceeded (raise using -maxvector)\n", "" ) );
+				}
+			icount++;
+                        }
+                }
+	if( !lastdone ) { lastdone = 1; goto LASTCASE; }
+	}
+
+/* action: raccum */
+else if( strncmp( action, "raccum", 6 )==0 ) {
+	for( i = 0; i < Nrecords; i++ ) {
+
+                if( selectex[0] != '\0' ) { /* process against selection condition if any.. */
+                        stat = do_select( selectex, i, &select_result );
+                        if( stat ) select_error += stat;
+                        if( select_result == 0 || stat ) continue; /* reject */
+                        }
+
+		for( j = 0; j < nfld; j++ ) accum[j] = 0.0;  /* initialize */
+		for( j = 0; j < nfld; j++ ) {  /* do the progressive summation operation */
+			if( j == 0 ) accum[j] = atof( da( i, fld[j] ));
+			else if( j > 0 ) accum[j] = atof( da( i, fld[j] )) + accum[j-1];
+			}
+
+		/* output the data row, including rewritten fields */
+		bor();
+		for( j = 0; j < Nfields; j++ ) {
+			for( k = 0; k < nfld; k++ ) if( fld[k] == j ) break;
+			if( k != nfld ) { 
+				if( keepall ) out( da( i, j ) );
+				sprintf( outbuf, rformat, accum[k] ); out( outbuf ); 
+				}
+			else if( dofld( j )) out( da( i, j ));
+			}
+		eor();
+		}
+	}
+
+
+/* action: total */
+else if( strncmp( action, "total", 5 )==0 )  {
 	for( i = 0; i < nfld; i++ ) {
 		for( j = 0; j < Nrecords; j++ ) {
 			
@@ -502,27 +623,32 @@ else if( strncmp( action, "tot", 3 )==0 )  {
 	}
 
 
-/* join */
+/* action: join */
 else if( strcmp( action, "join" )==0 || strcmp( action, "leftjoin" )==0 || strcmp( action, "rightjoin" )==0 ) {
-	int irec1, irec2, inprogress, diff, prec;
+	int irec1, irec2, diff, prec, more1, more2;
 	char *f1, *f2;
-	inprogress= 1;
+	definefieldnames( "" );  /* any existing field names will be wrong */
+	more1 = more2 = 1;
 	irec1 = irec2 = -1;
-	jadvance( select1, &irec1, &inprogress );   /* advance LHS to first matching record */  
-	if( inprogress ) jadvance( select2, &irec2, &inprogress );   /* advance RHS to first matching record */
+	jadvance( select1, &irec1, &more1 );   /* advance LHS to first eligible record (based on leftselect) */  
+	jadvance( select2, &irec2, &more2 );   /* advance RHS to first eligible record (based on rightselect) */
 
-	while( inprogress ) {
+	while( 1 ) {
+		/* fprintf( stderr, "[%d][%d]\n", more1, more2 ); */
+		if( !more1 || !more2 ) break;
 	
 		/* compare all join fields.. when first difference encountered break; save strcmp diff */
 		for( diff = 0, i = 0; i < nfld; i++ ) {
 			f1 = da( irec1, fld[i] );
 			f2 = da( irec2, fld[i] );
+			/* fprintf( stderr, "[%s vs. %s]..", f1, f2 ); */
 			/* if both are integers, do a numeric comparison.. */
 			if( GL_goodnum( f1, &prec ) && GL_goodnum( f2, &prec )) diff = atoi( f1 ) - atoi( f2 );
 			/* otherwise do a strcmp */
 			else diff = strcmp( da( irec1, fld[i]),   da( irec2, fld[i] ));
 			if( diff != 0 ) break;
 			}
+		/* fprintf( stderr, "diff=%d..", diff ); */
 
 		if( diff == 0 ) {
 			/* if diff == 0 then join left record with right record and output */
@@ -530,37 +656,54 @@ else if( strcmp( action, "join" )==0 || strcmp( action, "leftjoin" )==0 || strcm
 			for( i = 0; i < Nfields; i++ ) if( dofld( i )) out( da( irec1, i ));
 			for( i = 0; i < Nfields; i++ ) if( dofld( i )) out( da( irec2, i ));
 			eor();
+			/* fprintf( stderr, "LR..\n" ); */
 
-			jadvance( select1, &irec1, &inprogress );   /* advance LHS to next matching record */  
-			if( inprogress ) jadvance( select2, &irec2, &inprogress );   /* advance RHS to next matching record */
-			if( !inprogress ) break;
+			jadvance( select1, &irec1, &more1 );   /* advance LHS to next eligible record */  
+			jadvance( select2, &irec2, &more2 );   /* advance RHS to next eligible record */
 			}
 
 		else if( diff < 0 ) {
-			if( action[0] == 'l' ) { /* leftjoin... output missing RHS fields.. */
+			if( action[0] == 'l' ) { /* leftjoin... output LHS fields and missingcode for the RHS fields.. */
 				bor();
 				for( i = 0; i < Nfields; i++ ) if( dofld( i )) out( da( irec1, i ));
 				for( i = 0; i < Nfields; i++ ) if( dofld( i )) out( nacode );
 				eor();
+				/* fprintf( stderr, "L=..\n" ); */
 				}
-			jadvance( select1, &irec1, &inprogress );
+			jadvance( select1, &irec1, &more1 );   /* advance LHS to next eligible record */
 			}
 
 		else if( diff > 0 ) {
-			if( action[0] == 'r' ) { /* rightjoin... output missing LHS fields.. */
+			if( action[0] == 'r' ) { /* rightjoin... output missingcode for the LHS fields and output RHS fields.. */
 				bor();
 				for( i = 0; i < Nfields; i++ ) if( dofld( i )) out( nacode );
 				for( i = 0; i < Nfields; i++ ) if( dofld( i )) out( da( irec2, i ));
 				eor();
+				/* fprintf( stderr, "=R..\n" ); */
 				}
-			jadvance( select2, &irec2, &inprogress );
+			jadvance( select2, &irec2, &more2 );   /* advance RHS to next eligible record */
 			}
+		}
+
+	/* with leftjoin and rightjoin there may be orphan records at the end to take care of... */
+	if( action[0] == 'l' && more1 ) while( more1 ) {   /* output the rest of LHS */
+		bor();
+		for( i = 0; i < Nfields; i++ ) if( dofld( i )) out( da( irec1, i ));
+		for( i = 0; i < Nfields; i++ ) if( dofld( i )) out( nacode );
+		eor();
+		jadvance( select1, &irec1, &more1 );   
+		}
+	else if( action[0] == 'r' && more2 ) while( more2 ) { /* output the rest of RHS */
+		bor();
+		for( i = 0; i < Nfields; i++ ) if( dofld( i )) out( nacode );
+		for( i = 0; i < Nfields; i++ ) if( dofld( i )) out( da( irec2, i ));
+		eor();
+		jadvance( select2, &irec2, &more2 );   
 		}
 	}
 
 
-/* stats */
-
+/* action: stats */
 else if( strcmp( action, "stats" )==0 )  {
 	double val, min, max, sqrt();
 	int n, prec, nbad;
@@ -596,28 +739,28 @@ else if( strcmp( action, "stats" )==0 )  {
 			}
 		}
 	setintvar( "N", n );
-	setfloatvar( "TOTAL", accum[0] );
+	setfloatvar( "TOTAL", accum[0], rformat );
 	setintvar( "NMISSING", nbad );
 	if( n == 0 ) { setcharvar( "MEAN", "n/a" ); }
 	else	{
-		setfloatvar( "MEAN", accum[0]/(double)n );
-		if( n > 1 ) setfloatvar( "SD", sqrt( ( accum[1] - (accum[0]*accum[0]/(double)n )) / ((double)n-1.0) ) );
+		setfloatvar( "MEAN", accum[0]/(double)n, rformat );
+		if( n > 1 ) setfloatvar( "SD", sqrt( ( accum[1] - (accum[0]*accum[0]/(double)n )) / ((double)n-1.0) ), rformat );
 		else setcharvar( "SD", "n/a" ); 
-		setfloatvar( "MAX", max );
+		setfloatvar( "MAX", max, rformat );
 		if( tagfld >= 0 ) setcharvar( "MAX_ID", breakbuf[0] ); /* fixed scg 3/8/05 */
-		setfloatvar( "MIN", min );
+		setfloatvar( "MIN", min, rformat );
 		if( tagfld >= 0 ) setcharvar( "MIN_ID", breakbuf[1] ); /* fixed scg 3/8/05 */
 		}
 	return( 0 );
 	}
 
 
-else	{
+else if( strcmp( action, "echo" )==0 || strcmp( action, "numberrows" )==0 ) {
 	int do_numrows, foundrows;
 	char numstr[20];
 
 	do_numrows = 0;
-	if( strcmp( action, "numberrows" )==0 ) do_numrows = 1;
+	if( action[0] == 'n' ) { do_numrows = 1; definefieldnames( "" );  /* any existing field names will be wrong */ }
 
 	/* just write out fields */
 	for( i = 0, foundrows = 0; i < Nrecords; i++ ) {
@@ -629,12 +772,17 @@ else	{
 		foundrows++;
 		bor();
 		if( do_numrows ) { sprintf( numstr, "%d", foundrows ); out( numstr ); }
-		for( j = 0; j < Nfields; j++ ) if( dofld( j ) ) out( da( i, j ) );
+		for( j = 0; j < Nfields; j++ ) if( dofld( j ) ) {
+			out( da( i, j ) );
+			}
 		eor();
 		}
 	}
 
-if( !stackmode && !nocloseoutfp ) fclose( outfp );
+else 	{
+	PLS.skipout = 1;
+	return( Eerr( 471, "unrecognized action specified.", action ) );
+	}
 
 if( select_error ) Eerr( 472, "warning, an error occurred during 'select'", "" );
 
@@ -663,27 +811,25 @@ if( GL_slmember( action, "per* acc* tot*" )) {
 	if( strncmp( action, "tot", 3 )==0 ) return( 0 );
 	}
 
-if( stackmode ) {
-	PLD.curds++;  /* now start referencing the result data set */
-	if( PLS.debug ) fprintf( PLS.diagfp, "filling data set# %d (this will now be the current data set)\n", PLD.curds );
-	setintvar( "NRECORDS", Nrecords );
-	setintvar( "NFIELDS", Nfields );
-	if( showresults ) {
-		fprintf( PLS.diagfp, "// proc processdata results (action = %s)\n", action );
-		for( i = 0; i < Nrecords; i++ ) {
-			for( j = 0; j < Nfields; j++ ) fprintf( PLS.diagfp, "[%s]", da( i, j ) );
-			fprintf( PLS.diagfp, "\n" );
-			}
-		}
-	}
+if( outfile != "" ) fclose( outfp );
+else PL_finishdataset( 0, 0 );
 
-if( !stackmode && !outfile ) {
-	if( PLS.debug ) fprintf( PLS.diagfp, "processdata (action = %s) writing to tmp file and invoking proc getdata..\n", 
-				action );
-	PL_getdata_specialmode( 1, tmpfile, showresults );
-	PLP_getdata();
-	PL_getdata_specialmode( 0, "", 0 );
-	unlink( tmpfile );
+if( fieldnames != "" ) definefieldnames( fieldnames ); 
+
+if( showdata ) {
+	getfname( 1, buf );
+	fprintf( PLS.diagfp, "// proc processdata created the following data set (action = %s)\n", action );
+	if( buf[0] != '\0' ) { 
+		fprintf( PLS.diagfp, "// field names are: " ); 
+		for( j = 0; j < Nfields; j++ ) { getfname( j+1, buf ); fprintf( PLS.diagfp, "%s|", buf ); }
+		fprintf( PLS.diagfp, "\n" );
+		}
+	else fprintf( PLS.diagfp, "// (no field names defined)\n" );
+	for( i = 0; i < Nrecords; i++ ) {
+		for( j = 0; j < Nfields; j++ ) fprintf( PLS.diagfp, "%s|", da( i, j ) );
+		fprintf( PLS.diagfp, "\n" );
+		}
+	fprintf( PLS.diagfp, "// end of data set\n" );
 	}
 
 return( 0 );
@@ -715,15 +861,15 @@ return( 1 );
 static int 
 bor( )
 {
-if( stackmode ) return( PL_startdatarow() );
-return( 0 );
+if( outfile == "" ) return( PL_startdatarow() );
+else return( 0 );
 }
 
 static int
 out( s )
 char *s;
 {
-if( !stackmode ) fprintf( outfp, "%s	", s );
+if( outfile != "" ) fprintf( outfp, "%s	", s );
 else PL_catitem( s );
 return( 0 );
 }
@@ -731,33 +877,50 @@ return( 0 );
 static int
 eor()
 {
-if( !stackmode ) fprintf( outfp, "\n" );
+if( outfile != "" ) fprintf( outfp, "\n" );
 else PL_enddatarow(); 
 return( 0 );
 }
 
 /* ============================= */
-/* routines for JOIN */
+/* for action: join  ... */
 
 static int
-jadvance( select, irow, flag )
+jadvance( select, irow, moreflag )
 char *select;
-int *irow, *flag;
+int *irow, *moreflag;
 {
-int sresult;
-(*irow)++;
-if( *flag ) {
-	for( ; *irow < Nrecords; (*irow)++ ) {
-		do_select( select, *irow, &sresult );
-		if( sresult ) break;
-		}
-	if( *irow >= Nrecords ) *flag = 0;
+int sresult, newirow;
+newirow = *irow;
+newirow++;
+for( ; newirow < Nrecords; newirow++ ) {
+	do_select( select, newirow, &sresult );
+	if( sresult ) break;
 	}
+if( newirow >= Nrecords ) *moreflag = 0;  /* and irow remains the same as passed in..  scg 11/15/07 */
+else  *irow = newirow; 
+return( 0 );
+}
+
+
+/* ============================= */
+/* for qsort */
+static int
+dblcompare( a, b )
+const void *a, *b;
+
+{
+double *f, *g;
+f = (double *)a;
+g = (double *)b;
+
+if( *f > *g ) return( 1 );
+if( *f < *g ) return( -1 );
 return( 0 );
 }
 
 /* ======================================================= *
- * Copyright 1998-2005 Stephen C. Grubb                    *
+ * Copyright 1998-2008 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */

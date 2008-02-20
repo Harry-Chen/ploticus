@@ -1,33 +1,37 @@
 /* ======================================================= *
- * Copyright 1998-2005 Stephen C. Grubb                    *
+ * Copyright 1998-2008 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */
 
 #include "tdhkit.h"
 #include <ctype.h>
-extern int PL_fref(), GL_urlencode();
+extern int PL_fref(), PL_fref_error(), GL_urlencode();
 extern int atoi();
 
-/* This is similar to TDH_value_subst, but is stripped down and  accepts a data array that 
- * is an array of pointers rather than a 2d array.  It also knows about ploticus field 
- * names PL_fref()
+/* PL_VALUE_SUBST - take a text line and substitute values for variables.  
+ * This is similar to TDH_value_subst, but is stripped down and  accepts a data array that 
+ * is an array of pointers rather than a 2d array.  It also knows about ploticus field names (PL_fref() )
  */
 
-/* VALUE_SUBST - take a text line and substitute values for variables.  */
+/* scg 11/5/07 - now supporting data = NULL for situations where data array is n/a.
+ *	Also, in the case of bad variable substitutions, the @varname is inserted into the output 
+ *	(no error handling had apparently been done before).
+ */
+
 
 int
 PL_value_subst( out, in, data, mode )
 char *out; /* result buffer */
-char *in;  /* input buffer */
-char *data[ MAXITEMS ];
+const char *in;  /* input buffer */
+char *data[ MAXITEMS ];  /* can be passed as NULL if n/a .. scg 11/6/07 */
 int mode;  /* either FOR_CONDEX (1), indicating that the line will be passed to condex() (minor hooks);
 		   URL_ENCODED (2), indicating that values substituted in should be urlencoded;
 		    or NORMAL (0) */
 {
 int i, k;
 char itemname[512];
-char value[255];
+char value[512];
 int found;
 int infunction;
 int ifld;
@@ -35,6 +39,8 @@ int inlen;
 int outlen;
 int vallen;
 int inamelen;
+char tmpvalue[256];
+int stat;
 
 found = 0;
 
@@ -70,15 +76,24 @@ for( i = 0; i < inlen; i++ ) {
 		/* @1, @2, etc... */
 		ifld = atoi( itemname );
 		if( ifld > 0 && ifld < MAXITEMS ) {
-			if( mode == URL_ENCODED ) GL_urlencode( data[ ifld-1 ], value );
+			if( data == NULL ) strcpy( value, itemname ); /* scg 11/5/07 */
+			else if( mode == URL_ENCODED ) GL_urlencode( data[ ifld-1 ], value );
 			else strcpy( value, data[ ifld-1 ] );
 			}
 
 		/* @fieldname .. */
 		else	{
 			ifld = PL_fref( itemname );
-			if( mode == URL_ENCODED ) GL_urlencode( data[ ifld-1 ], value );
-			else strcpy( value, data[ ifld -1 ] );
+			if( ! PL_fref_error() && data != NULL ) { 
+				if( mode == URL_ENCODED ) GL_urlencode( data[ ifld-1 ], value );
+				else strcpy( value, data[ ifld -1 ] );
+				}
+			else	{  /* try a tdh varname .. added scg 11/5/07  */
+		   	 	stat = TDH_getvar( itemname, tmpvalue );
+				if( stat ) strcpy( value, itemname ); /* scg 11/5/07 */
+			 	else if( mode == URL_ENCODED ) GL_urlencode( tmpvalue, value );
+			 	else strcpy( value, tmpvalue );
+			 	}
 			}
 
 
@@ -112,7 +127,7 @@ return( found );
 }
 
 /* ======================================================= *
- * Copyright 1998-2005 Stephen C. Grubb                    *
+ * Copyright 1998-2008 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */

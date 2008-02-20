@@ -1,5 +1,5 @@
 /* ======================================================= *
- * Copyright 1998-2005 Stephen C. Grubb                    *
+ * Copyright 1998-2006 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */
@@ -7,13 +7,15 @@
 #include "pl.h"
 #include "tdhkit.h"
 
-#ifndef PREFABS_DIR
-#define PREFABS_DIR ""
-#endif
 
 #ifndef CONFIGFILE
 #define CONFIGFILE ""
 #endif
+
+#ifndef PREFABS_DIR
+#define PREFABS_DIR ""
+#endif
+
 
 #ifdef LOCALE
 #include <locale.h>
@@ -21,6 +23,9 @@
 
 extern int PLGS_setparms(), PLGF_setparms();
 extern int fchmod(), chdir();
+extern int TDH_inquisp;
+extern int PLGG_initstatic(), PLGP_initstatic(), PLGS_initstatic(), PLGF_initstatic();
+
 
 
 /* =========================================== */
@@ -64,7 +69,7 @@ strcpy( PLS.mapfile, "" );
 PLS.noshell = 0;
 TDH_prohibit_shell( 0 );
 
-#ifndef NORLIMIT
+#ifndef WIN32
 TDH_reslimits( "cpu", CPULIMIT );
 #endif
 #ifdef LOCALE
@@ -78,9 +83,6 @@ PLS.device = 'e';
 PLS.device = 'x';    
 #endif
 
-PLD.currow = 0;
-PLD.curdf = 0;
-PLD.curds = -1;
 PLD.maxrows = MAXDROWS;
 PLD.maxdf = MAXD;
 PLL.maxproclines = MAXPROCLINES;
@@ -245,12 +247,14 @@ if( PLS.cgiargs != NULL && !projectrootfound ) {
 /* get prefabs directory name if available.. */
 /* this must come after config file is read, because in cgi mode PLOTICUS_PREFABS is set via config file. */
 PLS.prefabsdir = getenv( "PLOTICUS_PREFABS" );
+
 /* maybe PREFABS_DIR was set in the Makefile... */
 #ifdef UNIX
-if( PLS.prefabsdir == NULL ) PLS.prefabsdir = PREFABS_DIR ;
-else if( PLS.prefabsdir[0] == '\0' ) PLS.prefabsdir = PREFABS_DIR ;
-if( PLS.prefabsdir[0] == '\0' ) PLS.prefabsdir = NULL;
+  if( PLS.prefabsdir == NULL ) PLS.prefabsdir = PREFABS_DIR ;
+  else if( PLS.prefabsdir[0] == '\0' ) PLS.prefabsdir = PREFABS_DIR ;
+  if( PLS.prefabsdir[0] == '\0' ) PLS.prefabsdir = NULL;
 #endif
+
 if( PLS.prefabsdir != NULL ) {
 	TDH_setspecialincdir( PLS.prefabsdir ); /* set special include directory (#include $foo) */
         /* note: prefabsdir must reference static storage, either via getenv() or constant */
@@ -285,7 +289,7 @@ if( PLS.device == 'f' ) PLGF_setparms( PLS.debug, PLS.tmpname, Estandard_font );
 PL_init_mem();
 
 if( PLS.debug ) {
-        fprintf( PLS.diagfp, "Version: pl %s\n", PLVERSION );
+        fprintf( PLS.diagfp, "Version: ploticus %s\n", PLVERSION );
         if( PLS.cgiargs != NULL ) fprintf( PLS.diagfp, "operating in CGI mode\n" );
         Epcodedebug( 1, PLS.diagfp ); /* tell pcode.c to output diagnostics too */
         }
@@ -306,6 +310,103 @@ if( PLS.clickmap ) {  /* .map filename */
 return( 0 );
 }
 
+
+/* ================================== */
+/* INIT_STATICS - initialize static variables */
+int
+PL_init_statics()
+{
+PLG_cblock_initstatic();
+PLG_init_initstatic();
+PLG_mark_initstatic();
+PLG_pcode_initstatic();
+PLG_stub_initstatic();
+PL_execline_initstatic();
+PL_fieldnames_initstatic();
+PL_units_initstatic();
+PL_lib_initstatic();
+PLP_bars_initstatic();
+/* PLP_getdata_initstatic(); */
+PLP_legend_initstatic();
+PLP_processdata_initstatic();
+#ifndef NOGD
+PLGG_initstatic() ;
+#endif
+#ifndef NOPS
+PLGP_initstatic();
+#endif
+#ifndef NOSVG
+PLGS_initstatic();
+#endif
+#ifndef NOSWF
+PLGF_initstatic();
+#endif
+/* no initstatic for X11 .. doesn't seem necessary now */
+
+/* the following static initializations shouldn't be done if ploticus is being invoked
+   from environments (eg quisp) where the TDH stuff is already in action.. */
+if ( ! TDH_inquisp ) {
+  GL_initstatic();
+  TDH_condex_initstatics();
+  TDH_err_initstatic();
+  TDH_functioncall_initstatic();
+  TDH_valuesubst_initstatic();
+  TDH_setvar_initstatic();
+  TDH_shell_initstatic();
+  DT_initstatic();
+  DT_time_initstatic();
+  DT_datetime_initstatic();
+
+  TDH_readconfig_initstatic();  /* some doubt on this one */
+}
+
+
+return( 0 );
+}
+
+/* ================================== */
+/* INIT_MEM - initialize pl data structures */
+int
+PL_init_mem()
+{
+/* data array stuff.. */
+PLD.datarow = (char **) malloc( PLD.maxrows * sizeof( char * ) ); 
+PLD.df = (char **) malloc( PLD.maxdf * sizeof( char * ) );
+PLD.currow = 0;
+PL_cleardatasets();
+
+PLL.procline = (char **) malloc( PLL.maxproclines * sizeof( char * ) );
+
+PLV = (double *) malloc( PLVsize * sizeof( double ));
+PLVhalfsize = PLVsize / 2;
+PLVthirdsize = PLVsize / 3;
+
+return( 0 );
+}
+
+
+/* ================================== */
+/* FREE - free all mallocated memory.  */
+int
+PL_free( )
+{
+int i;
+
+PL_clickmap_free();
+PL_catfree();
+
+free( PLD.df );
+
+for( i = 0; i < PLD.currow; i++ ) free( PLD.datarow[ i ] );
+free( PLD.datarow );
+
+for( i = 0; i < PLL.nlines; i++ ) free( PLL.procline[ i ] );
+free( PLL.procline );
+
+free( PLV ); /* scg 5/16/03 */
+
+return( 0 );
+}
 
 /* ======================================================= *
  * Copyright 1998-2005 Stephen C. Grubb                    *

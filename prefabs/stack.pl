@@ -37,6 +37,11 @@
 #set context = stack
 #include $chunk_read
 
+#if @xnumeric != yes
+  #proc categories
+  axis: x
+  datafield: @x
+#endif
 
 //// plot area..
 #include $chunk_area
@@ -51,9 +56,9 @@
   xautorange: datafield=@x incmult=@incmult nearest=@xnearest
 #else
   xscaletype: categories
-  xcategories: datafield=@x
+  // xcategories: datafield=@x
   // following added 9/2/02 scg
-  catcompmethod: exact
+  // catcompmethod: exact
 #endif
 
 #if @stackarea = yes

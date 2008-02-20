@@ -14,6 +14,7 @@ color: gray(0.7)
 
 //<b> set up plotting area and axes using <a href="../doc/areadef.html">proc areadef</a></b>
 #proc areadef:
+// rectangle: 1 1 6 5
 title: Number of inquiries per month
 titledetails: size=18 align=C adjust=0,0.1 color=black
 xscaletype: date mm/yy
@@ -37,9 +38,14 @@ file:	devol.dat
 
 //<b> do stairstep line plot using <a href="../doc/lineplot.html">proc lineplot</a></b>
 #proc lineplot:
-Yfield:		2
+yfield:		2
 xfield:		1
 linedetails: width=2 color=purple
 stairstep: yes
 numbers: color=purple
 lastseglen: 30(s)
+
+#proc annotate
+backdim: 11/87(s) 400(s) 1.2 0.7
+ellipse: yes
+outline: color=red

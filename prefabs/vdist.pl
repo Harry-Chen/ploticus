@@ -13,7 +13,13 @@
 #setifnotgiven id2 = ""
 #setifnotgiven data2 = ""
 #setifnotgiven dist = centered
-#setifnotgiven rangebar = yes
+
+#set rangebar = no
+// #setifnotgiven rangebar = yes  // As of 2.34, the boxplot portion of this prefab is nonfunctional... 
+				  // Not sure how much (if any) user interest is out there.
+				  // If there is, this prefab would need to be modified to use proc boxplot.
+                                  // Community involvement in accomplishing this is solicited.
+
 #setifnotgiven ygrid = "color=gray(0.8)"
 
 #if @dist like no*

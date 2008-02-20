@@ -9,7 +9,7 @@
 #include "tdhkit.h"
 #include <ctype.h>
 
-extern int TDH_setvarcon(), TDH_setvar(), TDH_getvar(), GL_deletechars();
+extern int TDH_setvarcon(), TDH_setvar(), TDH_getvar(), TDH_setshellfdelim(), GL_deletechars();
 
 #define NL 0
 #define WS 1
@@ -92,7 +92,10 @@ if( shellfp == NULL ) return( 1 );
 s = fgets( buf, maxlen, shellfp );
 
 stat = checkexit( s, buf );
-if( stat != 0 ) return( stat );
+if( stat != 0 ) {
+	TDH_setshellfdelim( 0 ); /* reset shell delimiter to NL.. added scg 8/3/06 */
+	return( stat );
+	}
 
 nrows++;
 
@@ -107,6 +110,17 @@ TDH_shellclose()
 {
 if( shellfp == NULL ) return( 1 );
 pclose( shellfp ); shellfp = NULL;
+return( 0 );
+}
+
+/* ===================================== */
+/* SETDELIM - allow program to set/reset the field delimiter character.  
+ *  Code may be one of 0 (NL)  1 (WS)  2 (TAB) */
+int
+TDH_setshellfdelim( code ) 
+int code;
+{
+indelim = code;
 return( 0 );
 }
 
@@ -129,6 +143,7 @@ return( 0 );
 }
 
 /* =================================== */
+/* parse out shell fields */
 static int
 parsefields( buf, f, nf )
 char *buf;

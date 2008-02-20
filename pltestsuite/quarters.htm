@@ -19,7 +19,7 @@ Kind of tricky I realize.. it is touched on in the pl dates man page.
 // <b> do areadef with X scaled in years, using <a href="../doc/areadef.html">proc areadef</a></b>
 #proc areadef
 title: Average dividend yield,\nby quarter
-rectangle: 1 1 5 2.5
+rectangle: 1 1 4 2.5
 xscaletype: date mmddyy
 xrange: 010198 123101
 yrange: 3.0 6.0
@@ -47,10 +47,8 @@ stubs: inc 0.5
 grid: color=blue
 stubformat: %3.1f%%
 
-// <b> now change X units to nQyy notation to plot data.. use <a href="../doc/defineunits.html">proc defineunits</a></b>
-#proc defineunits
-axis: x
-units: date nqyy
+// <b>switch to nqyy notation... </b>
+#call $changeunits( x, "date nqyy" )
 
 // <b> specify data using <a href="../doc/getdata.html">proc getdata</a></b>
 #proc getdata

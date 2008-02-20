@@ -11,7 +11,7 @@
    offending processes will dump core; debugger gives explanation..
  */
 
-#ifndef NORLIMIT
+#ifndef WIN32
 
 #include <stdio.h>
 #include <sys/time.h>

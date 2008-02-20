@@ -48,6 +48,12 @@
 //// required vars..
 #musthave x y
 
+#if @xnumeric != yes
+  #proc categories
+  axis: x
+  datafield: @x
+#endif
+  
 
 //// plotting area..
 #include $chunk_area
@@ -55,9 +61,9 @@
   xautorange: datafield=@x incmult=2.0 nearest=@xnearest
 #else
   xscaletype: categories
-  xcategories: datafield=@x
-  // the following was added 9/2/02 scg
-  catcompmethod: exact
+  // xcategories: datafield=@x
+  // // the following was added 9/2/02 scg
+  // catcompmethod: exact
 #endif
 #if @yrange = ""
   #if @y2 = ""

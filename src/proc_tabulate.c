@@ -1,5 +1,5 @@
 /* ======================================================= *
- * Copyright 1998-2005 Stephen C. Grubb                    *
+ * Copyright 1998-2008 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */
@@ -29,13 +29,10 @@ static int fsort(), freqsort();
 int
 PLP_tabulate()
 {
-int i;
-char attr[NAMEMAXLEN], val[256];
-char *line, *lineval;
-int nt, lvp;
-int first;
+char attr[NAMEMAXLEN], *line, *lineval;
+int lvp, first;
 
-char buf[256];
+char buf[256], val[256];
 double tab[MAXROWS][MAXCOLS];
 double total[2][MAXROWS];
 double grantotal;
@@ -48,30 +45,12 @@ char tmp[WORDLEN];
 char *GL_getok();
 double atof();
 /* --- */
-char valuelist[2][256];
-int field[2];
-int ix;
-int showresults;
-int irow;
-double gran[2];
-char numbuf[80];
-char selectex[256];
-int result;
-int doranges[2];
-char axis[2];
-int ixx;
-char hival[80], lowval[80];
-double hiv[MAXBINS], lowv[MAXBINS];
-double fval;
-char rangesepchar[5];
-char showrange[20];
-char rangespec[2][80];
+char *valuelist[2], *rangespec[2], *selectex, *rangesepchar, *showrange, *fieldnamelist, *numfmt;
+char axis[2], numbuf[80], hival[80], lowval[80], tag[80];
+int field[2], accumfield;
 int axisset[2]; /* added 1/11/00 scg */
-char tag[80];   /* added 1/11/00 scg */
-char fieldnamelist[256]; /* added 1/21/00 scg */
-int accumfield;
-double inc;
-char numfmt[20];
+int i, ix, showresults, irow, result, doranges[2], ixx;
+double gran[2], hiv[MAXBINS], lowv[MAXBINS], fval, inc;
 
 
 TDH_errprog( "pl proc tabulate" );
@@ -85,90 +64,57 @@ dopercents = 0;
 forcevertical = 1; forcehorizontal = 0;
 ordering[0] = '?'; ordering[1] = '?';
 gran[0] = gran[1] = 0.0;
-strcpy( selectex, "" );
 doranges[0] = doranges[1] = 0;
 axis[0] = 'x';
 axis[1] = 'y';
-strcpy( rangesepchar, "-" );
-strcpy( showrange, "" );
-strcpy( rangespec[0], "" );
-strcpy( rangespec[1], "" );
-axisset[0] = axisset[1] = 0; /* was axis1 or axis2 set explicitly - added 1/11/00 scg */
+rangespec[0] = rangespec[1] = "";
+axisset[0] = axisset[1] = 0; 
 accumfield = -1;
 showresults = 0;
-strcpy( numfmt, "%g" );
-
+selectex = "";
+rangesepchar = "-";
+showrange = "";
+numfmt = "%g";
+valuelist[0] = valuelist[1] = "";
+fieldnamelist = "";
 
 /* get attributes.. */
 first = 1;
 while( 1 ) {
-	line = getnextattr( first, attr, val, &lvp, &nt );
+	line = getnextattr( first, attr, &lvp );  
 	if( line == NULL ) break;
 	first = 0;
 	lineval = &line[lvp];
 
-	if( stricmp( attr, "datafield1" )==0 ) {
-		field[0] = fref( val ) - 1;
-		ndim = 1;
-		}
-	else if( stricmp( attr, "datafield2" )==0 ) {
-		field[1] = fref( val ) - 1;
-		ndim = 2;
-		}
-	else if( stricmp( attr, "accumfield" )==0 ) {
-		accumfield = fref( val ) -1;
-		}
-	else if( stricmp( attr, "valuelist1" )==0 ) strcpy( valuelist[0], lineval );
-	else if( stricmp( attr, "valuelist2" )==0 ) strcpy( valuelist[1], lineval );
-	else if( stricmp( attr, "doranges1" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 ) doranges[0] = 1;
-		else doranges[0] = 0;
-		}
-	else if( stricmp( attr, "doranges2" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 ) doranges[1] = 1;
-		else doranges[1] = 0;
-		}
-	else if( stricmp( attr, "showrangelowonly" )==0 ) { 
-		if( strnicmp( val, YESANS, 1 )==0 ) strcpy( showrange, "low" );
-		}
-	else if( stricmp( attr, "showrange" )==0 ) strcpy( showrange, val );
-	else if( stricmp( attr, "rangesepchar" )==0 ) strcpy( rangesepchar, val );
-	else if( stricmp( attr, "order1" )==0 ) {
-		if( strnicmp( val, "mag", 3 )==0 ) ordering[0] = 'm';
-		else if( strnicmp( val, "rev", 3 )==0 ) ordering[0] = 'r';
-		else if( strnicmp( val, "nat", 3 )==0 ) ordering[0] = 'n';
-		else if( stricmp( val, "none" )==0 ) ordering[0] = '0';
-		}
-	else if( stricmp( attr, "ordering2" )==0 ) {
-		if( strnicmp( val, "mag", 3 ) == 0 ) ordering[1] = 'm';
-		else if( strnicmp( val, "rev", 3 ) == 0 ) ordering[1] = 'r';
-		else if( strnicmp( val, "nat", 3 ) == 0 ) ordering[1] = 'n';
-		else if( stricmp( val, "none" ) == 0 ) ordering[1] = '0';
-		}
 
-	else if( stricmp( attr, "percents" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 ) dopercents = 1;
-		else dopercents = 0;
+	if( strcmp( attr, "datafield1" )==0 ) { field[0] = fref( lineval ) - 1; ndim = 1; }
+	else if( strcmp( attr, "datafield2" )==0 ) { field[1] = fref( lineval ) - 1; ndim = 2; }
+	else if( strcmp( attr, "accumfield" )==0 ) accumfield = fref( lineval ) -1;
+	else if( strcmp( attr, "valuelist1" )==0 ) valuelist[0] = lineval;
+	else if( strcmp( attr, "valuelist2" )==0 ) valuelist[1] = lineval;
+	else if( strcmp( attr, "doranges1" )==0 ) doranges[0] = getyn( lineval );
+	else if( strcmp( attr, "doranges2" )==0 ) doranges[1] = getyn( lineval );
+	else if( strcmp( attr, "showrangelowonly" )==0 ) { if( getyn( lineval ) ) showrange = "low"; }
+	else if( strcmp( attr, "showrange" )==0 ) showrange = lineval;
+	else if( strcmp( attr, "rangesepchar" )==0 ) rangesepchar = lineval;
+	else if( strcmp( attr, "resultfieldnames" )==0 ) fieldnamelist = lineval;
+	else if( strcmp( attr, "order1" )==0 ) {  /* mag, rev, nat, none */
+		if( lineval[0] == 'm' || lineval[0] == 'r' || lineval[1] == 'a' ) ordering[0] = lineval[0];
+		else ordering[0] = 0;
 		}
-	else if( stricmp( attr, "showresults" )==0 || stricmp( attr, "savetable" )==0 ) showresults = 1;
-
-	else if( stricmp( attr, "select" )==0 ) strcpy( selectex, lineval );
-
-	else if( stricmp( attr, "axis1" )==0 ) {
-		axis[0] = tolower(val[0]);
-		axisset[0] = 1;
+	else if( strcmp( attr, "order2" )==0 ) {
+		if( lineval[0] == 'm' || lineval[0] == 'r' || lineval[1] == 'a' ) ordering[1] = lineval[0];
+		else ordering[1] = 0;
 		}
-	else if( stricmp( attr, "axis2" )==0 ) {
-		axis[1] = tolower(val[0]);
-		axisset[1] = 1;
-		}
-
-	else if( stricmp( attr, "rangespec1" )==0 ) strcpy( rangespec[0], lineval );
-	else if( stricmp( attr, "rangespec2" )==0 ) strcpy( rangespec[1], lineval );
-
-	else if( stricmp( attr, "numfmt" )==0 ) strcpy( numfmt, val );
-
-	else Eerr( 1, "tabulate attribute not recognized", attr );
+	else if( strcmp( attr, "percents" )==0 ) dopercents = getyn( lineval );
+	else if( strcmp( attr, "showresults" )==0 || strcmp( attr, "savetable" )==0 ) showresults = getyn( lineval );
+	else if( strcmp( attr, "select" )==0 ) selectex = lineval;
+	else if( strcmp( attr, "axis1" )==0 ) { axis[0] = lineval[0]; axisset[0] = 1; }
+	else if( strcmp( attr, "axis2" )==0 ) { axis[1] = val[0]; axisset[1] = 1; }
+	else if( strcmp( attr, "rangespec1" )==0 ) rangespec[0] = lineval;
+	else if( strcmp( attr, "rangespec2" )==0 ) rangespec[1] = lineval;
+	else if( strcmp( attr, "numfmt" )==0 ) numfmt = lineval;
+	else Eerr( 1, "attribute not recognized", attr );
 	}
 
 
@@ -215,7 +161,7 @@ for( j = 0; j < ndim; j++ ) { /* for all dimensions (1 or 2).. */
 			ixx = 0;
 			GL_getseg( lowval, tmp, &ixx, rangesepchar );
 			strcpy( hival, &tmp[ixx] );
-			if( stricmp( lowval, "c" )==0 && i > 0 ) lowv[i] = hiv[i-1]; /* contiguous*/
+			if( strcmp( lowval, "c" )==0 && i > 0 ) lowv[i] = hiv[i-1]; /* contiguous*/
 			else lowv[i] = Econv( axis[j], lowval );
 			if( Econv_error( ) ) {   /* a non-conformant value.. */
 				lowv[i] = PLHUGE; /* so that we know to compare 
@@ -226,9 +172,8 @@ for( j = 0; j < ndim; j++ ) { /* for all dimensions (1 or 2).. */
 				hiv[i] = Econv( axis[j], hival );
 				/* Euprint( lowval, axis[j], lowv[i], "" ); */
 				Euprint( lowval, axis[j], lowv[i], numfmt );
-				if( tolower(showrange[0]) == 'l' ) strcpy( list[j][i], lowval );
-				/* else if( tolower(showrange[0]) == 'a' ) Euprint( list[j][i], axis[j], (lowv[i]+hiv[i])/2.0, "" ); */
-				else if( tolower(showrange[0]) == 'a' ) Euprint( list[j][i], axis[j], (lowv[i]+hiv[i])/2.0, numfmt );
+				if( showrange[0] == 'l' ) strcpy( list[j][i], lowval );
+				else if( showrange[0] == 'a' ) Euprint( list[j][i], axis[j], (lowv[i]+hiv[i])/2.0, numfmt );
 
 				else sprintf( list[j][i], "%s%s%s", lowval, rangesepchar, hival );
 				}
@@ -240,6 +185,7 @@ for( j = 0; j < ndim; j++ ) { /* for all dimensions (1 or 2).. */
 	/* automatic bins */
 	if( rangespec[j][0] != '\0' ) {
 		double binsiz, hilimit, rw;
+		int nt;
 		doranges[j] = 1; /* implied */
 		nt = sscanf( rangespec[j], "%s %lf %s", lowval, &binsiz, hival );
 		if( nt < 2 || nt > 3 ) return( Eerr( 2740, "2 or 3 values expected in rangespec", 
@@ -260,9 +206,8 @@ for( j = 0; j < ndim; j++ ) { /* for all dimensions (1 or 2).. */
 			hiv[i] = rw;
 			Euprint( lowval, axis[j], lowv[i], "" );
 			Euprint( hival, axis[j], hiv[i], "" );
-			if( tolower(showrange[0]) == 'l' ) strcpy( list[j][i], lowval );
-			/* else if( tolower(showrange[0]) == 'a' ) Euprint( list[j][i], axis[j], (lowv[i]+hiv[i])/2.0, "" ); */
-			else if( tolower(showrange[0]) == 'a' ) Euprint( list[j][i], axis[j], (lowv[i]+hiv[i])/2.0, numfmt ); 
+			if( showrange[0] == 'l' ) strcpy( list[j][i], lowval );
+			else if( showrange[0] == 'a' ) Euprint( list[j][i], axis[j], (lowv[i]+hiv[i])/2.0, numfmt ); 
 			else sprintf( list[j][i], "%s%s%s", lowval, rangesepchar, hival );
 			nlist[j]++;
 			if( rw > hilimit ) break;
@@ -276,8 +221,10 @@ for( j = 0; j < ndim; j++ ) { /* for all dimensions (1 or 2).. */
 
 
 
+
 /* process from data already read in earlier.. */
 if( Nrecords < 1 ) return( Eerr( 32, "No data has been read yet.", "" ) );
+
 
 /* process input data.. */
 ix = 0;
@@ -426,9 +373,10 @@ if( showresults ) {
 
 
 
-PL_newdataset();
+/* PL_newdataset(); */
+PL_begindataset();
 
-
+ 
 /* ------------------ */
 /* for 1-way tables.. */
 /* ------------------ */
@@ -503,11 +451,7 @@ else if( ndim == 2 ) {
 	}
 
 
-PLD.curds++;
-if( PLS.debug ) fprintf( PLS.diagfp, "filling data set# %d (this will now be the current data)\n", PLD.curds );
-
-setintvar( "NRECORDS", Nrecords );
-setintvar( "NFIELDS", Nfields );
+PL_finishdataset( 0, 0 );
 
 if( showresults ) for( i = 0; i < Nrecords; i++ ) {
 	for( j = 0; j < Nfields; j++ ) fprintf( PLS.diagfp, "[%s]", da( i, j ) );

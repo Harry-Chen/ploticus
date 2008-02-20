@@ -55,8 +55,8 @@ char pixpt_code[30];
 if( strcmp( code, "sym00" ) == 0 ) return( 0 );
 
 /* gif image as symbol */
-if( strcmp( code, "gif" )==0 ) {
-	Eimplace( x, y, "centered", 1.0, 1.0 );
+if( strcmp( code, "img" )==0 ) {
+	Eimplace( x, y, "", "centered", 0, 0 ); /* 0, 0  means use size set earlier or image's native size */
 	return( 0 );
 	}
 

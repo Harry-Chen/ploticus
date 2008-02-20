@@ -1,5 +1,5 @@
 /* ======================================================= *
- * Copyright 1998-2005 Stephen C. Grubb                    *
+ * Copyright 1998-2008 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */
@@ -10,6 +10,9 @@ static int Supress_convmsg = 0;
 static int N_convmsg = 0;
 static int beginnum();
 
+static int dump_ok = 0;
+
+
 
 /* ====================== */
 int
@@ -17,31 +20,20 @@ PL_lib_initstatic()
 {
 Supress_convmsg = 0;
 N_convmsg = 0;
+dump_ok = 0;
 return( 0 );
 }
 
-
 /* ====================== */
-/* DA - access D as a 2-D array; return as char *    */
-char *
-PL_da( r, c )
-int r, c;
+/* GETYN */
+int
+PL_getyn( val )
+char *val;
 {
-int base;
-char progname[80];
-base = PLD.dsfirstdf[ PLD.curds ];
-if( r >= Nrecords ) { 
-	TDH_geterrprog( progname );
-	fprintf( PLS.errfp, "%s: warning, attempt to access data row# %d .. no such data row\n", progname, r+1 ); 
-	return( "" );
-	}
-if( c >= Nfields ) { 
-	TDH_geterrprog( progname );
-	fprintf( PLS.errfp, "%s: warning, attempt to access data field# %d .. no such data field\n", progname, c+1 ); 
-	return( "" );
-	}
-return( PLD.df[ base + ( r * Nfields ) + c ] );
+if( strnicmp( val, YESANS, 1 )==0 ) return( 1 );
+else return( 0 );
 }
+
 /* ====================== */
 /* FDA - access D as a 2-D array; return as double; 
    For non-plottables 0.0 is returned, but Econv_error may be called to see if 
@@ -182,21 +174,21 @@ return( 0 );
 }
 
 /* ========================= */
-/* SETFLOATVAR - set a DMS var to a double value */
+/* SETFLOATVAR - set a TDH var to a double value */
 int
-PL_setfloatvar( varname, f )
-char *varname;
+PL_setfloatvar( varname, f, fmt )
+char *varname, *fmt;
 double f;
 {
 char buf[80];
 int stat;
-sprintf( buf, "%g", f );
+sprintf( buf, fmt, f );
 stat = TDH_setvar( varname, buf );
-if( stat != 0 ) return( Eerr( 3890, "Error on setting variable", varname ) );
+if( stat != 0 ) return( Eerr( stat, "Error on setting variable", varname ) );
 return( 0 );
 }
 /* ========================= */
-/* SETINTVAR - set a DMS var to an integer value */
+/* SETINTVAR - set a TDH var to an integer value */
 int
 PL_setintvar( varname, n )
 char *varname;
@@ -206,12 +198,12 @@ char buf[80];
 int stat;
 sprintf( buf, "%d", n );
 stat = TDH_setvar( varname, buf );
-if( stat != 0 ) return( Eerr( 3892, "Error on setting variable", varname ) );
+if( stat != 0 ) return( Eerr( stat, "Error on setting variable", varname ) );
 return( 0 );
 }
 
 /* ========================== */
-/* SETCHARVAR - set a DMS var to a char string value */
+/* SETCHARVAR - set a TDH var to a char string value */
 int
 PL_setcharvar( varname, s )
 char *varname;
@@ -219,7 +211,7 @@ char *s;
 {
 int stat;
 stat = TDH_setvar( varname, s );
-if( stat != 0 ) return( Eerr( 3894, "Error on setting variable", varname ) );
+if( stat != 0 ) return( Eerr( stat, "Error on setting variable", varname ) );
 return( 0 );
 }
 
@@ -401,9 +393,10 @@ else return( 0 );
 
 /* ============================= */
 /* CONVERTNL - change all occurrances of "\n" (backslash followed by n) to a newline character */
+/* 		(Result is always shorter than input)   */
 int
 PL_convertnl( str )
-char *str;
+char *str;		/* str is always updated... you can't pass a string constant to convertnl() */
 {
 int i, j, len;
 for( i = 0, j = 0, len = strlen( str ); i < len; i++ ) {
@@ -480,8 +473,32 @@ PLG_setglobalscale( sx, sy ); /* restore global scaling.. */
 return( 0 );
 }
 
+#ifdef HOLD
+/* ======================================================= */
+/* temporary debug routine */
+PLG_dump_on()
+{
+dump_ok = 1;
+return( 0 );
+}
+
+PLG_dumpdata()
+{
+int i, j;
+if( !dump_ok ) return( 0 );
+
+for( i = 0; i < Nrecords; i++ ) {
+	for( j = 0; j < Nfields; j++ ) printf( "[%s]", da( i, j ) );
+	printf( "\n" );
+	}
+printf( "---------------\n" );
+return( 0 );
+}
+#endif
+
+
 /* ======================================================= *
- * Copyright 1998-2005 Stephen C. Grubb                    *
+ * Copyright 1998-2008 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */

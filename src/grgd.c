@@ -5,7 +5,7 @@
  * ======================================================= */
 
 /* 
- ploticus interface to GD library by Thomas Boutell (www.boutell.com)
+ ploticus interface to Thomas Boutell's GD library (www.boutell.com)
 
  Notes: 
 
@@ -86,10 +86,8 @@ return( 0 );
 #define stricmp(a,b) strcasecmp(a,b)
 
 static gdImagePtr Gm; /* image */
-static gdImagePtr Gm2; /* secondary image */
-static char Gm2filename[256] = "";
-static double Gm2xscale = 1.0;
-static double Gm2yscale = 1.0;
+static gdImagePtr Gm2 = NULL; /* secondary image */
+static int Gm2height = 0, Gm2width = 0;
 static gdFontPtr Gfont;  /* current font */
 static int Gxmax, Gymax; /* drawing area image size */
 static double Goldx = 0.0, Goldy = 0.0; /* last passed x,y */
@@ -122,6 +120,7 @@ static char GFTfont[80] = "";
 #endif
 
 static int Gpixelsinch;
+static int Greqwidth = 0, Greqheight = 0;
 
 
 
@@ -130,9 +129,8 @@ int
 PLGG_initstatic() 
 {
 strcpy( g_fmt, "" );
-strcpy( Gm2filename, "" );
-Gm2xscale = 1.0;
-Gm2yscale = 1.0;
+Gm2 = NULL;
+Gm2height = 0; Gm2width = 0;
 Goldx = 0.0, Goldy = 0.0;
 Gvertchar = 0;
 Gnpts = 0;
@@ -144,6 +142,7 @@ Gtransparent_color = -1;
 Gblack = 0;
 strcpy( GFTfont, "" );
 strcpy( Gcurcolorname, "" );
+Greqwidth = 0, Greqheight = 0;
 
 return( 0 );
 }
@@ -159,6 +158,17 @@ if( !Ginitialized ) return( NULL );
 *width = Gxmax;
 *height = Gymax;
 return( Gm );
+}
+
+/* =================================== */
+/* SETIMPIXSIZE - set an exact pixel height and width for result (cropped) image */
+int
+PLGG_setimpixsize( width, height )
+int width, height;
+{
+Greqwidth = width;
+Greqheight = height;
+return( 0 );
 }
 
 
@@ -348,7 +358,7 @@ char *s;
 #ifdef GDFREETYPE
 char *fontpath;
   if( s[0] == '/' ) return( 0 ); /* ignore postscript fonts */
-  if( stricmp( s, "ascii" )==0 ) strcpy( GFTfont, "" );
+  if( strcmp( s, "ascii" )==0 ) strcpy( GFTfont, "" );
   else 	{
 	fontpath = getenv( "GDFONTPATH" );
 	if( fontpath == NULL ) Eerr( 12358, "warning: environment var GDFONTPATH not found. See ploticus fonts docs.", "" );
@@ -421,7 +431,7 @@ if( Gvertchar ) {
 			if( err ) { fprintf( stderr, "%s (%s)\n", err, GFTfont ); return( 1 ); }
 			}
 #endif
-		if( GFTfont[0] == '\0' ) gdImageStringUp( Gm, Gfont, a, b, (unsigned char*)s, Gcurcolor );
+		if( GFTfont[0] == '\0' ) gdImageStringUp( Gm, Gfont, a, b, (unsigned char *)s, Gcurcolor );
 		}
 	}
 else 	{
@@ -439,7 +449,7 @@ else 	{
 			if( err ) { fprintf( stderr, "%s (%s)\n", err, GFTfont ); return( 1 ); }
 			}
 #endif
-		if( GFTfont[0] == '\0' ) gdImageString( Gm, Gfont, a, b, (unsigned char*)s, Gcurcolor );
+		if( GFTfont[0] == '\0' ) gdImageString( Gm, Gfont, a, b, (unsigned char *)s, Gcurcolor );
 		}
 	}
 Goldx = x;
@@ -656,6 +666,9 @@ else if( strcmp( color, "transparent" )==0 ) {  /* added scg 12/29/99 */
 else if( strncmp( color, "xrgb", 4 )==0 ) {
         if (PLG_xrgb_to_rgb( &color[5], &r, &g, &b)) return(1);
         }
+else if( color[0] == 'x' ) {  /* added scg 5/31/07 */
+        if (PLG_xrgb_to_rgb( &color[1], &r, &g, &b)) return(1);
+        }
 else if( GL_goodnum( color, &i ) ) {
         r = atof( color );
         g = b = r;
@@ -808,73 +821,74 @@ return( 0 );
 
 /* ============================== */
 int
-PLGG_imload( imgname, xscale, yscale )
+PLGG_imload( imgname, width, height )
 char *imgname;
-double xscale, yscale;
+int width, height;
 {
 FILE *fp;
-if( strcmp( imgname, Gm2filename )==0 ) return( 0 ); /* already loaded */
+
+if( Gm2 != NULL ) {
+	gdImageDestroy( Gm2 );
+	Gm2 = NULL;
+	}
+
 fp = fopen( imgname, "rb" );
 if( fp == NULL ) return( -1 );
-if( Gm2filename[0] != '\0' ) gdImageDestroy( Gm2 );
+	
+#ifdef GD13
+  Gm2 = gdImageCreateFromGif( fp );
+#endif
 #ifdef GD16
-Gm2 = gdImageCreateFromPng( fp );
+  Gm2 = gdImageCreateFromPng( fp );
 #endif
 #ifdef GD18
-if( strcmp( g_fmt, "png" )==0 ) Gm2 = gdImageCreateFromPng( fp );
-else if( strcmp( g_fmt, "jpeg" )==0 ) Gm2 = gdImageCreateFromJpeg( fp );
-else if( strcmp( g_fmt, "wbmp" )==0 ) Gm2 = gdImageCreateFromWBMP( fp );
+  if( strcmp( g_fmt, "png" )==0 ) Gm2 = gdImageCreateFromPng( fp );
+  else if( strcmp( g_fmt, "jpeg" )==0 ) Gm2 = gdImageCreateFromJpeg( fp );
+  else if( strcmp( g_fmt, "wbmp" )==0 ) Gm2 = gdImageCreateFromWBMP( fp );
 #endif
-strcpy( Gm2filename, imgname );
-Gm2xscale = xscale;
-Gm2yscale = yscale;
+
+if( width != 0 ) Gm2width = width;
+if( height != 0 ) Gm2height = height;
+
 fclose( fp );
 return( 0 );
 }
 
 /* ================================ */
 /* place secondary GIF image within main image at absolute x, y 
-	align may be:	 "center" to center image around x, y
-			 "topleft" to put top left corner of image at x, y
-			 "bottomleft" to put bottom left corner of image at x, y */
+ *	align may be one of: topleft   topcenter  center  bottomleft 
+ */
 int
-PLGG_implace( x, y, align, xscale, yscale )
+PLGG_implace( x, y, align, width, height )
 double x, y;
 char *align;
-double xscale, yscale; /* usually specified as 1.0 1.0 but may be used to influence size */
+int width, height;  /* render the image using this width and height in pixels... if 0 0 then use natural size */
 {
 int gx, gy;
 double PLG_xsca_inv(), PLG_ysca_inv();
-int neww, newh;
 
+fprintf( stderr, "in gd imcopy..\n" );
+if( Gm2 == NULL ) return( -1 );
 
-if( Gm2filename[0] == '\0' ) return( -1 ); /* no 2ndary image loaded */
+if( width < 1 ) width = Gm2width;  /* as it may have been set in imload */
+if( width < 1 ) width = Gm2->sx;   /* fallback to image's natural size */
 
-/* calculate new scaled size */
-neww =  (Gm2->sx) * Gm2xscale * xscale;
-newh =  (Gm2->sy) * Gm2yscale * yscale;
+if( height < 1 ) height = Gm2height;  /* as it may have been set in imload */
+if( height < 1 ) height = Gm2->sy;    /* fallback to image's natural size */
 
-if( tolower( align[0] ) == 'c' ) { 	/* center it */
-	gx = Exsca( x ) - (neww/2);
-	if( gx < 0 ) gx = 0;
-	gy = Eysca( y ) - (newh/2);
-	if( gy < 0 ) gy = 0;
-	}
-else if( tolower( align[0] ) == 't' ) {
-	gx = Exsca( x );
-	gy = Eysca( y );
-	}
-else if( tolower( align[0] ) == 'b' ) {
-	gx = Exsca( x );
-	gy = Eysca( y ) - newh;
-	}
+if( strncmp( align, "center", 6 )==0 ) { gx = Exsca( x ) - (width/2); gy = Eysca( y ) - (height/2); }
+else if( strcmp( align, "topcenter" )==0 ) { gx = Exsca( x ) - (width/2); gy = Eysca( y ); }
+else if( strcmp( align, "bottomleft" )==0 ) { gx = Exsca( x ); gy = Eysca( y ) - height; }
+else { gx = Exsca( x ); gy = Eysca( y ); } /* default to top left */
 
-/* gdImageCopy( Gm, Gm2, gx, gy, 0, 0, Gm2->sx, Gm2->sy ); */
-gdImageCopyResized( Gm, Gm2, gx, gy, 0, 0, neww, newh, Gm2->sx, Gm2->sy );
+if( gx < 0 ) gx = 0;
+if( gy < 0 ) gy = 0;
+
+gdImageCopyResized( Gm, Gm2, gx, gy, 0, 0, width, height, Gm2->sx, Gm2->sy );
 
 /* add to app bounding box */
 PLG_bb( Exsca_inv( gx ), Eysca_inv( gy ) );
-PLG_bb( Exsca_inv( gx + neww ), Eysca_inv( gy + newh ) );
+PLG_bb( Exsca_inv( gx + width ), Eysca_inv( gy + height ) );
 
 return( 0 );
 }
@@ -908,8 +922,14 @@ if( y2 > (Gymax/(double)Gpixelsinch) || y2 < 0.0 ) y2 = Gymax/(double)Gpixelsinc
 if( PL_clickmap_getdemomode() ) PL_clickmap_show( 'g' ); /* 11/23/01 */
 #endif
 
-width = Exsca( x2 ) - Exsca( x1 );
-height = Eysca( y1 ) - Eysca( y2 );
+if( Greqwidth > 0 && Greqheight > 0 ) {
+	width = Greqwidth;
+	height = Greqheight;
+	}
+else	{
+	width = Exsca( x2 ) - Exsca( x1 );
+	height = Eysca( y1 ) - Eysca( y2 );
+	}
 if( height < 10 || width < 10 ) return( Eerr( 12012, "Result image is too small - not created", "" ) );
 
 ux = Exsca( x1 );
@@ -928,9 +948,8 @@ if( Gtransparent_color >= 0 ) {
 	gdImageColorTransparent( outim, t );
 	}
 
-/* Open a file for writing. "wb" means "write binary", important
-   under MSDOS, harmless under Unix. */
-if( stricmp( filename, "stdout" )==0 ) {
+/* Open a file for writing. "wb" means "write binary", important under MSDOS, harmless under Unix. */
+if( strcmp( filename, "stdout" )==0 ) {
 	fflush( stdout );
 #ifdef WIN32
 	_setmode( _fileno( stdout ), _O_BINARY ); /* use binary mode stdout */
@@ -953,7 +972,7 @@ else if( strcmp( g_fmt, "jpeg" )==0 ) gdImageJpeg( outim, outfp, 75 );
 else if( strcmp( g_fmt, "wbmp" )==0 ) gdImageWBMP( outim, Gblack, outfp );
 #endif
 
-if( stricmp( filename, "stdout" )!=0 ) {
+if( strcmp( filename, "stdout" )!=0 ) {
 	fclose( outfp );
 #ifndef WIN32
 	chmod( filename, 00644 );

@@ -580,8 +580,8 @@ void gdImageCharUp(gdImagePtr im, gdFontPtr f,
 	}
 }
 
-//void gdImageString(gdImagePtr im, gdFontPtr f, int x, int y, unsigned char *s, int color)
-void gdImageString(gdImagePtr im, gdFontPtr f, int x, int y, char *s, int color)
+void gdImageString(gdImagePtr im, gdFontPtr f, int x, int y, unsigned char *s, int color)
+/* void gdImageString(gdImagePtr im, gdFontPtr f, int x, int y, char *s, int color)   this avoids gcc4 warning */
 {
 	int i;
 	int l;
@@ -592,8 +592,8 @@ void gdImageString(gdImagePtr im, gdFontPtr f, int x, int y, char *s, int color)
 	}
 }
 
-//void gdImageStringUp(gdImagePtr im, gdFontPtr f, int x, int y, unsigned char *s, int color)
-void gdImageStringUp(gdImagePtr im, gdFontPtr f, int x, int y, char *s, int color)
+void gdImageStringUp(gdImagePtr im, gdFontPtr f, int x, int y, unsigned char *s, int color)
+/* void gdImageStringUp(gdImagePtr im, gdFontPtr f, int x, int y, char *s, int color)   this avoids gcc4 warning */
 {
 	int i;
 	int l;

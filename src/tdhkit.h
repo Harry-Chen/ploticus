@@ -18,7 +18,7 @@ extern int TDH_err();
 #define DATAMAXLEN 256  /* max length of one field - should be same value as VARMAXLEN */
 
 /* Variables list */
-#define MAXVAR 200	/* max number of variables */
+#define MAXVAR 250	/* max number of variables */ /* raised to 250 - scg 7/11/07 */
 #define VARMAXLEN 256	/* max length of variable contents - should be same value as DATAMAXLEN */
 
 /* Variable name size */
@@ -93,7 +93,6 @@ struct sinterpstate {
 	} ;
 
 /* ==== macros ==== */
-
 #ifdef LOCALE
  #ifndef stricmp
  #define stricmp( s, t )         stricoll( s, t )

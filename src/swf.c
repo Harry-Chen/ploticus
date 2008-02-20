@@ -309,7 +309,9 @@ else if( strncmp( color, "gray", 4 )==0 || strncmp( color, "grey", 4 )==0 ) {
 else if( strncmp( color, "xrgb", 4 )==0 ) {
 	if (PLG_xrgb_to_rgb( color+5, &r, &g, &b)) return(1);
 	}
-
+else if( color[0] == 'x' ) {  /* added scg 5/31/07 */
+        if (PLG_xrgb_to_rgb( &color[1], &r, &g, &b)) return(1);
+        }
 else if( GL_goodnum( color, &i ) ) {
 	r = atof( color );
 	g = b = r;
@@ -592,8 +594,9 @@ char *s;
 
 	if (!swf_path_in_prog) swf_path_in_prog =1;
 
+	/* if( (path_count-2) > max_pts ) return; */ /* scg 5/4/04 */
 	if (path_count >= max_pts ) return; /* scg 5/4/04 and crt 10-Jun-06 */
-
+ 
 	path_x[path_count] = x;
 	path_y[path_count] = y;
 	path_count++;

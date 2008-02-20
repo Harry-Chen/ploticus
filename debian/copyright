@@ -5,10 +5,10 @@ It was downloaded from http://ploticus.sourceforge.net
 
 Upstream Author: Stephen C. Grubb (stevegrubb@gmail.com)
 
-== Begin ploticus 2.33 copyright notice ==
+== Begin ploticus 2.40 copyright notice ==
 
-ploticus 2.33 data display engine.  Software, documentation, and examples.
-Copyright 1998-2006 Stephen C. Grubb  (stevegrubb@gmail.com)
+ploticus 2.40 data display engine.  Software, documentation, and examples.
+Copyright 1998-2008 Stephen C. Grubb  (stevegrubb@gmail.com)
 
 The home page for PLOTICUS is http://ploticus.sourceforge.net
 The source code, binaries for some platforms, documentation, and examples
@@ -53,7 +53,7 @@ You must keep the GPL.txt and Copyright files intact in the source code
 directory (add your own "Modifications made by" language to the top of
 the Copyright file).  It must be stated in an end-user-accessible copyright or
 acknowledgements area that the package is "a GPL derivative of Ploticus
-data display engine (c) 1998-2006 Stephen Grubb, freely available from
+data display engine (c) 1998-2008 Stephen Grubb, freely available from
 http://ploticus.sourceforge.net".  I request notification of the availability
 of all such derivatives (stevegrubb@gmail.com) so that I can link to them from
 the ploticus home page and consider possible inclusion in the main fork.
@@ -83,7 +83,7 @@ Partitioning is likely to be sufficient if all of these conditions are met:
 5) ploticus source code is kept in a separate directory, and the GPL.txt and Copyright files therein kept intact;
 6) ploticus identity and authorship must be clearly stated and visible.
 It must be stated in a end-user-accessible copyright or acknowledgements area that the product
-utilizes "Ploticus data display engine (c) 1998-2006 Stephen Grubb, GPL, freely available
+utilizes "Ploticus data display engine (c) 1998-2008 Stephen Grubb, GPL, freely available
 from http://ploticus.sourceforge.net".
 
 I request notification of the availability of all such products (stevegrubb@gmail.com)so that
@@ -92,6 +92,11 @@ I can monitor compliance and link to them from the ploticus home page.
 If you have questions or need clarification please contact me (stevegrubb@gmail.com) ....
 I take an active interest in seeing that these rules are
 adhered to, and request notification of any suspected violations.
+
+Q4. How should ploticus be cited if it was used in the production of a published work?
+
+Citation is always appreciated.  Language like this is suggested:
+Graphical data displays were produced using Ploticus software (ploticus.sf.net).
 
 == end of clarifications ==
 
@@ -147,7 +152,7 @@ GD 1.6.3 and 1.3 (www.boutell.com) carry the following statements:
    |
 
 
-== End of ploticus 2.33 Copyright Notice ==
+== End of ploticus 2.40 Copyright Notice ==
 
 NOTE:
     On Debian systems the binary the author refers to as 'pl' is

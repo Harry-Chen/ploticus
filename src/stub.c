@@ -14,12 +14,14 @@
 extern int GL_getseg(), GL_member();
 
 static int doing_sup = 0;  /* 1 if superscript/subscript enabled */
+static double textslantparm = 0.3;  /* how much to move vertically for every 1.0 horizontal */
 
 /* ======================================== */
 int
 PLG_stub_initstatic()
 {
 doing_sup = 0;
+textslantparm = 0.3;
 return( 0 );
 }
 
@@ -81,12 +83,13 @@ double a, b;
 
 
 x = Ex1; y = Ey1;
+
 /* convert op */
 if( tolower(op) == 'l' ) op = 'T';
-else if( tolower(op) == 'c' ) op = 'C';
 else if( tolower(op) == 'r' ) op = 'J';
-/* otherwise, use what was passed in.. */
-if( !GL_member( op, "TCJ" ) ) op = 'C';
+else op = toupper(op);
+if( !GL_member( op, "TCJDU" ) ) op = 'C';
+
 slen = strlen( s );
 for( i = 0; ;  ) {
 	GL_getseg( chunk, s, &i, "\n" ); 
@@ -143,6 +146,29 @@ for( i = 0; ;  ) {
 			}
 		}
 
+	else if( op == 'D' || op == 'U' ) {  /* diagonal text (D=left-justified  U=right justified)- added scg 8/8/07 */
+		double xx, yy, xofs, yofs;
+		int len;
+		char tc[5];
+		xofs = Ecurtextwidth;
+		yofs = Ecurtextheight * textslantparm;
+		if( op == 'D' ) xx = x + 0.03;
+		else if( op == 'U' ) xx = x;
+		yy = y + 0.09;
+		len = strlen( chunk );
+		for( j = 0; j < len; j++ ) {
+			if( op == 'U' ) k = (len-j)-1;
+			else k = j;
+			sprintf( tc, "%c", chunk[k] );
+			if( Eflip ) Emov( yy, xx );
+			else Emov( xx, yy ); 
+			Epcode( 'C', 0.0, 0.0, tc );
+			if( op == 'D' ) xx += xofs;
+			else xx -= xofs;  
+			yy -= yofs;
+			}
+		}
+
 	else Epcode( op, 0.0, 0.0, chunk );
 
 	if( i >= slen ) break;
@@ -157,12 +183,21 @@ for( i = 0; ;  ) {
 return(0);
 }
 /* ======================================== */
-/* TEXTSUPMODE - set the doing_sup flag .. */
+/* TEXTSUPMODE - set doing_sup .. */
 int
 PLG_textsupmode( mode )
 int mode;
 {
 doing_sup = mode;
+return( 0 );
+}
+/* ======================================== */
+/* TEXTSLANT - set textslantparm .. */
+int 
+PLG_textslant( val )
+double val;
+{
+textslantparm = val;
 return( 0 );
 }
 
@@ -262,8 +297,7 @@ if( linewidth != Ecurlinewidth ||
 
 	sprintf( buf, "%d", pattern );
 	Epcode( 'Y', linewidth, pat_dens, buf );
-//  Bugfix scg 19 Apr 07 http://tech.groups.yahoo.com/group/ploticus/message/1991
-	Ecurlinewidth = linewidth / Estandard_lwscale; 
+	Ecurlinewidth = linewidth / Estandard_lwscale;   /* Estandard_lwscale added scg 4/20/07 */
 	Ecurlinetype = pattern; 
 	Ecurpatternfactor = pat_dens;
 	}

@@ -7,6 +7,11 @@
 /* PLOTICUS API */
 #include "pl.h"
 
+#ifndef PREFABS_DIR
+#define PREFABS_DIR ""
+#endif
+
+
 int PL_init_statics();
 
 static int begin_needed = 1;
@@ -80,6 +85,14 @@ if( begin_needed ) {
 if( ! prefab ) return( PL_exec_scriptfile( scriptfile ));
 else 	{
 	prefabs_dir = getenv( "PLOTICUS_PREFABS" );
+
+#ifdef UNIX
+	/* maybe PREFABS_DIR was set in the Makefile... */
+  	if( prefabs_dir == NULL ) prefabs_dir = PREFABS_DIR ;
+  	else if( prefabs_dir[0] == '\0' ) prefabs_dir = PREFABS_DIR ;
+  	if( prefabs_dir[0] == '\0' ) prefabs_dir = NULL;
+#endif
+
 	if( prefabs_dir == NULL ) return( Eerr( 7237, "PLOTICUS_PREFABS environment variable not found", "" ));
 	sprintf( filename, "%s/%s", prefabs_dir, scriptfile );
 	return( PL_exec_scriptfile( filename ));
@@ -92,8 +105,10 @@ int
 ploticus_end()
 {
 int stat;
+char buf[80];
 
-stat = PL_execline( "#endproc" );
+strcpy( buf, "#endproc" );
+stat = PL_execline( buf );
 if( PLS.eready ) {
 	Eflush();
 	stat = Eendoffile();

@@ -1,12 +1,11 @@
 /* ======================================================= *
- * Copyright 1998-2005 Stephen C. Grubb                    *
+ * Copyright 1998-2008 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */
 
-#include "tdhkit.h" /* for MAXITEMS */
 #include "pl.h"
-#define MAXNAMES MAXITEMS
+#define MAXNAMES 200
 
 static char fname[MAXNAMES][NAMEMAXLEN];
 static int nfname = 0;
@@ -37,15 +36,16 @@ char *list;
 {
 int i, slen;
 
-
 nfname = 0;
 
-for( i = 0, slen = strlen( list ); i < slen; i++ ) {
-	if( list[i] == ',' || list[i] == '\n' || list[i] == '"' ) list[i] = ' ';
-	}
+slen = strlen( list );
+for( i = 0; i < slen; i++ ) if( list[i] == ',' || list[i] == '\n' || list[i] == '"' ) list[i] = ' ';
 
 i = 0;
-if( PLS.debug ) fprintf( PLS.diagfp, "Data field names are: " );
+if( PLS.debug ) {
+	if( slen < 1 ) fprintf( PLS.diagfp, "Clearing data set field names.\n" );
+	else fprintf( PLS.diagfp, "Setting data set field names to: " );
+	}	
 while( 1 ) {
 	strncpy( fname[ nfname ], GL_getok( list, &i ), NAMEMAXLEN-1 ); /* changed to strncpy() scg 8/4/04 */
 	if( fname[ nfname ][0] == '\0' ) break;
@@ -57,6 +57,7 @@ while( 1 ) {
 if( PLS.debug ) fprintf( PLS.diagfp, "\n" );
 return( nfname );
 }
+
 
 /* ============================ */
 /* FREF - given a field name or number, return the field number (1st = 1) */
@@ -94,15 +95,11 @@ else if( nfname > 0 ) {
 		}
 	}
 
-if( fld < 1 ) {  /* || fld > Nfields -- don't do this because Nfields might not be set yet
-			if coming in from getdata select  -scg 10/7/00 */
-	if( showerr ) Eerr( 2479, "No such data field", name );
-	errflag = 1;
-	return( 1 ); /* use 1 to be safe; return value is not checked by caller */
-	}
+if( fld < 1 ) {  if( showerr ) Eerr( 2479, "No such data field", name ); errflag = 1; return( 1 );  }
 
 return( fld );
 }
+
 /* ============================ */
 /* GETFNAME - given a field number, return the field name assigned to
 	that field (first is 1).

@@ -36,9 +36,9 @@ char TDH_shellmetachars[30] = "\"'`$\\;|"; /* shell meta characters to strip out
 char TDH_fdfpath[ MAXPATH ] =      "./";	/* directory where FDF files are kept */
 #endif
 
-int TDH_midriff_flag = 0;		/* this is needed with the new ploticus api PL_initstatics() 
+int TDH_inquisp = 0;			/* this is needed with the new ploticus api PL_initstatics() 
 					   so that we don't wipe out variables, and other script
-					   settings already in action.. mrcgi sets this to 1 */
+					   settings already in action.. quisp sets this to 1 */
 
 #define MAXPE 512
 static char putenvstring[MAXPE+2];

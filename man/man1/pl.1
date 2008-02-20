@@ -24,7 +24,7 @@
   <td align=right>
   <small>
   <a href="../doc/welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
-  Version 2.33 Jun'06
+  Version 2.40 Jan'08
   <td></tr></table>
 </td></tr>
 <td>
@@ -32,13 +32,13 @@
 <br>
 .>>
 
-.TH ploticus 1 "02-JUN-2006   PLOTICUS ploticus.sourceforge.net"
+.TH ploticus 1 "15-JAN-2008   PLOTICUS ploticus.sourceforge.net"
 
 .SH Name
-ploticus
+ploticus \- data display package
 
 .SH Synopsis
-\fCploticus  -prefab \fIprefabname\fC   \fIparm=value\fC ..  [\fI-options\fR]
+\fCploticus  \-prefab \fIprefabname\fC   \fIparm=value\fC ..  [\fI-options\fR]
 .br
 \0.. OR ..
 .br
@@ -441,7 +441,7 @@ By using \fC-drawdump\fR and \fC-drawdumpa\fR you can easily
 </a>
 .>>
 The drawdump file can be rendered later in any desired format, using this command:
-\fCploticus -prefab draw dumpfile=\fIfilename\fR 
+\fCploticus \-prefab draw dumpfile=\fIfilename\fR 
 .ig >>
 &nbsp; &nbsp;
 .>>
@@ -489,19 +489,6 @@ These can be used for hyperlinks, and also for providing
 pop-up text labels that appear when the mouse passes over a region.
 By default, client-side map content is written to stdout.
 
-.LP
-\fB-map\fR
-.IP \0
-produce a 
-.ig >>
-<a href="clickmap.html">
-.>>
-\0server-side clickable imagemap file
-.ig >>
-</a>
-.>>
-to accompany a png, gif, jpeg, or SVG.  
-
 .ig >>
 <br><br>
 .>>
@@ -511,11 +498,6 @@ to accompany a png, gif, jpeg, or SVG.
 .IP \0
 Same as \fB-csmap\fR but all mapped regions are shown outlined in green,
 and a complete HTML chunk is produced which involves the output image name.
-
-.LP
-\fB-mapdemo\fR
-.IP \0
-Same as \fB-map\fR but all mapped regions are shown outlined in green.
 
 .ig >>
 <br><br>
@@ -537,10 +519,24 @@ explicitly name the output file containing the map info.  The name may also be s
 </a>
 .>>
 If a name is not specified, client-side image map info will be written to stdout;
-server-side image map info will be written to a file having the same name as the output result file
-except with a \fC.map\fR suffix
-(\fCstdout\fR may be useful in dynamic content HTML situations).
 For SVG this parameter is not needed, since image map info is embedded in the SVG file.
+
+.ig >>
+<br><br>
+.>>
+.LP
+\fB-map\fR
+.IP \0
+produce a 
+.ig >>
+<a href="clickmap.html">
+.>>
+\0server-side clickable imagemap file
+.ig >>
+</a>
+.>>
+to accompany a png, gif, jpeg, or SVG.   
+\fBNote: server-side maps are deprecated.\fR
 
 .ig >>
 <a name=resultsize></a>
@@ -588,13 +584,13 @@ On other output devices this option does nothing.
 </a>
 .>>
 0,0 is the lower left corner.
-If -pagesize is not specified, the default size will be 8" x 8".
-Size is set before any drawing takes place and is unaffected by the -scale option.
+If \-pagesize is not specified, the default size will be 8" x 8".
+Size is set before any drawing takes place and is unaffected by the \-scale option.
 .IP
 When rendering PNG/GIF/JPEG images, this option determines amount of internal memory allocation for accommodating the image.
 The result can never be bigger than this size, and any drawing outsize the bounds will not be visible.
 \fBTo create PNG/GIF/JPEG images larger than 8" x 8", this option MUST be specified to set a bigger size.\fR
-Cropping options (below) can be used along with -pagesize as long as they result in a smaller rectangle
+Cropping options (below) can be used along with \-pagesize as long as they result in a smaller rectangle
 than the pagesize; they take effect after all drawing has been completed.
 .IP
 \fB-pagesize\fR has no effect with EPS or paginated PostScript results (the PostScript
@@ -667,8 +663,23 @@ There may be no spaces in the \fIleft,bottom,right,top\fR specification.
 Cropping takes place after design is rendered and does not
 affect coordinate locations.
 .br
-Example: \fC-croprel 0,-0.1,0,0.1\fR
+Example: \fC-croprel 0,\-0.1,0,0.1\fR
 
+.ig >>
+<br><br>
+.>>
+
+.LP
+\fB-pixsize\fR
+.ig >>
+&nbsp; &nbsp;
+.>>
+\fIwidth,height\fR
+.IP \0
+If specified, result PNG/GIF/JPG image will be created at exactly this width and height in pixels.
+Does not interact with scaling or cropping... user is responsible for ensuring that content fits appropriately into the specified size.
+User is also responsible for setting \-pagesize appropriately for larger images.
+New in 2.40
 
 .ig >>
 <a name=graphic></a>
@@ -778,7 +789,7 @@ sets the background color to \fIcolor\fR.
 .IP \0
 Use centimeters as your absolute units, instead of inches.
 On the command line this must appear to the left of any arguments dealing with
-absolute unit values, such as -pagesize.
+absolute unit values, such as \-pagesize.
 Centimeter absolute units can also be set via
 .ig >>
 <a href="../doc/settings.html">
@@ -918,6 +929,18 @@ Note: raising the maximum number of categories may be done using
 from within the script.
 
 .ig >>
+<br><br>
+.>>
+.LP
+\fB-cpulimit\fR
+#Include nbsp2
+\fIs\fR
+.IP \0
+Set unix resource limit on cpu time to \fIs\fR seconds.  Default is 30 seconds.  
+New in 2.40
+
+
+.ig >>
 <br><br><br>
 .>>
 .ig >>
@@ -1034,7 +1057,7 @@ The output file will automatically be
 included in the \fIcommand\fR.  For example, if a GIF file is being
 generated you might use this to invoke the xv utility: \fC-viewer xv\fR.  
 If PostScript is being generated you could use something like this to
-invoke the ghostview utility: \fC-viewer "gv -magstep -1"\fR.
+invoke the ghostview utility: \fC-viewer "gv \-magstep \-1"\fR.
 The given command must be available on your system and locatable in
 your command search path.
 This option may not be used with \fC-o stdout\fR.
@@ -1266,32 +1289,32 @@ The following example uses the
 </a>
 .>>
 .IP \0
-\fCploticus -prefab scat -png datafile=results.dat x=2 y=3\fR
+\fCploticus \-prefab scat \-png datafile=results.dat x=2 y=3\fR
 
 .LP
 The following examples assume
 that you have a script file called \fClineplot1.p\fR.
 .IP \0
- \fCploticus -x lineplot1.p\fR = view on X11 screen
+ \fCploticus \-x lineplot1.p\fR = view on X11 screen
 .IP
- \fCploticus -png lineplot1.p\fR = create PNG image lineplot1.png
+ \fCploticus \-png lineplot1.p\fR = create PNG image lineplot1.png
 .IP
- \fCploticus -gif lineplot1.p -o stdout\fR = create GIF image on standard output
+ \fCploticus \-gif lineplot1.p \-o stdout\fR = create GIF image on standard output
 .IP
- \fCploticus -gif lineplot1.p -viewer xv\fR = produce GIF and view using xv 
+ \fCploticus \-gif lineplot1.p \-viewer xv\fR = produce GIF and view using xv 
 (assuming xv image viewer is available on your system).
 .IP
- \fCploticus -eps lineplot1.p\fR = produce EPS file lineplot1.eps
+ \fCploticus \-eps lineplot1.p\fR = produce EPS file lineplot1.eps
 .IP
- \fCploticus -eps lineplot1.p -viewer gv\fR = produce EPS and view using gv 
+ \fCploticus \-eps lineplot1.p \-viewer gv\fR = produce EPS and view using gv 
 (that's ghostview, assuming it is available on your system).
 .IP
- \fCploticus -eps lineplot1.p -o lineplot.eps\fR = produce EPS into file lineplot.eps
+ \fCploticus \-eps lineplot1.p \-o lineplot.eps\fR = produce EPS into file lineplot.eps
 .IP
- \fCploticus -ps lineplot1.p | lp\fR = produce paginated postscript and send to
+ \fCploticus \-ps lineplot1.p | lp\fR = produce paginated postscript and send to
 unix lp print spooler.
 .IP
- \fCploticus -ps lineplot1.p -veiwer gv\fR = produce paginated postscript
+ \fCploticus \-ps lineplot1.p \-veiwer gv\fR = produce paginated postscript
 and view using ghostview.
 
 .ig >>
@@ -1340,7 +1363,7 @@ the ploticus ./prefabs subdirectory.
 .IP \0
 Locale support.  Thanks to Oleg Bartunov oleg@sai.msu.su
 for contributing this.  \fBploticus\fR must be 
-built with -DLOCALE for this to work.
+built with \-DLOCALE for this to work.
 
 
 .ig >>
