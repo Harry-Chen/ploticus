@@ -3,8 +3,8 @@ Section: misc
 Priority: optional
 Maintainer: Colin Tuckley <colint@debian.org>
 Homepage: http://ploticus.sourceforge.net
-Build-Depends: debhelper (>= 5.0.0), zlib1g-dev, libgd2-noxpm-dev, libjpeg62-dev, libfreetype6-dev, libx11-dev, x-dev, libpng12-dev
-Standards-Version: 3.7.3
+Build-Depends: debhelper (>= 5.0.0), zlib1g-dev, libgd2-noxpm-dev, libjpeg62-dev, libfreetype6-dev, libx11-dev, x11proto-core-dev, libpng12-dev
+Standards-Version: 3.8.0
 
 Package: ploticus
 Section: misc

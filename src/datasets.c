@@ -103,8 +103,10 @@ int newds;
 newds = PLD.curds+1;
 if( nrows == 0 && nfields == 0 ) {
 	PLD.nrecords[ newds ] = PLD.currow - PLD.dsfirstrow[ newds ];
-	if( PLD.nrecords[ newds ] < 1 ) return( 0 );  /* no data.. abort */
-	PLD.nfields[ newds ] = (PLD.curdf - PLD.dsfirstdf[ newds ]) / PLD.nrecords[ newds ];
+	/* turns out we can't do the following.. for example processdata action: breaks a dataset of nrows=0 is valid */
+	/* if( PLD.nrecords[ newds ] < 1 ) return( 0 ); */ /* no data.. abort */
+	if( PLD.nrecords[newds] < 1 ) PLD.nfields[ newds ] = 0;
+	else PLD.nfields[ newds ] = (PLD.curdf - PLD.dsfirstdf[ newds ]) / PLD.nrecords[ newds ];
 	}
 else	{
 	PLD.nrecords[ newds ] = nrows;
