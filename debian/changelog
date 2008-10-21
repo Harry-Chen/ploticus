@@ -1,3 +1,10 @@
+ploticus (2.40-3) unstable; urgency=low
+
+  * Upstream Bugfix: Closes: #502869
+    Fix "lines" prefab wasn't working when cats=yes in prefabs/lines.pl
+
+ -- Colin Tuckley <colint@debian.org>  Tue, 21 Oct 2008 11:12:49 +0100
+
 ploticus (2.40-2) unstable; urgency=low
 
   * Fix bashism in run_script_test Closes: #489642.

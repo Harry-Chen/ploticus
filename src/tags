@@ -1,0 +1,2252 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.7	//
+A	smoothfit.c	/^  static double P1, P2, P3, P4, P5, P6, W1, W2, W3, A, B, C, R, S, T, Z;$/;"	v	file:
+ABSOLUTE	proc_line.c	10;"	d	file:
+ACROSS	proc_legend.c	16;"	d	file:
+ALPHA	condex.c	28;"	d	file:
+ALPHA	dates.c	42;"	d	file:
+ALPHA	functions.c	35;"	d	file:
+ALPHA	times.c	46;"	d	file:
+ARCOM	Makefile	/^ARCOM = ar r$/;"	m
+AUTODETERMINE	proc_getdata.c	23;"	d	file:
+Abbrevmonth	dates.c	/^static char Abbrevmonth[12][10] = { "Jan", "Feb", "Mar", "Apr", "May", "June", $/;"	v	file:
+B	smoothfit.c	/^  static double P1, P2, P3, P4, P5, P6, W1, W2, W3, A, B, C, R, S, T, Z;$/;"	v	file:
+BAR	parse.c	29;"	d	file:
+BAR	proc_getdata.c	22;"	d	file:
+BASEOLDYR	dates.c	38;"	d	file:
+BASEYR	dates.c	37;"	d	file:
+BOTTOM	lineclip.c	18;"	d	file:
+BSPLINE	proc_curvefit.c	18;"	d	file:
+BitSet	gd13.c	1559;"	d	file:
+BumpPixel	gd13.c	/^BumpPixel(void)$/;"	f	file:
+C	smoothfit.c	/^  static double P1, P2, P3, P4, P5, P6, W1, W2, W3, A, B, C, R, S, T, Z;$/;"	v	file:
+CATEGORIES	units.c	20;"	d	file:
+CC	Makefile	/^CC = gcc$/;"	m
+CFLAGS	Makefile	/^CFLAGS = $(FPIC) $(WALL) -DPLOTICUS -D$(PLATFORM) -DTDH_NOREC $(ZFLAG) $(LOCALE_FLAG) \\$/;"	m
+CHARHW	grgd.c	84;"	d	file:
+CLIENTSIDE	clickmap.c	21;"	d	file:
+CM_BLUE	gd13.c	1553;"	d	file:
+CM_GREEN	gd13.c	1552;"	d	file:
+CM_RED	gd13.c	1551;"	d	file:
+CO	smoothfit.c	/^  static double CO, SO, CT, ST, CTU, STU, XNT, DX1, DY1, DX2, DY2, XO, YO, DX, DY, XT, YT;$/;"	v	file:
+COLOR	proc_boxplot.c	40;"	d	file:
+COLORLEN	plg.h	20;"	d
+COMMANDMAX	proc_getdata.c	15;"	d	file:
+CONFIGFILE	preliminaries.c	12;"	d	file:
+CONTAINS	cats.c	12;"	d	file:
+CPULIMIT	pl.h	15;"	d
+CSV	parse.c	28;"	d	file:
+CSV	proc_getdata.c	21;"	d	file:
+CT	smoothfit.c	/^  static double CO, SO, CT, ST, CTU, STU, XNT, DX1, DY1, DX2, DY2, XO, YO, DX, DY, XT, YT;$/;"	v	file:
+CTU	smoothfit.c	/^  static double CO, SO, CT, ST, CTU, STU, XNT, DX1, DY1, DX2, DY2, XO, YO, DX, DY, XT, YT;$/;"	v	file:
+CountDown	gd13.c	/^static long CountDown;$/;"	v	file:
+Curfmt	times.c	/^static char Curfmt[30] = "hh:mm";$/;"	v	file:
+DATAMAXLEN	glroutines.c	20;"	d	file:
+DATAMAXLEN	tdhkit.h	18;"	d
+DATE	units.c	17;"	d	file:
+DATETIME	units.c	19;"	d	file:
+DAYS_FROM_BASEOLD_TO_BASE	dates.c	39;"	d	file:
+DBNULL	tdhkit.h	56;"	d
+DEFAULT_FONT	x11.c	38;"	d	file:
+DEFAULT_WIN_HEIGHT	init.c	14;"	d	file:
+DEFAULT_WIN_WIDTH	init.c	13;"	d	file:
+DELT_THETA	arrow.c	9;"	d	file:
+DOWN	proc_legend.c	15;"	d	file:
+DTMAXLEN	tdhkit.h	28;"	d
+DT_build_dt	dates.c	/^DT_build_dt( datepart, timepart, result )$/;"	f
+DT_build_dt	datetime.c	/^DT_build_dt( datepart, timepart, result )$/;"	f
+DT_datefunctions	dates.c	/^DT_datefunctions( hash, name, arg, nargs, result, typ )$/;"	f
+DT_datetime2days	dates.c	/^DT_datetime2days( dt, days )$/;"	f
+DT_datetime2days	datetime.c	/^DT_datetime2days( dt, days )$/;"	f
+DT_datetime_initstatic	dates.c	/^DT_datetime_initstatic()$/;"	f
+DT_datetime_initstatic	datetime.c	/^DT_datetime_initstatic()$/;"	f
+DT_days2datetime	dates.c	/^DT_days2datetime( days, dt )$/;"	f
+DT_days2datetime	datetime.c	/^DT_days2datetime( days, dt )$/;"	f
+DT_formatdatetime	dates.c	/^DT_formatdatetime( dt, format, newdt )$/;"	f
+DT_formatdatetime	datetime.c	/^DT_formatdatetime( dt, format, newdt )$/;"	f
+DT_frame_mins	dates.c	/^DT_frame_mins( mins )$/;"	f
+DT_frame_mins	datetime.c	/^DT_frame_mins( mins )$/;"	f
+DT_getdtparts	dates.c	/^DT_getdtparts( dt, datepart, timepart )$/;"	f
+DT_getdtparts	datetime.c	/^DT_getdtparts( dt, datepart, timepart )$/;"	f
+DT_getdtsep	dates.c	/^DT_getdtsep( sep )$/;"	f
+DT_getdtsep	datetime.c	/^DT_getdtsep( sep )$/;"	f
+DT_getwin	dates.c	/^DT_getwin( winsize  )$/;"	f
+DT_getwin	datetime.c	/^DT_getwin( winsize  )$/;"	f
+DT_initstatic	dates.c	/^DT_initstatic()$/;"	f
+DT_setdateparms	dates.c	/^DT_setdateparms( parmname, value )$/;"	f
+DT_setdatetimefmt	dates.c	/^DT_setdatetimefmt( fmt, window )$/;"	f
+DT_setdatetimefmt	datetime.c	/^DT_setdatetimefmt( fmt, window )$/;"	f
+DT_setdtsep	dates.c	/^DT_setdtsep( c )$/;"	f
+DT_setdtsep	datetime.c	/^DT_setdtsep( c )$/;"	f
+DT_settimefmt	times.c	/^DT_settimefmt( fmt )$/;"	f
+DT_suppress_twin_warn	dates.c	/^DT_suppress_twin_warn( mode )$/;"	f
+DT_suppress_twin_warn	datetime.c	/^DT_suppress_twin_warn( mode )$/;"	f
+DT_time_initstatic	times.c	/^DT_time_initstatic()$/;"	f
+DT_timefunctions	times.c	/^DT_timefunctions( hash, name, arg, nargs, result, typ )$/;"	f
+DX	smoothfit.c	/^  static double CO, SO, CT, ST, CTU, STU, XNT, DX1, DY1, DX2, DY2, XO, YO, DX, DY, XT, YT;$/;"	v	file:
+DX1	smoothfit.c	/^  static double CO, SO, CT, ST, CTU, STU, XNT, DX1, DY1, DX2, DY2, XO, YO, DX, DY, XT, YT;$/;"	v	file:
+DX2	smoothfit.c	/^  static double CO, SO, CT, ST, CTU, STU, XNT, DX1, DY1, DX2, DY2, XO, YO, DX, DY, XT, YT;$/;"	v	file:
+DY	smoothfit.c	/^  static double CO, SO, CT, ST, CTU, STU, XNT, DX1, DY1, DX2, DY2, XO, YO, DX, DY, XT, YT;$/;"	v	file:
+DY1	smoothfit.c	/^  static double CO, SO, CT, ST, CTU, STU, XNT, DX1, DY1, DX2, DY2, XO, YO, DX, DY, XT, YT;$/;"	v	file:
+DY2	smoothfit.c	/^  static double CO, SO, CT, ST, CTU, STU, XNT, DX1, DY1, DX2, DY2, XO, YO, DX, DY, XT, YT;$/;"	v	file:
+Day	dates.c	/^static int Day; \/* most recent day sent to jdate *\/$/;"	v	file:
+Defaultfmt	dates.c	/^static char Defaultfmt[20] = "mmddyy"; \/* date format the user has chosen as "default" *\/$/;"	v	file:
+Df	dates.c	/^static char *Df[16] = { "%d-%d-%d", "%d\/%d\/%d", "%2d%2d%d", "%d.%d.%d",$/;"	v	file:
+Dispfmt	dates.c	/^static int Dispfmt = 2;$/;"	v	file:
+Dispfmt	times.c	/^static char Dispfmt[30] = "%d:%02d";$/;"	v	file:
+Dmdays	dates.c	/^static int Dmdays[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };$/;"	v	file:
+Dmonths	dates.c	/^static char Dmonths[12][10] = { "jan", "feb", "mar", "apr", "may", "jun", $/;"	v	file:
+DoExtension	gd13.c	/^DoExtension(FILE *fd, int label, int *Transparent)$/;"	f	file:
+Dtag	dates.c	/^static char *Dtag[NTYPES] = { "mm-dd-yy", "mm\/dd\/yy", "mmddyy", "mm.dd.yy",$/;"	v	file:
+Dtsep	dates.c	/^static char Dtsep[4] = "."; \/* must be one character only *\/  \/* added scg 9\/26\/03 *\/$/;"	v	file:
+Dtsep	datetime.c	/^static char Dtsep[4] = "."; \/* must be one character only *\/  \/* added scg 9\/26\/03 *\/$/;"	v	file:
+Dtwinbegin	dates.c	/^static double Dtwinbegin = 0.0, Dtwinend = 1440.0, Dtwinsize = 1440.0; \/* default: 24 hours *\/$/;"	v	file:
+Dtwinbegin	datetime.c	/^static double Dtwinbegin = 0.0, Dtwinend = 1440.0, Dtwinsize = 1440.0; \/* default: 24 hours *\/$/;"	v	file:
+Dtwinend	dates.c	/^static double Dtwinbegin = 0.0, Dtwinend = 1440.0, Dtwinsize = 1440.0; \/* default: 24 hours *\/$/;"	v	file:
+Dtwinend	datetime.c	/^static double Dtwinbegin = 0.0, Dtwinend = 1440.0, Dtwinsize = 1440.0; \/* default: 24 hours *\/$/;"	v	file:
+Dtwinsize	dates.c	/^static double Dtwinbegin = 0.0, Dtwinend = 1440.0, Dtwinsize = 1440.0; \/* default: 24 hours *\/$/;"	v	file:
+Dtwinsize	datetime.c	/^static double Dtwinbegin = 0.0, Dtwinend = 1440.0, Dtwinsize = 1440.0; \/* default: 24 hours *\/$/;"	v	file:
+Dwdays	dates.c	/^static char Dwdays[8][10] = { "", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" }; $/;"	v	file:
+EDXhi	plg.h	240;"	d
+EDXlo	plg.h	239;"	d
+EDYhi	plg.h	242;"	d
+EDYlo	plg.h	241;"	d
+EEvent	plg.h	232;"	d
+EEventx	plg.h	233;"	d
+EEventy	plg.h	234;"	d
+EScale_x	plg.h	243;"	d
+EScale_y	plg.h	244;"	d
+EVENTS	interact.c	13;"	d	file:
+EWinx	plg.h	210;"	d
+EWinx_0	plg.h	212;"	d
+EWiny	plg.h	211;"	d
+EWiny_0	plg.h	213;"	d
+EXACT	cats.c	13;"	d	file:
+EXE	Makefile	/^EXE = pl$/;"	m
+EXhi	plg.h	236;"	d
+EXlo	plg.h	235;"	d
+EYhi	plg.h	238;"	d
+EYlo	plg.h	237;"	d
+E_COLORMAP_FULL	plg.h	267;"	d
+E_COLORMAP_FULL	x11.c	46;"	d	file:
+E_DOWN	plg.h	274;"	d
+E_EXPOSE	plg.h	264;"	d
+E_EXPOSE	x11.c	44;"	d	file:
+E_LEFT	plg.h	271;"	d
+E_LINEAR	plg.h	22;"	d
+E_LOG	plg.h	23;"	d
+E_LOGPLUS1	plg.h	24;"	d
+E_MESSAGE	plg.h	266;"	d
+E_MONODISPLAY	plg.h	268;"	d
+E_MONODISPLAY	x11.c	47;"	d	file:
+E_MOUSE_LEFT	plg.h	259;"	d
+E_MOUSE_MIDDLE	plg.h	260;"	d
+E_MOUSE_RIGHT	plg.h	261;"	d
+E_PAGEDOWN	plg.h	276;"	d
+E_PAGEUP	plg.h	275;"	d
+E_RADIAL	plg.h	25;"	d
+E_RESIZE	plg.h	265;"	d
+E_RESIZE	x11.c	45;"	d	file:
+E_RIGHT	plg.h	273;"	d
+E_UP	plg.h	272;"	d
+E_WAITFOR_WM	plg.h	278;"	d
+E_savekey	plg.h	158;"	d
+E_ysca	plg.h	199;"	d
+E_ysca_inv	plg.h	200;"	d
+Ea	plg.h	141;"	d
+Earrow	plg.h	133;"	d
+Easync	plg.h	119;"	d
+Eax	plg.h	142;"	d
+Eay	plg.h	143;"	d
+Ebackcolor	plg.h	193;"	d
+Ebb	plg.h	164;"	d
+Eblacklines	plg.h	253;"	d
+Ecblock	plg.h	134;"	d
+Ecblockdress	plg.h	135;"	d
+Ecentext	plg.h	109;"	d
+Eclr	plg.h	181;"	d
+Ecolor	plg.h	192;"	d
+Ecolorfill	plg.h	194;"	d
+Ecolorname_to_rgb	plg.h	178;"	d
+Econv	pl.h	218;"	d
+Econv_error	pl.h	219;"	d
+Ecurbkcolor	plg.h	230;"	d
+Ecurcolor	plg.h	229;"	d
+Ecurfont	plg.h	217;"	d
+Ecurlinetype	plg.h	226;"	d
+Ecurlinewidth	plg.h	225;"	d
+Ecurpaper	plg.h	223;"	d
+Ecurpatternfactor	plg.h	227;"	d
+Ecurpen	plg.h	228;"	d
+Ecurtextdirection	plg.h	222;"	d
+Ecurtextheight	plg.h	220;"	d
+Ecurtextsize	plg.h	218;"	d
+Ecurtextwidth	plg.h	221;"	d
+Edev	plg.h	214;"	d
+Edotext	plg.h	185;"	d
+Edx	plg.h	144;"	d
+Edy	plg.h	145;"	d
+Eeid	interact.c	/^static int Eeid;$/;"	v	file:
+Eendoffile	plg.h	125;"	d
+Eerr	color.c	11;"	d	file:
+Eerr	grgd.c	44;"	d	file:
+Eerr	pl.h	48;"	d
+Eerr	plg.h	129;"	d
+Eerr	ps.c	41;"	d	file:
+Eerr	svg.c	42;"	d	file:
+Eerr	swf.c	42;"	d	file:
+Eerr	x11.c	109;"	d	file:
+Eevalbound	pl.h	223;"	d
+Eevx	interact.c	/^static double Eevx, Eevy;$/;"	v	file:
+Eevy	interact.c	/^static double Eevx, Eevy;$/;"	v	file:
+Ef_inr	pl.h	227;"	d
+Efill	plg.h	107;"	d
+Eflashdelay	plg.h	254;"	d
+Eflip	plg.h	252;"	d
+Eflush	plg.h	120;"	d
+Efont	plg.h	186;"	d
+Egetbb	plg.h	166;"	d
+Egetclick	plg.h	156;"	d
+Egetglobalscale	plg.h	175;"	d
+Egetkey	plg.h	155;"	d
+Egetlastbox	plg.h	137;"	d
+Egetoutfilename	plg.h	152;"	d
+Egettextsize	plg.h	167;"	d
+Egetunits	pl.h	215;"	d
+Egetunitsubtype	pl.h	216;"	d
+Egifrect	plg.h	171;"	d
+Ehandle_events	plg.h	154;"	d
+Ehe	plg.h	157;"	d
+Eicolor	plg.h	180;"	d
+Eimload	plg.h	172;"	d
+Eimplace	plg.h	173;"	d
+Einit	plg.h	147;"	d
+Elenex	pl.h	222;"	d
+Elimit	plg.h	146;"	d
+Elin	plg.h	183;"	d
+Elineclip	plg.h	201;"	d
+Elinetype	plg.h	190;"	d
+Elinu	plg.h	104;"	d
+Emark	plg.h	162;"	d
+Emov	plg.h	182;"	d
+Emovu	plg.h	103;"	d
+Enextcolor	plg.h	231;"	d
+Enormline	plg.h	191;"	d
+Epaper	plg.h	189;"	d
+Epath	plg.h	184;"	d
+Epathu	plg.h	105;"	d
+Epcode	plg.h	163;"	d
+Epcodedebug	plg.h	177;"	d
+Epixelsinch	plg.h	215;"	d
+Epixpt	plg.h	130;"	d
+Eposex	pl.h	221;"	d
+Eprint	plg.h	116;"	d
+Eprogname	plg.h	251;"	d
+Eresetbb	plg.h	165;"	d
+Erestorewin	plg.h	113;"	d
+Eretreivekey	plg.h	159;"	d
+Ergb_to_gray	plg.h	179;"	d
+Erightjust	plg.h	110;"	d
+Errfp	plg.h	255;"	d
+Es_inr	pl.h	226;"	d
+Esavewin	plg.h	111;"	d
+Escale_x	plg.h	139;"	d
+Escale_y	plg.h	140;"	d
+Escaletext	plg.h	115;"	d
+Escaletype	plg.h	138;"	d
+Escaletype_x	plg.h	245;"	d
+Escaletype_y	plg.h	246;"	d
+Esemfile	plg.h	161;"	d
+Eset_early_defaults	plg.h	148;"	d
+Esetcatslide	pl.h	225;"	d
+Esetdatesub	pl.h	224;"	d
+Esetdefaults	plg.h	150;"	d
+Esetglobalscale	plg.h	174;"	d
+Esetlastbox	plg.h	136;"	d
+Esetoutfilename	plg.h	151;"	d
+Esetoutlabel	plg.h	153;"	d
+Esetposterofs	plg.h	176;"	d
+Esetscale	pl.h	217;"	d
+Esetsemfile	plg.h	160;"	d
+Esetsize	plg.h	149;"	d
+Esetunits	pl.h	214;"	d
+Esetwinscale	plg.h	196;"	d
+Eshow	plg.h	117;"	d
+Esit	plg.h	118;"	d
+Especifycrop	plg.h	170;"	d
+Esquelch	plg.h	126;"	d
+Estandard_bkcolor	plg.h	209;"	d
+Estandard_color	plg.h	208;"	d
+Estandard_font	plg.h	205;"	d
+Estandard_lwscale	plg.h	207;"	d
+Estandard_textsize	plg.h	206;"	d
+Estandardfont	plg.h	216;"	d
+Estandardlinewidth	plg.h	224;"	d
+Estandardtextsize	plg.h	219;"	d
+Etext	plg.h	108;"	d
+Etextdir	plg.h	188;"	d
+Etextsize	plg.h	187;"	d
+Etightbb	plg.h	169;"	d
+Euprint	pl.h	220;"	d
+Everttextsim	plg.h	168;"	d
+Ewinappear	plg.h	122;"	d
+Ewindisappear	plg.h	124;"	d
+Ex1	plg.h	247;"	d
+Ex2	plg.h	249;"	d
+Exsca	grgd.c	40;"	d	file:
+Exsca	plg.h	197;"	d
+Exsca	x11.c	105;"	d	file:
+Exsca_inv	grgd.c	42;"	d	file:
+Exsca_inv	plg.h	198;"	d
+Exsca_inv	x11.c	107;"	d	file:
+Ey1	plg.h	248;"	d
+Ey2	plg.h	250;"	d
+Eysca	grgd.c	41;"	d	file:
+Eysca	x11.c	106;"	d	file:
+Eysca_inv	grgd.c	43;"	d	file:
+Eysca_inv	x11.c	108;"	d	file:
+FALSE	gd13.c	1549;"	d	file:
+FALSE	gd13.c	847;"	d	file:
+FALSE	gd_io_dp.c	25;"	d	file:
+FALSE	gd_png.c	9;"	d	file:
+FILLCHAR	parse.c	13;"	d	file:
+FONTLEN	plg.h	19;"	d
+FOR_CONDEX	tdhkit.h	53;"	d
+FPIC	Makefile	/^FPIC =$/;"	m
+FROMCATS	proc_axis.c	17;"	d	file:
+FROMDATA	proc_axis.c	16;"	d	file:
+FROMFILE	proc_axis.c	15;"	d	file:
+Fmtstring	dates.c	/^static char Fmtstring[20] = "mmddyy"; \/* the current format *\/$/;"	v	file:
+Fullmonth	dates.c	/^static char Fullmonth[12][16] = { "January", "February", "March", "April", "May", "June",$/;"	v	file:
+GD	Makefile	/^GD = gdfontg.o gdfontl.o gdfontmb.o gdfonts.o gdfontt.o$/;"	m
+GD	plg.h	38;"	d
+GD13	Makefile	/^GD13 = grgd13.o devstuff13.o gd13.o $/;"	m
+GD16	Makefile	/^GD16 = grgd16.o devstuff16.o gd16.o gd_io.o gd_io_dp.o gd_io_file.o gd_png.o $/;"	m
+GD18H	Makefile	/^GD18H = $/;"	m
+GD18LIBS	Makefile	/^GD18LIBS = -lgd -lpng -lz -ljpeg -lfreetype$/;"	m
+GD2_CHUNKSIZE	gd16/gd.h	212;"	d
+GD2_CHUNKSIZE_MAX	gd16/gd.h	214;"	d
+GD2_CHUNKSIZE_MIN	gd16/gd.h	213;"	d
+GD2_FMT_COMPRESSED	gd16/gd.h	219;"	d
+GD2_FMT_RAW	gd16/gd.h	218;"	d
+GD2_ID	gd16/gd.h	217;"	d
+GD2_VERS	gd16/gd.h	216;"	d
+GDFREETYPE	Makefile	/^GDFREETYPE = -DGDFREETYPE$/;"	m
+GD_CMP_BACKGROUND	gd16/gd.h	230;"	d
+GD_CMP_COLOR	gd16/gd.h	226;"	d
+GD_CMP_IMAGE	gd16/gd.h	224;"	d
+GD_CMP_INTERLACE	gd16/gd.h	231;"	d
+GD_CMP_NUM_COLORS	gd16/gd.h	225;"	d
+GD_CMP_SIZE_X	gd16/gd.h	227;"	d
+GD_CMP_SIZE_Y	gd16/gd.h	228;"	d
+GD_CMP_TRANSPARENT	gd16/gd.h	229;"	d
+GD_H	gd13/gd.h	2;"	d
+GD_H	gd16/gd.h	2;"	d
+GD_IO_H	gd16/gd_io.h	2;"	d
+GD_IO_H	gd_io.h	2;"	d
+GETTING	execline.c	14;"	d	file:
+GFTbox	grgd.c	/^  static int GFTbox[8];$/;"	v	file:
+GFTfont	grgd.c	/^static char GFTfont[80] = "";$/;"	v	file:
+GFTsize	grgd.c	/^  static double GFTsize;$/;"	v	file:
+GIFBITS	gd13.c	1094;"	d	file:
+GIFEncode	gd13.c	/^GIFEncode(FILE *fp, int GWidth, int GHeight, int GInterlace, int Background, int Transparent, int BitsPerPixel, int *Red, int *Green, int *Blue, gdImagePtr im)$/;"	f	file:
+GIFNextPixel	gd13.c	/^GIFNextPixel(gdImagePtr im)$/;"	f	file:
+GL_addmember	glroutines.c	/^GL_addmember( newmem, list )$/;"	f
+GL_autoround	glroutines.c	/^GL_autoround( val, decoffset )$/;"	f
+GL_autoroundf	glroutines.c	/^GL_autoroundf( val, decoffset )$/;"	f
+GL_changechars	glroutines.c	/^GL_changechars( clist, s, newchar )$/;"	f
+GL_close_to	glroutines.c	/^GL_close_to( a, b, tol )$/;"	f
+GL_commonmembers	glroutines.c	/^GL_commonmembers( list1, list2, mode )$/;"	f
+GL_contains	glroutines.c	/^GL_contains( clist, s )$/;"	f
+GL_decode	glroutines.c	/^GL_decode( a )$/;"	f
+GL_deletechars	glroutines.c	/^GL_deletechars( clist, s )$/;"	f
+GL_deletemember	glroutines.c	/^GL_deletemember( mem, inlist, resultlist )$/;"	f
+GL_encode	glroutines.c	/^GL_encode( a )$/;"	f
+GL_expand_tabs	glroutines.c	/^GL_expand_tabs( out, in )$/;"	f
+GL_getcgiarg	glroutines.c	/^GL_getcgiarg( arg, uri, pos, maxlen )$/;"	f
+GL_getchunk	glroutines.c	/^GL_getchunk( rtn, line, i, sepstring )$/;"	f
+GL_getcword	glroutines.c	/^GL_getcword( rtn, line, i )$/;"	f
+GL_getok	glroutines.c	/^*GL_getok( string, index )$/;"	f
+GL_getseg	glroutines.c	/^GL_getseg( rtn, inbuf, i, sep )$/;"	f
+GL_goodnum	glroutines.c	/^GL_goodnum( str, prec )$/;"	f
+GL_initstatic	glroutines.c	/^GL_initstatic()$/;"	f
+GL_listmember	glroutines.c	/^GL_listmember( s, list, memnum, pos )$/;"	f
+GL_make_unique_string	glroutines.c	/^GL_make_unique_string( s, i )$/;"	f
+GL_member	glroutines.c	/^GL_member( c, s )$/;"	f
+GL_member_nullmode	glroutines.c	/^GL_member_nullmode( s )$/;"	f
+GL_numgroup	glroutines.c	/^GL_numgroup( val, h, mode )$/;"	f
+GL_rand	glroutines.c	/^GL_rand()$/;"	f
+GL_ranger	glroutines.c	/^GL_ranger( spec, list, n )$/;"	f
+GL_setmaxlen	glroutines.c	/^GL_setmaxlen( maxlen )$/;"	f
+GL_slmember	glroutines.c	/^GL_slmember( str, list )$/;"	f
+GL_smember	glroutines.c	/^GL_smember( s, t )$/;"	f
+GL_smemberi	glroutines.c	/^GL_smemberi( s, t )$/;"	f
+GL_strip_ws	glroutines.c	/^GL_strip_ws( s )$/;"	f
+GL_substitute	glroutines.c	/^GL_substitute( s1, s2, t )$/;"	f
+GL_substring	glroutines.c	/^GL_substring( result, str, fromchar, nchar )$/;"	f
+GL_sysdate	glroutines.c	/^GL_sysdate( mon, day, yr )$/;"	f
+GL_systime	glroutines.c	/^GL_systime( hour, min, sec )$/;"	f
+GL_urldecode	glroutines.c	/^int GL_urldecode( in, out )$/;"	f
+GL_urlencode	glroutines.c	/^GL_urlencode( in, out )$/;"	f
+GL_varsub	glroutines.c	/^GL_varsub( s, symbol, value )$/;"	f
+GL_wildchar	glroutines.c	/^GL_wildchar( c, d )$/;"	f
+GL_wildcmp	glroutines.c	/^GL_wildcmp( char *s1, char *s2, int len, int casecare )$/;"	f
+GL_wraptext	glroutines.c	/^int GL_wraptext( txt, maxchars )$/;"	f
+Gblack	grgd.c	/^static int Gblack = 0;		    $/;"	v	file:
+Gbrush	grgd.c	/^static gdImagePtr Gbrush[NBRUSH]; \/* brush images *\/$/;"	v	file:
+Gcharwidth	grgd.c	/^static double Gcharwidth;$/;"	v	file:
+Gcurcolor	grgd.c	/^static int Gcurcolor;$/;"	v	file:
+Gcurcolorname	grgd.c	/^static char Gcurcolorname[40];$/;"	v	file:
+Gcurdashscale	grgd.c	/^static double Gcurdashscale = 1.0;$/;"	v	file:
+Gcurlinestyle	grgd.c	/^static int Gcurlinestyle = 0;$/;"	v	file:
+Gcurlinewidth	grgd.c	/^static double Gcurlinewidth = 1.0;$/;"	v	file:
+Gdash	grgd.c	/^static int Gdash[10][6]= { {1}, {1,1}, {3,1}, {5,1}, {2,1,1,1}, {4,1,1,1}, {6,1,1,1},$/;"	v	file:
+Gdashpat	grgd.c	/^static int Gdashpat[1000];$/;"	v	file:
+GetCode	gd13.c	/^GetCode(FILE *fd, int code_size, int flag)$/;"	f	file:
+GetCode_	gd13.c	/^GetCode_(FILE *fd, int code_size, int flag)$/;"	f	file:
+GetDataBlock	gd13.c	/^GetDataBlock(FILE *fd, unsigned char *buf)$/;"	f	file:
+GetDataBlock_	gd13.c	/^GetDataBlock_(FILE *fd, unsigned char *buf)$/;"	f	file:
+Gettok_buf	glroutines.c	/^static char Gettok_buf[260];$/;"	v	file:
+Gfont	grgd.c	/^static gdFontPtr Gfont;  \/* current font *\/$/;"	v	file:
+Gif89	gd13.c	/^} Gif89 = { -1, -1, -1, 0 };$/;"	v	typeref:struct:__anon1	file:
+Ginitialized	grgd.c	/^static int Ginitialized = 0;$/;"	v	file:
+Gm	grgd.c	/^static gdImagePtr Gm; \/* image *\/$/;"	v	file:
+Gm2	grgd.c	/^static gdImagePtr Gm2 = NULL; \/* secondary image *\/$/;"	v	file:
+Gm2height	grgd.c	/^static int Gm2height = 0, Gm2width = 0;$/;"	v	file:
+Gm2width	grgd.c	/^static int Gm2height = 0, Gm2width = 0;$/;"	v	file:
+Gmax_pts	grgd.c	/^static int Gmax_pts;$/;"	v	file:
+Gndash	grgd.c	/^static int Gndash[10] = { 1, 2, 2, 2, 4, 4, 4, 6, 6, 6 }; \/* constants *\/$/;"	v	file:
+Gnpts	grgd.c	/^static int Gnpts = 0;$/;"	v	file:
+Goldx	grgd.c	/^static double Goldx = 0.0, Goldy = 0.0; \/* last passed x,y *\/$/;"	v	file:
+Goldy	grgd.c	/^static double Goldx = 0.0, Goldy = 0.0; \/* last passed x,y *\/$/;"	v	file:
+Gpixelsinch	grgd.c	/^static int Gpixelsinch;$/;"	v	file:
+Gptlist	grgd.c	/^static gdPoint *Gptlist = NULL;$/;"	v	file:
+Greqheight	grgd.c	/^static int Greqwidth = 0, Greqheight = 0;$/;"	v	file:
+Greqwidth	grgd.c	/^static int Greqwidth = 0, Greqheight = 0;$/;"	v	file:
+Gtextsize	grgd.c	/^static int Gtextsize;$/;"	v	file:
+Gtransparent_color	grgd.c	/^static int Gtransparent_color = -1; $/;"	v	file:
+Gvertchar	grgd.c	/^static int Gvertchar = 0;$/;"	v	file:
+Gxmax	grgd.c	/^static int Gxmax, Gymax; \/* drawing area image size *\/$/;"	v	file:
+Gymax	grgd.c	/^static int Gxmax, Gymax; \/* drawing area image size *\/$/;"	v	file:
+HALFPI	arrow.c	11;"	d	file:
+HALFPI	proc_tree.c	11;"	d	file:
+HALFPI	proc_vector.c	14;"	d	file:
+HALFPI	proc_venndisk.c	12;"	d	file:
+HERE	proc_axis.c	14;"	d	file:
+HHMM	times.c	39;"	d	file:
+HHMMSS	times.c	41;"	d	file:
+HIBOX	proc_boxplot.c	24;"	d	file:
+HITAIL	proc_boxplot.c	25;"	d	file:
+Height	gd13.c	/^static int Width, Height;$/;"	v	file:
+Hr	times.c	/^static int Hr = 0, Min = 0;$/;"	v	file:
+IFNESTMAX	tdhkit.h	60;"	d
+INCNESTMAX	tdhkit.h	61;"	d
+INCREMENTAL	proc_axis.c	13;"	d	file:
+INSTALLBIN	Makefile	/^INSTALLBIN = .\/$/;"	m
+INTERLACE	gd13.c	1557;"	d	file:
+INTERPOLATED	proc_curvefit.c	20;"	d	file:
+IO_DBG	gd_io.c	21;"	d	file:
+Interlace	gd13.c	/^static int Interlace;$/;"	v	file:
+LABEL	proc_pie.c	15;"	d	file:
+LANDSCAPE	ps.c	46;"	d	file:
+LAST_RESORT_FONT	x11.c	40;"	d	file:
+LEFT	lineclip.c	20;"	d	file:
+LEGEND	proc_pie.c	14;"	d	file:
+LEGEND_COLOR	pl.h	60;"	d
+LEGEND_LINE	pl.h	61;"	d
+LEGEND_LINEMARK	pl.h	64;"	d
+LEGEND_SYMBOL	pl.h	62;"	d
+LEGEND_TEXT	pl.h	63;"	d
+LEavail	proc_legend.c	/^static int LEavail = 0;$/;"	v	file:
+LElabel	proc_legend.c	/^static int LElabel[MAXLEGENT];$/;"	v	file:
+LEparm1	proc_legend.c	/^static int LEparm1[MAXLEGENT];$/;"	v	file:
+LEparm2	proc_legend.c	/^static int LEparm2[MAXLEGENT];$/;"	v	file:
+LEparm3	proc_legend.c	/^static int LEparm3[MAXLEGENT];$/;"	v	file:
+LEtag	proc_legend.c	/^static int LEtag[MAXLEGENT];$/;"	v	file:
+LEtype	proc_legend.c	/^static int LEtype[MAXLEGENT];$/;"	v	file:
+LIBPLOTICUS	libploticus.h	8;"	d
+LIBS	Makefile	/^LIBS = $(XLIBS) -lm $(ADDLIBS) $/;"	m
+LINE	proc_lineplot.c	12;"	d	file:
+LINE	proc_rangesweep.c	11;"	d	file:
+LINEAR	units.c	15;"	d	file:
+LINELABEL	proc_pie.c	16;"	d	file:
+LM_to_uint	gd13.c	1563;"	d	file:
+LOCALCOLORMAP	gd13.c	1558;"	d	file:
+LOCALEOBJ	Makefile	/^LOCALEOBJ = localef.o$/;"	m
+LOCALE_FLAG	Makefile	/^LOCALE_FLAG = -DLOCALE$/;"	m
+LOCVAL	proc_line.c	11;"	d	file:
+LOOPNESTMAX	tdhkit.h	62;"	d
+LOWBOX	proc_boxplot.c	22;"	d	file:
+LOWTAIL	proc_boxplot.c	21;"	d	file:
+LWZReadByte	gd13.c	/^LWZReadByte(FILE *fd, int flag, int input_code_size)$/;"	f	file:
+LWZReadByte_	gd13.c	/^LWZReadByte_(FILE *fd, int flag, int input_code_size)$/;"	f	file:
+Lasti	variable.c	/^static int Lasti = 0; \/* remember which slot was set \/ gotten most recently .. *\/$/;"	v	file:
+Lazydayinuse	dates.c	/^static int Lazydayinuse;  $/;"	v	file:
+Lazydays	dates.c	/^static int Lazydays; \/* 0 = normal  1 = allow 00 for day portion to signify 'unknown' *\/$/;"	v	file:
+Lazymonthinuse	dates.c	/^static int Lazymonthinuse;$/;"	v	file:
+Lazymonths	dates.c	/^static int Lazymonths; \/* 0 = normal  1 = allow 00 for month portion to signify 'unknown' *\/$/;"	v	file:
+Longyr	dates.c	/^static int Longyr = 0;$/;"	v	file:
+Ltext	proc_legend.c	/^static char Ltext[MAXLEGTEXT];$/;"	v	file:
+MARG_X	ps.c	47;"	d	file:
+MARG_X	svg.c	45;"	d	file:
+MARG_X	swf.c	50;"	d	file:
+MARG_Y	ps.c	48;"	d	file:
+MARG_Y	svg.c	46;"	d	file:
+MARG_Y	swf.c	51;"	d	file:
+MAX	proc_boxplot.c	32;"	d	file:
+MAXALT	proc_lineplot.c	10;"	d	file:
+MAXARGS	functions.c	32;"	d	file:
+MAXBIGBUF	pl.h	24;"	d
+MAXBINS	proc_tabulate.c	22;"	d	file:
+MAXBREAKFLDS	proc_processdata.c	15;"	d	file:
+MAXBSP_IN	proc_curvefit.c	14;"	d	file:
+MAXCLONES	pl.h	29;"	d
+MAXCLP	proc_bars.c	22;"	d	file:
+MAXCOLORMAPSIZE	gd13.c	1546;"	d	file:
+MAXCOLORS	color.c	14;"	d	file:
+MAXCOLORS	x11.c	41;"	d	file:
+MAXCOLS	proc_tabulate.c	24;"	d	file:
+MAXCONNECTS	dbfunc.c	10;"	d	file:
+MAXD	pl.h	17;"	d
+MAXDAT	pl.h	19;"	d
+MAXDROWS	pl.h	18;"	d
+MAXDS	pl.h	28;"	d
+MAXENTRIES	clickmap.c	19;"	d	file:
+MAXFIELDS	autorange.c	8;"	d	file:
+MAXFLD	proc_processdata.c	10;"	d	file:
+MAXFONTS	x11.c	42;"	d	file:
+MAXITEMS	tdhkit.h	17;"	d
+MAXLEGENT	proc_legend.c	11;"	d	file:
+MAXLEGTEXT	proc_legend.c	12;"	d	file:
+MAXMALLOCATTRS	execline.c	12;"	d	file:
+MAXNAMES	fieldnames.c	8;"	d	file:
+MAXNCATS	pl.h	25;"	d
+MAXNEWICKTOKENS	proc_tree.c	10;"	d	file:
+MAXOBJ	pl.h	27;"	d
+MAXORDER	proc_curvefit.c	13;"	d	file:
+MAXPARMLEN	condex.c	25;"	d	file:
+MAXPATH	pl.h	31;"	d
+MAXPATH	plg.h	18;"	d
+MAXPATH	tdhkit.h	39;"	d
+MAXPE	tdhkit.c	43;"	d	file:
+MAXPROCLINES	pl.h	21;"	d
+MAXPTS	proc_curvefit.c	12;"	d	file:
+MAXRECORDLEN	tdhkit.h	31;"	d
+MAXROWS	proc_tabulate.c	23;"	d	file:
+MAXSLICE	proc_pie.c	13;"	d	file:
+MAXSORTFIELDS	tdhkit.h	49;"	d
+MAXSTACKFIELDS	proc_bars.c	21;"	d	file:
+MAXSUBCATLEN	proc_catlines.c	14;"	d	file:
+MAXSUBCATS	proc_catlines.c	15;"	d	file:
+MAXTOK	condex.c	32;"	d	file:
+MAXTT	pl.h	34;"	d
+MAXURL	pl.h	32;"	d
+MAXVAR	tdhkit.h	21;"	d
+MAX_LWZ_BITS	gd13.c	1555;"	d	file:
+MEAN	proc_boxplot.c	28;"	d	file:
+MEANBASED	proc_boxplot.c	19;"	d	file:
+MEDIAN	proc_boxplot.c	36;"	d	file:
+MEDIANBASED	proc_boxplot.c	18;"	d	file:
+MIDBOX	proc_boxplot.c	23;"	d	file:
+MIN	proc_boxplot.c	31;"	d	file:
+MINTEXTSIZE	grgd.c	85;"	d	file:
+MISC_FONT	x11.c	39;"	d	file:
+MMSS	times.c	40;"	d	file:
+MM_PER_INCH	init.c	15;"	d	file:
+MONTHS	proc_axis.c	18;"	d	file:
+MOVE	proc_lineplot.c	11;"	d	file:
+MOVE	proc_rangesweep.c	10;"	d	file:
+MOVINGAVG	proc_curvefit.c	16;"	d	file:
+MYSQL	dbinterface.c	21;"	d	file:
+Matchscore	condex.c	/^static int Matchscore, Matchscore_used;$/;"	v	file:
+Matchscore_used	condex.c	/^static int Matchscore, Matchscore_used;$/;"	v	file:
+Maxlen	glroutines.c	/^static int Maxlen = 99999;$/;"	v	file:
+Member_nullstring	glroutines.c	/^static char Member_nullstring[10] = "";$/;"	v	file:
+Min	times.c	/^static int Hr = 0, Min = 0;$/;"	v	file:
+Mon	dates.c	/^static int Mon;	\/* most recent month sent to jdate (1-12) *\/$/;"	v	file:
+Moncase	dates.c	/^static char Moncase[4] = "Aaa";$/;"	v	file:
+NAMEMAX	variable.c	10;"	d	file:
+NAMEMAXLEN	pl.h	38;"	d
+NAMEMAXLEN	tdhkit.h	25;"	d
+NBRUSH	grgd.c	83;"	d	file:
+NCLAUSE	condex.c	30;"	d	file:
+NEGHUGE	pl.h	56;"	d
+NL	shell.c	14;"	d	file:
+NLE	proc_legend.c	/^static int NLE = 0;$/;"	v	file:
+NO	plg.h	17;"	d
+NO	ps.c	44;"	d	file:
+NOFS	proc_scatterplot.c	10;"	d	file:
+NONDRAWINGPROCS	execline.c	10;"	d	file:
+NORMAL	pl.h	36;"	d
+NORMAL	tdhkit.h	52;"	d
+NOSWF	Makefile	/^NOSWF = -DNOSWF$/;"	m
+NOX11	Makefile	/^NOX11 = $/;"	m
+NOX11	Makefile	/^NOX11 = -DNOX11$/;"	m
+NSHAPE	mark.c	10;"	d	file:
+NTOKS	condex.c	31;"	d	file:
+NTYPES	dates.c	44;"	d	file:
+NUMBER	condex.c	27;"	d	file:
+NUMBER	dates.c	41;"	d	file:
+NUMBER	functions.c	34;"	d	file:
+NUMBER	times.c	45;"	d	file:
+NVARIAT	mark.c	9;"	d	file:
+N_OBS	proc_boxplot.c	27;"	d	file:
+N_convmsg	lib.c	/^static int N_convmsg = 0;$/;"	v	file:
+Name	variable.c	/^static char Name[MAXVAR][NAMEMAX];$/;"	v	file:
+Nfields	pl.h	44;"	d
+Nodaylimit	times.c	/^static int Nodaylimit = 0;$/;"	v	file:
+Noweekendmode	dates.c	/^static int Noweekendmode = 0;$/;"	v	file:
+NpointsMax	smoothfit.c	/^  static int npoints, k, kp, NpointsMax, banksize, npt;$/;"	v	file:
+Nrecords	pl.h	45;"	d
+Ns	variable.c	/^static int Ns = 0;$/;"	v	file:
+OBJ	Makefile	/^OBJ = proc_annotate.o proc_areadef.o proc_axis.o proc_bars.o proc_rect.o proc_breakaxis.o \\$/;"	m
+ORACLE	dbinterface.c	22;"	d	file:
+P1	smoothfit.c	/^  static double P1, P2, P3, P4, P5, P6, W1, W2, W3, A, B, C, R, S, T, Z;$/;"	v	file:
+P2	smoothfit.c	/^  static double P1, P2, P3, P4, P5, P6, W1, W2, W3, A, B, C, R, S, T, Z;$/;"	v	file:
+P3	smoothfit.c	/^  static double P1, P2, P3, P4, P5, P6, W1, W2, W3, A, B, C, R, S, T, Z;$/;"	v	file:
+P4	smoothfit.c	/^  static double P1, P2, P3, P4, P5, P6, W1, W2, W3, A, B, C, R, S, T, Z;$/;"	v	file:
+P5	smoothfit.c	/^  static double P1, P2, P3, P4, P5, P6, W1, W2, W3, A, B, C, R, S, T, Z;$/;"	v	file:
+P6	smoothfit.c	/^  static double P1, P2, P3, P4, P5, P6, W1, W2, W3, A, B, C, R, S, T, Z;$/;"	v	file:
+PAGWIDTH	ps.c	49;"	d	file:
+PATH	proc_lineplot.c	13;"	d	file:
+PATH	proc_rangesweep.c	12;"	d	file:
+PATH_SLASH	functions.c	31;"	d	file:
+PATH_SLASH	pl.h	73;"	d
+PATH_SLASH	pl.h	76;"	d
+PATH_SLASH	tdhkit.h	43;"	d
+PATH_SLASH	tdhkit.h	45;"	d
+PCTL25	proc_boxplot.c	35;"	d	file:
+PCTL5	proc_boxplot.c	34;"	d	file:
+PCTL75	proc_boxplot.c	37;"	d	file:
+PCTL95	proc_boxplot.c	38;"	d	file:
+PI	proc_venndisk.c	13;"	d	file:
+PIVOTYEAR	pl.h	54;"	d
+PLATFORM	Makefile	/^PLATFORM = UNIX$/;"	m
+PLD	plhead.c	/^struct pldata PLD;$/;"	v	typeref:struct:pldata
+PLG	plg.c	/^struct plgc PLG;$/;"	v	typeref:struct:plgc
+PLGF_chardir	swf.c	/^PLGF_chardir( t )$/;"	f
+PLGF_color	swf.c	/^PLGF_color( color )$/;"	f
+PLGF_fill	swf.c	/^PLGF_fill( )$/;"	f
+PLGF_fmt	swf.c	/^PLGF_fmt( tag )$/;"	f
+PLGF_font	swf.c	/^PLGF_font( f )$/;"	f
+PLGF_fontname	swf.c	/^PLGF_fontname( basename, name )$/;"	f
+PLGF_initstatic	swf.c	/^PLGF_initstatic()$/;"	f
+PLGF_lineto	swf.c	/^PLGF_lineto( x, y )$/;"	f
+PLGF_linetype	swf.c	/^PLGF_linetype( s, x, y )$/;"	f
+PLGF_moveto	swf.c	/^PLGF_moveto( x, y )$/;"	f
+PLGF_path	swf.c	/^PLGF_path( x, y )$/;"	f
+PLGF_pointsize	swf.c	/^PLGF_pointsize( p )$/;"	f
+PLGF_setparms	swf.c	/^PLGF_setparms( debug, tmpname, font )$/;"	f
+PLGF_setup	swf.c	/^PLGF_setup( name, dev, outfile, pixs_inch, Ux, Uy, Upleftx, Uplefty, maxdrivervect )$/;"	f
+PLGF_stroke	swf.c	/^PLGF_stroke( )$/;"	f
+PLGF_text	swf.c	/^PLGF_text( com, x, y, s, w )$/;"	f
+PLGF_trailer	swf.c	/^PLGF_trailer( x1, y1, x2, y2 )$/;"	f
+PLGG_centext	grgd.c	/^PLGG_centext( s )$/;"	f
+PLGG_chardir	grgd.c	/^PLGG_chardir( d )$/;"	f
+PLGG_color	grgd.c	/^PLGG_color( color )$/;"	f
+PLGG_eof	grgd.c	/^PLGG_eof( filename, x1, y1, x2, y2 )$/;"	f
+PLGG_fill	grgd.c	/^PLGG_fill()$/;"	f
+PLGG_font	grgd.c	/^PLGG_font( s )$/;"	f
+PLGG_freetype_twidth	grgd.c	/^PLGG_freetype_twidth( txt, font, size, twidth )$/;"	f
+PLGG_getimfmt	grgd.c	/^PLGG_getimfmt( fmt )$/;"	f
+PLGG_getimg	grgd.c	/^PLGG_getimg( width, height )$/;"	f
+PLGG_imload	grgd.c	/^PLGG_imload( imgname, width, height )$/;"	f
+PLGG_implace	grgd.c	/^PLGG_implace( x, y, align, width, height )$/;"	f
+PLGG_initstatic	grgd.c	/^PLGG_initstatic() $/;"	f
+PLGG_linestyle	grgd.c	/^PLGG_linestyle( style, linewidth, dashscale )$/;"	f
+PLGG_lineto	grgd.c	/^PLGG_lineto( x, y )$/;"	f
+PLGG_linetype	grgd.c	/^PLGG_linetype( s, x, y )$/;"	f
+PLGG_moveto	grgd.c	/^PLGG_moveto( x, y )$/;"	f
+PLGG_pathto	grgd.c	/^PLGG_pathto( px, py )$/;"	f
+PLGG_pixpt	grgd.c	/^PLGG_pixpt( x, y, symcode )$/;"	f
+PLGG_rawline	grgd.c	/^PLGG_rawline( a, b, c, d )$/;"	f
+PLGG_rect	grgd.c	/^PLGG_rect( x1, y1, x2, y2, color )$/;"	f
+PLGG_rightjust	grgd.c	/^PLGG_rightjust( s )$/;"	f
+PLGG_setimfmt	grgd.c	/^PLGG_setimfmt( fmt )$/;"	f
+PLGG_setimpixsize	grgd.c	/^PLGG_setimpixsize( width, height )$/;"	f
+PLGG_setup	grgd.c	/^PLGG_setup( name, pixelsinch, ux, uy, upleftx, uplefty, maxdrivervect )$/;"	f
+PLGG_text	grgd.c	/^PLGG_text( s )$/;"	f
+PLGG_textsize	grgd.c	/^PLGG_textsize( p )$/;"	f
+PLGHEAD	plg.h	9;"	d
+PLGP_chardir	ps.c	/^PLGP_chardir( t )$/;"	f
+PLGP_closepath	ps.c	/^PLGP_closepath()$/;"	f
+PLGP_color	ps.c	/^PLGP_color( color )$/;"	f
+PLGP_fill	ps.c	/^PLGP_fill( )$/;"	f
+PLGP_font	ps.c	/^PLGP_font( f )$/;"	f
+PLGP_fontname	ps.c	/^PLGP_fontname( basename, name )$/;"	f
+PLGP_initstatic	ps.c	/^PLGP_initstatic()$/;"	f
+PLGP_lineto	ps.c	/^PLGP_lineto( x, y )$/;"	f
+PLGP_linetype	ps.c	/^PLGP_linetype( s, x, y )$/;"	f
+PLGP_moveto	ps.c	/^PLGP_moveto( x, y )$/;"	f
+PLGP_newpage	ps.c	/^PLGP_newpage( p )$/;"	f
+PLGP_paper	ps.c	/^PLGP_paper( i )$/;"	f
+PLGP_path	ps.c	/^PLGP_path( x, y )$/;"	f
+PLGP_pointsize	ps.c	/^PLGP_pointsize( p )$/;"	f
+PLGP_settings	ps.c	/^PLGP_settings( attr, val )$/;"	f
+PLGP_setup	ps.c	/^PLGP_setup( name, dev, f )    $/;"	f
+PLGP_show	ps.c	/^PLGP_show()$/;"	f
+PLGP_stroke	ps.c	/^PLGP_stroke( )$/;"	f
+PLGP_text	ps.c	/^PLGP_text( com, x, y, s, w )$/;"	f
+PLGP_trailer	ps.c	/^PLGP_trailer( pp, x1, y1, x2, y2 )$/;"	f
+PLGS_chardir	svg.c	/^PLGS_chardir( t )$/;"	f
+PLGS_clickregion	svg.c	/^PLGS_clickregion( url, label, targetstr, x1, y1, x2, y2 )$/;"	f
+PLGS_color	svg.c	/^PLGS_color( color )$/;"	f
+PLGS_fill	svg.c	/^PLGS_fill( )$/;"	f
+PLGS_fmt	svg.c	/^PLGS_fmt( tag )$/;"	f
+PLGS_font	svg.c	/^PLGS_font( f )$/;"	f
+PLGS_fontname	svg.c	/^PLGS_fontname( basename, name )$/;"	f
+PLGS_initstatic	svg.c	/^PLGS_initstatic()$/;"	f
+PLGS_lineto	svg.c	/^PLGS_lineto( x, y )$/;"	f
+PLGS_linetype	svg.c	/^PLGS_linetype( s, x, y )$/;"	f
+PLGS_moveto	svg.c	/^PLGS_moveto( x, y )$/;"	f
+PLGS_path	svg.c	/^PLGS_path( x, y )$/;"	f
+PLGS_pointsize	svg.c	/^PLGS_pointsize( p )$/;"	f
+PLGS_setimg	svg.c	/^PLGS_setimg( pathname, width, height )$/;"	f
+PLGS_setparms	svg.c	/^PLGS_setparms( debug, tmpname, clickmap )$/;"	f
+PLGS_setup	svg.c	/^PLGS_setup( name, dev, outfile, pixs_inch, Ux, Uy, Upleftx, Uplefty )$/;"	f
+PLGS_setxmlparms	svg.c	/^PLGS_setxmlparms( parm, value )$/;"	f
+PLGS_showimg	svg.c	/^PLGS_showimg( imgurl, x, y, align, width, height )$/;"	f
+PLGS_showtag	svg.c	/^PLGS_showtag( mode )$/;"	f
+PLGS_stroke	svg.c	/^PLGS_stroke( )$/;"	f
+PLGS_text	svg.c	/^PLGS_text( com, x, y, s, w )$/;"	f
+PLGS_trailer	svg.c	/^PLGS_trailer( x1, y1, x2, y2 )$/;"	f
+PLGS_z	svg.c	/^PLGS_z( mode )$/;"	f
+PLGS_zlevel	svg.c	/^PLGS_zlevel( level )$/;"	f
+PLGX_appear	x11.c	/^PLGX_appear()$/;"	f
+PLGX_async	x11.c	/^PLGX_async()$/;"	f
+PLGX_centext	x11.c	/^PLGX_centext( s, w, x, aw )$/;"	f
+PLGX_color	x11.c	/^PLGX_color( color )$/;"	f
+PLGX_disappear	x11.c	/^PLGX_disappear()$/;"	f
+PLGX_dot	x11.c	/^PLGX_dot( x, y )$/;"	f
+PLGX_event	x11.c	/^PLGX_event( event )$/;"	f
+PLGX_fill	x11.c	/^PLGX_fill( )$/;"	f
+PLGX_flag	x11.c	/^PLGX_flag( what, val )$/;"	f
+PLGX_flush	x11.c	/^PLGX_flush()$/;"	f
+PLGX_gethandle	x11.c	/^PLGX_gethandle( display, window, gc )$/;"	f
+PLGX_lineto	x11.c	/^PLGX_lineto(x,y)$/;"	f
+PLGX_linetype	x11.c	/^PLGX_linetype( t, w, mag )$/;"	f
+PLGX_loadfont	x11.c	/^PLGX_loadfont( f, size, fnt )$/;"	f
+PLGX_moveto	x11.c	/^PLGX_moveto(x,y)$/;"	f
+PLGX_path	x11.c	/^PLGX_path( x, y )$/;"	f
+PLGX_pixpt	x11.c	/^PLGX_pixpt( x, y, symcode )$/;"	f
+PLGX_pointsize	x11.c	/^PLGX_pointsize( p, aw )$/;"	f
+PLGX_rawline	x11.c	/^PLGX_rawline( a, b, c, d )$/;"	f
+PLGX_resizewin	x11.c	/^PLGX_resizewin( pixels_inch, upperleftx, upperlefty, x_max, y_max )$/;"	f
+PLGX_restorewin	x11.c	/^PLGX_restorewin( )$/;"	f
+PLGX_rightjust	x11.c	/^PLGX_rightjust( s, w, x, aw )$/;"	f
+PLGX_savewin	x11.c	/^PLGX_savewin( )$/;"	f
+PLGX_scaletext	x11.c	/^PLGX_scaletext( f )$/;"	f
+PLGX_screen_dimensions	x11.c	/^PLGX_screen_dimensions( height, width )$/;"	f
+PLGX_setup	x11.c	/^PLGX_setup( name, pixels_inch, x_max, y_max, upperleftx, upperlefty, maxdrivervect )$/;"	f
+PLGX_stroke	x11.c	/^PLGX_stroke()$/;"	f
+PLGX_text	x11.c	/^PLGX_text( s, aw )$/;"	f
+PLGX_wait	x11.c	/^PLGX_wait()$/;"	f
+PLG_a	plg.c	/^PLG_a( xory, d )$/;"	f
+PLG_arrow	arrow.c	/^PLG_arrow( x1, y1, x2, y2, r, w, color )$/;"	f
+PLG_ax	plg.c	/^PLG_ax( d )$/;"	f
+PLG_ay	plg.c	/^PLG_ay( d )$/;"	f
+PLG_backcolor	stub.c	/^PLG_backcolor( color )$/;"	f
+PLG_bb	pcode.c	/^PLG_bb( x, y )$/;"	f
+PLG_cblock	block.c	/^PLG_cblock( xlo, ylo, xhi, yhi, color, outline )$/;"	f
+PLG_cblock_initstatic	block.c	/^PLG_cblock_initstatic( )$/;"	f
+PLG_cblockdress	block.c	/^PLG_cblockdress( xlow, ylow, xhi, yhi, $/;"	f
+PLG_circle	mark.c	/^PLG_circle( cx, cy, r, color, outline, nsides )$/;"	f
+PLG_closedumpfile	pcode.c	/^PLG_closedumpfile()$/;"	f
+PLG_clr	stub.c	/^PLG_clr()$/;"	f
+PLG_color	stub.c	/^PLG_color( s )$/;"	f
+PLG_colorfill	stub.c	/^PLG_colorfill( c )$/;"	f
+PLG_colorlist	color.c	/^struct PLG_colorlist {$/;"	s	file:
+PLG_colorname_to_rgb	color.c	/^PLG_colorname_to_rgb( color, r, g, b )$/;"	f
+PLG_dotext	stub.c	/^PLG_dotext( s, op )$/;"	f
+PLG_dump_on	lib.c	/^PLG_dump_on()$/;"	f
+PLG_dumpdata	lib.c	/^PLG_dumpdata()$/;"	f
+PLG_dx	plg.c	/^PLG_dx( a )$/;"	f
+PLG_dy	plg.c	/^PLG_dy( a )$/;"	f
+PLG_ellipse	mark.c	/^PLG_ellipse( cx, cy, r1, r2, color, outline )$/;"	f
+PLG_flush	plg.h	121;"	d
+PLG_font	stub.c	/^PLG_font( s )      $/;"	f
+PLG_forcecolorchg	plg.h	128;"	d
+PLG_get_bb2	pcode.c	/^PLG_get_bb2( x1, y1, x2, y2 )$/;"	f
+PLG_getbb	pcode.c	/^PLG_getbb( xlo, ylo, xhi, yhi )$/;"	f
+PLG_getclick	interact.c	/^PLG_getclick()$/;"	f
+PLG_getclick	pcode.c	/^PLG_getclick()$/;"	f
+PLG_getglobalscale	pcode.c	/^PLG_getglobalscale( sx, sy )$/;"	f
+PLG_getkey	interact.c	/^PLG_getkey( x, y, e )$/;"	f
+PLG_getlastbox	block.c	/^PLG_getlastbox( x1, y1, x2, y2 )$/;"	f
+PLG_getoutfilename	init.c	/^PLG_getoutfilename( name )$/;"	f
+PLG_gettextsize	pcode.c	/^PLG_gettextsize( w, h )$/;"	f
+PLG_gifrect	pcode.c	/^PLG_gifrect( xlo, yhi, xhi, ylo, color )$/;"	f
+PLG_handle_events	init.c	/^PLG_handle_events( x, y, e )$/;"	f
+PLG_he	interact.c	/^PLG_he( x, y, e )$/;"	f
+PLG_icolor	color.c	/^PLG_icolor( i )$/;"	f
+PLG_imload	pcode.c	/^PLG_imload( filename, width, height )$/;"	f
+PLG_implace	pcode.c	/^PLG_implace( x, y, filename, align, width, height )$/;"	f
+PLG_init	init.c	/^PLG_init( dev )$/;"	f
+PLG_init_bb2	pcode.c	/^PLG_init_bb2( )$/;"	f
+PLG_init_initstatic	init.c	/^PLG_init_initstatic()$/;"	f
+PLG_limit	plg.c	/^PLG_limit( axis, end, units )$/;"	f
+PLG_lin	stub.c	/^PLG_lin( x , y )$/;"	f
+PLG_lineclip	lineclip.c	/^PLG_lineclip( x1, y1, x2, y2, rx1, ry1, rx2, ry2 )$/;"	f
+PLG_linetype	stub.c	/^PLG_linetype( pattern, linewidth, pat_dens )    $/;"	f
+PLG_mark	mark.c	/^PLG_mark( x, y, code, r )$/;"	f
+PLG_mark_initstatic	mark.c	/^PLG_mark_initstatic()$/;"	f
+PLG_mov	stub.c	/^PLG_mov( x , y )$/;"	f
+PLG_normline	stub.c	/^PLG_normline()             $/;"	f
+PLG_paper	stub.c	/^PLG_paper( x )$/;"	f
+PLG_path	stub.c	/^PLG_path( x, y )$/;"	f
+PLG_pcode	pcode.c	/^PLG_pcode( op, x, y, s )$/;"	f
+PLG_pcode_initstatic	pcode.c	/^PLG_pcode_initstatic()$/;"	f
+PLG_pcodeboundingbox	pcode.c	/^PLG_pcodeboundingbox( mode )$/;"	f
+PLG_pcodedebug	pcode.c	/^PLG_pcodedebug( mode, fp )$/;"	f
+PLG_perptail	arrow.c	/^PLG_perptail( x1, y1, x2, y2, taillen )$/;"	f
+PLG_resetbb	pcode.c	/^PLG_resetbb()$/;"	f
+PLG_restorewin	plg.h	114;"	d
+PLG_retrievekey	interact.c	/^PLG_retrievekey( lx, ly, c )$/;"	f
+PLG_rgb_to_gray	color.c	/^PLG_rgb_to_gray( r, g, b )$/;"	f
+PLG_sanezone	pcode.c	/^PLG_sanezone( x1, y1, x2, y2 )$/;"	f
+PLG_savekey	interact.c	/^PLG_savekey( lx, ly, c )$/;"	f
+PLG_savewin	plg.h	112;"	d
+PLG_scale_x	plg.c	/^PLG_scale_x( xlow, xhi, datalow, datahi )$/;"	f
+PLG_scale_y	plg.c	/^PLG_scale_y( ylow, yhi, datalow, datahi )$/;"	f
+PLG_scaletype	plg.c	/^PLG_scaletype( typ, axis )$/;"	f
+PLG_set_early_defaults	plg.c	/^PLG_set_early_defaults()$/;"	f
+PLG_setdefaults	init.c	/^PLG_setdefaults()$/;"	f
+PLG_setdumpfile	pcode.c	/^PLG_setdumpfile( dumpfile, filemode )$/;"	f
+PLG_setdumpmaxlines	pcode.c	/^PLG_setdumpmaxlines( nlines )$/;"	f
+PLG_setglobalscale	pcode.c	/^PLG_setglobalscale( sx, sy )$/;"	f
+PLG_setlastbox	block.c	/^PLG_setlastbox( x1, y1, x2, y2 )$/;"	f
+PLG_setmaxdrivervect	init.c	/^PLG_setmaxdrivervect( j )$/;"	f
+PLG_setoutfilename	init.c	/^PLG_setoutfilename( name )$/;"	f
+PLG_setoutlabel	init.c	/^PLG_setoutlabel( name )$/;"	f
+PLG_setposterofs	pcode.c	/^PLG_setposterofs( x, y )$/;"	f
+PLG_setsize	init.c	/^PLG_setsize( ux, uy, upleftx, uplefty )$/;"	f
+PLG_setwinscale	winscale.c	/^PLG_setwinscale( width, height, x_max, y_max )$/;"	f
+PLG_shade	stub.c	/^PLG_shade( s )$/;"	f
+PLG_specifycrop	pcode.c	/^PLG_specifycrop( mode, x1, y1, x2, y2 )$/;"	f
+PLG_squelch	plg.h	127;"	d
+PLG_squelch_display	pcode.c	/^PLG_squelch_display( mode )$/;"	f
+PLG_stub_initstatic	stub.c	/^PLG_stub_initstatic()$/;"	f
+PLG_textdir	stub.c	/^PLG_textdir( x )$/;"	f
+PLG_textsize	stub.c	/^PLG_textsize( x )          $/;"	f
+PLG_textslant	stub.c	/^PLG_textslant( val )$/;"	f
+PLG_textsupmode	stub.c	/^PLG_textsupmode( mode )$/;"	f
+PLG_tightbb	pcode.c	/^PLG_tightbb( mode )$/;"	f
+PLG_winappear	plg.h	123;"	d
+PLG_xrgb_to_rgb	color.c	/^PLG_xrgb_to_rgb( color, r, g, b )$/;"	f
+PLG_xsca	winscale.c	/^PLG_xsca( f )$/;"	f
+PLG_xsca_inv	winscale.c	/^PLG_xsca_inv( i )$/;"	f
+PLG_ysca	winscale.c	/^PLG_ysca( f )$/;"	f
+PLG_ysca_inv	winscale.c	/^PLG_ysca_inv( i )$/;"	f
+PLHEAD	pl.h	6;"	d
+PLHUGE	pl.h	55;"	d
+PLL	plhead.c	/^struct proclines PLL;$/;"	v	typeref:struct:proclines
+PLP_annotate	proc_annotate.c	/^PLP_annotate()$/;"	f
+PLP_areadef	proc_areadef.c	/^PLP_areadef()$/;"	f
+PLP_autorange	autorange.c	/^PLP_autorange( axis, specline, minval, maxval )$/;"	f
+PLP_axis	proc_axis.c	/^PLP_axis( xory, astart )$/;"	f
+PLP_bars	proc_bars.c	/^PLP_bars( )$/;"	f
+PLP_bars_initstatic	proc_bars.c	/^PLP_bars_initstatic()$/;"	f
+PLP_boxplot	proc_boxplot.c	/^PLP_boxplot()$/;"	f
+PLP_breakaxis	proc_breakaxis.c	/^PLP_breakaxis()$/;"	f
+PLP_categories	proc_categories.c	/^PLP_categories( in_areadef )$/;"	f
+PLP_catlines	proc_catlines.c	/^PLP_catlines()$/;"	f
+PLP_curvefit	proc_curvefit.c	/^PLP_curvefit()$/;"	f
+PLP_drawcommands	proc_drawcommands.c	/^PLP_drawcommands()$/;"	f
+PLP_findnearest	nearest.c	/^PLP_findnearest( smin, smax, axis, nearest, minval, maxval )$/;"	f
+PLP_getdata	proc_getdata.c	/^PLP_getdata( )$/;"	f
+PLP_image	proc_image.c	/^PLP_image()$/;"	f
+PLP_legend	proc_legend.c	/^PLP_legend()$/;"	f
+PLP_legend_initstatic	proc_legend.c	/^PLP_legend_initstatic()$/;"	f
+PLP_legendentry	proc_legendentry.c	/^PLP_legendentry( )$/;"	f
+PLP_line	proc_line.c	/^PLP_line()$/;"	f
+PLP_lineplot	proc_lineplot.c	/^PLP_lineplot()$/;"	f
+PLP_page	proc_page.c	/^PLP_page( )$/;"	f
+PLP_pie	proc_pie.c	/^PLP_pie()$/;"	f
+PLP_print	proc_print.c	/^PLP_print()$/;"	f
+PLP_processdata	proc_processdata.c	/^PLP_processdata( )$/;"	f
+PLP_processdata_initstatic	proc_processdata.c	/^PLP_processdata_initstatic()$/;"	f
+PLP_rangesweep	proc_rangesweep.c	/^PLP_rangesweep()$/;"	f
+PLP_rect	proc_rect.c	/^PLP_rect()$/;"	f
+PLP_scatterplot	proc_scatterplot.c	/^PLP_scatterplot()$/;"	f
+PLP_settings	proc_settings.c	/^PLP_settings()$/;"	f
+PLP_symbol	proc_symbol.c	/^PLP_symbol()$/;"	f
+PLP_tabulate	proc_tabulate.c	/^PLP_tabulate()$/;"	f
+PLP_tree	proc_tree.c	/^PLP_tree()$/;"	f
+PLP_usedata	proc_usedata.c	/^PLP_usedata( )$/;"	f
+PLP_vector	proc_vector.c	/^PLP_vector()$/;"	f
+PLP_venndisk	proc_venndisk.c	/^PLP_venndisk()$/;"	f
+PLS	plhead.c	/^struct plstate PLS;$/;"	v	typeref:struct:plstate
+PLV	plhead.c	/^double *PLV;$/;"	v
+PLVERSION	pl.h	12;"	d
+PLVhalfsize	plhead.c	/^int PLVsize, PLVhalfsize, PLVthirdsize;$/;"	v
+PLVsize	plhead.c	/^int PLVsize, PLVhalfsize, PLVthirdsize;$/;"	v
+PLVthirdsize	plhead.c	/^int PLVsize, PLVhalfsize, PLVthirdsize;$/;"	v
+PL_add_legent	proc_legend.c	/^PL_add_legent( typ, label, tag, parm1, parm2, parm3 )$/;"	f
+PL_addcat	cats.c	/^PL_addcat( ax, pos, name )$/;"	f
+PL_begin	preliminaries.c	/^PL_begin()$/;"	f
+PL_begindataset	datasets.c	/^PL_begindataset()$/;"	f
+PL_bigbuf	plhead.c	/^char PL_bigbuf[ MAXBIGBUF ];	\/* general purpose large buffer - don't rely $/;"	v
+PL_catfree	cats.c	/^PL_catfree()$/;"	f
+PL_catitem	datasets.c	/^PL_catitem( item )$/;"	f
+PL_checkds	datasets.c	/^PL_checkds( ds )$/;"	f
+PL_cleardatasets	datasets.c	/^PL_cleardatasets()$/;"	f
+PL_clickmap_adjust	clickmap.c	/^PL_clickmap_adjust( x, y )$/;"	f
+PL_clickmap_demomode	clickmap.c	/^PL_clickmap_demomode( mode )$/;"	f
+PL_clickmap_entry	clickmap.c	/^PL_clickmap_entry( typ, url, pmode, x1, y1, x2, y2, textpad, clipmode, title )$/;"	f
+PL_clickmap_free	clickmap.c	/^PL_clickmap_free()$/;"	f
+PL_clickmap_getdemomode	clickmap.c	/^PL_clickmap_getdemomode()$/;"	f
+PL_clickmap_init	clickmap.c	/^PL_clickmap_init()$/;"	f
+PL_clickmap_inprogress	clickmap.c	/^PL_clickmap_inprogress()$/;"	f
+PL_clickmap_out	clickmap.c	/^PL_clickmap_out( tx, ty )$/;"	f
+PL_clickmap_setdefaulturl	clickmap.c	/^PL_clickmap_setdefaulturl( url )$/;"	f
+PL_clickmap_seturlt	clickmap.c	/^PL_clickmap_seturlt( url )$/;"	f
+PL_clickmap_show	clickmap.c	/^PL_clickmap_show( dev )$/;"	f
+PL_conv	units.c	/^PL_conv( axis, s )$/;"	f
+PL_conv_error	units.c	/^PL_conv_error()$/;"	f
+PL_conv_msg	lib.c	/^PL_conv_msg( row, col, aname )$/;"	f
+PL_convertnl	lib.c	/^PL_convertnl( str )$/;"	f
+PL_custom_function	custom.c	/^PL_custom_function( name, arg, nargs, result, typ )$/;"	f
+PL_da	datasets.c	/^PL_da( r, c )$/;"	f
+PL_defaultinc	lib.c	/^PL_defaultinc( min, max, inc )$/;"	f
+PL_definefieldnames	fieldnames.c	/^PL_definefieldnames( list )$/;"	f
+PL_devavail	devstuff.c	/^PL_devavail( dev )$/;"	f
+PL_devnamemap	devstuff.c	/^PL_devnamemap( s, t, mode )$/;"	f
+PL_devstring	devstuff.c	/^PL_devstring( s )$/;"	f
+PL_do_preliminaries	preliminaries.c	/^PL_do_preliminaries()$/;"	f
+PL_do_select	select.c	/^PL_do_select( selectex, row, result )$/;"	f
+PL_do_subst	select.c	/^PL_do_subst( out, in, row, mode )$/;"	f
+PL_do_x_button	lib.c	/^PL_do_x_button( label )$/;"	f
+PL_encode_fnames	fieldnames.c	/^PL_encode_fnames( mode )$/;"	f
+PL_enddatarow	datasets.c	/^PL_enddatarow()$/;"	f
+PL_exec_scriptfile	execscriptfile.c	/^PL_exec_scriptfile( scriptfile )$/;"	f
+PL_execline	execline.c	/^PL_execline( line )$/;"	f
+PL_execline_initstatic	execline.c	/^PL_execline_initstatic()$/;"	f
+PL_f_inr	units.c	/^PL_f_inr( axis, val )$/;"	f
+PL_fda	lib.c	/^PL_fda( r, c, ax )$/;"	f
+PL_fieldnames_initstatic	fieldnames.c	/^PL_fieldnames_initstatic()$/;"	f
+PL_file_to_buf	lib.c	/^PL_file_to_buf( filename, mode, result, buflen )$/;"	f
+PL_findcat	cats.c	/^PL_findcat( ax, s )$/;"	f
+PL_finishdataset	datasets.c	/^PL_finishdataset( nrows, nfields )$/;"	f
+PL_free	preliminaries.c	/^PL_free( )$/;"	f
+PL_fref	fieldnames.c	/^PL_fref( name )$/;"	f
+PL_fref_error	fieldnames.c	/^PL_fref_error()$/;"	f
+PL_fref_showerr	fieldnames.c	/^PL_fref_showerr( mode )$/;"	f
+PL_ftokncpy	execline.c	/^PL_ftokncpy( lineval )$/;"	f
+PL_get_legent	proc_legend.c	/^PL_get_legent( tag )$/;"	f
+PL_get_legent_rg	proc_legend.c	/^PL_get_legent_rg( val )$/;"	f
+PL_getbox	lib.c	/^PL_getbox( parmname, val, x1, y1, x2, y2 )$/;"	f
+PL_getcat	cats.c	/^PL_getcat( ax, n, result, maxlen )$/;"	f
+PL_getcoords	lib.c	/^PL_getcoords( parmname, val, x, y )$/;"	f
+PL_getfname	fieldnames.c	/^PL_getfname( n, result )$/;"	f
+PL_getmultiline	execline.c	/^PL_getmultiline( firstline, mode )$/;"	f
+PL_getnextattr	execline.c	/^PL_getnextattr( firsttime, attr, valpos )$/;"	f
+PL_getrange	lib.c	/^PL_getrange( lineval, lo, hi, ax, deflo, defhi )$/;"	f
+PL_getunits	units.c	/^PL_getunits( axis, result )$/;"	f
+PL_getunitsubtype	units.c	/^PL_getunitsubtype( axis, result )$/;"	f
+PL_getyn	lib.c	/^PL_getyn( val )$/;"	f
+PL_holdmem	execline.c	/^PL_holdmem( stat )$/;"	f
+PL_init_mem	preliminaries.c	/^PL_init_mem()$/;"	f
+PL_init_statics	preliminaries.c	/^PL_init_statics()$/;"	f
+PL_itokncpy	execline.c	/^PL_itokncpy( lineval )$/;"	f
+PL_lenex	units.c	/^PL_lenex( val, axis, result )$/;"	f
+PL_lib_initstatic	lib.c	/^PL_lib_initstatic()$/;"	f
+PL_linedet	details.c	/^PL_linedet( parmname, spec, defaultwidth )$/;"	f
+PL_makeoutfilename	devstuff.c	/^PL_makeoutfilename( scriptfn, outfn, dev, page )$/;"	f
+PL_measuretext	lib.c	/^PL_measuretext( txt, nlines, maxlen )$/;"	f
+PL_ncats	cats.c	/^PL_ncats( ax )$/;"	f
+PL_newattr	execline.c	/^PL_newattr( lineval, len )$/;"	f
+PL_newdataset	datasets.c	/^PL_newdataset( )$/;"	f
+PL_nextcat	cats.c	/^PL_nextcat( ax, result, maxlen )$/;"	f
+PL_num	lib.c	/^PL_num( s, result )$/;"	f
+PL_parsedata	parse.c	/^PL_parsedata( data, delim, comsym, field, maxd, nr, nf, nd )$/;"	f
+PL_popdataset	datasets.c	/^PL_popdataset( npop )$/;"	f
+PL_posex	units.c	/^PL_posex( val, axis, result )$/;"	f
+PL_process_arg	process_arg.c	/^PL_process_arg( opt_in, val, valused, found )$/;"	f
+PL_report_convmsgcount	lib.c	/^PL_report_convmsgcount()$/;"	f
+PL_resetstacklist	proc_bars.c	/^PL_resetstacklist()$/;"	f
+PL_rewritenums	lib.c	/^PL_rewritenums( num )$/;"	f
+PL_s_inr	units.c	/^PL_s_inr( axis, val )$/;"	f
+PL_scalebeenset	lib.c	/^PL_scalebeenset()$/;"	f
+PL_setcatparms	cats.c	/^PL_setcatparms( ax, what, parm )$/;"	f
+PL_setcats	cats.c	/^PL_setcats( ax, inbuf )$/;"	f
+PL_setcatslide	units.c	/^PL_setcatslide( axis, amount )$/;"	f
+PL_setcharvar	lib.c	/^PL_setcharvar( varname, s )$/;"	f
+PL_setfloatvar	lib.c	/^PL_setfloatvar( varname, f, fmt )$/;"	f
+PL_setintvar	lib.c	/^PL_setintvar( varname, n )$/;"	f
+PL_setscale	units.c	/^PL_setscale( axis, alo, ahi, scalelo, scalehi )$/;"	f
+PL_setunits	units.c	/^PL_setunits( axis, s )$/;"	f
+PL_sharedsettings	proc_settings.c	/^PL_sharedsettings( attr, lineval )$/;"	f
+PL_smoothfit	smoothfit.c	/^PL_smoothfit( in, ninp, out, noutp )$/;"	f
+PL_startdatarow	datasets.c	/^PL_startdatarow()$/;"	f
+PL_suppress_convmsg	lib.c	/^PL_suppress_convmsg( mode )$/;"	f
+PL_symdet	details.c	/^PL_symdet( parmname, spec, symcode, radius )$/;"	f
+PL_textdet	details.c	/^PL_textdet( parmname, spec, align, adjx, adjy, sizehint, stylehint, sephint )$/;"	f
+PL_tokncpy	execline.c	/^PL_tokncpy( val, lineval, maxlen )$/;"	f
+PL_u	units.c	/^PL_u( axis, s )$/;"	f
+PL_units_initstatic	units.c	/^PL_units_initstatic()$/;"	f
+PL_uprint	units.c	/^PL_uprint( result, axis, f, format )$/;"	f
+PL_value_subst	plvalue_subst.c	/^PL_value_subst( out, in, data, mode )$/;"	f
+PL_version_msg	pl.c	/^PL_version_msg( longmsg )$/;"	f
+PL_zero_convmsgcount	lib.c	/^PL_zero_convmsgcount()$/;"	f
+PORTRAIT	ps.c	45;"	d	file:
+POSTSCRIPT	plg.h	40;"	d
+PREFABS_DIR	Makefile	/^PREFABS_DIR = "\/usr\/share\/ploticus"$/;"	m
+PREFABS_DIR	api.c	11;"	d	file:
+PREFABS_DIR	preliminaries.c	16;"	d	file:
+Pass	gd13.c	/^static int Pass = 0;$/;"	v	file:
+Pivotyear	dates.c	/^static int Pivotyear = 70;  \/* a year >= pivotyear is considered 1900's.  a year < pivotyear is considered 2000's. *\/$/;"	v	file:
+Putchar	gd_io.c	/^Putchar(int c, gdIOCtx *ctx)$/;"	f
+Putword	gd13.c	/^Putword(int w, FILE *fp)$/;"	f	file:
+Putword	gd_io.c	/^Putword(int w, gdIOCtx *ctx)$/;"	f
+QpSmootherDone	smoothfit.c	/^static int QpSmootherDone() {$/;"	f	file:
+QpSmootherInit	smoothfit.c	/^static int QpSmootherInit( nPoints, in )$/;"	f	file:
+R	smoothfit.c	/^  static double P1, P2, P3, P4, P5, P6, W1, W2, W3, A, B, C, R, S, T, Z;$/;"	v	file:
+REGRESSION	proc_curvefit.c	17;"	d	file:
+RESULT_TYPE	apitest.c	14;"	d	file:
+RIGHT	lineclip.c	19;"	d	file:
+RMCOM	Makefile	/^RMCOM = rm -f$/;"	m
+ReadColorMap	gd13.c	/^ReadColorMap(FILE *fd, int number, unsigned char (*buffer)[256])$/;"	f	file:
+ReadImage	gd13.c	/^ReadImage(gdImagePtr im, FILE *fd, int len, int height, unsigned char (*cmap)[256], int interlace, int ignore)$/;"	f	file:
+ReadOK	gd13.c	1561;"	d	file:
+S	smoothfit.c	/^  static double P1, P2, P3, P4, P5, P6, W1, W2, W3, A, B, C, R, S, T, Z;$/;"	v	file:
+SB	smoothfit.c	/^  static double XA, XB, YA, YB, U1, U2, U3, TJ, SB, STH;$/;"	v	file:
+SCALED	proc_line.c	12;"	d	file:
+SCANNING	execline.c	15;"	d	file:
+SCRIPTLINELEN	tdhkit.h	33;"	d
+SD	proc_boxplot.c	30;"	d	file:
+SEEK_CUR	tdhkit.h	118;"	d
+SEEK_END	tdhkit.h	119;"	d
+SEEK_SET	tdhkit.h	117;"	d
+SERVERSIDE	clickmap.c	20;"	d	file:
+SHAREFLAG	Makefile	/^SHAREFLAG = -shared -Wl,-soname,$(SONAME)$/;"	m
+SHARELIBEXT	Makefile	/^SHARELIBEXT = so.0.0.0$/;"	m
+SHELL	secondaryops.c	16;"	d	file:
+SHSQL	dbinterface.c	20;"	d	file:
+SIMPLEAVG	proc_curvefit.c	19;"	d	file:
+SINTERP_END	tdhkit.h	63;"	d
+SINTERP_END_BUT_PRINT	tdhkit.h	64;"	d
+SINTERP_MORE	tdhkit.h	65;"	d
+SO	smoothfit.c	/^  static double CO, SO, CT, ST, CTU, STU, XNT, DX1, DY1, DX2, DY2, XO, YO, DX, DY, XT, YT;$/;"	v	file:
+SONAME	Makefile	/^SONAME = libploticus.so.0$/;"	m
+SPACE	parse.c	26;"	d	file:
+SPACECHAR	parse.c	14;"	d	file:
+SPACEQUOTE	parse.c	25;"	d	file:
+SPACEQUOTE	proc_getdata.c	19;"	d	file:
+SQL	secondaryops.c	17;"	d	file:
+ST	smoothfit.c	/^  static double CO, SO, CT, ST, CTU, STU, XNT, DX1, DY1, DX2, DY2, XO, YO, DX, DY, XT, YT;$/;"	v	file:
+STATICLIBEXT	Makefile	/^STATICLIBEXT = a$/;"	m
+STH	smoothfit.c	/^  static double XA, XB, YA, YB, U1, U2, U3, TJ, SB, STH;$/;"	v	file:
+STRING	interact.c	12;"	d	file:
+STU	smoothfit.c	/^  static double CO, SO, CT, ST, CTU, STU, XNT, DX1, DY1, DX2, DY2, XO, YO, DX, DY, XT, YT;$/;"	v	file:
+SVG	plg.h	39;"	d
+SWF	plg.h	41;"	d
+SYBASE	dbinterface.c	23;"	d	file:
+SYM	proc_boxplot.c	41;"	d	file:
+Sec	times.c	/^static double Sec = 0.0;$/;"	v	file:
+Sep	functions.c	/^static char Sep[5] = ","; \/* for args that are commalists *\/$/;"	v	file:
+Sep	glroutines.c	/^static char Sep = ',';  \/* separator character for lists *\/$/;"	v	file:
+Suppress_twin_warn	dates.c	/^static int Suppress_twin_warn = 0;$/;"	v	file:
+Suppress_twin_warn	datetime.c	/^static int Suppress_twin_warn = 0;$/;"	v	file:
+Supress_convmsg	lib.c	/^static int Supress_convmsg = 0;$/;"	v	file:
+T	smoothfit.c	/^  static double P1, P2, P3, P4, P5, P6, W1, W2, W3, A, B, C, R, S, T, Z;$/;"	v	file:
+TAB	parse.c	27;"	d	file:
+TAB	proc_getdata.c	20;"	d	file:
+TAB	shell.c	16;"	d	file:
+TDHKIT	tdhkit.h	7;"	d
+TDH_DB	dbinterface.c	25;"	d	file:
+TDH_DB	sinterp.c	36;"	d	file:
+TDH_clearallvar	variable.c	/^TDH_clearallvar( )$/;"	f
+TDH_condex	condex.c	/^TDH_condex( cond, eval )$/;"	f
+TDH_condex_initstatics	condex.c	/^TDH_condex_initstatics()$/;"	f
+TDH_condex_listsep	condex.c	/^TDH_condex_listsep( c )$/;"	f
+TDH_condex_matchscore	condex.c	/^TDH_condex_matchscore()$/;"	f
+TDH_condex_nofunc	condex.c	/^TDH_condex_nofunc( mode )$/;"	f
+TDH_configfile	tdhkit.c	/^char TDH_configfile[ MAXPATH ] = "";	\/* path name of config file *\/$/;"	v
+TDH_dat	tdhkit.c	/^char *TDH_dat = NULL;			\/* points to data array for condex *\/$/;"	v
+TDH_dberrorcode	dbfunc.c	/^TDH_dberrorcode( dbc, code, mode )$/;"	f
+TDH_dbfunctions	dbfunc.c	/^TDH_dbfunctions( hash, name, arg, nargs, result, typ )$/;"	f
+TDH_dbnewquery	dbfunc.c	/^TDH_dbnewquery( dbc )$/;"	f
+TDH_dbnull	tdhkit.c	/^char TDH_dbnull[ 10 ] = "=";		\/* null representation in data files *\/$/;"	v
+TDH_debugflag	tdhkit.c	/^int TDH_debugflag = 0;			\/* may be set to 1 for extra debugging output *\/$/;"	v
+TDH_decpt	tdhkit.c	/^char TDH_decpt = '.';			\/* decimal point char *\/$/;"	v
+TDH_dequote	value_subst.c	/^TDH_dequote( out, in, prefix )$/;"	f
+TDH_err	err.c	/^TDH_err( errno, msg, parm )$/;"	f
+TDH_err_initstatic	err.c	/^TDH_err_initstatic()$/;"	f
+TDH_errfile	err.c	/^TDH_errfile( fp )$/;"	f
+TDH_errlogfile	err.c	/^TDH_errlogfile( filename )$/;"	f
+TDH_errmode	err.c	/^TDH_errmode( mode )$/;"	f
+TDH_errprog	err.c	/^TDH_errprog( prog )$/;"	f
+TDH_errprogsticky	err.c	/^TDH_errprogsticky( prog )$/;"	f
+TDH_fdfpath	tdhkit.c	/^char TDH_fdfpath[ MAXPATH ] =      ".\/";	\/* directory where FDF files are kept *\/$/;"	v
+TDH_function_call	functions.c	/^TDH_function_call( v, typ, eval )$/;"	f
+TDH_function_listsep	functions.c	/^TDH_function_listsep( sepchar )$/;"	f
+TDH_function_set	functions.c	/^TDH_function_set( what, val )$/;"	f
+TDH_functioncall_initstatic	functions.c	/^TDH_functioncall_initstatic()$/;"	f
+TDH_get_involved_items	value_subst.c	/^TDH_get_involved_items( n, list )$/;"	f
+TDH_get_var_i	variable.c	/^TDH_get_var_i()$/;"	f
+TDH_geterrmode	err.c	/^TDH_geterrmode( mode )$/;"	f
+TDH_geterrprog	err.c	/^TDH_geterrprog( prog )$/;"	f
+TDH_getvalue	value.c	/^TDH_getvalue( value, itemname, data, recordid )$/;"	f
+TDH_getvar	variable.c	/^TDH_getvar( name, value )$/;"	f
+TDH_getvarp	variable.c	/^TDH_getvarp( name )$/;"	f
+TDH_initialized	tdhkit.c	/^int TDH_initialized = 0;$/;"	v
+TDH_inquisp	tdhkit.c	/^int TDH_inquisp = 0;			\/* this is needed with the new ploticus api PL_initstatics() $/;"	v
+TDH_progname	tdhkit.c	/^char TDH_progname[20] = "";$/;"	v
+TDH_prohibit_shell	secondaryops.c	/^TDH_prohibit_shell( mode )$/;"	f
+TDH_readconfig	tdhkit.c	/^TDH_readconfig( loc )$/;"	f
+TDH_readconfig_initstatic	tdhkit.c	/^TDH_readconfig_initstatic()$/;"	f
+TDH_recid	tdhkit.c	/^char *TDH_recid = NULL;			\/* points to recordid for condex *\/$/;"	v
+TDH_reslimits	reslimits.c	/^TDH_reslimits( type, value )$/;"	f
+TDH_scriptdir	tdhkit.c	/^char TDH_scriptdir[ MAXPATH] = ".\/";	\/* root directory for scripts *\/$/;"	v
+TDH_secondaryops	secondaryops.c	/^TDH_secondaryops( buf, ss, recordid, data )$/;"	f
+TDH_setshellfdelim	shell.c	/^TDH_setshellfdelim( code ) $/;"	f
+TDH_setspecialincdir	sinterp.c	/^TDH_setspecialincdir( dir )$/;"	f
+TDH_setvalue	value.c	/^TDH_setvalue( itemname, value, data, recordid )$/;"	f
+TDH_setvar	variable.c	/^TDH_setvar( name, value )$/;"	f
+TDH_setvar_initstatic	variable.c	/^TDH_setvar_initstatic()$/;"	f
+TDH_setvarcon	variable.c	/^TDH_setvarcon( name, value, convert )$/;"	f
+TDH_shell_initstatic	shell.c	/^TDH_shell_initstatic()$/;"	f
+TDH_shellclose	shell.c	/^TDH_shellclose()$/;"	f
+TDH_shellcommand	shell.c	/^TDH_shellcommand( command )$/;"	f
+TDH_shellmetachars	tdhkit.c	/^char TDH_shellmetachars[30] = "\\"'`$\\\\;|"; \/* shell meta characters to strip out of variables when building$/;"	v
+TDH_shellreadheader	shell.c	/^TDH_shellreadheader( )$/;"	f
+TDH_shellresultrow	shell.c	/^TDH_shellresultrow( buf, fields, nfields, maxlen )$/;"	f
+TDH_shfunctions	shell.c	/^TDH_shfunctions( hash, name, arg, nargs, result, typ )$/;"	f
+TDH_showvars	variable.c	/^TDH_showvars( mode )$/;"	f
+TDH_sinterp	sinterp.c	/^TDH_sinterp( line, ss, recordid, data )$/;"	f
+TDH_sinterp_open	sinterp.c	/^TDH_sinterp_open( filename, ss )$/;"	f
+TDH_sinterp_openmem	sinterp.c	/^TDH_sinterp_openmem( memrows, nmemrows, ss )$/;"	f
+TDH_sqlcommand	dbinterface.c	/^TDH_sqlcommand( dbc, sql )$/;"	f
+TDH_sqlget	dbinterface.c	/^TDH_sqlget( sql, result )$/;"	f
+TDH_sqlgets	dbinterface.c	/^TDH_sqlgets( sql, fields )$/;"	f
+TDH_sqlnames	dbinterface.c	/^TDH_sqlnames( dbc, fields, n )$/;"	f
+TDH_sqlpushrow	dbinterface.c	/^TDH_sqlpushrow( dbc )$/;"	f
+TDH_sqlrow	dbinterface.c	/^TDH_sqlrow( dbc, fields, n )$/;"	f
+TDH_sqlrow_nullrep	dbfunc.c	/^TDH_sqlrow_nullrep( rep )$/;"	f
+TDH_sqlrowcount	dbinterface.c	/^TDH_sqlrowcount( dbc )$/;"	f
+TDH_sqltabdef	dbinterface.c	/^TDH_sqltabdef( table, fields, n )$/;"	f
+TDH_sqlwritable	dbinterface.c	/^TDH_sqlwritable()$/;"	f
+TDH_tmpdir	tdhkit.c	/^char TDH_tmpdir[ MAXPATH ] = "\/tmp";	\/* directory for tmp files *\/$/;"	v
+TDH_value_subst	value_subst.c	/^TDH_value_subst( out, in, data, recordid, mode, erronbadvar )$/;"	f
+TDH_valuesubst_initstatic	value_subst.c	/^TDH_valuesubst_initstatic()$/;"	f
+TDH_valuesubst_settings	value_subst.c	/^TDH_valuesubst_settings( tag, value )$/;"	f
+TDH_warn_on_badvar	variable.c	/^TDH_warn_on_badvar()$/;"	f
+TIME	units.c	18;"	d	file:
+TJ	smoothfit.c	/^  static double XA, XB, YA, YB, U1, U2, U3, TJ, SB, STH;$/;"	v	file:
+TMPDIR	pl.h	72;"	d
+TMPDIR	pl.h	75;"	d
+TOP	lineclip.c	17;"	d	file:
+TORAD	mark.c	11;"	d	file:
+TORAD	proc_pie.c	12;"	d	file:
+TRUE	gd13.c	1548;"	d	file:
+TRUE	gd13.c	846;"	d	file:
+TRUE	gd_io_dp.c	24;"	d	file:
+TRUE	gd_png.c	8;"	d	file:
+TWOPI	arrow.c	10;"	d	file:
+TWOPI	proc_vector.c	13;"	d	file:
+TWOPI	proc_venndisk.c	11;"	d	file:
+U1	smoothfit.c	/^  static double XA, XB, YA, YB, U1, U2, U3, TJ, SB, STH;$/;"	v	file:
+U2	smoothfit.c	/^  static double XA, XB, YA, YB, U1, U2, U3, TJ, SB, STH;$/;"	v	file:
+U3	smoothfit.c	/^  static double XA, XB, YA, YB, U1, U2, U3, TJ, SB, STH;$/;"	v	file:
+URL_ENCODED	pl.h	67;"	d
+URL_ENCODED	tdhkit.h	54;"	d
+VARMAXLEN	tdhkit.h	22;"	d
+VARSUBLINELEN	tdhkit.h	37;"	d
+VERBOSE	gd13.c	1169;"	d	file:
+VERBOSE	gd13.c	1180;"	d	file:
+VERT	grgd.c	46;"	d	file:
+Value	variable.c	/^static char Value[MAXVAR][VARMAXLEN+1];$/;"	v	file:
+W1	smoothfit.c	/^  static double P1, P2, P3, P4, P5, P6, W1, W2, W3, A, B, C, R, S, T, Z;$/;"	v	file:
+W2	smoothfit.c	/^  static double P1, P2, P3, P4, P5, P6, W1, W2, W3, A, B, C, R, S, T, Z;$/;"	v	file:
+W3	smoothfit.c	/^  static double P1, P2, P3, P4, P5, P6, W1, W2, W3, A, B, C, R, S, T, Z;$/;"	v	file:
+WALL	Makefile	/^WALL = -Wall -g$/;"	m
+WHITESPACE	parse.c	24;"	d	file:
+WHITESPACE	proc_getdata.c	18;"	d	file:
+WORDLEN	proc_tabulate.c	21;"	d	file:
+WS	shell.c	15;"	d	file:
+Width	gd13.c	/^static int Width, Height;$/;"	v	file:
+Wildcard	glroutines.c	/^static char Wildcard = '*';$/;"	v	file:
+Wildcard1	glroutines.c	/^static char Wildcard1 = '?';$/;"	v	file:
+X	pl.h	52;"	d
+X11	plg.h	37;"	d
+XA	smoothfit.c	/^  static double XA, XB, YA, YB, U1, U2, U3, TJ, SB, STH;$/;"	v	file:
+XB	smoothfit.c	/^  static double XA, XB, YA, YB, U1, U2, U3, TJ, SB, STH;$/;"	v	file:
+XINCLUDEDIR	Makefile	/^XINCLUDEDIR = -I\/usr\/include\/X11$/;"	m
+XLIBS	Makefile	/^XLIBS = -lX11$/;"	m
+XNT	smoothfit.c	/^  static double CO, SO, CT, ST, CTU, STU, XNT, DX1, DY1, DX2, DY2, XO, YO, DX, DY, XT, YT;$/;"	v	file:
+XO	smoothfit.c	/^  static double CO, SO, CT, ST, CTU, STU, XNT, DX1, DY1, DX2, DY2, XO, YO, DX, DY, XT, YT;$/;"	v	file:
+XOBJ	Makefile	/^XOBJ = x11.o interact.o$/;"	m
+XT	smoothfit.c	/^  static double CO, SO, CT, ST, CTU, STU, XNT, DX1, DY1, DX2, DY2, XO, YO, DX, DY, XT, YT;$/;"	v	file:
+Y	pl.h	53;"	d
+YA	smoothfit.c	/^  static double XA, XB, YA, YB, U1, U2, U3, TJ, SB, STH;$/;"	v	file:
+YB	smoothfit.c	/^  static double XA, XB, YA, YB, U1, U2, U3, TJ, SB, STH;$/;"	v	file:
+YES	plg.h	16;"	d
+YES	ps.c	43;"	d	file:
+YESANS	pl.h	57;"	d
+YO	smoothfit.c	/^  static double CO, SO, CT, ST, CTU, STU, XNT, DX1, DY1, DX2, DY2, XO, YO, DX, DY, XT, YT;$/;"	v	file:
+YT	smoothfit.c	/^  static double CO, SO, CT, ST, CTU, STU, XNT, DX1, DY1, DX2, DY2, XO, YO, DX, DY, XT, YT;$/;"	v	file:
+Yr	dates.c	/^static int Yr;	\/* most recent year sent to jdate (4 digit year) *\/$/;"	v	file:
+Z	smoothfit.c	/^  static double P1, P2, P3, P4, P5, P6, W1, W2, W3, A, B, C, R, S, T, Z;$/;"	v	file:
+ZFLAG	Makefile	/^ZFLAG = -DWZ$/;"	m
+ZeroDataBlock	gd13.c	/^int ZeroDataBlock;$/;"	v
+_GDFONTG_H_	gdfontg.h	3;"	d
+_GDFONTL_H_	gdfontl.h	3;"	d
+_GDFONTMB_H_	gdfontmb.h	3;"	d
+_GDFONTS_H_	gdfonts.h	3;"	d
+_GDFONTT_H_	gdfontt.h	3;"	d
+_jmpbuf_wrapper	gd_png.c	/^typedef struct _jmpbuf_wrapper {$/;"	s	file:
+a_count	gd13.c	/^static int a_count;$/;"	v	file:
+accum	gd13.c	/^static char accum[ 256 ];$/;"	v	file:
+adjx	clickmap.c	/^static double adjx = 0.0, adjy = 0.0;$/;"	v	file:
+adjy	clickmap.c	/^static double adjx = 0.0, adjy = 0.0;$/;"	v	file:
+ah2x	proc_annotate.c	/^static double ah2x, ah2y, at2x, at2y;$/;"	v	file:
+ah2y	proc_annotate.c	/^static double ah2x, ah2y, at2x, at2y;$/;"	v	file:
+ahsize	proc_annotate.c	/^static double ahx, ahy, atx, aty, ahsize;$/;"	v	file:
+ahx	proc_annotate.c	/^static double ahx, ahy, atx, aty, ahsize;$/;"	v	file:
+ahy	proc_annotate.c	/^static double ahx, ahy, atx, aty, ahsize;$/;"	v	file:
+allocDynamic	gd_io_dp.c	/^allocDynamic (dynamicPtr* dp,int initialSize, void *data) {$/;"	f	file:
+allowinlinecodes	value_subst.c	/^static int allowinlinecodes = 0;$/;"	v	file:
+angpos	proc_tree.c	/^angpos( oldx, oldy, dist, ang, newx, newy )$/;"	f	file:
+appendDynamic	gd_io_dp.c	/^appendDynamic (dynamicPtr* dp, const void* src, int size) {$/;"	f	file:
+areas	proc_areadef.c	/^static char *areas[17] = {$/;"	v	file:
+arrow2h	proc_annotate.c	/^static int arrowh, arrowt, arrow2h, arrow2t;$/;"	v	file:
+arrow2t	proc_annotate.c	/^static int arrowh, arrowt, arrow2h, arrow2t;$/;"	v	file:
+arrowdet	proc_annotate.c	/^static char *arrowdet = "";$/;"	v	file:
+arrowh	proc_annotate.c	/^static int arrowh, arrowt, arrow2h, arrow2t;$/;"	v	file:
+arrowt	proc_annotate.c	/^static int arrowh, arrowt, arrow2h, arrow2t;$/;"	v	file:
+at2x	proc_annotate.c	/^static double ah2x, ah2y, at2x, at2y;$/;"	v	file:
+at2y	proc_annotate.c	/^static double ah2x, ah2y, at2x, at2y;$/;"	v	file:
+atx	proc_annotate.c	/^static double ahx, ahy, atx, aty, ahsize;$/;"	v	file:
+aty	proc_annotate.c	/^static double ahx, ahy, atx, aty, ahsize;$/;"	v	file:
+b	color.c	/^	double r, g, b;$/;"	m	struct:PLG_colorlist	file:
+b	x11.c	/^	unsigned short r, g, b;$/;"	m	struct:x_rgbp	file:
+badvarwarn	variable.c	/^static int badvarwarn = 0;$/;"	v	file:
+banksize	smoothfit.c	/^  static int npoints, k, kp, NpointsMax, banksize, npt;$/;"	v	file:
+bb2_x1	pcode.c	/^static double bb2_x1 = 999;		\/* coords of "sub" bounding box available to app *\/$/;"	v	file:
+bb2_x2	pcode.c	/^static double bb2_x2 = -999;$/;"	v	file:
+bb2_y1	pcode.c	/^static double bb2_y1 = 999;$/;"	v	file:
+bb2_y2	pcode.c	/^static double bb2_y2 = -999;$/;"	v	file:
+bb_x1	pcode.c	/^static double bb_x1 = 999;		\/* coords of bounding box for entire run *\/$/;"	v	file:
+bb_x2	pcode.c	/^static double bb_x2 = -999;$/;"	v	file:
+bb_y1	pcode.c	/^static double bb_y1 = 999;$/;"	v	file:
+bb_y2	pcode.c	/^static double bb_y2 = -999;$/;"	v	file:
+bblen	secondaryops.c	/^static int bblen;$/;"	v	file:
+begin_needed	api.c	/^static int begin_needed = 1;$/;"	v	file:
+beginnum	lib.c	/^beginnum( s, i )$/;"	f	file:
+bigbuf	secondaryops.c	/^static char bigbuf[ MAXRECORDLEN ];$/;"	v	file:
+bignumspacer	pl.h	/^	int bignumspacer;	\/* character to use in making large numbers readable (usually comma) *\/$/;"	m	struct:plstate
+bignumthres	pl.h	/^	int bignumthres;	$/;"	m	struct:plstate
+binformat	gd13.c	/^static const char *binformat(unsigned int v, int nbits)$/;"	f	file:
+bkcolorgiven	pl.h	/^	int bkcolorgiven;	\/* needed so that we know whether or not to Eclr in certain places *\/$/;"	m	struct:plstate
+blacklines	plg.h	/^	int blacklines;$/;"	m	struct:plgc
+block_flush	gd13.c	/^static void block_flush(void)$/;"	f	file:
+block_out	gd13.c	/^static void block_out(unsigned char c)$/;"	f	file:
+blue	gd13/gd.h	/^	int blue[gdMaxColors]; $/;"	m	struct:gdImageStruct
+blue	gd16/gd.h	/^	int blue[gdMaxColors]; $/;"	m	struct:gdImageStruct
+bor	proc_processdata.c	/^bor( )$/;"	f	file:
+boundscode	lineclip.c	/^boundscode( x, y, rx1, ry1, rx2, ry2 )$/;"	f	file:
+box	clickmap.c	/^	} box[MAXENTRIES];$/;"	v	typeref:struct:__anon2	file:
+box_x1	block.c	/^static double box_x1 = 0.0, box_y1 = 0.0, box_x2 = 0.0, box_y2 = 0.0;$/;"	v	file:
+box_x2	block.c	/^static double box_x1 = 0.0, box_y1 = 0.0, box_x2 = 0.0, box_y2 = 0.0;$/;"	v	file:
+box_y1	block.c	/^static double box_x1 = 0.0, box_y1 = 0.0, box_x2 = 0.0, box_y2 = 0.0;$/;"	v	file:
+box_y2	block.c	/^static double box_x1 = 0.0, box_y1 = 0.0, box_x2 = 0.0, box_y2 = 0.0;$/;"	v	file:
+boxh	proc_annotate.c	/^static double boxw, boxh, ulx, uly;$/;"	v	file:
+boxw	proc_annotate.c	/^static double boxw, boxh, ulx, uly;$/;"	v	file:
+breakcurrow	proc_processdata.c	/^static int rejfld[MAXFLD], nrejfld, kpfld[MAXFLD], nkpfld, breakcurrow = 0, eofcount = 0;$/;"	v	file:
+brush	gd13/gd.h	/^	struct gdImageStruct *brush;$/;"	m	struct:gdImageStruct	typeref:struct:gdImageStruct::gdImageStruct
+brush	gd16/gd.h	/^	struct gdImageStruct *brush;$/;"	m	struct:gdImageStruct	typeref:struct:gdImageStruct::gdImageStruct
+brushColorMap	gd13/gd.h	/^	int brushColorMap[gdMaxColors];$/;"	m	struct:gdImageStruct
+brushColorMap	gd16/gd.h	/^	int brushColorMap[gdMaxColors];$/;"	m	struct:gdImageStruct
+bspline	proc_curvefit.c	/^bspline( in, npts, out, ncv, order )$/;"	f	file:
+buflen	datasets.c	/^static int buflen;$/;"	v	file:
+calc_arrow	proc_annotate.c	/^calc_arrow( ulx, uly, boxw, boxh, ahx, ahy, tailx, taily )$/;"	f	file:
+catcompmethod	cats.c	/^static int catcompmethod[2] = { CONTAINS, CONTAINS };	  \/* category comparison method: $/;"	v	file:
+catitem	pl.h	182;"	d
+cats	cats.c	/^static char **cats[2] = { NULL, NULL };	  \/* category list backbone (X, Y) *\/$/;"	v	file:
+catslide	units.c	/^static double catslide[2] = { 0.0, 0.0 };  \/* for displaying clusters over categories *\/$/;"	v	file:
+cgiargs	pl.h	/^	char *cgiargs;		\/* CGI args *\/$/;"	m	struct:plstate
+char_init	gd13.c	/^char_init(void)$/;"	f	file:
+checkMaxIterations	smoothfit.c	/^static void checkMaxIterations(int *kCode, int *IT, int J1, double *X, double X2, int maxiterations)$/;"	f	file:
+check_uniq	cats.c	/^static int check_uniq[2] = { 1, 1 };	  \/* 1 = ensure unique cats   0 don't ensure uniqueness (faster, but dups will cause trouble) *\/$/;"	v	file:
+checkexit	shell.c	/^checkexit( s, buf )$/;"	f	file:
+checklengths	dates.c	/^static int checklengths = 1;$/;"	v	file:
+circliststart	pixpt.h	/^static int circliststart[] = { 0, 0, 0, 0, 10, 22, 36, 54, 54, 74, 74, 74 };$/;"	v
+circpt	pixpt.h	/^static int circpt[] = {$/;"	v
+clickmap	pl.h	/^	int clickmap;		\/* indicates whether we are doing a clickmap or not *\/$/;"	m	struct:plstate
+clickmap_debug	pl.h	190;"	d
+clickmap_entry	pl.h	193;"	d
+clickmap_init	pl.h	188;"	d
+clickmap_inprogress	pl.h	189;"	d
+clickmap_out	pl.h	194;"	d
+clickmap_setdefaulturl	pl.h	191;"	d
+clickmap_seturlt	pl.h	192;"	d
+clickmap_show	pl.h	195;"	d
+clone_name	execline.c	/^static char clone_name[NAMEMAXLEN];$/;"	v	file:
+clonelist	execline.c	/^static char clonelist[200];$/;"	v	file:
+closed	smoothfit.c	/^  static int closed, flgis, iw;$/;"	v	file:
+cmdlineparms	pl.h	/^	char cmdlineparms[300];	\/* command line parms that need to override proc page settings *\/$/;"	m	struct:plstate
+code_clear	gd13.c	/^static int code_clear;$/;"	v	file:
+code_eof	gd13.c	/^static int code_eof;$/;"	v	file:
+code_int	gd13.c	/^typedef int code_int;$/;"	t	file:
+color	mark.c	/^static char color[COLORLEN];$/;"	v	file:
+colorchg_pending	pcode.c	/^static int colorchg_pending = 0;$/;"	v	file:
+colorname	color.c	/^static struct PLG_colorlist colorname[MAXCOLORS] = {$/;"	v	typeref:struct:PLG_colorlist	file:
+colorsTotal	gd13/gd.h	/^	int colorsTotal;$/;"	m	struct:gdImageStruct
+colorsTotal	gd16/gd.h	/^	int colorsTotal;$/;"	m	struct:gdImageStruct
+colorstobpp	gd13.c	/^colorstobpp(int colors)$/;"	f	file:
+compress	gd13.c	/^static void compress(int init_bits, FILE *outfile, gdImagePtr im, int background)$/;"	f	file:
+computeCubicCoeffs	smoothfit.c	/^static void computeCubicCoeffs() {$/;"	f	file:
+computeDirectionCosine	smoothfit.c	/^static void computeDirectionCosine (int kMinus1, int kP, int kPlus1) {$/;"	f	file:
+computeStraightLine	smoothfit.c	/^static void computeStraightLine(int kP) {$/;"	f	file:
+compute_triangle_count	gd13.c	/^static unsigned int compute_triangle_count(unsigned int count, unsigned int nrepcodes)$/;"	f	file:
+condmet	tdhkit.h	/^	char condmet[IFNESTMAX];	\/* flags for condition met, one per nest level *\/$/;"	m	struct:sinterpstate
+context	gd16/gd.h	/^        void *context;$/;"	m	struct:__anon6
+context	gd16/gd.h	/^        void *context;$/;"	m	struct:__anon8
+continousTangentAtEndPoints	smoothfit.c	/^static int continousTangentAtEndPoints() {$/;"	f	file:
+conv_errflag	units.c	/^static int conv_errflag = 0;$/;"	v	file:
+conv_msg	pl.h	177;"	d
+convdatesub	units.c	/^convdatesub( desc, s, result )$/;"	f	file:
+convertnl	pl.h	185;"	d
+cost	gd13.c	/^int cost[] = {$/;"	v	file:
+cost	gd13.c	/^static int cost[];$/;"	v	file:
+cost	gd16.c	/^static int cost[] = {$/;"	v	file:
+cost	gd16.c	/^static int cost[];$/;"	v	file:
+costScale	gd13.c	8;"	d	file:
+costScale	gd16.c	8;"	d	file:
+ctx	gd_io_dp.c	/^  gdIOCtx		ctx;$/;"	m	struct:dpIOCtx	file:
+ctx	gd_io_file.c	/^  gdIOCtx	ctx;$/;"	m	struct:fileIOCtx	file:
+curbkcolor	plg.h	/^	char curbkcolor[COLORLEN];$/;"	m	struct:plgc
+curcat	cats.c	/^static int curcat[2] = { 0, 0 };	  \/* used with roundrobin category lookup *\/$/;"	v	file:
+curcolor	plg.h	/^	char curcolor[COLORLEN];$/;"	m	struct:plgc
+curdf	datasets.c	/^        int curdf;              \/* next available field pointer in df array *\/$/;"	m	struct:pldata	file:
+curdf	pl.h	/^	int curdf;		\/* next available field pointer in df array *\/$/;"	m	struct:pldata
+curds	datasets.c	/^        int curds;              \/* identifies the current dataset (or stack size).  First is 0 *\/$/;"	m	struct:pldata	file:
+curds	pl.h	/^	int curds;		\/* identifies the current dataset (or stack size).  First is 0 *\/$/;"	m	struct:pldata
+curfont	plg.h	/^	char curfont[FONTLEN];$/;"	m	struct:plgc
+curline	pl.h	/^	int curline;		\/* next available cell when getting from procline array *\/$/;"	m	struct:proclines
+curlinetype	plg.h	/^	int curlinetype;$/;"	m	struct:plgc
+curlinewidth	plg.h	/^	double curlinewidth;$/;"	m	struct:plgc
+curpaper	plg.h	/^	int curpaper;$/;"	m	struct:plgc
+curpatternfactor	plg.h	/^	double curpatternfactor;$/;"	m	struct:plgc
+curpen	plg.h	/^	int curpen; $/;"	m	struct:plgc
+currow	datasets.c	/^        int currow;             \/* current number of members in datarow array *\/$/;"	m	struct:pldata	file:
+currow	pl.h	/^	int currow;		\/* current number of members in datarow array *\/$/;"	m	struct:pldata
+curtextdirection	plg.h	/^	int curtextdirection;$/;"	m	struct:plgc
+curtextheight	plg.h	/^	double curtextheight;$/;"	m	struct:plgc
+curtextsize	plg.h	/^	int curtextsize;$/;"	m	struct:plgc
+curtextwidth	plg.h	/^	double curtextwidth;$/;"	m	struct:plgc
+curvar	value_subst.c	/^static int curvar = 1; \/* the var serial# *\/$/;"	v	file:
+curx	gd13.c	/^static int curx, cury;$/;"	v	file:
+cury	gd13.c	/^static int curx, cury;$/;"	v	file:
+da	pl.h	166;"	d
+dashedSet	gd13.c	/^static void dashedSet(gdImagePtr im, int x, int y, int color,$/;"	f	file:
+dashedSet	gd16.c	/^static void dashedSet(gdImagePtr im, int x, int y, int color,$/;"	f	file:
+dashindate	units.c	/^static int dashindate = 0;	 \/* 1 if current date format contains dash(s), 0 otherwise *\/$/;"	v	file:
+dashindateaxis	units.c	/^static char dashindateaxis = '0';$/;"	v	file:
+dat2d	pl.h	41;"	d
+dat3d	pl.h	42;"	d
+data	gd13/gd.h	/^	char *data;$/;"	m	struct:__anon3
+data	gd16/gd.h	/^	char *data;$/;"	m	struct:__anon5
+data	gd_io_dp.c	/^  void* data;$/;"	m	struct:dpStruct	file:
+dataGood	gd_io_dp.c	/^  int dataGood;$/;"	m	struct:dpStruct	file:
+datarow	datasets.c	/^        char **datarow;         \/* array of pointers to malloc'ed data row buffers *\/$/;"	m	struct:pldata	file:
+datarow	pl.h	/^	char **datarow; 	\/* array of pointers to malloc'ed data row buffers *\/$/;"	m	struct:pldata
+dbc	tdhkit.h	/^	int dbc;			\/* db connection for sql dump *\/$/;"	m	struct:sinterpstate
+dblcompare	proc_curvefit.c	/^dblcompare( a, b )$/;"	f	file:
+dblcompare	proc_lineplot.c	/^dblcompare( a, b )$/;"	f	file:
+dblcompare	proc_processdata.c	/^dblcompare( a, b )$/;"	f	file:
+debug	pl.h	/^	int debug;		\/* indicates extra diagnostic output should be generated *\/$/;"	m	struct:plstate
+defaultinc	pl.h	183;"	d
+defaulturl	clickmap.c	/^static char defaulturl[MAXURL] = "";$/;"	v	file:
+definefieldnames	pl.h	205;"	d
+delayTime	gd13.c	/^       int     delayTime;$/;"	m	struct:__anon1	file:
+delta	smoothfit.c	/^  static const double delta = 0.00055;$/;"	v	file:
+demomode	clickmap.c	/^static int demomode = 0;  \/* 1 if we are in demo mode *\/$/;"	v	file:
+dev	plg.h	/^	char dev;$/;"	m	struct:plgc
+devavail	pl.h	201;"	d
+device	pl.h	/^	char device;		\/* c p e g or x *\/$/;"	m	struct:plstate
+devnamemap	pl.h	202;"	d
+df	datasets.c	/^        char **df;              \/* array of field pointers *\/$/;"	m	struct:pldata	file:
+df	pl.h	/^	char **df;		\/* array of field pointers *\/$/;"	m	struct:pldata
+diagfp	pl.h	/^	FILE *diagfp;		\/* diagnostic output stream *\/$/;"	m	struct:plstate
+did_clear	gd13.c	/^static void did_clear(void)$/;"	f	file:
+dirCosL130	smoothfit.c	/^static void dirCosL130() {$/;"	f	file:
+dirCosL150	smoothfit.c	/^static void dirCosL150() {$/;"	f	file:
+disp	tdhkit.h	/^	char disp[IFNESTMAX];		\/* flags for whether to display based on #if, 1 per nest level *\/$/;"	m	struct:sinterpstate
+disposal	gd13.c	/^       int     disposal;$/;"	m	struct:__anon1	file:
+do_arrows	proc_annotate.c	/^static int do_arrows()$/;"	f	file:
+do_disk	proc_venndisk.c	/^do_disk( cenx, ceny, radius, color_in, densfact, ofs, outline_in, solidfill )$/;"	f	file:
+do_drawcommands	proc_drawcommands.c	/^do_drawcommands( filename )$/;"	f	file:
+do_filter	proc_getdata.c	/^do_filter( buf, scriptname, delim, mode, scriptstart, nscriptrows )$/;"	f	file:
+do_label	proc_bars.c	/^do_label( s, x, y, align, backbox, reverse )$/;"	f	file:
+do_lwl	proc_bars.c	/^do_lwl( s, x, y, y0, align, reverse, mustfit )$/;"	f	file:
+do_pex	units.c	/^static int do_pex( val, axis, result, mode )$/;"	f	file:
+do_select	pl.h	211;"	d
+do_subst	pl.h	212;"	d
+dofld	proc_processdata.c	/^dofld( fld )$/;"	f	file:
+doing_sup	stub.c	/^static int doing_sup = 0;  \/* 1 if superscript\/subscript enabled *\/$/;"	v	file:
+doingshellresult	tdhkit.h	/^	int doingshellresult;		\/* >0 = in midst of getting shell command result, 0 = not *\/$/;"	m	struct:sinterpstate
+doingsqlresult	tdhkit.h	/^	int doingsqlresult;		\/* >0 = in midst of getting sql result, 0 = not *\/$/;"	m	struct:sinterpstate
+dont_init_ncats	cats.c	/^static int dont_init_ncats[2] = { 0, 0 }; \/* for when items have been prepended *\/$/;"	v	file:
+dotext	testsup.c	/^dotext( s )$/;"	f
+dp	gd_io_dp.c	/^  dynamicPtr 	*dp;$/;"	m	struct:dpIOCtx	file:
+dpIOCtx	gd_io_dp.c	/^typedef struct dpIOCtx {$/;"	s	file:
+dpIOCtx	gd_io_dp.c	/^} dpIOCtx;$/;"	t	typeref:struct:dpIOCtx	file:
+dpIOCtxPtr	gd_io_dp.c	/^typedef struct dpIOCtx	*dpIOCtxPtr;$/;"	t	typeref:struct:dpIOCtx	file:
+dpStruct	gd_io_dp.c	/^typedef struct dpStruct {$/;"	s	file:
+dsfirstdf	datasets.c	/^        int dsfirstdf[MAXDS];   \/* where a dataset begins in the df array *\/$/;"	m	struct:pldata	file:
+dsfirstdf	pl.h	/^	int dsfirstdf[MAXDS];	\/* where a dataset begins in the df array *\/$/;"	m	struct:pldata
+dsfirstrow	datasets.c	/^        int dsfirstrow[MAXDS];  \/* where a dataset begins in the datarow array.. if data set in procline array this is -1 *\/$/;"	m	struct:pldata	file:
+dsfirstrow	pl.h	/^	int dsfirstrow[MAXDS];	\/* where a dataset begins in the datarow array.. if data set in procline array this is -1 *\/$/;"	m	struct:pldata
+dump_ok	lib.c	/^static int dump_ok = 0;$/;"	v	file:
+dumpfp	pcode.c	/^static FILE *dumpfp = NULL;$/;"	v	file:
+dumpfp_closable	pcode.c	/^static int dumpfp_closable = 0;$/;"	v	file:
+dumpmax	pcode.c	/^static int dumpmax = 0;$/;"	v	file:
+dxhi	plg.h	/^	double dxlo, dxhi, dylo, dyhi;		\/* graphic area bounds, data coords *\/$/;"	m	struct:plgc
+dxlo	plg.h	/^	double dxlo, dxhi, dylo, dyhi;		\/* graphic area bounds, data coords *\/$/;"	m	struct:plgc
+dyhi	plg.h	/^	double dxlo, dxhi, dylo, dyhi;		\/* graphic area bounds, data coords *\/$/;"	m	struct:plgc
+dylo	plg.h	/^	double dxlo, dxhi, dylo, dyhi;		\/* graphic area bounds, data coords *\/$/;"	m	struct:plgc
+dynamicGetbuf	gd_io_dp.c	/^dynamicGetbuf( gdIOCtxPtr ctx, void *buf, int len)$/;"	f	file:
+dynamicGetchar	gd_io_dp.c	/^dynamicGetchar( gdIOCtxPtr ctx )$/;"	f	file:
+dynamicPtr	gd_io_dp.c	/^} dynamicPtr;$/;"	t	typeref:struct:dpStruct	file:
+dynamicPutbuf	gd_io_dp.c	/^dynamicPutbuf( struct gdIOCtx* ctx, const void *buf, int size )$/;"	f	file:
+dynamicPutchar	gd_io_dp.c	/^dynamicPutchar( struct gdIOCtx* ctx, int a )$/;"	f	file:
+dynamicSeek	gd_io_dp.c	/^static int dynamicSeek(struct gdIOCtx* ctx, const int pos)$/;"	f	file:
+dynamicTell	gd_io_dp.c	/^static long dynamicTell(struct gdIOCtx* ctx)$/;"	f	file:
+echolines	pl.h	/^	int echolines;		\/* echo evaluated script lines to 1 = stdout  2 = stderr *\/$/;"	m	struct:plstate
+emode	err.c	/^static char emode[20] = "stderr";$/;"	v	file:
+encodemode	fieldnames.c	/^static int encodemode = 0; \/* if 1, '_' will be converted to ' ' and '|' to comma when presenting field names *\/$/;"	v	file:
+eofcount	proc_processdata.c	/^static int rejfld[MAXFLD], nrejfld, kpfld[MAXFLD], nkpfld, breakcurrow = 0, eofcount = 0;$/;"	v	file:
+eor	proc_processdata.c	/^eor()$/;"	f	file:
+eready	pl.h	/^	int eready;		\/* indicates that Einit has been called *\/$/;"	m	struct:plstate
+err	condex.c	23;"	d	file:
+err	dates.c	35;"	d	file:
+err	functions.c	38;"	d	file:
+err	tdhkit.h	113;"	d
+err	times.c	44;"	d	file:
+errflag	fieldnames.c	/^static int errflag = 0;$/;"	v	file:
+errfp	err.c	/^static FILE *errfp = NULL;$/;"	v	file:
+errfp	pl.h	/^	FILE *errfp;		\/* error message stream *\/$/;"	m	struct:plstate
+errfp	plg.h	/^	FILE *errfp;$/;"	m	struct:plgc
+errlog	err.c	/^static char errlog[256] = "";$/;"	v	file:
+errorcode	dbfunc.c	/^static int errorcode[ MAXCONNECTS ] = { 0, 0, 0, 0 };$/;"	v	file:
+esc_txt_svg	svg.c	/^esc_txt_svg( out, s )$/;"	f	file:
+eval_function	functions.c	/^eval_function( name, arg, nargs, result, typ )$/;"	f	file:
+evalbound	units.c	/^evalbound( val, axis, result )$/;"	f	file:
+evalclause	condex.c	/^evalclause( args, start, stop )$/;"	f	file:
+evalflag	condex.c	/^static int evalflag = 0;$/;"	v	file:
+evalflag	functions.c	/^static int evalflag;$/;"	v	file:
+evalstmt	condex.c	/^evalstmt( args, start )$/;"	f	file:
+evalvars	tdhkit.h	/^	int evalvars;			\/* 1 = evaluate vars  0 = don't *\/$/;"	m	struct:sinterpstate
+event	plg.h	/^	int event;$/;"	m	struct:plgc
+eventx	plg.h	/^	double eventx, eventy;$/;"	m	struct:plgc
+eventy	plg.h	/^	double eventx, eventy;$/;"	m	struct:plgc
+execline_init	execline.c	/^static int execline_init = 0;$/;"	v	file:
+exitcode	shell.c	/^static int exitcode = 0;$/;"	v	file:
+f	gd_io_file.c	/^  FILE		*f;$/;"	m	struct:fileIOCtx	file:
+false	smoothfit.c	41;"	d	file:
+fconvertflag	shell.c	/^static int fconvertflag = 0;   \/* added 4\/17\/03 scg *\/$/;"	v	file:
+fda	pl.h	167;"	d
+fileGetbuf	gd_io_file.c	/^fileGetbuf( gdIOCtx* ctx, void *buf, int size )$/;"	f	file:
+fileGetchar	gd_io_file.c	/^static int fileGetchar( gdIOCtx* ctx)$/;"	f	file:
+fileIOCtx	gd_io_file.c	/^typedef struct fileIOCtx {$/;"	s	file:
+fileIOCtx	gd_io_file.c	/^} fileIOCtx;$/;"	t	typeref:struct:fileIOCtx	file:
+fileIOCtxPtr	gd_io_file.c	/^struct fileIOCtx 	*fileIOCtxPtr;$/;"	v	typeref:struct:fileIOCtx
+filePutbuf	gd_io_file.c	/^filePutbuf( gdIOCtx* ctx, const void *buf, int size )$/;"	f	file:
+filePutchar	gd_io_file.c	/^filePutchar( gdIOCtx* ctx, int a )$/;"	f	file:
+fileSeek	gd_io_file.c	/^static int fileSeek(struct gdIOCtx* ctx, const int pos)$/;"	f	file:
+fileTell	gd_io_file.c	/^static long fileTell(struct gdIOCtx* ctx)$/;"	f	file:
+file_to_buf	pl.h	173;"	d
+flashdelay	plg.h	/^	long flashdelay;$/;"	m	struct:plgc
+flgis	smoothfit.c	/^  static int closed, flgis, iw;$/;"	v	file:
+flip	plg.h	/^	int flip;$/;"	m	struct:plgc
+fmod	glroutines.c	/^double fmod( a, b )$/;"	f
+fn	shell.c	/^static char *fn[MAXITEMS];$/;"	v	file:
+fname	fieldnames.c	/^static char fname[MAXNAMES][NAMEMAXLEN];$/;"	v	file:
+forcount	tdhkit.h	/^	int forcount[ LOOPNESTMAX ];	\/* loop counter value, one per nest level *\/$/;"	m	struct:sinterpstate
+forlistpos	tdhkit.h	/^	int forlistpos[ LOOPNESTMAX ];	\/* loop, current position in list, one per nest level *\/$/;"	m	struct:sinterpstate
+forloc	tdhkit.h	/^	long forloc[ LOOPNESTMAX ];	\/* seek offset for top of loop, one per nest level *\/$/;"	m	struct:sinterpstate
+format	times.c	/^static int format = HHMM;$/;"	v	file:
+frame	test.pl	/^frame: yes$/;"	l
+free	gd16/gd_io.h	/^	void    (*free)(struct gdIOCtx*);$/;"	m	struct:gdIOCtx
+free	gd_io.h	/^	void    (*free)(struct gdIOCtx*);$/;"	m	struct:gdIOCtx
+freeDynamicCtx	gd_io_dp.c	/^void freeDynamicCtx(struct gdIOCtx* ctx)$/;"	f	file:
+freeFileCtx	gd_io_file.c	/^void freeFileCtx(gdIOCtx *ctx)$/;"	f	file:
+fref	pl.h	206;"	d
+fref_error	pl.h	208;"	d
+fref_showerr	pl.h	209;"	d
+freqsort	proc_tabulate.c	/^freqsort( counts, nd, order, reverse )$/;"	f	file:
+fsort	proc_tabulate.c	/^fsort( data, nd, order )$/;"	f	file:
+ftokncpy	pl.h	163;"	d
+g	color.c	/^	double r, g, b;$/;"	m	struct:PLG_colorlist	file:
+g	x11.c	/^	unsigned short r, g, b;$/;"	m	struct:x_rgbp	file:
+g_fmt	grgd.c	/^static char g_fmt[20] = "";$/;"	v	file:
+gdBrushed	gd13/gd.h	75;"	d
+gdBrushed	gd16/gd.h	77;"	d
+gdCompareInt	gd13.c	/^int gdCompareInt(const void *a, const void *b)$/;"	f
+gdCompareInt	gd16.c	/^int gdCompareInt(const void *a, const void *b)$/;"	f
+gdDPExtractData	gd_io_dp.c	/^void* gdDPExtractData(struct gdIOCtx* ctx, int *size)$/;"	f
+gdDashSize	gd13/gd.h	70;"	d
+gdDashSize	gd16/gd.h	72;"	d
+gdFont	gd13/gd.h	/^} gdFont;$/;"	t	typeref:struct:__anon3
+gdFont	gd16/gd.h	/^} gdFont;$/;"	t	typeref:struct:__anon5
+gdFontGiant	gdfontg.c	/^gdFontPtr gdFontGiant = &gdFontGiantRep;$/;"	v
+gdFontGiantData	gdfontg.c	/^char gdFontGiantData[] = {$/;"	v
+gdFontGiantRep	gdfontg.c	/^gdFont gdFontGiantRep = {$/;"	v
+gdFontLarge	gdfontl.c	/^gdFontPtr gdFontLarge = &gdFontLargeRep;$/;"	v
+gdFontLargeData	gdfontl.c	/^char gdFontLargeData[] = {$/;"	v
+gdFontLargeRep	gdfontl.c	/^gdFont gdFontLargeRep = {$/;"	v
+gdFontMediumBold	gdfontmb.c	/^gdFontPtr gdFontMediumBold = &gdFontMediumBoldRep;$/;"	v
+gdFontMediumBoldData	gdfontmb.c	/^char gdFontMediumBoldData[] = {$/;"	v
+gdFontMediumBoldRep	gdfontmb.c	/^gdFont gdFontMediumBoldRep = {$/;"	v
+gdFontPtr	gd13/gd.h	/^typedef gdFont *gdFontPtr;$/;"	t
+gdFontPtr	gd16/gd.h	/^typedef gdFont *gdFontPtr;$/;"	t
+gdFontSmall	gdfonts.c	/^gdFontPtr gdFontSmall = &gdFontSmallRep;$/;"	v
+gdFontSmallData	gdfonts.c	/^char gdFontSmallData[] = {$/;"	v
+gdFontSmallRep	gdfonts.c	/^gdFont gdFontSmallRep = {$/;"	v
+gdFontTiny	gdfontt.c	/^gdFontPtr gdFontTiny = &gdFontTinyRep;$/;"	v
+gdFontTinyData	gdfontt.c	/^char gdFontTinyData[] = {$/;"	v
+gdFontTinyRep	gdfontt.c	/^gdFont gdFontTinyRep = {$/;"	v
+gdGetBuf	gd_io.c	/^int gdGetBuf(void *buf, int size, gdIOCtx* ctx)$/;"	f
+gdGetByte	gd13.c	/^int gdGetByte(int *result, FILE *in)$/;"	f
+gdGetByte	gd_io.c	/^int gdGetByte(int *result, gdIOCtx *ctx)$/;"	f
+gdGetC	gd_io.c	/^int gdGetC(gdIOCtx *ctx)$/;"	f
+gdGetInt	gd_io.c	/^int gdGetInt(int *result, gdIOCtx *ctx)$/;"	f
+gdGetWord	gd13.c	/^int gdGetWord(int *result, FILE *in)$/;"	f
+gdGetWord	gd_io.c	/^int gdGetWord(int *result, gdIOCtx *ctx)$/;"	f
+gdIOCtx	gd16/gd_io.h	/^typedef struct gdIOCtx {$/;"	s
+gdIOCtx	gd16/gd_io.h	/^} gdIOCtx;$/;"	t	typeref:struct:gdIOCtx
+gdIOCtx	gd_io.h	/^typedef struct gdIOCtx {$/;"	s
+gdIOCtx	gd_io.h	/^} gdIOCtx;$/;"	t	typeref:struct:gdIOCtx
+gdIOCtxPtr	gd16/gd_io.h	/^typedef struct gdIOCtx	*gdIOCtxPtr;$/;"	t	typeref:struct:gdIOCtx
+gdIOCtxPtr	gd_io.h	/^typedef struct gdIOCtx	*gdIOCtxPtr;$/;"	t	typeref:struct:gdIOCtx
+gdImage	gd13/gd.h	/^} gdImage;$/;"	t	typeref:struct:gdImageStruct
+gdImage	gd16/gd.h	/^} gdImage;$/;"	t	typeref:struct:gdImageStruct
+gdImageArc	gd13.c	/^void gdImageArc(gdImagePtr im, int cx, int cy, int w, int h, int s, int e, int color)$/;"	f
+gdImageArc	gd16.c	/^void gdImageArc(gdImagePtr im, int cx, int cy, int w, int h, int s, int e, int color)$/;"	f
+gdImageBlue	gd13/gd.h	148;"	d
+gdImageBlue	gd16/gd.h	200;"	d
+gdImageBoundsSafe	gd13.c	/^int gdImageBoundsSafe(gdImagePtr im, int x, int y)$/;"	f
+gdImageBoundsSafe	gd16.c	/^int gdImageBoundsSafe(gdImagePtr im, int x, int y)$/;"	f
+gdImageBrushApply	gd13.c	/^static void gdImageBrushApply(gdImagePtr im, int x, int y)$/;"	f	file:
+gdImageBrushApply	gd16.c	/^static void gdImageBrushApply(gdImagePtr im, int x, int y)$/;"	f	file:
+gdImageChar	gd13.c	/^void gdImageChar(gdImagePtr im, gdFontPtr f, int x, int y, $/;"	f
+gdImageChar	gd16.c	/^void gdImageChar(gdImagePtr im, gdFontPtr f, int x, int y, $/;"	f
+gdImageCharUp	gd13.c	/^void gdImageCharUp(gdImagePtr im, gdFontPtr f, $/;"	f
+gdImageCharUp	gd16.c	/^void gdImageCharUp(gdImagePtr im, gdFontPtr f, $/;"	f
+gdImageColorAllocate	gd13.c	/^int gdImageColorAllocate(gdImagePtr im, int r, int g, int b)$/;"	f
+gdImageColorAllocate	gd16.c	/^int gdImageColorAllocate(gdImagePtr im, int r, int g, int b)$/;"	f
+gdImageColorClosest	gd13.c	/^int gdImageColorClosest(gdImagePtr im, int r, int g, int b)$/;"	f
+gdImageColorClosest	gd16.c	/^int gdImageColorClosest(gdImagePtr im, int r, int g, int b)$/;"	f
+gdImageColorDeallocate	gd13.c	/^void gdImageColorDeallocate(gdImagePtr im, int color)$/;"	f
+gdImageColorDeallocate	gd16.c	/^void gdImageColorDeallocate(gdImagePtr im, int color)$/;"	f
+gdImageColorExact	gd13.c	/^int gdImageColorExact(gdImagePtr im, int r, int g, int b)$/;"	f
+gdImageColorExact	gd16.c	/^int gdImageColorExact(gdImagePtr im, int r, int g, int b)$/;"	f
+gdImageColorResolve	gd16.c	/^int gdImageColorResolve(gdImagePtr im, int r, int g, int b)$/;"	f
+gdImageColorTransparent	gd13.c	/^void gdImageColorTransparent(gdImagePtr im, int color)$/;"	f
+gdImageColorTransparent	gd16.c	/^void gdImageColorTransparent(gdImagePtr im, int color)$/;"	f
+gdImageColorsTotal	gd13/gd.h	145;"	d
+gdImageColorsTotal	gd16/gd.h	197;"	d
+gdImageCompare	gd16.c	/^int gdImageCompare(gdImagePtr im1, gdImagePtr im2)$/;"	f
+gdImageCopy	gd13.c	/^void gdImageCopy(gdImagePtr dst, gdImagePtr src, int dstX, int dstY, int srcX, int srcY, int w, int h)$/;"	f
+gdImageCopy	gd16.c	/^void gdImageCopy(gdImagePtr dst, gdImagePtr src, int dstX, int dstY, int srcX, int srcY, int w, int h)$/;"	f
+gdImageCopyMerge	gd16.c	/^void gdImageCopyMerge(gdImagePtr dst, gdImagePtr src, int dstX, int dstY, int srcX, int srcY, int w, int h, int pct)$/;"	f
+gdImageCopyMergeGray	gd16.c	/^void gdImageCopyMergeGray(gdImagePtr dst, gdImagePtr src, int dstX, int dstY, int srcX, int srcY, int w, int h, int pct)$/;"	f
+gdImageCopyResized	gd13.c	/^void gdImageCopyResized(gdImagePtr dst, gdImagePtr src, int dstX, int dstY, int srcX, int srcY, int dstW, int dstH, int srcW, int srcH)$/;"	f
+gdImageCopyResized	gd16.c	/^void gdImageCopyResized(gdImagePtr dst, gdImagePtr src, int dstX, int dstY, int srcX, int srcY, int dstW, int dstH, int srcW, int srcH)$/;"	f
+gdImageCreate	gd13.c	/^gdImagePtr gdImageCreate(int sx, int sy)$/;"	f
+gdImageCreate	gd16.c	/^gdImagePtr gdImageCreate(int sx, int sy)$/;"	f
+gdImageCreateFromGd	gd13.c	/^gdImagePtr gdImageCreateFromGd(FILE *in)$/;"	f
+gdImageCreateFromGif	gd13.c	/^gdImageCreateFromGif(FILE *fd)$/;"	f
+gdImageCreateFromPng	gd_png.c	/^gdImagePtr gdImageCreateFromPng(FILE *inFile)$/;"	f
+gdImageCreateFromPngCtx	gd_png.c	/^gdImagePtr gdImageCreateFromPngCtx(gdIOCtx *infile)$/;"	f
+gdImageCreateFromXbm	gd13.c	/^gdImageCreateFromXbm(FILE *fd)$/;"	f
+gdImageCreateFromXbm	gd16.c	/^gdImageCreateFromXbm(FILE *fd)$/;"	f
+gdImageDashedLine	gd13.c	/^void gdImageDashedLine(gdImagePtr im, int x1, int y1, int x2, int y2, int color)$/;"	f
+gdImageDashedLine	gd16.c	/^void gdImageDashedLine(gdImagePtr im, int x1, int y1, int x2, int y2, int color)$/;"	f
+gdImageDestroy	gd13.c	/^void gdImageDestroy(gdImagePtr im)$/;"	f
+gdImageDestroy	gd16.c	/^void gdImageDestroy(gdImagePtr im)$/;"	f
+gdImageFill	gd13.c	/^void gdImageFill(gdImagePtr im, int x, int y, int color)$/;"	f
+gdImageFill	gd16.c	/^void gdImageFill(gdImagePtr im, int x, int y, int color)$/;"	f
+gdImageFillToBorder	gd13.c	/^void gdImageFillToBorder(gdImagePtr im, int x, int y, int border, int color)$/;"	f
+gdImageFillToBorder	gd16.c	/^void gdImageFillToBorder(gdImagePtr im, int x, int y, int border, int color)$/;"	f
+gdImageFilledPolygon	gd13.c	/^void gdImageFilledPolygon(gdImagePtr im, gdPointPtr p, int n, int c)$/;"	f
+gdImageFilledPolygon	gd16.c	/^void gdImageFilledPolygon(gdImagePtr im, gdPointPtr p, int n, int c)$/;"	f
+gdImageFilledRectangle	gd13.c	/^void gdImageFilledRectangle(gdImagePtr im, int x1, int y1, int x2, int y2, int color)$/;"	f
+gdImageFilledRectangle	gd16.c	/^void gdImageFilledRectangle(gdImagePtr im, int x1, int y1, int x2, int y2, int color)$/;"	f
+gdImageGd	gd13.c	/^void gdImageGd(gdImagePtr im, FILE *out)$/;"	f
+gdImageGetInterlaced	gd13/gd.h	150;"	d
+gdImageGetInterlaced	gd16/gd.h	202;"	d
+gdImageGetPixel	gd13.c	/^int gdImageGetPixel(gdImagePtr im, int x, int y)$/;"	f
+gdImageGetPixel	gd16.c	/^int gdImageGetPixel(gdImagePtr im, int x, int y)$/;"	f
+gdImageGetTransparent	gd13/gd.h	149;"	d
+gdImageGetTransparent	gd16/gd.h	201;"	d
+gdImageGif	gd13.c	/^void gdImageGif(gdImagePtr im, FILE *out)$/;"	f
+gdImageGreen	gd13/gd.h	147;"	d
+gdImageGreen	gd16/gd.h	199;"	d
+gdImageInterlace	gd13.c	/^void gdImageInterlace(gdImagePtr im, int interlaceArg)$/;"	f
+gdImageInterlace	gd16.c	/^void gdImageInterlace(gdImagePtr im, int interlaceArg)$/;"	f
+gdImageLine	gd13.c	/^void gdImageLine(gdImagePtr im, int x1, int y1, int x2, int y2, int color)$/;"	f
+gdImageLine	gd16.c	/^void gdImageLine(gdImagePtr im, int x1, int y1, int x2, int y2, int color)$/;"	f
+gdImagePaletteCopy	gd16.c	/^void gdImagePaletteCopy(gdImagePtr to, gdImagePtr from)$/;"	f
+gdImagePng	gd_png.c	/^void gdImagePng(gdImagePtr im, FILE *outFile)$/;"	f
+gdImagePngCtx	gd_png.c	/^void gdImagePngCtx(gdImagePtr im, gdIOCtx *outfile)$/;"	f
+gdImagePngPtr	gd_png.c	/^void* gdImagePngPtr(gdImagePtr im, int *size)$/;"	f
+gdImagePolygon	gd13.c	/^void gdImagePolygon(gdImagePtr im, gdPointPtr p, int n, int c)$/;"	f
+gdImagePolygon	gd16.c	/^void gdImagePolygon(gdImagePtr im, gdPointPtr p, int n, int c)$/;"	f
+gdImagePtr	gd13/gd.h	/^typedef gdImage * gdImagePtr;$/;"	t
+gdImagePtr	gd16/gd.h	/^typedef gdImage * gdImagePtr;$/;"	t
+gdImageRectangle	gd13.c	/^void gdImageRectangle(gdImagePtr im, int x1, int y1, int x2, int y2, int color)$/;"	f
+gdImageRectangle	gd16.c	/^void gdImageRectangle(gdImagePtr im, int x1, int y1, int x2, int y2, int color)$/;"	f
+gdImageRed	gd13/gd.h	146;"	d
+gdImageRed	gd16/gd.h	198;"	d
+gdImageSX	gd13/gd.h	143;"	d
+gdImageSX	gd16/gd.h	195;"	d
+gdImageSY	gd13/gd.h	144;"	d
+gdImageSY	gd16/gd.h	196;"	d
+gdImageSetBrush	gd13.c	/^void gdImageSetBrush(gdImagePtr im, gdImagePtr brush)$/;"	f
+gdImageSetBrush	gd16.c	/^void gdImageSetBrush(gdImagePtr im, gdImagePtr brush)$/;"	f
+gdImageSetPixel	gd13.c	/^void gdImageSetPixel(gdImagePtr im, int x, int y, int color)$/;"	f
+gdImageSetPixel	gd16.c	/^void gdImageSetPixel(gdImagePtr im, int x, int y, int color)$/;"	f
+gdImageSetStyle	gd13.c	/^void gdImageSetStyle(gdImagePtr im, int *style, int noOfPixels)$/;"	f
+gdImageSetStyle	gd16.c	/^void gdImageSetStyle(gdImagePtr im, int *style, int noOfPixels)$/;"	f
+gdImageSetTile	gd13.c	/^void gdImageSetTile(gdImagePtr im, gdImagePtr tile)$/;"	f
+gdImageSetTile	gd16.c	/^void gdImageSetTile(gdImagePtr im, gdImagePtr tile)$/;"	f
+gdImageString	gd13.c	/^void gdImageString(gdImagePtr im, gdFontPtr f, int x, int y, unsigned char *s, int color) $/;"	f
+gdImageString	gd16.c	/^void gdImageString(gdImagePtr im, gdFontPtr f, int x, int y, unsigned char *s, int color)$/;"	f
+gdImageString16	gd13.c	/^void gdImageString16(gdImagePtr im, gdFontPtr f, $/;"	f
+gdImageString16	gd16.c	/^void gdImageString16(gdImagePtr im, gdFontPtr f, $/;"	f
+gdImageStringUp	gd13.c	/^void gdImageStringUp(gdImagePtr im, gdFontPtr f, int x, int y, unsigned char *s, int color)$/;"	f
+gdImageStringUp	gd16.c	/^void gdImageStringUp(gdImagePtr im, gdFontPtr f, int x, int y, unsigned char *s, int color)$/;"	f
+gdImageStringUp16	gd13.c	/^void gdImageStringUp16(gdImagePtr im, gdFontPtr f, $/;"	f
+gdImageStringUp16	gd16.c	/^void gdImageStringUp16(gdImagePtr im, gdFontPtr f, $/;"	f
+gdImageStruct	gd13/gd.h	/^typedef struct gdImageStruct {$/;"	s
+gdImageStruct	gd16/gd.h	/^typedef struct gdImageStruct {$/;"	s
+gdImageTileApply	gd13.c	/^static void gdImageTileApply(gdImagePtr im, int x, int y)$/;"	f	file:
+gdImageTileApply	gd16.c	/^static void gdImageTileApply(gdImagePtr im, int x, int y)$/;"	f	file:
+gdMaxColors	gd13/gd.h	19;"	d
+gdMaxColors	gd16/gd.h	21;"	d
+gdNewDynamicCtx	gd_io_dp.c	/^gdIOCtx* gdNewDynamicCtx (int initialSize, void *data) {$/;"	f
+gdNewFileCtx	gd_io_file.c	/^gdIOCtx* gdNewFileCtx (FILE *f) {$/;"	f
+gdPngErrorHandler	gd_png.c	/^static void gdPngErrorHandler(png_structp png_ptr, png_const_charp msg)$/;"	f	file:
+gdPngFlushData	gd_png.c	/^static void gdPngFlushData(png_structp png_ptr)$/;"	f	file:
+gdPngJmpbufStruct	gd_png.c	/^static jmpbuf_wrapper gdPngJmpbufStruct;$/;"	v	file:
+gdPngReadData	gd_png.c	/^static void gdPngReadData(png_structp png_ptr,$/;"	f	file:
+gdPngWriteData	gd_png.c	/^static void gdPngWriteData(png_structp png_ptr,$/;"	f	file:
+gdPoint	gd13/gd.h	/^} gdPoint, *gdPointPtr;$/;"	t	typeref:struct:__anon4
+gdPoint	gd16/gd.h	/^} gdPoint, *gdPointPtr;$/;"	t	typeref:struct:__anon7
+gdPointPtr	gd13/gd.h	/^} gdPoint, *gdPointPtr;$/;"	t	typeref:struct:__anon4
+gdPointPtr	gd16/gd.h	/^} gdPoint, *gdPointPtr;$/;"	t	typeref:struct:__anon7
+gdPutBuf	gd_io.c	/^int gdPutBuf(const void *buf, int size, gdIOCtx* ctx)$/;"	f
+gdPutC	gd_io.c	/^void gdPutC(const unsigned char c, gdIOCtx *ctx)$/;"	f
+gdPutInt	gd_io.c	/^void gdPutInt(int w, gdIOCtx *ctx)$/;"	f
+gdPutWord	gd13.c	/^void gdPutWord(int w, FILE *out)$/;"	f
+gdPutWord	gd_io.c	/^gdPutWord(int w, gdIOCtx *ctx)$/;"	f
+gdSeek	gd_io.c	/^int gdSeek(gdIOCtx *ctx, int pos)$/;"	f
+gdSink	gd16/gd.h	/^} gdSink, *gdSinkPtr;$/;"	t	typeref:struct:__anon8
+gdSinkPtr	gd16/gd.h	/^} gdSink, *gdSinkPtr;$/;"	t	typeref:struct:__anon8
+gdSource	gd16/gd.h	/^} gdSource, *gdSourcePtr;$/;"	t	typeref:struct:__anon6
+gdSourcePtr	gd16/gd.h	/^} gdSource, *gdSourcePtr;$/;"	t	typeref:struct:__anon6
+gdStyled	gd13/gd.h	74;"	d
+gdStyled	gd16/gd.h	76;"	d
+gdStyledBrushed	gd13/gd.h	76;"	d
+gdStyledBrushed	gd16/gd.h	78;"	d
+gdTell	gd_io.c	/^long gdTell(gdIOCtx *ctx)$/;"	f
+gdTiled	gd13/gd.h	77;"	d
+gdTiled	gd16/gd.h	79;"	d
+gdTransparent	gd13/gd.h	81;"	d
+gdTransparent	gd16/gd.h	83;"	d
+getBuf	gd16/gd_io.h	/^	int	(*getBuf)(struct gdIOCtx*, void*, int);$/;"	m	struct:gdIOCtx
+getBuf	gd_io.h	/^	int	(*getBuf)(struct gdIOCtx*, void*, int);$/;"	m	struct:gdIOCtx
+getC	gd16/gd_io.h	/^	int	(*getC)(struct gdIOCtx*);$/;"	m	struct:gdIOCtx
+getC	gd_io.h	/^	int	(*getC)(struct gdIOCtx*);$/;"	m	struct:gdIOCtx
+getX	smoothfit.c	/^static double* getX () {$/;"	f	file:
+getY	smoothfit.c	/^static double* getY () {$/;"	f	file:
+get_targetstr	clickmap.c	/^get_targetstr( buf, targetstr )$/;"	f	file:
+getbox	pl.h	170;"	d
+getcoords	pl.h	169;"	d
+getdecplaces	glroutines.c	/^static int getdecplaces( val )$/;"	f	file:
+getfname	pl.h	207;"	d
+getmultiline	pl.h	159;"	d
+getnextattr	pl.h	160;"	d
+getrange	pl.h	171;"	d
+getyn	pl.h	172;"	d
+globalscale	pcode.c	/^static double globalscale = 1.0;$/;"	v	file:
+globalscaley	pcode.c	/^static double globalscaley = 1.0;$/;"	v	file:
+globqs	value_subst.c	/^static int globqs = 0; \/* if 1, TDH_dequote will only reset the var serial# when told (by a call to settings()) *\/$/;"	v	file:
+green	gd13/gd.h	/^	int green[gdMaxColors];$/;"	m	struct:gdImageStruct
+green	gd16/gd.h	/^	int green[gdMaxColors];$/;"	m	struct:gdImageStruct
+h	gd13/gd.h	/^	int h;$/;"	m	struct:__anon3
+h	gd16/gd.h	/^	int h;$/;"	m	struct:__anon5
+h	mark.c	/^static double h[24][2]; \/* the offsets *\/$/;"	v	file:
+hideund	value_subst.c	/^static int hideund = 0;$/;"	v	file:
+holdmemflag	execline.c	/^static int holdmemflag = 0;$/;"	v	file:
+ifnest	tdhkit.h	/^	int ifnest;			\/* current 'if' nest level *\/$/;"	m	struct:sinterpstate
+imap	clickmap.c	/^static int imap;$/;"	v	file:
+in_obj	pcode.c	/^static int in_obj = 0;$/;"	v	file:
+inc	mark.c	/^static int inc, variation;$/;"	v	file:
+incifnest	tdhkit.h	/^	int incifnest[INCNESTMAX];	\/* save current ifnest to restore to in case of #return *\/$/;"	m	struct:sinterpstate
+incloopnest	tdhkit.h	/^	int incloopnest[INCNESTMAX];	\/* save current loopnest to restore to in case of #return *\/$/;"	m	struct:sinterpstate
+incnest	tdhkit.h	/^	int incnest;			\/* current 'include' nest level *\/$/;"	m	struct:sinterpstate
+indelim	shell.c	/^static int indelim = NL;$/;"	v	file:
+init_statics	gd13.c	/^static void init_statics(void) {$/;"	f	file:
+initialized	init.c	/^static int initialized = 0;$/;"	v	file:
+initproc	execline.c	/^initproc()$/;"	f	file:
+inputFlag	gd13.c	/^       int     inputFlag;$/;"	m	struct:__anon1	file:
+interlace	gd13/gd.h	/^	int interlace;$/;"	m	struct:gdImageStruct
+interlace	gd16/gd.h	/^	int interlace;$/;"	m	struct:gdImageStruct
+intersect	clickmap.c	/^static int intersect = 0;$/;"	v	file:
+involved	value_subst.c	/^static int involved[ MAXITEMS ];$/;"	v	file:
+isqrt	gd13.c	/^static unsigned int isqrt(unsigned int x)$/;"	f	file:
+itokncpy	pl.h	162;"	d
+iw	smoothfit.c	/^  static int closed, flgis, iw;$/;"	v	file:
+jadvance	proc_processdata.c	/^jadvance( select, irow, moreflag )$/;"	f	file:
+jmpbuf	gd_png.c	/^  jmp_buf jmpbuf;$/;"	m	struct:_jmpbuf_wrapper	file:
+jmpbuf_wrapper	gd_png.c	/^} jmpbuf_wrapper;$/;"	t	typeref:struct:_jmpbuf_wrapper	file:
+just_cleared	gd13.c	/^static int just_cleared;$/;"	v	file:
+k	smoothfit.c	/^  static int npoints, k, kp, NpointsMax, banksize, npt;$/;"	v	file:
+keep_bb2	pcode.c	/^static int keep_bb2 = 0;$/;"	v	file:
+keeping_bb	pcode.c	/^static int keeping_bb = 1;$/;"	v	file:
+kp	smoothfit.c	/^  static int npoints, k, kp, NpointsMax, banksize, npt;$/;"	v	file:
+kpfld	proc_processdata.c	/^static int rejfld[MAXFLD], nrejfld, kpfld[MAXFLD], nkpfld, breakcurrow = 0, eofcount = 0;$/;"	v	file:
+labelrot	proc_bars.c	/^static int labelrot = 0;	\/* label rotation *\/$/;"	v	file:
+landscape	pl.h	/^	int landscape;		\/* allows -landscape to be set on command line before Einit() *\/$/;"	m	struct:plstate
+last_proctok	execline.c	/^static char last_proctok[20]; \/* either #proc or #procdef *\/$/;"	v	file:
+lastbs	execline.c	/^static int lastbs; 	      \/* indicates that previous line ended with a backslash, indicating continuation.. *\/$/;"	v	file:
+line_drawing	pcode.c	/^static int line_new = 0, line_drawing = 0;		\/* used by postscript section *\/$/;"	v	file:
+line_new	pcode.c	/^static int line_new = 0, line_drawing = 0;		\/* used by postscript section *\/$/;"	v	file:
+linedet	pl.h	198;"	d
+listdelim	tdhkit.h	/^	char listdelim;			\/* character to be used as list delimiter *\/$/;"	m	struct:sinterpstate
+listsep	condex.c	/^static char listsep = ',';$/;"	v	file:
+lmlx	pcode.c	/^static double lmlx = 0.0, lmly = 0.0;  \/* last move local x and y  $/;"	v	file:
+lmly	pcode.c	/^static double lmlx = 0.0, lmly = 0.0;  \/* last move local x and y  $/;"	v	file:
+logicalSize	gd_io_dp.c	/^  int logicalSize;$/;"	m	struct:dpStruct	file:
+loopifnest	tdhkit.h	/^	int loopifnest[ LOOPNESTMAX ];	\/* save current ifnest to restore to in case of #break or #continue *\/$/;"	m	struct:sinterpstate
+loopnest	tdhkit.h	/^	int loopnest;			\/* current 'for' or 'loop' nest level *\/$/;"	m	struct:sinterpstate
+lregress	proc_curvefit.c	/^static int lregress( in, npts, out, start, stop )$/;"	f	file:
+main	apitest.c	/^int main( argc, argv )$/;"	f
+main	dates.c	/^main()$/;"	f
+main	datetime.c	/^main()$/;"	f
+main	pl.c	/^main( argc, argv )$/;"	f
+main	testsup.c	/^main()$/;"	f
+makeoutfilename	pl.h	203;"	d
+malloclist	execline.c	/^static char *malloclist[MAXMALLOCATTRS]; \/* list of malloced multiline items *\/$/;"	v	file:
+mapfile	pl.h	/^	char mapfile[MAXPATH];	\/* clickmap file name *\/$/;"	m	struct:plstate
+mapstatus	clickmap.c	/^static int mapstatus = 0; \/* 1 if we are in the process of doing a map; 0 otherwise *\/$/;"	v	file:
+mavg	proc_curvefit.c	/^static int mavg( in, npts, out, order )$/;"	f	file:
+max	smoothfit.c	/^static double max( f, g )$/;"	f	file:
+max_ocodes	gd13.c	/^static int max_ocodes;$/;"	v	file:
+max_out_clear	gd13.c	/^static void max_out_clear(void)$/;"	f	file:
+max_pts	swf.c	/^static int max_pts;		$/;"	v	file:
+maxdf	datasets.c	/^        int maxdf;              \/* total malloc'ed size of df array; *\/$/;"	m	struct:pldata	file:
+maxdf	pl.h	/^	int maxdf;		\/* total malloc'ed size of df array; *\/$/;"	m	struct:pldata
+maxdrivervect	init.c	/^static int maxdrivervect = 500;$/;"	v	file:
+maxiterations	smoothfit.c	/^  static const int maxiterations = 20;$/;"	v	file:
+maxproclines	pl.h	/^	int maxproclines;	\/* total malloc'ed size of procline array *\/$/;"	m	struct:proclines
+maxrows	datasets.c	/^        int maxrows;            \/* total malloc'ed size of datarow array *\/$/;"	m	struct:pldata	file:
+maxrows	pl.h	/^	int maxrows;		\/* total malloc'ed size of datarow array *\/$/;"	m	struct:pldata
+measuretext	pl.h	186;"	d
+mem	execline.c	/^static char *mem; $/;"	v	file:
+memrows	tdhkit.h	/^	char **memrows;			\/* in-memory script rows (optional) *\/$/;"	m	struct:sinterpstate
+min	smoothfit.c	/^static double min( f, g )$/;"	f	file:
+mrow	tdhkit.h	/^	int mrow;			\/* current in-memory row *\/$/;"	m	struct:sinterpstate
+name	color.c	/^	char *name;$/;"	m	struct:PLG_colorlist	file:
+namebuf	shell.c	/^static char namebuf[512]; \/* was MAXRECORDLEN but seemed like overkill.. *\/$/;"	v	file:
+nareas	proc_areadef.c	/^static int nareas = 17;$/;"	v	file:
+nc	mark.c	/^static int nc[] =    {  3,  3,  4,  4,  5, 12, 3, 3, 20 };	\/* number of corners (constant) *\/$/;"	v	file:
+ncats	cats.c	/^static int ncats[2] = { 0, 0 };		  \/* number of categories in list (X, Y) *\/$/;"	v	file:
+nchars	gd13/gd.h	/^	int nchars;$/;"	m	struct:__anon3
+nchars	gd16/gd.h	/^	int nchars;$/;"	m	struct:__anon5
+ndumplines	pcode.c	/^static int ndumplines = 0;$/;"	v	file:
+newDynamic	gd_io_dp.c	/^static dynamicPtr* newDynamic (int initialSize, void *data) {$/;"	f	file:
+newPoint	smoothfit.c	/^static void newPoint() {$/;"	f	file:
+newattr	pl.h	164;"	d
+nextcat	cats.c	/^static int nextcat[2] = { 0, 0 };	  \/* used by nextcat() for looping across categories (not widely used)*\/$/;"	v	file:
+nextcolor	plg.h	/^	char nextcolor[COLORLEN]; $/;"	m	struct:plgc
+nfields	datasets.c	/^        int nfields[ MAXDS ];   \/* number of fields in a dataset *\/$/;"	m	struct:pldata	file:
+nfields	datasets.c	/^static int nfields, prevnfields;$/;"	v	file:
+nfields	pl.h	/^	int nfields[ MAXDS ];	\/* number of fields in a dataset *\/$/;"	m	struct:pldata
+nfl	execline.c	/^static int nfl = 0;$/;"	v	file:
+nfn	shell.c	/^static int nfn = 0;$/;"	v	file:
+nfname	fieldnames.c	/^static int nfname = 0;$/;"	v	file:
+ninvolved	value_subst.c	/^static int ninvolved = 0;$/;"	v	file:
+nitems	tdhkit.h	/^	int nitems;			\/* n data array slots filled *\/$/;"	m	struct:sinterpstate
+nkpfld	proc_processdata.c	/^static int rejfld[MAXFLD], nrejfld, kpfld[MAXFLD], nkpfld, breakcurrow = 0, eofcount = 0;$/;"	v	file:
+nlhold	execline.c	/^static int nlhold;$/;"	v	file:
+nlines	pl.h	/^	int nlines;		\/* next available cell when filling procline array *\/$/;"	m	struct:proclines
+nmemrows	tdhkit.h	/^	int nmemrows;			\/* number of in-memory script rows *\/$/;"	m	struct:sinterpstate
+nobj	pl.h	/^	int nobj;		\/* current number of objects being stored *\/$/;"	m	struct:proclines
+nofunc	condex.c	/^static int nofunc = 0;$/;"	v	file:
+noshell	pl.h	/^	int noshell;		\/* 1 if shell command deployment is prohibited *\/$/;"	m	struct:plstate
+npages	pl.h	/^	int npages;		\/* page count *\/$/;"	m	struct:plstate
+npoints	smoothfit.c	/^  static int npoints, k, kp, NpointsMax, banksize, npt;$/;"	v	file:
+npt	smoothfit.c	/^  static int npoints, k, kp, NpointsMax, banksize, npt;$/;"	v	file:
+nrecords	datasets.c	/^        int nrecords[ MAXDS ];  \/* number of records in a dataset *\/$/;"	m	struct:pldata	file:
+nrecords	pl.h	/^	int nrecords[ MAXDS ];	\/* number of records in a dataset *\/$/;"	m	struct:pldata
+nrejfld	proc_processdata.c	/^static int rejfld[MAXFLD], nrejfld, kpfld[MAXFLD], nkpfld, breakcurrow = 0, eofcount = 0;$/;"	v	file:
+nrows	shell.c	/^static int nrows = 0;$/;"	v	file:
+nsqlnames	dbfunc.c	/^static int nsqlnames[ MAXCONNECTS ] = { 0, 0, 0, 0 };$/;"	v	file:
+nt	mark.c	/^static int nt[] =    { 90,270,  0, 45, 90, 90, 0, 180, 90 };    \/* location (in degrees) of first corner (constant) *\/$/;"	v	file:
+nullrep	dbfunc.c	/^static int nullrep = 1;	\/* 0 = noconvert, 1 = blank, 2 = null, 3 = nbsp *\/$/;"	v	file:
+nullrep	tdhkit.h	/^	int nullrep;			\/* modes for presenting "null" fields.. 0 = no conversion, 1 = "", 2 = "null" *\/$/;"	m	struct:sinterpstate
+num	pl.h	168;"	d
+obits	gd13.c	/^static int obits;$/;"	v	file:
+objlen	pl.h	/^	int objlen[ MAXOBJ ];	\/* number of lines in procline array the object occupies *\/$/;"	m	struct:proclines
+objname	pl.h	/^	char objname[ MAXOBJ ][ 30 ];	\/* list of object names for clone\/saveas *\/$/;"	m	struct:proclines
+objstart	pl.h	/^	int objstart[ MAXOBJ ];	\/* which cell in procline array the object starts in *\/$/;"	m	struct:proclines
+oblen	gd13.c	/^static int oblen;$/;"	v	file:
+oblock	gd13.c	/^static unsigned char oblock[256];$/;"	v	file:
+obuf	gd13.c	/^static unsigned int obuf;$/;"	v	file:
+offset	gd13/gd.h	/^	int offset;$/;"	m	struct:__anon3
+offset	gd16/gd.h	/^	int offset;$/;"	m	struct:__anon5
+ofile	gd13.c	/^static FILE *ofile;$/;"	v	file:
+omit_shell_meta	value_subst.c	/^static int omit_shell_meta = 0;$/;"	v	file:
+omitws	value_subst.c	/^static int omitws = 0;$/;"	v	file:
+open	gd13/gd.h	/^	int open[gdMaxColors];$/;"	m	struct:gdImageStruct
+open	gd16/gd.h	/^	int open[gdMaxColors];$/;"	m	struct:gdImageStruct
+out	proc_processdata.c	/^out( s )$/;"	f	file:
+out_bits	gd13.c	/^static int out_bits;$/;"	v	file:
+out_bits_init	gd13.c	/^static int out_bits_init;$/;"	v	file:
+out_bump	gd13.c	/^static int out_bump;$/;"	v	file:
+out_bump_init	gd13.c	/^static int out_bump_init;$/;"	v	file:
+out_clear	gd13.c	/^static int out_clear;$/;"	v	file:
+out_clear_init	gd13.c	/^static int out_clear_init;$/;"	v	file:
+out_count	gd13.c	/^static int out_count;$/;"	v	file:
+outfile	pl.h	/^	char outfile[MAXPATH];	\/* output file as specified by user *\/$/;"	m	struct:plstate
+outfile	proc_processdata.c	/^static char *outfile;$/;"	v	file:
+outfilename	init.c	/^static char outfilename[ MAXPATH ] = "";$/;"	v	file:
+outfp	proc_processdata.c	/^static FILE *outfp;$/;"	v	file:
+outlabel	init.c	/^static char outlabel[80] = "ploticus-graphic";$/;"	v	file:
+output	gd13.c	/^static void output(int val)$/;"	f	file:
+output_flush	gd13.c	/^static void output_flush(void)$/;"	f	file:
+output_plain	gd13.c	/^static void output_plain(int c)$/;"	f	file:
+pageheight	init.c	/^static double pagewidth = DEFAULT_WIN_WIDTH, pageheight = DEFAULT_WIN_HEIGHT;$/;"	v	file:
+pagenum	pcode.c	/^static int pagenum = 1;				\/* current page # *\/$/;"	v	file:
+pagewidth	init.c	/^static double pagewidth = DEFAULT_WIN_WIDTH, pageheight = DEFAULT_WIN_HEIGHT;$/;"	v	file:
+parsefields	shell.c	/^parsefields( buf, f, nf )$/;"	f	file:
+path_count	swf.c	/^static int	path_count;$/;"	v	file:
+path_x	swf.c	/^static double *path_x = NULL, *path_y = NULL;$/;"	v	file:
+path_y	swf.c	/^static double *path_x = NULL, *path_y = NULL;$/;"	v	file:
+pcodedebug	pcode.c	/^static int pcodedebug = 0;$/;"	v	file:
+pcodedebugfp	pcode.c	/^static FILE *pcodedebugfp = NULL;$/;"	v	file:
+pelen	tdhkit.c	/^static int pelen = 0;$/;"	v	file:
+pex	units.c	/^static int pex( in, axis, result, mode )$/;"	f	file:
+pix	x11.c	/^	unsigned long pix;$/;"	m	struct:x_rgbp	file:
+pixels	gd13/gd.h	/^	unsigned char ** pixels;$/;"	m	struct:gdImageStruct
+pixels	gd16/gd.h	/^	unsigned char ** pixels;$/;"	m	struct:gdImageStruct
+pixelsinch	plg.h	/^	int  pixelsinch;$/;"	m	struct:plgc
+placenum	proc_lineplot.c	/^placenum( shownums, x1, x2, y, numstrfmt, linedetails )$/;"	f	file:
+plainavg	proc_curvefit.c	/^static int plainavg( in, npts, out, order )$/;"	f	file:
+pldata	datasets.c	/^struct pldata {$/;"	s	file:
+pldata	pl.h	/^struct pldata {$/;"	s
+plgc	plg.h	/^struct plgc {$/;"	s
+ploticus_arg	api.c	/^ploticus_arg( name, value )$/;"	f
+ploticus_begin	api.c	/^ploticus_begin()$/;"	f
+ploticus_end	api.c	/^ploticus_end()$/;"	f
+ploticus_execline	api.c	/^ploticus_execline( line )$/;"	f
+ploticus_execscript	api.c	/^ploticus_execscript( scriptfile, prefab ) $/;"	f
+ploticus_getvar	api.c	/^ploticus_getvar( name, value )$/;"	f
+ploticus_init	api.c	/^ploticus_init( device, outfilename )$/;"	f
+ploticus_setvar	api.c	/^ploticus_setvar( name, value )$/;"	f
+plstate	pl.h	/^struct plstate {$/;"	s
+pmode	clickmap.c	/^	int pmode;$/;"	m	struct:__anon2	file:
+polyAllocated	gd13/gd.h	/^	int polyAllocated;$/;"	m	struct:gdImageStruct
+polyAllocated	gd16/gd.h	/^	int polyAllocated;$/;"	m	struct:gdImageStruct
+polyInts	gd13/gd.h	/^	int *polyInts;$/;"	m	struct:gdImageStruct
+polyInts	gd16/gd.h	/^	int *polyInts;$/;"	m	struct:gdImageStruct
+pos	gd_io_dp.c	/^  int pos;$/;"	m	struct:dpStruct	file:
+postermode	pcode.c	/^static int postermode = 0;$/;"	v	file:
+posterxo	pcode.c	/^static double posterxo = 0.0;$/;"	v	file:
+posteryo	pcode.c	/^static double posteryo = 0.0;$/;"	v	file:
+prefabsdir	pl.h	/^	char *prefabsdir;	\/* set from env var PLOTICUS_PREFABS *\/$/;"	m	struct:plstate
+prev_op	pcode.c	/^static char prev_op;				\/* previous op *\/$/;"	v	file:
+prev_r	mark.c	/^static double prev_r;$/;"	v	file:
+prevclust	proc_bars.c	/^static int prevclust = 1; \/* attempt to be smart about resetting stacklist on cluster change *\/$/;"	v	file:
+prevcode	mark.c	/^static char prevcode[40] = "";$/;"	v	file:
+prevlineblank	execline.c	/^static int prevlineblank = 0;	\/* prevent -echo from spitting out lots of adjacent blank lines *\/$/;"	v	file:
+prevnfields	datasets.c	/^static int nfields, prevnfields;$/;"	v	file:
+proc_call	execline.c	/^static int proc_call( procname )$/;"	f	file:
+procline	pl.h	/^	char **procline; 	\/* array of pointers to lines of proc code *\/$/;"	m	struct:proclines
+proclines	pl.h	/^struct proclines {$/;"	s
+procname	execline.c	/^static char procname[NAMEMAXLEN];$/;"	v	file:
+procstop	execline.c	/^static int procstop; 		\/* communicates end of proc w\/ getmultiline  *\/$/;"	v	file:
+progname	err.c	/^static char progname[80] = "";$/;"	v	file:
+progname	plg.h	/^	char progname[FONTLEN];$/;"	m	struct:plgc
+progsticky	err.c	/^static int progsticky = 0;$/;"	v	file:
+prohibit_shell	secondaryops.c	/^static int prohibit_shell = 0;$/;"	v	file:
+ps_bbloc	ps.c	/^static long ps_bbloc;$/;"	v	file:
+ps_chdir	ps.c	/^static int ps_chdir;	 	\/* char direction in degrees *\/$/;"	v	file:
+ps_curpointsz	ps.c	/^static int ps_curpointsz;		\/* current char size in points *\/$/;"	v	file:
+ps_darken	ps.c	/^static double ps_darken = 1.0;		\/* factor to darken all colors (1.0 = none) $/;"	v	file:
+ps_device	ps.c	/^static int ps_device;		\/* 'p' = monochrome, 'c' = color, 'e' = eps (color) *\/$/;"	v	file:
+ps_font	ps.c	/^static char ps_font[60];		\/* current font name *\/$/;"	v	file:
+ps_fp	ps.c	/^static FILE *ps_fp;$/;"	v	file:
+ps_latin1	ps.c	/^static int ps_latin1 = 1;		\/* use latin1 character encoding *\/$/;"	v	file:
+ps_orgx	ps.c	/^static int ps_orgx, ps_orgy;	\/* location of origin on page *\/$/;"	v	file:
+ps_orgy	ps.c	/^static int ps_orgx, ps_orgy;	\/* location of origin on page *\/$/;"	v	file:
+ps_orient	ps.c	/^static int ps_orient;		\/* paper orientation (-1 = not done) *\/$/;"	v	file:
+ps_paginate	ps.c	/^static int ps_paginate = 1;$/;"	v	file:
+ps_print_special	ps.c	/^ps_print_special( s )$/;"	f	file:
+ps_set_specialsz	ps.c	/^ps_set_specialsz( s )$/;"	f	file:
+ps_special_std	special_chars.h	/^static char *ps_special_std[][2] = {$/;"	v
+ps_specialpointsz	ps.c	/^static int ps_specialpointsz;		\/* current char size in pts for special chars *\/$/;"	v	file:
+ps_stdout	ps.c	/^static int ps_stdout;		\/* 1 if Epf is stdout *\/$/;"	v	file:
+ps_symbol	special_chars.h	/^static char *ps_symbol[][2] = {$/;"	v
+ps_theta	ps.c	/^static int ps_theta;		\/* current rotation for page orientation *\/$/;"	v	file:
+ptcompare	proc_scatterplot.c	/^ptcompare( a, b )$/;"	f	file:
+punctlist	value_subst.c	/^static char punctlist[10] = "_";$/;"	v	file:
+putBuf	gd16/gd_io.h	/^	int	(*putBuf)(struct gdIOCtx*, const void*, int);$/;"	m	struct:gdIOCtx
+putBuf	gd_io.h	/^	int	(*putBuf)(struct gdIOCtx*, const void*, int);$/;"	m	struct:gdIOCtx
+putC	gd16/gd_io.h	/^        void     (*putC)(struct gdIOCtx*, int);$/;"	m	struct:gdIOCtx
+putC	gd_io.h	/^        void     (*putC)(struct gdIOCtx*, int);$/;"	m	struct:gdIOCtx
+putC	swf.c	/^static void putC(byte b, void *data) {$/;"	f	file:
+putenvstring	tdhkit.c	/^static char putenvstring[MAXPE+2];$/;"	v	file:
+qlx	smoothfit.c	/^  static double wsign, tsquare, tcube, *qlx, *qly, *x, *y;$/;"	v	file:
+qly	smoothfit.c	/^  static double wsign, tsquare, tcube, *qlx, *qly, *x, *y;$/;"	v	file:
+r	color.c	/^	double r, g, b;$/;"	m	struct:PLG_colorlist	file:
+r	x11.c	/^	unsigned short r, g, b;$/;"	m	struct:x_rgbp	file:
+realSize	gd_io_dp.c	/^  int realSize;$/;"	m	struct:dpStruct	file:
+reallocDynamic	gd_io_dp.c	/^reallocDynamic (dynamicPtr* dp, int required) {$/;"	f	file:
+rectangle	test.pl	/^rectangle: 3 4 6 7$/;"	l
+red	gd13/gd.h	/^	int red[gdMaxColors];$/;"	m	struct:gdImageStruct
+red	gd16/gd.h	/^	int red[gdMaxColors];$/;"	m	struct:gdImageStruct
+rejfld	proc_processdata.c	/^static int rejfld[MAXFLD], nrejfld, kpfld[MAXFLD], nkpfld, breakcurrow = 0, eofcount = 0;$/;"	v	file:
+report_convmsgcount	pl.h	180;"	d
+req_ncats	cats.c	/^static int req_ncats[2] = { MAXNCATS, MAXNCATS }; \/* size of category lists *\/$/;"	v	file:
+reset_out_clear	gd13.c	/^static void reset_out_clear(void)$/;"	f	file:
+resizeSmoothArrays	smoothfit.c	/^static int resizeSmoothArrays() {$/;"	f	file:
+rewritenums	pl.h	184;"	d
+rgb_avail	x11.c	/^static int rgb_avail = 0;  \/* next available slot in above array. *\/$/;"	v	file:
+rl_basecode	gd13.c	/^static int rl_basecode;$/;"	v	file:
+rl_count	gd13.c	/^static int rl_count;$/;"	v	file:
+rl_flush	gd13.c	/^static void rl_flush(void)$/;"	f	file:
+rl_flush_clearorrep	gd13.c	/^static void rl_flush_clearorrep(int count)$/;"	f	file:
+rl_flush_fromclear	gd13.c	/^static void rl_flush_fromclear(int count)$/;"	f	file:
+rl_flush_withtable	gd13.c	/^static void rl_flush_withtable(int count)$/;"	f	file:
+rl_pixel	gd13.c	/^static int rl_pixel;$/;"	v	file:
+rl_table_max	gd13.c	/^static int rl_table_max;$/;"	v	file:
+rl_table_pixel	gd13.c	/^static int rl_table_pixel;$/;"	v	file:
+roundrobin	cats.c	/^static int roundrobin[2] = { 1, 1 };	  \/* used with roundrobin category lookup *\/$/;"	v	file:
+saveas_name	execline.c	/^static char saveas_name[NAMEMAXLEN];$/;"	v	file:
+scaleRatio	smoothfit.c	/^static int scaleRatio() {$/;"	f	file:
+scale_x	plg.h	/^	double scale_x, scale_y; 		\/* linear scaling factors in x and y *\/$/;"	m	struct:plgc
+scale_y	plg.h	/^	double scale_x, scale_y; 		\/* linear scaling factors in x and y *\/$/;"	m	struct:plgc
+scalebeenset	pl.h	181;"	d
+scaletype_x	plg.h	/^	int scaletype_x;			\/* either LINEAR or LOG *\/$/;"	m	struct:plgc
+scaletype_y	plg.h	/^	int scaletype_y;			\/* either LINEAR or LOG *\/$/;"	m	struct:plgc
+scx1	pcode.c	/^static double scx1, scy1, scx2, scy2;   \/* specified crop zone *\/$/;"	v	file:
+scx2	pcode.c	/^static double scx1, scy1, scx2, scy2;   \/* specified crop zone *\/$/;"	v	file:
+scy1	pcode.c	/^static double scx1, scy1, scx2, scy2;   \/* specified crop zone *\/$/;"	v	file:
+scy2	pcode.c	/^static double scx1, scy1, scx2, scy2;   \/* specified crop zone *\/$/;"	v	file:
+seek	gd16/gd_io.h	/^	int	(*seek)(struct gdIOCtx*, const int);$/;"	m	struct:gdIOCtx
+seek	gd_io.h	/^	int	(*seek)(struct gdIOCtx*, const int);$/;"	m	struct:gdIOCtx
+set_verbose	gd13.c	/^static int set_verbose(void)$/;"	f	file:
+setcharvar	pl.h	176;"	d
+setdatesub	units.c	/^setdatesub( tok, desc )$/;"	f	file:
+setfloatvar	pl.h	174;"	d
+setintvar	pl.h	175;"	d
+sfp	tdhkit.h	/^	FILE *sfp[INCNESTMAX];		\/* array of file pointers, one per nest level *\/$/;"	m	struct:sinterpstate
+shellfp	shell.c	/^static FILE *shellfp = NULL;$/;"	v	file:
+shieldquotedvars	value_subst.c	/^static int shieldquotedvars = 0;$/;"	v	file:
+showerr	fieldnames.c	/^static int showerr = 1;$/;"	v	file:
+showwithquotes	value_subst.c	/^static int showwithquotes = 0;$/;"	v	file:
+sink	gd16/gd.h	/^        int (*sink) (void *context, const char *buffer, int len);$/;"	m	struct:__anon8
+sint	gd13.c	/^int sint[] = {$/;"	v	file:
+sint	gd13.c	/^static int sint[];$/;"	v	file:
+sint	gd16.c	/^static int sint[] = {$/;"	v	file:
+sint	gd16.c	/^static int sint[];$/;"	v	file:
+sintScale	gd13.c	10;"	d	file:
+sintScale	gd16.c	10;"	d	file:
+sinterpstate	tdhkit.h	/^struct sinterpstate {$/;"	s
+skipConsecutiveEqualPoints	smoothfit.c	/^static int skipConsecutiveEqualPoints(int start) {$/;"	f	file:
+skipout	pl.h	/^	int skipout;		\/* indicates fatal error and remainder of current script should be skipped *\/$/;"	m	struct:plstate
+skiptoendloop	sinterp.c	/^skiptoendloop( buf, fp )$/;"	f	file:
+smooth	smoothfit.c	/^static int smooth() {$/;"	f	file:
+source	gd16/gd.h	/^        int (*source) (void *context, char *buffer, int len);$/;"	m	struct:__anon6
+sparecolor	plg.h	/^	char sparecolor[COLORLEN];  $/;"	m	struct:plgc
+specialincludedir	sinterp.c	/^static char *specialincludedir = "";$/;"	v	file:
+specifycrop	pcode.c	/^static int specifycrop = 0; \/* 0 = no  1 = absolute values   2 = values relative to bounding box *\/$/;"	v	file:
+spflen	dbfunc.c	/^static int spflen[ MAXCONNECTS ] = { 0, 0, 0, 0 };$/;"	v	file:
+sqlbuildi	tdhkit.h	/^	int sqlbuildi;			\/* >0 = in midst of #sqlbuild op, tells next item(-1)   0 = not *\/$/;"	m	struct:sinterpstate
+sqlmode	value_subst.c	/^static int sqlmode = 0;  \/* if 1, TDH_dequote will be more strict about quote errors.. *\/$/;"	v	file:
+sqlnames	dbfunc.c	/^static char *sqlnames[ MAXCONNECTS ][MAXITEMS];$/;"	v	file:
+squelched	pcode.c	/^static int squelched = 0;			\/* is output being squelched? 1=yes, 0=no *\/$/;"	v	file:
+stacklist	proc_bars.c	/^static char stacklist[300] = ""; \/* lenfields get appended to this list so that "stackfield: *"  can be used *\/$/;"	v	file:
+standard_bkcolor	plg.h	/^	char standard_bkcolor[COLORLEN];$/;"	m	struct:plgc
+standard_color	plg.h	/^	char standard_color[COLORLEN];$/;"	m	struct:plgc
+standard_font	plg.h	/^	char standard_font[FONTLEN] ;$/;"	m	struct:plgc
+standard_lwscale	plg.h	/^	double standard_lwscale;$/;"	m	struct:plgc
+standard_textsize	plg.h	/^	int standard_textsize;$/;"	m	struct:plgc
+standardfont	plg.h	/^	char standardfont[FONTLEN];$/;"	m	struct:plgc
+standardlinewidth	plg.h	/^	double standardlinewidth;$/;"	m	struct:plgc
+standardtextsize	plg.h	/^	int standardtextsize;$/;"	m	struct:plgc
+stricmp	condex.c	21;"	d	file:
+stricmp	dates.c	33;"	d	file:
+stricmp	glroutines.c	17;"	d	file:
+stricmp	grgd.c	86;"	d	file:
+stricmp	plg.h	28;"	d
+stricmp	plg.h	32;"	d
+stricmp	svg.c	43;"	d	file:
+stricmp	swf.c	43;"	d	file:
+stricmp	tdhkit.h	106;"	d
+stricmp	tdhkit.h	98;"	d
+stricmp	times.c	42;"	d	file:
+stricoll	localef.c	/^int stricoll(char *s1, char *s2) {$/;"	f
+stripprefix	dbfunc.c	/^static char stripprefix[ MAXCONNECTS ][30] = { "", "", "", "" };$/;"	v	file:
+strlen16	gd13.c	/^static int strlen16(unsigned short *s)$/;"	f	file:
+strlen16	gd16.c	/^static int strlen16(unsigned short *s)$/;"	f	file:
+strnicmp	condex.c	22;"	d	file:
+strnicmp	dates.c	34;"	d	file:
+strnicmp	glroutines.c	18;"	d	file:
+strnicmp	plg.h	29;"	d
+strnicmp	plg.h	33;"	d
+strnicmp	tdhkit.h	101;"	d
+strnicmp	tdhkit.h	109;"	d
+strnicmp	times.c	43;"	d	file:
+strnicoll	localef.c	/^int strnicoll(char *s1, char *s2, int maxlen) {$/;"	f
+style	gd13/gd.h	/^	int *style;$/;"	m	struct:gdImageStruct
+style	gd16/gd.h	/^	int *style;$/;"	m	struct:gdImageStruct
+styleLength	gd13/gd.h	/^	int styleLength;$/;"	m	struct:gdImageStruct
+styleLength	gd16/gd.h	/^	int styleLength;$/;"	m	struct:gdImageStruct
+stylePos	gd13/gd.h	/^	int stylePos;$/;"	m	struct:gdImageStruct
+stylePos	gd16/gd.h	/^	int stylePos;$/;"	m	struct:gdImageStruct
+suppress_convmsg	pl.h	178;"	d
+suppressdll	value_subst.c	/^static int suppressdll = 0;$/;"	v	file:
+susp_dump	pcode.c	/^static int susp_dump = 0;$/;"	v	file:
+svg_align	svg.c	/^static char svg_align[100];$/;"	v	file:
+svg_bbofs	svg.c	/^static long svg_bbofs; 		   \/* byte offset of viewbox statement as returned by ftell() - scg *\/$/;"	v	file:
+svg_chdir	svg.c	/^static int  svg_chdir;	 		\/* char direction in degrees *\/$/;"	v	file:
+svg_clickmap	svg.c	/^static int svg_clickmap = 0;$/;"	v	file:
+svg_compress	svg.c	/^static int svg_compress = 0;			\/* 1 = compress output; 0 = don't *\/$/;"	v	file:
+svg_compressmode	svg.c	/^static char svg_compressmode[10] = "wb9";		$/;"	v	file:
+svg_cur_color	svg.c	/^static char svg_cur_color[80] = "#000000";$/;"	v	file:
+svg_currpointsz	svg.c	/^static int  svg_currpointsz;		\/* current char size in points *\/$/;"	v	file:
+svg_dash_style	svg.c	/^static char svg_dash_style[128];$/;"	v	file:
+svg_debug	svg.c	/^static int svg_debug = 0;$/;"	v	file:
+svg_def_fill	svg.c	/^static char *svg_def_fill = "fill:#000000;";  	\/* char * added - scg *\/$/;"	v	file:
+svg_def_font	svg.c	/^static char *svg_def_font = "&ff;Helvetica;";    \/* char * added - scg *\/$/;"	v	file:
+svg_def_stroke	svg.c	/^static char *svg_def_stroke = "stroke:#000000;"; \/* char * added - scg *\/$/;"	v	file:
+svg_dotag	svg.c	/^static int svg_dotag = 0;  	   \/* if 1, write a suitable html <embed> tag to stdout - scg *\/$/;"	v	file:
+svg_encoding	svg.c	/^static char svg_encoding[80] = "iso-8859-1";$/;"	v	file:
+svg_filename	svg.c	/^static char svg_filename[256] = ""; \/* output file name (was local) - scg *\/$/;"	v	file:
+svg_font_name	svg.c	/^static char svg_font_name[100];		\/* current font name *\/$/;"	v	file:
+svg_font_style	svg.c	/^static char svg_font_style[100];$/;"	v	file:
+svg_font_weight	svg.c	/^static char svg_font_weight[100];$/;"	v	file:
+svg_fp	svg.c	/^static FILE *svg_fp;$/;"	v	file:
+svg_generic_js	svg.c	/^static int svg_generic_js = 0;$/;"	v	file:
+svg_imgpathname	svg.c	/^static char svg_imgpathname[256] = "";$/;"	v	file:
+svg_imgsetheight	svg.c	/^static int svg_imgsetwidth = 0, svg_imgsetheight = 0;$/;"	v	file:
+svg_imgsetwidth	svg.c	/^static int svg_imgsetwidth = 0, svg_imgsetheight = 0;$/;"	v	file:
+svg_last_x	svg.c	/^static double svg_last_x;$/;"	v	file:
+svg_last_y	svg.c	/^static double svg_last_y;$/;"	v	file:
+svg_line_width	svg.c	/^static double svg_line_width=1;$/;"	v	file:
+svg_new_style	svg.c	/^static char svg_new_style[1024] = "";$/;"	v	file:
+svg_path_in_prog	svg.c	/^static int  svg_path_in_prog =0;	\/* flag to indicate if an svg path is in progress *\/$/;"	v	file:
+svg_pixs_inch	svg.c	/^static int svg_pixs_inch; 	   \/* number of pixels per inch - scg *\/$/;"	v	file:
+svg_print_style	svg.c	/^static int svg_print_style()$/;"	f	file:
+svg_set_style	svg.c	/^static int svg_set_style() $/;"	f	file:
+svg_stdout	svg.c	/^static int svg_stdout;		\/* 1 if svg_fp is stdout *\/$/;"	v	file:
+svg_style	svg.c	/^static char svg_style[1024] = "";	\/* line,font styles etc *\/$/;"	v	file:
+svg_style_in_prog	svg.c	/^static int  svg_style_in_prog = 0;	\/* flag to indicate if a current <g> for attributes is open *\/$/;"	v	file:
+svg_tagparms	svg.c	/^static char svg_tagparms[80] = "";$/;"	v	file:
+svg_tmpfile_used	svg.c	/^static int svg_tmpfile_used = 0;$/;"	v	file:
+svg_tmpfilename	svg.c	/^static char svg_tmpfilename[256] = "\/unnamed";$/;"	v	file:
+svg_x_size	svg.c	/^static double svg_x_size;		\/* width of the drawing area *\/$/;"	v	file:
+svg_xmldecl	svg.c	/^static int svg_xmldecl = 1;$/;"	v	file:
+svg_y_size	svg.c	/^static double svg_y_size;		\/* height of the drawing area *\/$/;"	v	file:
+swf_CO	swf.c	/^static void swf_CO(s)$/;"	f	file:
+swf_FT	swf.c	/^static int swf_FT(s)$/;"	f	file:
+swf_LE	swf.c	/^static void swf_LE(s)$/;"	f	file:
+swf_LL	swf.c	/^static void swf_LL(s)$/;"	f	file:
+swf_LS	swf.c	/^static void swf_LS(s)$/;"	f	file:
+swf_MV	swf.c	/^static void swf_MV( s )$/;"	f	file:
+swf_PE	swf.c	/^static void swf_PE(s)$/;"	f	file:
+swf_PL	swf.c	/^static void swf_PL(s)$/;"	f	file:
+swf_PO	swf.c	/^static void swf_PO(s)$/;"	f	file:
+swf_TR	swf.c	/^static void swf_TR(s)$/;"	f	file:
+swf_TX	swf.c	/^static void swf_TX(s)$/;"	f	file:
+swf_chdir	swf.c	/^static int	swf_chdir;	 		\/* char direction in degrees *\/$/;"	v	file:
+swf_clickmap	swf.c	/^static int	swf_clickmap = 0;$/;"	v	file:
+swf_cur_color_b	swf.c	/^static int	swf_cur_color_r = 0, swf_cur_color_g = 0, swf_cur_color_b = 0;$/;"	v	file:
+swf_cur_color_g	swf.c	/^static int	swf_cur_color_r = 0, swf_cur_color_g = 0, swf_cur_color_b = 0;$/;"	v	file:
+swf_cur_color_r	swf.c	/^static int	swf_cur_color_r = 0, swf_cur_color_g = 0, swf_cur_color_b = 0;$/;"	v	file:
+swf_currpointsz	swf.c	/^static int	swf_currpointsz;		\/* current char size in points *\/$/;"	v	file:
+swf_dash_style	swf.c	/^static char	swf_dash_style[1024];$/;"	v	file:
+swf_debug	swf.c	/^static int	swf_debug = 0;$/;"	v	file:
+swf_filename	swf.c	/^static char	swf_filename[256] = ""; 	\/* output file name (was local) - scg *\/$/;"	v	file:
+swf_font	swf.c	/^static SWFFont	swf_font;$/;"	v	file:
+swf_font_name	swf.c	/^static char	swf_font_name[100] = "";	\/* current font name *\/$/;"	v	file:
+swf_font_style	swf.c	/^static char	swf_font_style[100];$/;"	v	file:
+swf_font_weight	swf.c	/^static char	swf_font_weight[100];$/;"	v	file:
+swf_fp	swf.c	/^static FILE	*swf_fp;$/;"	v	file:
+swf_line_width	swf.c	/^static double	swf_line_width=1;$/;"	v	file:
+swf_movie	swf.c	/^static SWFMovie swf_movie;$/;"	v	file:
+swf_offset_x	swf.c	/^static double	swf_offset_x;$/;"	v	file:
+swf_offset_y	swf.c	/^static double	swf_offset_y;$/;"	v	file:
+swf_path_in_prog	swf.c	/^static int	swf_path_in_prog =0;	\/* flag to indicate if an swf path is in progress *\/$/;"	v	file:
+swf_pixs_inch	swf.c	/^static int	swf_pixs_inch; 	   		\/* number of pixels per inch - scg *\/$/;"	v	file:
+swf_scale_x	swf.c	47;"	d	file:
+swf_scale_y	swf.c	48;"	d	file:
+swf_stdout	swf.c	/^static int	swf_stdout;		\/* 1 if swf_fp is stdout *\/$/;"	v	file:
+swf_style	swf.c	/^static char	swf_style[1024] = "";	\/* line,font styles etc *\/$/;"	v	file:
+swf_tmpfile_used	swf.c	/^static int	swf_tmpfile_used = 0;$/;"	v	file:
+swf_tmpfilename	swf.c	/^static char	swf_tmpfilename[256] = "\/unnamed";$/;"	v	file:
+swf_x_size	swf.c	/^static double	swf_x_size;		\/* width of the drawing area *\/$/;"	v	file:
+swf_y_size	swf.c	/^static double	swf_y_size;		\/* height of the drawing area *\/$/;"	v	file:
+sx	gd13/gd.h	/^	int sx;$/;"	m	struct:gdImageStruct
+sx	gd16/gd.h	/^	int sx;$/;"	m	struct:gdImageStruct
+sxmin	smoothfit.c	/^  static double xratio, yratio, sxmin, symin;$/;"	v	file:
+sy	gd13/gd.h	/^	int sy;$/;"	m	struct:gdImageStruct
+sy	gd16/gd.h	/^	int sy;$/;"	m	struct:gdImageStruct
+symdet	pl.h	199;"	d
+symin	smoothfit.c	/^  static double xratio, yratio, sxmin, symin;$/;"	v	file:
+sys_init	cats.c	/^static int sys_init[2] = { 0, 0 };	  \/* 1 if category list malloced and ready to go.. *\/$/;"	v	file:
+tcube	smoothfit.c	/^  static double wsign, tsquare, tcube, *qlx, *qly, *x, *y;$/;"	v	file:
+tell	gd16/gd_io.h	/^	long	(*tell)(struct gdIOCtx*);$/;"	m	struct:gdIOCtx
+tell	gd_io.h	/^	long	(*tell)(struct gdIOCtx*);$/;"	m	struct:gdIOCtx
+textdet	pl.h	197;"	d
+textsaved	functions.c	/^static int textsaved = 0;$/;"	v	file:
+textslantparm	stub.c	/^static double textslantparm = 0.3;  \/* how much to move vertically for every 1.0 horizontal *\/$/;"	v	file:
+tightbb	pcode.c	/^static int tightbb = 0;$/;"	v	file:
+tile	gd13/gd.h	/^	struct gdImageStruct *tile;	$/;"	m	struct:gdImageStruct	typeref:struct:gdImageStruct::gdImageStruct
+tile	gd16/gd.h	/^	struct gdImageStruct *tile;	$/;"	m	struct:gdImageStruct	typeref:struct:gdImageStruct::gdImageStruct
+tileColorMap	gd13/gd.h	/^	int tileColorMap[gdMaxColors];$/;"	m	struct:gdImageStruct
+tileColorMap	gd16/gd.h	/^	int tileColorMap[gdMaxColors];$/;"	m	struct:gdImageStruct
+titles	clickmap.c	/^static char *titles[MAXENTRIES];$/;"	v	file:
+tmpname	pl.h	/^	char tmpname[MAXPATH];	\/* base name for generating temp file names *\/$/;"	m	struct:plstate
+tokncpy	pl.h	161;"	d
+tpurl	clickmap.c	/^static char tpurl[MAXURL] = ""; \/* a url template *\/$/;"	v	file:
+translate_to_fn	value_subst.c	/^static int translate_to_fn = 0;$/;"	v	file:
+transparent	gd13.c	/^       int     transparent;$/;"	m	struct:__anon1	file:
+transparent	gd13/gd.h	/^	int transparent;$/;"	m	struct:gdImageStruct
+transparent	gd16/gd.h	/^	int transparent;$/;"	m	struct:gdImageStruct
+trimDynamic	gd_io_dp.c	/^trimDynamic (dynamicPtr* dp) {$/;"	f	file:
+true	smoothfit.c	42;"	d	file:
+tsquare	smoothfit.c	/^  static double wsign, tsquare, tcube, *qlx, *qly, *x, *y;$/;"	v	file:
+txt_curx	pcode.c	/^static double txt_curx;				\/* real starting place of centered &rt justified text *\/$/;"	v	file:
+txt_width	pcode.c	/^static double txt_width;				\/* width of most recently drawn text line. *\/$/;"	v	file:
+typ	clickmap.c	/^	char typ;$/;"	m	struct:__anon2	file:
+ulx	proc_annotate.c	/^static double boxw, boxh, ulx, uly;$/;"	v	file:
+uly	proc_annotate.c	/^static double boxw, boxh, ulx, uly;$/;"	v	file:
+unitdesc	units.c	/^static char unitdesc[2][20] = { "", "" };$/;"	v	file:
+unittyp	units.c	/^static int unittyp[2] = { 0, 0 };$/;"	v	file:
+uplefttx	init.c	/^static int uplefttx = 0, upleftty = 0;$/;"	v	file:
+upleftty	init.c	/^static int uplefttx = 0, upleftty = 0;$/;"	v	file:
+urls	clickmap.c	/^static char *urls[MAXENTRIES];$/;"	v	file:
+usingcm	pl.h	/^	int usingcm;		\/* indicates that units are centimeters *\/$/;"	m	struct:plstate
+variation	mark.c	/^static int inc, variation;$/;"	v	file:
+varprefix	dbfunc.c	/^static char varprefix[ MAXCONNECTS ][30] = { "", "", "", "" };$/;"	v	file:
+varsym	value_subst.c	/^static char varsym = '@';$/;"	v	file:
+verbose	gd13.c	/^static int verbose;$/;"	v	file:
+verbose_set	gd13.c	/^static int verbose_set = 0;$/;"	v	file:
+vertchar	pcode.c	/^static int vertchar = 0; 			\/* true if character direction is vertical..*\/$/;"	v	file:
+verttextsim	pcode.c	/^verttextsim( op, s )$/;"	f	file:
+viewer	pl.h	/^	char viewer[80];	\/* viewer program as specified by user, eg ghostscript *\/$/;"	m	struct:plstate
+virginpage	pcode.c	/^static int virginpage = 1;		\/* 1 when nothing has yet been drawn on current page *\/$/;"	v	file:
+w	gd13/gd.h	/^	int w;$/;"	m	struct:__anon3
+w	gd16/gd.h	/^	int w;$/;"	m	struct:__anon5
+wcmp	glroutines.c	/^wcmp( char *s1, char *s2, int len, int casecare )$/;"	f	file:
+window_height	winscale.c	/^static int window_height, window_width;$/;"	v	file:
+window_width	winscale.c	/^static int window_height, window_width;$/;"	v	file:
+winh	pl.h	/^	double winw, winh;	\/* accomodate specification of window size on command line *\/$/;"	m	struct:plstate
+winsizegiven	pl.h	/^	int winsizegiven;	\/* accomodate specification of window size on command line *\/$/;"	m	struct:plstate
+winw	pl.h	/^	double winw, winh;	\/* accomodate specification of window size on command line *\/$/;"	m	struct:plstate
+winx	pl.h	/^	int winx, winy;		\/* accomodate specification of window location on command line *\/$/;"	m	struct:plstate
+winx	plg.h	/^	double winx, winy;$/;"	m	struct:plgc
+winx_0	plg.h	/^	double winx_0, winy_0;$/;"	m	struct:plgc
+winy	pl.h	/^	int winx, winy;		\/* accomodate specification of window location on command line *\/$/;"	m	struct:plstate
+winy	plg.h	/^	double winx, winy;$/;"	m	struct:plgc
+winy_0	plg.h	/^	double winx_0, winy_0;$/;"	m	struct:plgc
+write_block	gd13.c	/^static void write_block(void)$/;"	f	file:
+writefp	tdhkit.h	/^	FILE *writefp;			\/* fp for use during a #write   *\/$/;"	m	struct:sinterpstate
+wsign	smoothfit.c	/^  static double wsign, tsquare, tcube, *qlx, *qly, *x, *y;$/;"	v	file:
+x	gd13/gd.h	/^	int x, y;$/;"	m	struct:__anon4
+x	gd16/gd.h	/^	int x, y;$/;"	m	struct:__anon7
+x	smoothfit.c	/^  static double wsign, tsquare, tcube, *qlx, *qly, *x, *y;$/;"	v	file:
+x1	clickmap.c	/^	int x1; int y1; int x2; int y2;$/;"	m	struct:__anon2	file:
+x1	plg.h	/^	double x1, y1, x2, y2;$/;"	m	struct:plgc
+x2	clickmap.c	/^	int x1; int y1; int x2; int y2;$/;"	m	struct:__anon2	file:
+x2	color.c	166;"	d	file:
+x2	plg.h	/^	double x1, y1, x2, y2;$/;"	m	struct:plgc
+x4	color.c	172;"	d	file:
+x_backstore	x11.c	/^static Pixmap x_backstore;$/;"	v	file:
+x_backstoreused	x11.c	/^static int x_backstoreused = 0;$/;"	v	file:
+x_colordisplay	x11.c	/^static int x_colordisplay;  \/* 1 if color, 0 if not *\/$/;"	v	file:
+x_colormessagedone	x11.c	/^static int x_colormessagedone = 0; \/* 1 if the "Failure to allocate color" message has$/;"	v	file:
+x_dash	x11.c	/^static char x_dash[10][6]= {$/;"	v	file:
+x_default_cmap	x11.c	/^static Colormap x_default_cmap; $/;"	v	file:
+x_disp	x11.c	/^static Display	*x_disp;$/;"	v	file:
+x_display_depth	x11.c	/^static int x_display_depth;$/;"	v	file:
+x_font	x11.c	/^static XFontStruct *x_font; \/* the full name of the current font *\/$/;"	v	file:
+x_fontlist	x11.c	/^static Font x_fontlist[MAXFONTS]; \/* fonts for various text sizes loaded at setup time *\/$/;"	v	file:
+x_fontset	x11.c	/^static char x_fontset[120]; \/* the font short name - known to be available *\/$/;"	v	file:
+x_fontstructlist	x11.c	/^static XFontStruct *x_fontstructlist[MAXFONTS]; \/* info for fonts *\/$/;"	v	file:
+x_gc	x11.c	/^static GC x_gc;$/;"	v	file:
+x_im1_0	x11shades.h	/^static unsigned char x_im1_0[] = {$/;"	v
+x_im_00	x11shades.h	/^static unsigned char x_im_00[] = {$/;"	v
+x_im_10	x11shades.h	/^static unsigned short x_im_10[] = {$/;"	v
+x_im_20	x11shades.h	/^static unsigned short x_im_20[] = {$/;"	v
+x_im_30	x11shades.h	/^static unsigned short x_im_30[] = {$/;"	v
+x_im_40	x11shades.h	/^static unsigned short x_im_40[] = {$/;"	v
+x_im_50	x11shades.h	/^static unsigned short x_im_50[] = {$/;"	v
+x_im_60	x11shades.h	/^static unsigned short x_im_60[] = {$/;"	v
+x_im_70	x11shades.h	/^static unsigned short x_im_70[] = {$/;"	v
+x_im_80	x11shades.h	/^static unsigned short x_im_80[] = {$/;"	v
+x_im_90	x11shades.h	/^static unsigned short x_im_90[] = {$/;"	v
+x_mapflag	x11.c	/^static int x_mapflag = 1;	\/* 1 if window should be mapped initally, 0 if it should be hidden initially - added 9\/17\/04 scg *\/$/;"	v	file:
+x_mapped	x11.c	/^static int x_mapped; \/* 1 if window mapped (visible) 0 if not *\/$/;"	v	file:
+x_maxpt	x11.c	/^static int x_npt = 0, x_maxpt;$/;"	v	file:
+x_ndash	x11.c	/^static int x_ndash[10] = { 1, 2, 2, 2, 4, 4, 4, 6, 6, 6 };$/;"	v	file:
+x_npt	x11.c	/^static int x_npt = 0, x_maxpt;$/;"	v	file:
+x_oldx	x11.c	/^static double x_oldx = 0, x_oldy = 0;$/;"	v	file:
+x_oldy	x11.c	/^static double x_oldx = 0, x_oldy = 0;$/;"	v	file:
+x_pixelsinch	x11.c	/^static int x_pixelsinch;$/;"	v	file:
+x_ptlist	x11.c	/^static XPoint *x_ptlist;$/;"	v	file:
+x_rgblist	x11.c	/^static struct x_rgbp x_rgblist[ MAXCOLORS ]; \/* list of r,g,b colors already allocated *\/$/;"	v	typeref:struct:x_rgbp	file:
+x_rgbp	x11.c	/^struct x_rgbp {$/;"	s	file:
+x_s1_0	x11.c	/^static Pixmap x_s_00, x_s_10, x_s_20, x_s_30, x_s_40, x_s_50, x_s_60, x_s_70, x_s_80, x_s_90, x_s1_0;$/;"	v	file:
+x_s_00	x11.c	/^static Pixmap x_s_00, x_s_10, x_s_20, x_s_30, x_s_40, x_s_50, x_s_60, x_s_70, x_s_80, x_s_90, x_s1_0;$/;"	v	file:
+x_s_10	x11.c	/^static Pixmap x_s_00, x_s_10, x_s_20, x_s_30, x_s_40, x_s_50, x_s_60, x_s_70, x_s_80, x_s_90, x_s1_0;$/;"	v	file:
+x_s_20	x11.c	/^static Pixmap x_s_00, x_s_10, x_s_20, x_s_30, x_s_40, x_s_50, x_s_60, x_s_70, x_s_80, x_s_90, x_s1_0;$/;"	v	file:
+x_s_30	x11.c	/^static Pixmap x_s_00, x_s_10, x_s_20, x_s_30, x_s_40, x_s_50, x_s_60, x_s_70, x_s_80, x_s_90, x_s1_0;$/;"	v	file:
+x_s_40	x11.c	/^static Pixmap x_s_00, x_s_10, x_s_20, x_s_30, x_s_40, x_s_50, x_s_60, x_s_70, x_s_80, x_s_90, x_s1_0;$/;"	v	file:
+x_s_50	x11.c	/^static Pixmap x_s_00, x_s_10, x_s_20, x_s_30, x_s_40, x_s_50, x_s_60, x_s_70, x_s_80, x_s_90, x_s1_0;$/;"	v	file:
+x_s_60	x11.c	/^static Pixmap x_s_00, x_s_10, x_s_20, x_s_30, x_s_40, x_s_50, x_s_60, x_s_70, x_s_80, x_s_90, x_s1_0;$/;"	v	file:
+x_s_70	x11.c	/^static Pixmap x_s_00, x_s_10, x_s_20, x_s_30, x_s_40, x_s_50, x_s_60, x_s_70, x_s_80, x_s_90, x_s1_0;$/;"	v	file:
+x_s_80	x11.c	/^static Pixmap x_s_00, x_s_10, x_s_20, x_s_30, x_s_40, x_s_50, x_s_60, x_s_70, x_s_80, x_s_90, x_s1_0;$/;"	v	file:
+x_s_90	x11.c	/^static Pixmap x_s_00, x_s_10, x_s_20, x_s_30, x_s_40, x_s_50, x_s_60, x_s_70, x_s_80, x_s_90, x_s1_0;$/;"	v	file:
+x_screen	x11.c	/^static int x_screen;$/;"	v	file:
+x_shadetile	x11.c	/^static Pixmap x_shadetile;$/;"	v	file:
+x_textscale	x11.c	/^static double x_textscale = 1.0;$/;"	v	file:
+x_upperleftx	x11.c	/^static int x_upperleftx, x_upperlefty; \/* screen pixel position of upper left of window *\/$/;"	v	file:
+x_upperlefty	x11.c	/^static int x_upperleftx, x_upperlefty; \/* screen pixel position of upper left of window *\/$/;"	v	file:
+x_waitflag	x11.c	/^static int x_waitflag;$/;"	v	file:
+x_win	x11.c	/^static Window	x_win;$/;"	v	file:
+x_winheight	x11.c	/^static int x_winheight, x_winwidth;   \/* current size of window *\/$/;"	v	file:
+x_winwidth	x11.c	/^static int x_winheight, x_winwidth;   \/* current size of window *\/$/;"	v	file:
+xhi	plg.h	/^	double xlo, xhi, ylo, yhi;		\/* graphic area bounds, absolute coords *\/$/;"	m	struct:plgc
+xlo	plg.h	/^	double xlo, xhi, ylo, yhi;		\/* graphic area bounds, absolute coords *\/$/;"	m	struct:plgc
+xofst	proc_scatterplot.c	/^static double xofst[38] = { 0, 0, 4, 0, -4, 4, -4, -4, 4,$/;"	v	file:
+xrange	test.pl	/^xrange: 0 10$/;"	l
+xratio	smoothfit.c	/^  static double xratio, yratio, sxmin, symin;$/;"	v	file:
+xscale	winscale.c	/^static double xscale, yscale;$/;"	v	file:
+y	gd13/gd.h	/^	int x, y;$/;"	m	struct:__anon4
+y	gd16/gd.h	/^	int x, y;$/;"	m	struct:__anon7
+y	smoothfit.c	/^  static double wsign, tsquare, tcube, *qlx, *qly, *x, *y;$/;"	v	file:
+y1	clickmap.c	/^	int x1; int y1; int x2; int y2;$/;"	m	struct:__anon2	file:
+y1	plg.h	/^	double x1, y1, x2, y2;$/;"	m	struct:plgc
+y2	clickmap.c	/^	int x1; int y1; int x2; int y2;$/;"	m	struct:__anon2	file:
+y2	plg.h	/^	double x1, y1, x2, y2;$/;"	m	struct:plgc
+yhi	plg.h	/^	double xlo, xhi, ylo, yhi;		\/* graphic area bounds, absolute coords *\/$/;"	m	struct:plgc
+yield	condex.c	/^yield( v, t )$/;"	f	file:
+ylo	plg.h	/^	double xlo, xhi, ylo, yhi;		\/* graphic area bounds, absolute coords *\/$/;"	m	struct:plgc
+yofst	proc_scatterplot.c	/^static double yofst[38] = { 0, 4, 0, -4, 0, 4, -4, 4, -4,$/;"	v	file:
+yrange	test.pl	/^yrange: 0 10$/;"	l
+yratio	smoothfit.c	/^  static double xratio, yratio, sxmin, symin;$/;"	v	file:
+yscale	winscale.c	/^static double xscale, yscale;$/;"	v	file:
+zero	smoothfit.c	/^static void zero(int *kCode, double AZ, double BZ, double E2, double *X, double *Y, int maxiterations)$/;"	f	file:
+zero_convmsgcount	pl.h	179;"	d
