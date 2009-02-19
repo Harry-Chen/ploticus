@@ -1,3 +1,10 @@
+ploticus (2.40-4) unstable; urgency=low
+
+  * Upstream Bugfix: Clickmap area tags not XHTML conformant.
+  * Upstream Bugfix: Controlling the last stub in a chron prefab plot.
+
+ -- Colin Tuckley <colint@debian.org>  Thu, 19 Feb 2009 18:25:44 +0000
+
 ploticus (2.40-3) unstable; urgency=low
 
   * Upstream Bugfix: Closes: #502869

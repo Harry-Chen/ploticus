@@ -21,6 +21,11 @@
  #ifspec stubvert
  #ifspec xgrid grid
  #ifspec xlbldistance labeldistance
+
+ // the following added scg 12/16/08...
+ #ifspec firststub
+ #ifspec laststub
+
 #endif
 
 // added scg 8/4/04...
@@ -54,4 +59,9 @@
   #ifspec stubvert
   #ifspec xgrid grid
   #ifspec xlbldistance labeldistance
+
+  // the following added scg 12/16/08...
+  #ifspec firststub
+  #ifspec laststub
+
 #endif

@@ -187,8 +187,8 @@ for( i = loopstart; i != loopend; i += loopinc ) {
 		fprintf( fp, "<area shape=\"rect\" %s%s%c coords=\"%d,%d,%d,%d\" ",
 			(buf[0] == '\0') ? "nohref" : "href=\""   , buf,    (buf[0] == '\0' ) ? ' ' : '"',
 			box[ i ].x1 - tx, box[ i ].y1 - ty, box[ i ].x2 - tx, box[ i ].y2 - ty );
-		if( titles[i] != NULL ) fprintf( fp, "title=\"%s\" %s >\n", titles[i], targetstr );
-		else fprintf( fp, "%s >\n", targetstr );
+		if( titles[i] != NULL ) fprintf( fp, "title=\"%s\" alt=\"%s\" %s />\n", titles[i], titles[i], targetstr );
+		else fprintf( fp, "alt=\"\" %s />\n", targetstr );
 		}
 	}
 
@@ -285,6 +285,7 @@ for( i = loopstart; i != loopend; i += loopinc ) {
 		}
 	strcpy( targetstr, "" ); get_targetstr( buf, targetstr );
 
+
 #ifndef NOSVG
 	if( PLS.device == 's' ) {
 		if( titles[i] == NULL ) PLGS_clickregion( buf, "", targetstr, box[ i ].x1, box[ i ].y1, box[ i ].x2, box[ i ].y2 );
@@ -300,8 +301,8 @@ for( i = loopstart; i != loopend; i += loopinc ) {
 		fprintf( fp, "<area shape=\"rect\" %s%s%c coords=\"%d,%d,%d,%d\" ",
 			(buf[0] == '\0') ? "nohref" : "href=\""   , buf,    (buf[0] == '\0' ) ? ' ' : '"',
 			box[ i ].x1 - tx, box[ i ].y1 - ty, box[ i ].x2 - tx, box[ i ].y2 - ty );
-		if( titles[i] != NULL ) fprintf( fp, "title=\"%s\" %s >\n", titles[i], targetstr );
-		else fprintf( fp, "%s >\n", targetstr );
+		if( titles[i] != NULL ) fprintf( fp, "title=\"%s\" alt=\"%s\" %s />\n", titles[i], titles[i], targetstr );
+		else fprintf( fp, "alt=\"\" %s />\n", targetstr );
 		}
 	}
 
