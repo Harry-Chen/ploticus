@@ -5,7 +5,7 @@ echo "You will be invoking this instance of ploticus:"
 which $PL
 
 echo
-echo -n "Enter an output format, one of: x11, gif, png, svg, (svgz), (jpeg), or eps: "
+echo "Enter an output format, one of: x11, gif, png, svg, (svgz), (jpeg), or eps: \c"
 read MODE
 if [ "$MODE" = "" ]; then
   MODE=x11

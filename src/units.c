@@ -180,11 +180,7 @@ else	{
 
 if( axis == 'x' ) return( Escale_x( alo, ahi, slo, shi ) );
 
-else if( axis == 'y' ) {
-	int stat;
-	stat = Escale_y( alo, ahi, slo, shi ); 
-	return( stat );
-	}
+else if( axis == 'y' ) return( Escale_y( alo, ahi, slo, shi ) ); 
 
 else return( Eerr( 209, "invalid axis", "" ));
 }
@@ -268,7 +264,7 @@ return( conv_errflag );
 }
 
 /* ============================= */
-/* UPRINT - produce a string containing the external representation of a value */
+/* UPRINT - produce a string containing the external representation of a value.  Result is copied into 'result'. */
 int
 PL_uprint( result, axis, f, format )
 char *result;
@@ -282,6 +278,8 @@ int stat;
 
 if( axis == 'x' ) i = 0;
 else i = 1;
+
+strcpy( result, "???" );
 
 if( unittyp[i] == LINEAR ) {
 	/* when generating incremental axes moving from negative to positive, for zero sprintf sometimes 
@@ -434,7 +432,7 @@ int mode;	/* 0 = position  1 = length (no sp. units in lengths)  */
 {
 char buf[255];
 double atof();
-int nt;
+int nt, k, found;
 double f;
 int len;
 char modifier[12];
@@ -470,7 +468,16 @@ if( strcmp( modifier, "(s)" )==0 ) {
 		}
 	if( mode == 0 ) {
 		*result = Ea( axis, Econv( axis, buf ) );
-		if( Econv_error() ) return( 1 );
+		if( Econv_error() ) {
+			/* try again, this time converting any underscores to spaces... 
+			 * allows catnames (etc) w/ embedded spaces to be usable for positioning.   added     scg 3/6/09 */
+			for( k = 0, found = 0; buf[k] != '\0'; k++ ) if( buf[k] == '_' ) { buf[k] = ' '; found = 1; }
+			if( found ) { /* try again only if there actually was an underscore in there.. */
+				*result = Ea( axis, Econv( axis, buf ) );
+				if( Econv_error() ) return( 1 );
+				}
+			else return( 0 );
+			}
 		else return( 0 );
 		}
 	}

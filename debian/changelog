@@ -1,3 +1,11 @@
+ploticus (2.41-1) unstable; urgency=low
+
+  * New Upstream version.
+  * Upstream Bugfix: proc boxplot - bug fix - incorrect error messages
+  * Bump Standards-Version (No changes required).
+
+ -- Colin Tuckley <colint@debian.org>  Fri, 10 Apr 2009 18:28:51 +0100
+
 ploticus (2.40-4) unstable; urgency=low
 
   * Upstream Bugfix: Clickmap area tags not XHTML conformant.

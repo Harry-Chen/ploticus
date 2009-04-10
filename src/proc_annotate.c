@@ -141,7 +141,7 @@ if( backcolor[0] != '\0' || ( box[0] != '\0' && strnicmp( box, "no", 2 )!= 0 ) )
 	}
 else do_arrows();
 
-if( PLS.clickmap && (mapurl != "" || maplabel != "" )) {
+if( PLS.clickmap && (mapurl[0] != '\0' || maplabel[0] != '\0' )) {
 	if( backdim && do_ellipse ) {
 		/* need to solve back to ulx,uly in this case.. */
 		ulx = (((boxw/2.0)-cx)*-1.0); 

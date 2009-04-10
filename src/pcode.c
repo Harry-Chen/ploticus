@@ -901,12 +901,11 @@ if( Edev == 'g' ) {
 #endif
 	}
 else if( Edev == 's' ) {
+#ifndef NOSVG
 	if( line_drawing ) PLGS_stroke();
         line_drawing = 0;
 	width = (int) (width * 0.72 );  /* svg wants image dimensions in svg pixels (72 per inch) */
 	height = (int) (height * 0.72 );
-
-#ifndef NOSVG
 	stat = PLGS_showimg( filename, x, y, align, width, height );
 #endif
 	}

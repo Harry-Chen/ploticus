@@ -289,7 +289,7 @@ if( PLS.device == 'f' ) PLGF_setparms( PLS.debug, PLS.tmpname, Estandard_font );
 PL_init_mem();
 
 if( PLS.debug ) {
-        fprintf( PLS.diagfp, "Version: ploticus %s\n", PLVERSION );
+        fprintf( PLS.diagfp, "Version: pl %s\n", PLVERSION );
         if( PLS.cgiargs != NULL ) fprintf( PLS.diagfp, "operating in CGI mode\n" );
         Epcodedebug( 1, PLS.diagfp ); /* tell pcode.c to output diagnostics too */
         }

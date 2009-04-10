@@ -10,6 +10,9 @@
 
    Mar 27 2002 scg  	SVG clickable map support added (PLS.device == 's')  Not implemented here
 			but rather via SVG_beginobj and SVG_endobj.
+
+   Feb  4 2009 jqn      added encodeurl config parameter so that clickmap URL targets with embedded spaces
+                        will use '_' instead of '+' (because certain operating contexts need this)
  */
 
 #include "pl.h"
@@ -19,6 +22,8 @@ extern int chmod();
 #define MAXENTRIES 500
 #define SERVERSIDE 1
 #define CLIENTSIDE 2
+
+#define PLUS_TO_UNDERSCORE 1
 
 static int imap;
 static char *urls[MAXENTRIES];
@@ -204,9 +209,6 @@ if( intersect ) for( i = loopstart; i != loopend; i += loopinc ) {
 		for( j = imap-1; j >= 0; j-- ) {
 			if( box[j].pmode == 4 ) {
 
-				/* strcpy( buf, tpurl ); */
-				/* GL_varsub( buf, "@XVAL", urls[ i ] ); */
-				/* GL_varsub( buf, "@YVAL", urls[ j ] ); */  /* changed to the following, allows general vars to be present */
 				PL_setcharvar( "XVAL", urls[i] );
 				PL_setcharvar( "YVAL", urls[j] );
 				PL_fref_showerr( 0 );
@@ -267,17 +269,12 @@ for( i = loopstart; i != loopend; i += loopinc ) {
 	if( box[i].pmode == 0 ) continue;
 	strcpy( buf, "" );
 	if( box[ i ].pmode > 0 ) {
-		/* strcpy( buf, tpurl ); */
 		PL_fref_showerr( 0 );  
 		if( box[ i ].pmode == 1 || box[i].pmode == 3 ) {
-			/* GL_varsub( buf, "@XVAL", urls[ i ] ); */
-			/* GL_varsub( buf, "@YVAL", "" ); */
 			PL_setcharvar( "XVAL", urls[i] );
 			PL_value_subst( buf, tpurl, NULL, URL_ENCODED );
 			}
 		else if( box[ i ].pmode == 2 || box[i].pmode == 4 ) {
-			/* GL_varsub( buf, "@YVAL", urls[ i ] ); */
-			/* GL_varsub( buf, "@XVAL", "" ); */
 			PL_setcharvar( "YVAL", urls[i] );
 			PL_value_subst( buf, tpurl, NULL, URL_ENCODED );
 			}
@@ -443,6 +440,8 @@ char *url;
 strcpy( tpurl, url );
 return( 0 );
 }
+
+
 
 /* =========================== */
 static int

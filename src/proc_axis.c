@@ -116,7 +116,7 @@ while( 1 ) {
 		else selfloc = 0;
 
 		tokncpy( tok, lineval, 80 );
-		if( strncmp( tok, "inc", 3 )==0 || GL_slmember( tok, "dat*matic" )) {
+		if( strncmp( tok, "inc", 3 )==0 || strcmp( tok, "datematic" )==0 ) {
 			isrc = INCREMENTAL;
 			strcpy( incunits, "" );
 			nt = sscanf( lineval, "%*s %lf %s", &incamount, incunits );
@@ -153,7 +153,7 @@ while( 1 ) {
 		else 	{ isrc = HERE; stubs = getmultiline( lineval, "get" ); }
 		}
 			
-	else if( strcmp( &attr[astart], "stubformat" )==0 ) { strncpy( stubformat, lineval, 80 ); stubformat[80] = '\0'; }
+	else if( strcmp( &attr[astart], "stubformat" )==0 ) { strncpy( stubformat, lineval, 80 ); stubformat[80] = '\0'; } /* (can be multi-token) */
 	else if( strcmp( &attr[astart], "stubdetails" )==0 ) stubdetails = lineval;
 	else if( strcmp( &attr[astart], "stubrange" )==0 ) { getrange( lineval, &stubstart, &stubstop, xory, min, max ); stubrangegiven = 1; }
 	else if( strcmp( &attr[astart], "stubround" )==0 ) stubround = lineval;
@@ -342,7 +342,8 @@ if( !stubrangegiven && !stubreverse && !selfloc &&
 /* if doing Y axis with text stubs, and user didn't specify stubreverse: no, 
 	reverse the stubs */
 if( xory == 'y' && !stubreverse_given && stubreverse == 0 &&
-	( isrc == HERE || isrc == FROMFILE || isrc == FROMDATA ) && !selfloc ) {  /* && !selfloc added scg 3/19/03 */
+	( isrc == HERE || isrc == FROMFILE || isrc == FROMDATA || isrc == FROMCATS ) && !selfloc ) {  /* && !selfloc added scg 3/19/03 */
+													/* FROMCATS added scg 3/10/09 */
 	stubreverse = 1;
 	if( !stubrangegiven ) stubstop = max - 1.0;
 	}
@@ -382,7 +383,7 @@ if( stubround[0] != '\0' ) {    /* stubround is useful when user requires min an
 	char minval[40], maxval[40];
 	double ninc;
 	if( GL_smember( scaleunits, "date datetime time" )) {
-		Euprint( buf, xory, stubstart, "" );
+		Euprint( buf, xory, stubstart, "" ); /* buf[256] */
 		PLP_findnearest( buf, buf, xory, stubround, minval, maxval );  
 		stubstart = Econv( xory, maxval );
 		}
@@ -535,7 +536,7 @@ if( isrc == INCREMENTAL || ( isrc == 0 && (doingtics || doinggrid )) ) {
 		specialunits = MONTHS;
 		selfloc = 0; /* for rendering purposes don't treat month stubs as self locating.. */
 		/* do the following to get starting m, d, y.. */
-		Euprint( buf, xory, stubstart, "" );
+		Euprint( buf, xory, stubstart, "" ); /* buf[256] */
 		stat = DT_jdate( buf, &l );
 		DT_getmdy( &mon, &day, &yr ); 
 		if( incamount > 0.0 ) inc = incamount;
@@ -639,9 +640,9 @@ for( sanecount = 0; sanecount < 2000; sanecount++ ) {
 		if( stubmult != 1.0 ) yy = yy * stubmult; /* added scg 10/2/03 */
 
 		nt = sscanf( incunits, "%lf", &ftest );
-		if( nt > 0 ) Euprint( txt, xory, yy/ftest, stubformat );
-		else Euprint( txt, xory, yy, stubformat );
-		if( PLS.clickmap && clickmap ) Euprint( cmtxt, xory, yy, cmvalfmt );
+		if( nt > 0 ) Euprint( txt, xory, yy/ftest, stubformat ); /* txt[256] */
+		else Euprint( txt, xory, yy, stubformat ); /* txt[256] */
+		if( PLS.clickmap && clickmap ) Euprint( cmtxt, xory, yy, cmvalfmt ); /* cmtxt[100] */
 		}
 
 	if( isrc == HERE || isrc == FROMFILE ) {
@@ -753,8 +754,6 @@ for( sanecount = 0; sanecount < 2000; sanecount++ ) {
 		
 
 
-
-
 	/* by this point stub text (including any selfloc field) 
 	   should be in txt and location in y.. */
 
@@ -836,6 +835,7 @@ for( sanecount = 0; sanecount < 2000; sanecount++ ) {
 			}
 		cmylast = Ea( Y, y );
 		}
+
 
 	/* convert any embedded "\n" to newline.. */
 	convertnl( txt );

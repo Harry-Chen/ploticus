@@ -35,7 +35,7 @@ PL_custom_function( name, arg, nargs, result, typ )
 char *name;
 char *arg[];
 int nargs;
-char *result;
+char *result;  /* result data is copied into this var */
 int *typ;
 {
 
@@ -185,7 +185,7 @@ else if( strcmp( name, "getclick" )==0 ) {
 /* ------------------- */
 /* hash:956 $fieldname(n) - return the field name assigned to field n.  First is 1 */
 else if( strcmp( name, "fieldname" )==0 ) {
-	getfname( atoi( arg[0] ), result );
+	getfname( atoi( arg[0] ), result );  /* result[n] as passed */
         *typ = 1;
 	return( 0 );
 	}

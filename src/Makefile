@@ -1,4 +1,4 @@
-######## PLOTICUS version 2.40    Copyright 1998-2008 Stephen C. Grubb  http://ploticus.sourceforge.net
+######## PLOTICUS version 2.41    Copyright 1998-2009 Stephen C. Grubb  http://ploticus.sourceforge.net
 ########
 ######## Use this Makefile to build  pl executable  or  libploticus.  Root permission is not required.
 ######## Configure the 3 settings below then do:  make clean; make
@@ -198,11 +198,11 @@ CFLAGS = $(FPIC) $(WALL) -DPLOTICUS -D$(PLATFORM) -DTDH_NOREC $(ZFLAG) $(LOCALE_
 OBJ = proc_annotate.o proc_areadef.o proc_axis.o proc_bars.o proc_rect.o proc_breakaxis.o \
   proc_categories.o proc_curvefit.o proc_settings.o proc_drawcommands.o \
   proc_getdata.o proc_image.o proc_legend.o proc_legendentry.o proc_line.o proc_lineplot.o \
-  proc_page.o proc_pie.o proc_print.o proc_boxplot.o proc_rangesweep.o proc_usedata.o \
+  proc_page.o proc_pie.o proc_print.o proc_boxplot.o proc_rangesweep.o proc_usedata.o proc_pvalue.o \
   proc_scatterplot.o proc_vector.o proc_symbol.o proc_processdata.o proc_tabulate.o proc_venndisk.o clickmap.o proc_tree.o proc_catlines.o \
   plhead.o execscriptfile.o execline.o lib.o details.o parse.o units.o preliminaries.o \
   process_arg.o plvalue_subst.o cats.o fieldnames.o autorange.o nearest.o select.o datasets.o \
-  color.o plg.o init.o arrow.o mark.o block.o pcode.o ps.o svg.o swf.o stub.o winscale.o lineclip.o smoothfit.o \
+  color.o plg.o init.o arrow.o mark.o block.o pcode.o ps.o svg.o swf.o stub.o winscale.o lineclip.o smoothfit.o ttest.o \
   condex.o dates.o dbinterface.o err.o functions.o glroutines.o reslimits.o secondaryops.o  \
   shell.o sinterp.o tdhkit.o times.o value.o value_subst.o variable.o custom.o \
   $(LOCALEOBJ)
@@ -282,5 +282,5 @@ distclean:  clean
 
 
 ########
-######## PLOTICUS     Copyright 1998-2008 Stephen C. Grubb  http://ploticus.sourceforge.net
+######## PLOTICUS     Copyright 1998-2009 Stephen C. Grubb  http://ploticus.sourceforge.net
 ########

@@ -102,7 +102,7 @@ return( fld );
 
 /* ============================ */
 /* GETFNAME - given a field number, return the field name assigned to
-	that field (first is 1).
+	that field (first is 1).  Field name is copied into result var.
 	Result will be "" if no field name has been assigned to field N. */
 
 int

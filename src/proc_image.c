@@ -50,7 +50,7 @@ while( 1 ) {
  * for SVG, image alignment (centering, etc) is done here, and image width and height must be given in order to do alignment.
  */
 
-if( filename == "" ) return( Eerr( 72509, "image file not specified", "" ));
+if( filename[0] == '\0' ) return( Eerr( 72509, "image file not specified", "" ));
 
 if( height == 0 || width == 0 ) {
 	Eerr( 75935, "warning, image height and width (in pixels) expected but not specified", "" );
@@ -81,7 +81,7 @@ else if( Edev != GD ) {
         Emov( x, y ); Elin( x+aw, y ); Elin( x+aw, y-ah );  Elin( x, y-ah ); Elin( x, y );
 	}
 
-if( PLS.clickmap && ( mapurl != "" || maplabel != "" )) clickmap_entry( 'r', mapurl, 0, x, y-ah, x+aw, y, 0, 0, maplabel );
+if( PLS.clickmap && ( mapurl[0] != '\0' || maplabel[0] != '\0' )) clickmap_entry( 'r', mapurl, 0, x, y-ah, x+aw, y, 0, 0, maplabel );
 
 return( 0 );
 }

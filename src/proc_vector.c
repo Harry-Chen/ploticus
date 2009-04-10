@@ -23,7 +23,8 @@ int i, stat;
 int xfield, yfield, dirfield, magfield, colorfield, exactcolorfield, clip;
 double dirrange, lenscale, x, y, newx, newy, len, dir, ahlen, ahwid;
 double sin(), cos(), basedir, constantlen, holdx, holdy;
-char *acolor, *linedetails, *legendlabel, *selex;
+char *acolor, *linedetails, *selex;
+char legendlabel[256];
 double barblimitbig, barblimitmedium, barblimitsmall, barblimittiny, barbdir, mag;
 char dirunits, zeroat, clockdir, lenunits, type;
 int x2field, y2field;
@@ -35,7 +36,8 @@ xfield = -1; yfield = -1; dirfield = -1; magfield = -1; colorfield = -1; exactco
 dirrange = 360.0;
 ahlen = 0.15;
 ahwid = 0.4;
-acolor = ""; selex = ""; legendlabel = ""; linedetails = "";
+acolor = ""; selex = ""; linedetails = "";
+strcpy( legendlabel, "" );
 dirunits = 'd'; /* degrees */
 zeroat = 't';   /* top */
 clockdir = '+'; /* clockwise */
@@ -82,7 +84,7 @@ while( 1 ) {
 	else if( strcmp( attr, "arrowheadwidth" )==0 ) ahwid = ftokncpy( lineval );
 	else if( strcmp( attr, "arrowheadcolor" )==0 ) acolor = lineval;
 	else if( strcmp( attr, "select" )==0 ) selex = lineval;
-	else if( strcmp( attr, "legendlabel" )==0 ) legendlabel = lineval;
+	else if( strcmp( attr, "legendlabel" )==0 ) tokncpy( legendlabel, lineval, 256 );
 	else if( strcmp( attr, "taillen" )==0 ) taillen = ftokncpy( lineval );
 	else if( strcmp( attr, "clip" )==0 ) clip = getyn( lineval );
 	else if( strcmp( attr, "type" )==0 ) type = lineval[0];
@@ -114,7 +116,7 @@ if( magfield < 0 && type == 'b' && (x2field < 0 || y2field < 0 ))
 
 if( barblimitbig <= 0 || barblimitmedium <= 0 || barblimitsmall <= 0 ) return( Eerr( 2205, "barblimits must be grater then 0", ""));
 
-if( strncmp( legendlabel, "#usefname", 9 )==0 ) getfname( dirfield+1, legendlabel );
+if( strncmp( legendlabel, "#usefname", 9 )==0 ) getfname( dirfield+1, legendlabel ); /* legendlabel[256] */
 
 if( !GL_member( type, "abelit" )) type = 'a';
 

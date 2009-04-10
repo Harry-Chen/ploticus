@@ -3,17 +3,10 @@
 /* compile and load w/ libploticus, libpng, libz, and -lm */
 /* scg uses:  gcc apitest.c /home/scg/ploticus/src/libploticus.a  /home/scg/lib/libpng.a  /home/scg/lib/libz.a -lm -o apitest  */
 
-#include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
-#include <sys/types.h>
-#include <unistd.h>
-
-#include "libploticus.h"
-
 #define RESULT_TYPE "png"
 
-int main( argc, argv )
+main( argc, argv )
 int argc;
 char **argv;
 {

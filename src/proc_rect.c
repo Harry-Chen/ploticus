@@ -63,7 +63,7 @@ Ecblock( xlo, ylo, xhi, yhi, color, ioutline );
 if( bevelsize > 0.0 || shadowsize > 0.0 ) 
 	Ecblockdress( xlo, ylo, xhi, yhi, bevelsize, lowbevelcolor, hibevelcolor, shadowsize, shadowcolor);
 
-if( PLS.clickmap && ( mapurl != "" || maplabel != "" )) clickmap_entry( 'r', mapurl, 0, xlo, ylo, xhi, yhi, 0, 0, maplabel );
+if( PLS.clickmap && ( mapurl[0] != '\0' || maplabel[0] != '\0' )) clickmap_entry( 'r', mapurl, 0, xlo, ylo, xhi, yhi, 0, 0, maplabel );
 
 return( 0 );
 }

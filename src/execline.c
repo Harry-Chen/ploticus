@@ -324,6 +324,7 @@ else if( strcmp( procname, "line" )==0 ) stat = PLP_line();
 else if( strcmp( procname, "rect" )==0 ) stat = PLP_rect();
 else if( strcmp( procname, "tree" )==0 ) stat = PLP_tree();
 else if( strcmp( procname, "venndisk" )==0 ) stat = PLP_venndisk();
+else if( strcmp( procname, "pvalue" )==0 ) stat = PLP_pvalue();
 else if( strcmp( procname, "settings" )==0 ) stat = PLP_settings();
 else if( strcmp( procname, "breakaxis" )==0 ) stat = PLP_breakaxis();
 else if( strcmp( procname, "image" )==0 ) stat = PLP_image();
@@ -346,6 +347,7 @@ else if( strcmp( procname, "rangebar" )==0 ) return( Eerr( 27925, "proc rangebar
 else if( strcmp( procname, "defineunits" )==0 ) return( Eerr( 27926, "proc defineunits discontinued; use proc areadef", "xnewunits and ynewunits" ));
 
 else return( Eerr( 101, "procedure name unrecognized", procname ) );
+
 
 TDH_errprog( "pl" );
 

@@ -170,7 +170,7 @@ for( i = 0; i < NLE; i++ ) {
 
 	/* fprintf( stderr, "%d|%s|%s|%s\n", LEtype[i], &Ltext[LElabel[i]], &Ltext[LEparm1[i]], &Ltext[LEparm2[i]] ); */
 
-	if( specifyorder != "" ) {
+	if( specifyorder[0] != '\0' ) {
 		/* get next line in orderspec.. */
 		NEXTORDERLINE:
 		GL_getchunk( buf, specifyorder, &ix, "\n" );

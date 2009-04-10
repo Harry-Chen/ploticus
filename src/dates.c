@@ -682,6 +682,9 @@ Lazydays = oldlazyday; Lazymonths = oldlazymon;
 if( stat != 0 )return( stat );
 stat = 0;
 found = 0;
+
+strcpy( result, "" );
+
 /* the most common formats */
 if( GL_slmember( fmt, "mmddyy* mm?dd?yy* ddmmyy* dd?mm?yy* dd?mmm?yy*" )) {  
  	stat = DT_makedate( Yr, Mon, Day, fmt, result );
@@ -1081,9 +1084,6 @@ if( strcmp( stype, "datetime" )==0 ) dtflag = 1;
 else dtflag = 0;
 
 if( strncmp( stype, "date", 4 )==0 ) { /* date and datetime */
-	if( diff < 7.0 && dtflag ) strcpy( autod, "ddMmm" );
-	else if( diff < 120.0 ) strcpy( autom, "Mmmyy" ); 
-	else if( diff < 1500.0 ) strcpy( autoy, "'yy" );
 
 	if( diff < 0.6 && dtflag ) { *inc = 1.0; strcpy( units, "hour" ); strcpy( dispfmt, "hha" ); strcpy( nearest, "hour" ); }
 	else if( diff < 2.0 && dtflag ) { 
@@ -1109,6 +1109,11 @@ if( strncmp( stype, "date", 4 )==0 ) { /* date and datetime */
 		}
 	else if( diff < 8000.0 ) { *inc = 5; strcpy( units, "years" ); strcpy( dispfmt, "'yy" ); strcpy( nearest, "5year" ); } 
 	else { *inc = 10; strcpy( units, "years" ); strcpy( dispfmt, "'yy" ); strcpy( nearest, "10year" ); } 
+
+	/* perhaps set some autodays/months/years defaults */  /* strcmp clauses added scg 3/9/09 */
+	if( diff < 7.0 && dtflag && strncmp( units, "day", 3 )!= 0 ) strcpy( autod, "ddMmm" );  
+	else if( diff < 120.0 && strncmp( units, "month", 5 )!= 0 ) strcpy( autom, "Mmmyy" ); 
+	else if( diff < 1500.0 && strncmp( units, "year", 4 )!= 0 ) strcpy( autoy, "'yy" );
 	}
 
 else if( strcmp( stype, "time" )==0 ) {
@@ -1422,7 +1427,9 @@ datepart = floor( days );
 timepart = days - datepart;
 
 timepart = (timepart * Dtwinsize) + Dtwinbegin; /* convert from 0.0 - 1.0 to #min past midnite */
-timepart = floor( timepart + 0.5 ); /* remove any rounding error introduced by above */
+/* the following bug fix from treykinkead@yahoo.com...  scg 10/10/08 */
+/* timepart = floor( timepart + 0.5 ); */ /* remove any rounding error introduced by above */
+timepart = floor( timepart*60.0+0.5 ) / 60.0; /* remove any rounding error introduced by above */
 
 DT_fromjul( (long)datepart, s );
 DT_frommin( timepart, t );

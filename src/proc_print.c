@@ -43,8 +43,6 @@ while( 1 ) {
 
 if( printstring[0] != '\0' && Nrecords < 1 ) return( Eerr( 17, "Warning: no data has been read yet w/ proc getdata", "" ) );
 
-fprintf( PLS.errfp, "Warning, proc print is deprecated in 2.40\n" );
-
 
 /* now do the work.. */
 dontclose = 0;
@@ -61,9 +59,11 @@ else 	{
 if( label[0] != '\0' ) fprintf( outfp, "%s\n", label );
 
 nrecords = 0;
+setintvar( "FOUNDROW", 0 );
 for( i = 0; i < Nrecords; i++ ) {
 	do_select( selectex, i, &result );
 	if( result == 1 ) {
+		setintvar( "FOUNDROW", i+1 );
 		if( printstring[0] != '\0' ) {
 			do_subst( buf, printstring, i, NORMAL );
 			fprintf( outfp, "%s\n", buf );

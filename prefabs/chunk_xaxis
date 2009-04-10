@@ -20,6 +20,8 @@
  stubrange: @XMIN
  #ifspec stubvert
  #ifspec xgrid grid
+ #ifspec xgridblocks gridblocks
+ #ifspec xgridskip gridskip
  #ifspec xlbldistance labeldistance
 
  // the following added scg 12/16/08...

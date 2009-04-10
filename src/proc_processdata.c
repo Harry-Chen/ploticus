@@ -54,6 +54,7 @@ int ix, stat, showdata, nfld, keepall, dispformatnum, resetbns, istart;
 int select_result, select_error, nocloseoutfp, tagfld, breakfound, valfld, complen;
 int fld[MAXFLD];
 double accum[MAXFLD], count;
+char newfstr[256];
 
 TDH_errprog( "pl proc processdata" );
 
@@ -71,6 +72,7 @@ showdata = dispformatnum = select_error = nocloseoutfp = 0;
 tagfld = -1;
 valfld = -1;
 complen = 50;
+strcpy( newfstr, "" );
 
 	
 
@@ -133,9 +135,9 @@ while( 1 ) {
         else Eerr( 1, "attribute not recognized", attr );
 	}
 
-
-
 if( strcmp( action, "" )==0) { Eerr( 7395, "warning, no action specified, defaulting to action: echo", "" ); action = "echo"; }
+
+if( Nrecords < 1 ) return( Eerr( 17, "No data has been read yet w/ proc getdata", "" ) );  /* added scg 4/2/08 */
 
 if( strcmp( action, "breakreset" )!= 0 ) {
 	if( Nrecords < 1 ) return( Eerr( 17, "Current data set is empty, nothing to process", "" ) );
@@ -166,7 +168,7 @@ if( rformat[0] == 'n' ) {  /* if resultformat begins with 'n', user wants rewrit
 	}
 for( i = 0; i < MAXFLD; i++ ) accum[i] = 0.0;
 
-if( outfile == "" ) {
+if( outfile[0] == '\0' ) {
 	stat = PL_begindataset(); 
 	if( stat != 0 ) return( stat );
 	}
@@ -175,8 +177,6 @@ else 	{
 	if( outfp == NULL ) { PLS.skipout = 1; return( Eerr( 75925, "cannot open outfile", outfile ) ); }
 	}
 
-/* rejectfields, keepfields, and keepall will make any current field names wrong, so clear the field names. */
-if( nrejfld != 0 || nkpfld != 0 || keepall != 0 ) definefieldnames( "" );
 
 
 /* action: breaks ... break processing - calling script can detect when end is reached by looking at NRECORDS or BREAKFIELD1 */
@@ -260,7 +260,6 @@ else if( strcmp( action, "reverse" )==0 ) {
 
 /* action: rotate */
 else if( strcmp( action, "rotate" )==0 ) {     
-	definefieldnames( "" );  /* any existing field names will be wrong */
 	for( j = 0; j < Nfields; j++ ) {
 		if( dofld( j )) {
 			bor();
@@ -363,8 +362,8 @@ else if( strcmp( action, "count" )==0 ) {
 	double fval, fbin;
 	char *adjval, *curval, snum[80];
 
-	if( nfld == 1 ) definefieldnames( "bin count" );
-	else if( nfld == 2 ) definefieldnames( "bin sum" );
+	if( nfld == 1 ) strcpy( newfstr, "bin count" );
+	else if( nfld == 2 ) strcpy( newfstr, "bin sum" );
 	adjval = tok;
 	curval = buf;
 	count = 0.0;
@@ -377,7 +376,7 @@ else if( strcmp( action, "count" )==0 ) {
 	               	if( select_result == 0 || stat ) continue; /* reject */
 	               	}
 
-		if( binsize != "" ) {
+		if( binsize[0] != '\0' ) {
 			fbin = atof( binsize );
 			if( fbin != 0.0 ) {
 				fval = atof( da( i, fld[0] ));
@@ -425,8 +424,8 @@ else if( strcmp( action, "count" )==0 ) {
  * output has a fixed number of fields; kpfld and nkpfld do not apply to this action.. 
  */
 else if( strncmp( action, "segment", 7 ) ==0 ) {    
-	if( nfld == 1 ) definefieldnames( "bin startrow endrow" );
-	else if( nfld == 2 ) definefieldnames( "bin startval endval" );
+	if( nfld == 1 ) strcpy( newfstr, "bin startrow endrow" );
+	else if( nfld == 2 ) strcpy( newfstr, "bin startval endval" );
 	count = 0.0;
 	curcon = "";
 	for( i = 0; i < Nrecords; i++ ) {
@@ -488,11 +487,9 @@ else if( strncmp( action, "summary", 7 )==0 ) {
 	for( j = 0; j < nfld; j++ ) { strncpy( breakbuf[j], da( 0, fld[j] ), complen ); breakbuf[j][complen] = '\0'; }
 
 	/* set up usable field names for result:  id1 .. idN  mean sd se n_obs sum   */
-	strcpy( tok, "" );
-	for( j = 0; j < nfld; j++ ) { sprintf( outbuf, "id%d ", j+1 ); strcat( tok, outbuf ); }
-	if( action[7] == 'p' ) strcat( tok, "mean sd se n_obs min max sum pctl5th pctl25th median pctl75th pctl95th" );
-	else strcat( tok, "mean sd se n_obs min max sum" );
-	definefieldnames( tok );  /* what about stackmode? */
+	for( j = 0; j < nfld; j++ ) { sprintf( outbuf, "id%d ", j+1 ); strcat( newfstr, outbuf ); }
+	if( action[7] == 'p' ) strcat( newfstr, "mean sd se n_obs min max sum pctl5th pctl25th median pctl75th pctl95th" );
+	else strcat( newfstr , "mean sd se n_obs min max sum" );
 
 	/* go thru the data records.. */
 	lastdone = 0; 
@@ -627,7 +624,6 @@ else if( strncmp( action, "total", 5 )==0 )  {
 else if( strcmp( action, "join" )==0 || strcmp( action, "leftjoin" )==0 || strcmp( action, "rightjoin" )==0 ) {
 	int irec1, irec2, diff, prec, more1, more2;
 	char *f1, *f2;
-	definefieldnames( "" );  /* any existing field names will be wrong */
 	more1 = more2 = 1;
 	irec1 = irec2 = -1;
 	jadvance( select1, &irec1, &more1 );   /* advance LHS to first eligible record (based on leftselect) */  
@@ -760,7 +756,7 @@ else if( strcmp( action, "echo" )==0 || strcmp( action, "numberrows" )==0 ) {
 	char numstr[20];
 
 	do_numrows = 0;
-	if( action[0] == 'n' ) { do_numrows = 1; definefieldnames( "" );  /* any existing field names will be wrong */ }
+	if( action[0] == 'n' ) do_numrows = 1; 
 
 	/* just write out fields */
 	for( i = 0, foundrows = 0; i < Nrecords; i++ ) {
@@ -785,6 +781,7 @@ else 	{
 	}
 
 if( select_error ) Eerr( 472, "warning, an error occurred during 'select'", "" );
+
 
 if( GL_slmember( action, "per* acc* tot*" )) {
 	/* make a comma-delimited list of totals for TOTALS */
@@ -811,17 +808,28 @@ if( GL_slmember( action, "per* acc* tot*" )) {
 	if( strncmp( action, "tot", 3 )==0 ) return( 0 );
 	}
 
-if( outfile != "" ) fclose( outfp );
+if( outfile[0] != '\0' ) fclose( outfp );
 else PL_finishdataset( 0, 0 );
 
-if( fieldnames != "" ) definefieldnames( fieldnames ); 
+if( fieldnames[0] != '\0' ) definefieldnames( fieldnames ); 
+else	{
+	/* if field names not given in this proc, currently defined field names (if any) are guaranteed to be wrong 
+	   for certain actions or parameter combinations... for those clear the field name list now.. 
+	   Was done earlier but this messed up execution of select conditions (based on old field names) */
+	if( nrejfld != 0 || nkpfld != 0 || keepall != 0 ) definefieldnames( "" );
+	if( GL_smember( action, "rotate join leftjoin rightjoin numberrows" )) definefieldnames( "" );  
+
+	/* other situations... new field names are a given... */
+	if( newfstr[0] != '\0' ) definefieldnames( newfstr );
+	}
+
 
 if( showdata ) {
-	getfname( 1, buf );
+	getfname( 1, buf ); /* buf[256] */
 	fprintf( PLS.diagfp, "// proc processdata created the following data set (action = %s)\n", action );
 	if( buf[0] != '\0' ) { 
 		fprintf( PLS.diagfp, "// field names are: " ); 
-		for( j = 0; j < Nfields; j++ ) { getfname( j+1, buf ); fprintf( PLS.diagfp, "%s|", buf ); }
+		for( j = 0; j < Nfields; j++ ) { getfname( j+1, buf ); fprintf( PLS.diagfp, "%s|", buf ); } /* buf[256] */
 		fprintf( PLS.diagfp, "\n" );
 		}
 	else fprintf( PLS.diagfp, "// (no field names defined)\n" );
@@ -861,7 +869,7 @@ return( 1 );
 static int 
 bor( )
 {
-if( outfile == "" ) return( PL_startdatarow() );
+if( outfile[0] == '\0' ) return( PL_startdatarow() );
 else return( 0 );
 }
 
@@ -869,7 +877,7 @@ static int
 out( s )
 char *s;
 {
-if( outfile != "" ) fprintf( outfp, "%s	", s );
+if( outfile[0] != '\0' ) fprintf( outfp, "%s	", s );
 else PL_catitem( s );
 return( 0 );
 }
@@ -877,7 +885,7 @@ return( 0 );
 static int
 eor()
 {
-if( outfile != "" ) fprintf( outfp, "\n" );
+if( outfile[0] != '\0' ) fprintf( outfp, "\n" );
 else PL_enddatarow(); 
 return( 0 );
 }

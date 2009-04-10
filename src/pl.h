@@ -9,7 +9,7 @@
 #include "plg.h"
 
 
-#define PLVERSION "2.40-Jan'08" 	/* see also the Copyright page, and page headers and footers */
+#define PLVERSION "2.41-Mar2009" 	/* see also the Copyright page, and page headers and footers */
 
 /* =========== working limits.. ============ */
 #define CPULIMIT 30		/* default max amount of cpu (seconds) - setrlimit() - may be overridden */
@@ -54,7 +54,6 @@
 #define PIVOTYEAR 70
 #define PLHUGE 	999999999999999.0
 #define NEGHUGE -999999999999999.0
-#define YESANS "y"   
 
 /* legend entry types */
 #define LEGEND_COLOR 1
@@ -372,6 +371,7 @@ extern int PLP_usedata();
 extern int PLP_vector();
 extern int PLP_venndisk();
 extern int PLP_findnearest();
+extern int PLP_pvalue();
 
 extern int GL_addmember();
 extern int GL_changechars();

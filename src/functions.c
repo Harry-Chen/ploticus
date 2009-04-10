@@ -14,8 +14,8 @@ extern int GL_substitute(), GL_ranger(), GL_wildcmp(), GL_contains(), GL_addmemb
 extern int GL_autoround(), TDH_setvalue(), GL_make_unique_string(), GL_changechars(), GL_deletechars(), GL_deletemember();
 extern int GL_urlencode(), GL_urldecode();
 extern int GL_commonmembers(), GL_checksum_functions(), DT_datefunctions(), DT_timefunctions(), TDH_shfunctions(), TDH_showvars();
-extern int atoi(), sleep(), geteuid(), getegid(), chmod(), chdir(); /* sure thing or return value not used */
-extern char *crypt();  /* linux may require -lcrypt */
+extern int atoi(), sleep(), geteuid(), getegid(), chmod(), chdir(), unlink(), rename(); /* sure thing or return value not used */
+/* extern char *crypt(); */ /* linux may require -lcrypt */
 
 
 #ifdef PLOTICUS
@@ -273,6 +273,12 @@ if( hash < 1000 ) {
 		return( 0 );
 		}
 
+	if( hash == 399 ) { /* $capit( str ) - capitalize first letter in string and return it */
+		arg[0][0] = toupper( arg[0][0] );
+		sprintf( result, "%s", arg[0] );
+		return( 0 );
+		}
+
 	if( hash == 400 ) goto EXT_TIME;     /*  $tomin() */
 	if( hash == 402 ) goto EXT_DATE;     /*  $today() */
 
@@ -299,6 +305,13 @@ if( hash < 1000 ) {
 	if( hash == 444 ) {   /* $change(s1,s2,line) - in line, substitute every occurance of s1 with s2. */
 		stat = GL_substitute( arg[0], arg[1], arg[2] ); /* modifies argbuf */
 		sprintf( result, "%s", arg[2] );
+		return( 0 );
+		}
+
+	if( hash == 467 ) {   /* rename( pathname, newpathname )  */
+		if( nargs != 2 ) return( -1 );
+		rename( arg[0], arg[1] );
+		strcpy( result, "0" );
 		return( 0 );
 		}
 
@@ -366,11 +379,20 @@ if( hash < 1000 ) {
 		return( 0 );
 		}
 
-	if( hash == 523 ) { /* $ntoken( n, s ) - return the nth whitespace-delimited token in s */
+	if( hash == 523 ) { /* $ntoken( n, s, [c] ) - 
+			if c is unspecified return the nth whitespace-delimited token in s.
+			if c is given (single char) it is understood to be the delimiter char, return the nth field in s.
+			c can also be given as a set of delimiter chars, eg "|,"
+			*/
 		int ix, n;
 		n = atoi( arg[0] );
 		ix = 0;
-		for( i = 0; i < n; i++ ) strcpy( result, GL_getok( arg[1], &ix ) );
+		if( nargs == 3 ) {
+			for( i = 0; i < n; i++ ) GL_getseg( result, arg[1], &ix, arg[2] );  /* delimited by specified char */
+			}
+		else	{
+			for( i = 0; i < n; i++ ) strcpy( result, GL_getok( arg[1], &ix ) );  /* whitespace delmited */
+			}
 		return( 0 );
 		}
 
@@ -380,6 +402,14 @@ if( hash < 1000 ) {
 		}
 
 	if( hash == 525 ) goto ARITH;   /* $arithl() */
+
+	if( hash == 533 ) { /* unlink( pathname ) */
+		if( nargs != 1 ) return( -1 );
+		unlink( arg[0] );
+		strcpy( result, "0" );
+		return( 0 );
+		}
+
 	if( hash == 537 ) goto LEN;	/* $strlen() - same as $len() */
 	if( hash == 540 ) goto EXT_DATE; /* $dateadd() */
 	if( hash == 551 ) {  /* $fflush() */
@@ -439,15 +469,16 @@ if( hash < 1000 ) {
 
   else if( hash < 1000 ) {
 
-#ifdef UNIX
-#ifndef PLOTICUS
-	if( hash == 811 ) { /* $encrypt(s,salt) */
-		if( arg[1][0] == '\0' ) strcpy( arg[1], "sG" );
-		sprintf( result, "%s", crypt( arg[0], arg[1] ) );  /* linux may require -lcrypt */
-		return( 0 );
-		}
-#endif
-#endif
+/* #ifdef UNIX
+ * #ifndef PLOTICUS
+ *	if( hash == 811 ) { // $encrypt(s,salt) 
+ *		if( arg[1][0] == '\0' ) strcpy( arg[1], "sG" );
+ *		sprintf( result, "%s", crypt( arg[0], arg[1] ) );  // linux may require -lcrypt 
+ *		return( 0 );
+ *		}
+ * #endif
+ * #endif
+ */
 
 	if( hash == 827 ) {  /* $stripws(s,mode) - remove white space from string.. 2 modes */
 		int state;
@@ -732,10 +763,16 @@ else {
 		return( 0 );
 		}
 
-	if( hash == 1781 ) { /* counttokens( s ) - return number of ws-delimited tokens in s */
+	if( hash == 1781 ) { /* counttokens( s [, c] ) - return number of ws-delimited [or c-delimited] tokens in s */
 		int ix;
 		ix = 0;
-		for( i = 0; ; i++ ) { if( strcmp( GL_getok( arg[0], &ix ), "" ) == 0 ) break; }
+		if( nargs == 2 ) for( i = 0; ; i++ ) { 
+				GL_getseg( result, arg[0], &ix, arg[1] ); 
+				if( result[0] == '\0' ) break;
+				}
+		else if( nargs == 1 ) {
+			for( i = 0; ; i++ ) { if( strcmp( GL_getok( arg[0], &ix ), "" ) == 0 ) break; }
+			}	
 		*typ = NUMBER;
 		sprintf( result, "%d", i );
 		return( 0 );

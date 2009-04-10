@@ -24,7 +24,7 @@
   <td align=right>
   <small>
   <a href="../doc/welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
-  Version 2.40 Jan'08
+  Version 2.41 Mar2009
   <td></tr></table>
 </td></tr>
 <td>
@@ -32,12 +32,7 @@
 <br>
 .>>
 
-.TH libploticus 3 "15-JAN-2008   PLOTICUS ploticus.sourceforge.net"
-
-.SH Name
-Libploticus \- C language API library for ploticus
-
-.SH Description
+.TH libploticus_API PL "11-MAR-2009   PL ploticus.sourceforge.net"
 
 .LP
 This simple C language API 
@@ -45,26 +40,19 @@ has all of the funcionality of the
 .ig >>
 <a href="pl.1.html">
 .>>
-\0ploticus program
+\0pl(1) executable
 .ig >>
 </a>
 .>>
 and is similarly covered by the General Public License.
-.LP
-\fBlibploticus\fR is built using \fCMakefile\fR.
-.LP
-.nf
- \0 make clean
- \0 make FPIC=\-fPIC libploticus-so
-.fi
+Build libploticus by making certain settings in the src/Makefile.
 .LP
 Applications linking to \fBlibploticus\fR may need additional libraries
-such as \fCzlib\fR, but this depends on exactly how \fBlibploticus\fR was built.  
-The specifics are noted in \fCMakefile\fR.
+such as \fCzlib\fR, but this depends on exactly how \fBlibploticus\fR was built (see the Makefile).
 The externally visible symbols in \fBlibploticus\fR begin with these prefixes: \fCploticus\fR,
 \fCPL\fR, \fCTDH\fR, \fCDT\fR, and \fCGL\fR.
 .LP
-The header file libploticus.h is required to avoid compiler warnings.
+No header file is required.
 .LP
 All functions return 0 when successful, or a non-zero error code.
 .LP
@@ -89,7 +77,7 @@ Here's a simple example (it may be found in \fC./pltestsuite/api_examp.c\fR)
  \0 int stat;
  \0 char sln[80];
  \0 stat = ploticus_init( "png", "hello.png" );
- \0 stat += ploticus_arg( "\-scale", "0.8" );
+ \0 stat += ploticus_arg( "-scale", "0.8" );
  \0 if( stat != 0 ) { 
  \0	printf( "error in pl setup\\n" ); 
  \0     exit(1); 
@@ -112,8 +100,8 @@ To build:
 .LP
 .nf
  \0 make clean
- \0 make \-f Makefile_api
- \0 make api_test \-f Makefile_api
+ \0 make -f Makefile_api
+ \0 make api_test -f Makefile_api
 .fi
 Then, go to the \fCpltestsuite\fR directory and type: \fC../src/api_test\fR
 
@@ -168,9 +156,9 @@ but before any other ploticus function.
 It may be called as many times as necessary.
 Example: 
 .nf
-  \0 stat = ploticus_arg( "\-debug", "" );
-  \0 stat += ploticus_arg( "\-diagfile", "stdout" );
-  \0 stat += ploticus_arg( "\-scale", "0.8" );
+  \0 stat = ploticus_arg( "-debug", "" );
+  \0 stat += ploticus_arg( "-diagfile", "stdout" );
+  \0 stat += ploticus_arg( "-scale", "0.8" );
   \0 if( stat != 0 ) \fIerror\fR
 .fi
 
@@ -324,7 +312,13 @@ when ploticus was initialized with one of the GD image devices
 </table>
 <br>
 <center>
-Ploticus is hosted at http://ploticus.sourceforge.net <br>
-<img src="http://sourceforge.net/sflogo.php?group_id=38453" width="88" height="31" border="0" alt="SourceForge Logo">
+<table><tr><td>
+Ploticus is hosted at http://ploticus.sourceforge.net</td><td> &nbsp; </td><td>
+<a href="http://sourceforge.net/projects/ploticus"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=38453&type=12" 
+width="120" height="30" border="0" 
+alt="Get ploticus data display engine at SourceForge.net. Fast, secure and Free Open Source software downloads" /></a>
+</td></tr></table>
+
+
 </center>
 .>>

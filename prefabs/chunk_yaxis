@@ -11,6 +11,8 @@
   #ifspec ystubfmt stubformat
   #ifspec ylbldet labeldetails
   #ifspec ygrid grid
+  #ifspec ygridblocks gridblocks
+  #ifspec ygridskip gridskip
   #ifspec ylbldistance labeldistance
   //
   // added 5/25/04 scg

@@ -221,18 +221,18 @@ for( j = 0; j < 2; j++ ) { /* first time - colors; 2nd time, lines */
 			if( PLS.bignumspacer ) rewritenums( pctstr ); /* added 4/5/03 */
 
 			if( lblfld >= 0 ) strcpy( lbl, da( irow, lblfld ) );
-			else if( labels != "" ) GL_getseg( lbl, labels, &ibb, "\n" );
+			else if( labels[0] != '\0' ) GL_getseg( lbl, labels, &ibb, "\n" );
 			else if( lblfmtstring[0] != '\0' ) { /* added scg 8/20/04 */
 				strcpy( buf, lblfmtstring );
-				GL_varsub( buf, "@PCT", pctstr );
+				GL_varsub( buf, "@PCT", pctstr );  /* buf[256] */
 				do_subst( lbl, buf, irow, NORMAL );
 				}
 
-			GL_varsub( lbl, "@PCT", pctstr );
+			GL_varsub( lbl, "@PCT", pctstr );  /* lbl[256] */
 			convertnl( lbl );
 
 			/* allow @field substitutions into url */
-			if( PLS.clickmap && ( mapurl != "" || maplabel != "" )) {
+			if( PLS.clickmap && ( mapurl[0] != '\0' || maplabel[0] != '\0' )) {
 				expandedurl = PL_bigbuf;
 				expandedlabel = &PL_bigbuf[2000];
 				do_subst( expandedurl, mapurl, irow, URL_ENCODED );
@@ -265,14 +265,14 @@ for( j = 0; j < 2; j++ ) { /* first time - colors; 2nd time, lines */
 				else { x1 = labx; x2 = labx + boxwid; }
 				y1 = laby-boxhi; y2 = laby;
 
-				if( labelback != "" ) Ecblock( x1-0.1, y1+(Ecurtextheight*0.6), x2+0.1, y2+Ecurtextheight, labelback, labelbackoutline );
+				if( labelback[0] != '\0' ) Ecblock( x1-0.1, y1+(Ecurtextheight*0.6), x2+0.1, y2+Ecurtextheight, labelback, labelbackoutline );
 
 				textdet( "textdetails", textdetails, &align, &adjx, &adjy, -2,"R", 1.0 );
 				Emov( labx, laby );
 				if( !centerit && x < cx ) Erightjust( lbl );
 				else if( !centerit && x >= cx ) Etext( lbl );
 				else Ecentext( lbl );
-				if( PLS.clickmap && ( mapurl != "" || maplabel != "" )) 
+				if( PLS.clickmap && ( mapurl[0] != '\0' || maplabel[0] != '\0' )) 
 					clickmap_entry( 'r', expandedurl, 0, x1, y1+Ecurtextheight, x2, y2+Ecurtextheight, 1, 0, expandedlabel );
 				linedet( "linedetails", outlinedetails, 0.5 ); /* restore */
 				}
@@ -311,7 +311,7 @@ for( j = 0; j < 2; j++ ) { /* first time - colors; 2nd time, lines */
 
 					Emov( labx, laby );
 					Erightjust( lbl );
-					if( PLS.clickmap && ( mapurl != "" || maplabel != "" ))
+					if( PLS.clickmap && ( mapurl[0] != '\0' || maplabel[0] != '\0' ))
 						clickmap_entry( 'r', expandedurl, 0, labx-boxwid, laby-boxhi+Ecurtextheight, 
 							labx, laby+Ecurtextheight, 1, 0, expandedlabel );
 						
@@ -326,7 +326,7 @@ for( j = 0; j < 2; j++ ) { /* first time - colors; 2nd time, lines */
 							labx+boxwid+0.1, laby+Ecurtextheight, labelback, labelbackoutline );
 					Emov( labx, laby );
 					Etext( lbl );
-					if( PLS.clickmap && ( mapurl != "" || maplabel != "" ))
+					if( PLS.clickmap && ( mapurl[0] != '\0' || maplabel[0] != '\0' ))
 						clickmap_entry( 'r', expandedurl, 0, labx, laby-boxhi+Ecurtextheight, 
 							labx+boxwid, laby+Ecurtextheight, 1, 0, expandedlabel );
 

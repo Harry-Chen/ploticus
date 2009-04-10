@@ -34,10 +34,13 @@ int lvp, first;
 int i, nt, stat, align, result, cluster, dupcount, subdupcount, clustevery, verttext, nrow, realrow;
 int clustermeth, symfield_userange, dupsleg, irow, dorect, rectoutline, flop2, maxdups, doing_alt;
 int xfield, yfield, lblfield, sizefield, symfield;
-char *symbol, *linedetails, *text, *textdetails, *selex, *legendlabel, *xrange, *yrange;
-char *mapurl, *maplabel, *expandedurl, *expandedlabel, *labelword, *altsym, *altwhen;
+char *symbol, *linedetails, *text, *textdetails, *selex, *xrange, *yrange;
+char *mapurl, *maplabel, *expandedurl, *expandedlabel, *labelword, *altsym, *altwhen, *qcolor;
 char buf[512], symcode[80], rhi[40], rlo[40];
 char linedir, reqlinedir;
+char legendlabel[256];
+int colorfield;
+char symtmp[80];
 
 double adjx, adjy, linelen, xloc, yloc, radius, x, y, cx, cy, hlinelen, sizescale;
 double ox[38], oy[38], clusterfact, oldx, oldy, xlo, xhi, ylo, yhi, clusterdiff, ptx, pty, hw, txhi, rectw, recth, vennden;
@@ -48,8 +51,9 @@ TDH_errprog( "pl proc scatterplot" );
 
 /* initialize */
 xfield = -1; yfield = -1;
-symbol = ""; linedetails = ""; text = ""; textdetails = ""; selex = ""; legendlabel = ""; xrange = ""; yrange = "";
+symbol = ""; linedetails = ""; text = ""; textdetails = ""; selex = ""; xrange = ""; yrange = "";
 mapurl = ""; maplabel = ""; altsym = ""; altwhen = "";
+strcpy( legendlabel, "" );
 labelword = "@VAL";
 linelen = -1.0;
 xloc = 0.0; yloc = 0.0;
@@ -59,6 +63,7 @@ clusterfact = 0.01;
 clusterdiff = 0.001;
 lblfield = -1;
 sizefield = -1;
+colorfield = -1;
 symfield = -1;
 cluster = 0;   /* changed and added to "breakers" in docs, scg 5/29/06 */
 verttext = 0; clustevery = 0; clustermeth = 0; dupsleg = 0; symfield_userange = 0; dorect = 0; rectoutline = 0; doing_alt = 0;
@@ -77,6 +82,7 @@ while( 1 ) {
 	else if( strcmp( attr, "yfield" )==0 ) yfield = fref( lineval ) -1;
 	else if( strcmp( attr, "labelfield" )==0 ) lblfield = fref( lineval ) -1;
 	else if( strcmp( attr, "sizefield" )==0 ) sizefield = fref( lineval ) -1;
+	else if( strcmp( attr, "colorfield" )==0 ) colorfield = fref( lineval ) -1;
 	else if( strcmp( attr, "symbol" )==0 ) symbol = lineval;
 	else if( strcmp( attr, "text" )==0 ) text = lineval;
 	else if( strcmp( attr, "textdetails" )==0 ) textdetails = lineval;
@@ -87,7 +93,7 @@ while( 1 ) {
 	else if( strcmp( attr, "clickmaplabel" )==0 ) maplabel = lineval;
         else if( strcmp( attr, "clickmaplabeltext" )==0 ) maplabel = getmultiline( lineval, "get" ); 
 	else if( strcmp( attr, "linelen" )==0 ) {
-		if( lineval == "" ) linelen = -1.0;
+		if( lineval[0] == '\0' ) linelen = -1.0;
 		else	{ linelen = ftokncpy( lineval ); if( PLS.usingcm ) linelen /= 2.54; }
 		}
 	else if( strcmp( attr, "linedir" )==0 ) reqlinedir = lineval[0];
@@ -101,7 +107,7 @@ while( 1 ) {
 		if( Econv_error() ) Eerr( 2395, "invalid ylocation", lineval );
 		}
 	else if( strcmp( attr, "select" )==0 ) selex = lineval;
-	else if( strcmp( attr, "legendlabel" )==0 ) legendlabel = lineval;
+	else if( strcmp( attr, "legendlabel" )==0 ) tokncpy( legendlabel, lineval, 256 );
 	else if( strcmp( attr, "cluster" )==0 ) cluster = getyn( lineval );
 	else if( strcmp( attr, "clusterdiff" )==0 ) { cluster = 1; clusterdiff = ftokncpy( lineval ); }
 	else if( strcmp( attr, "clustermethod" )==0 ) { cluster = 1; clustermeth = lineval[0]; } /* h, v, 2, u, r, ..  */ 
@@ -141,8 +147,8 @@ if( xfield < 0 && yfield < 0 ) return( Eerr( 2205, "Niether xfield nor yfield de
 
 if( lblfield >= 0 ) cluster = 0;  /* added scg 12/21/00 */
 
-if( strcmp( legendlabel, "#usexname" )==0 ) getfname( xfield+1, legendlabel );
-if( strcmp( legendlabel, "#useyname" )==0 ) getfname( yfield+1, legendlabel );
+if( strcmp( legendlabel, "#usexname" )==0 ) getfname( xfield+1, legendlabel ); /* legendlabel[256] */
+if( strcmp( legendlabel, "#useyname" )==0 ) getfname( yfield+1, legendlabel ); /* legendlabel[256] */
 
 if( dorect ) symbol = "";
 
@@ -184,7 +190,6 @@ if( yrange[0] != '\0' ) {
 	if( nt == 2 ) yhi = Econv( Y, rhi );
 	if( Econv_error() ) { Eerr( 3958, "yrange bad format", rhi ); yhi = EDYhi; }
 	}
-
 
 
 
@@ -233,7 +238,7 @@ for( i = 0; i < Nrecords; i++ ) {
 
 
 /* if clustering and not using a label field, sort PLV array */
-if( cluster && lblfield < 0 && sizefield < 0 ) {
+if( cluster && lblfield < 0 && sizefield < 0 && colorfield < 0 ) {
 	if( PLS.debug ) fprintf( PLS.diagfp, "sorting points for scatterplot\n" );
 	qsort( PLV, nrow, sizeof(double)*3, ptcompare );
 	}
@@ -256,7 +261,7 @@ radius = 0.04;
 /* in the following, text must come before symbol.. */
 if( text[0] != '\0' || lblfield >= 0 )  textdet( "textdetails", textdetails, &align, &adjx, &adjy, -3, "R", 1.0 );
 	
-if( symbol != "" ) symdet( "symbol", symbol, symcode, &radius );
+if( symbol[0] != '\0' ) symdet( "symbol", symbol, symcode, &radius );
 	
 if( linelen > 0.0 || rectoutline )  linedet( "linedetails", linedetails, 0.5 );
 	
@@ -265,6 +270,8 @@ cy = Ecurtextheight * 0.3;
 hlinelen = linelen * 0.5;
 txhi = cy + cy;
 if( text[0] != '\0' ) hw = strlen( text ) * Ecurtextwidth * 0.5;
+
+if( colorfield >= 0 ) strcpy( symtmp, symcode );
 
 /* now display points.. */
 for( irow = 0; irow < nrow; irow++ ) {
@@ -317,7 +324,7 @@ for( irow = 0; irow < nrow; irow++ ) {
 		}
 
 	/* allow @field substitutions into url */
-        if( PLS.clickmap && ( mapurl != "" || maplabel != "" )) {
+        if( PLS.clickmap && ( mapurl[0] != '\0' || maplabel[0] != '\0' )) {
 		expandedurl = &PL_bigbuf[0];
 		expandedlabel = &PL_bigbuf[2000];
 		do_subst( expandedurl, mapurl, realrow, URL_ENCODED );
@@ -330,26 +337,33 @@ for( irow = 0; irow < nrow; irow++ ) {
 	/* text can be combined with mark if text and symbol both specified */
 
 	/* symbol or rectangle.. */
-	if( symbol != "" || dorect || ( text[0] == '\0' && linelen <= 0.0 && lblfield < 0 ) ) {
+	if( symbol[0] != '\0' || dorect || ( text[0] == '\0' && linelen <= 0.0 && lblfield < 0 ) ) {
 		if( symfield >= 0 ) {  /* look it up in legend list.. */
 			if( symfield_userange ) symbol = PL_get_legent_rg( atof( da( realrow, symfield ) ) );
                 	else symbol = PL_get_legent( da( realrow, symfield ));
-			if( symbol == "" ) Eerr( 7429, "warning: symfield: no matching legend entry tag found", da( realrow, symfield ) );
+			if( symbol[0] == '\0' ) Eerr( 7429, "warning: symfield: no matching legend entry tag found", da( realrow, symfield ) );
 			if( !dorect ) symdet( "symfield", symbol, symcode, &radius );
 			}
 		if( dupsleg ) {  /* look it up in legend list.. */
                 	symbol = PL_get_legent_rg( (double)dupcount+1 );
-			if( symbol == "" ) Eerr( 7692, "warning: dupsleg: no appropriate legend entry tag\n", da( realrow, symfield ) );
+			if( symbol[0] == '\0' ) Eerr( 7692, "warning: dupsleg: no appropriate legend entry tag\n", da( realrow, symfield ) );
 			if( !dorect ) symdet( "symfield", symbol, symcode, &radius );
 			/* note: currently all marks will be rendered; the last one will be on "top"  */
 			}
-		if( sizefield >= 0 ) 
-			radius = sqrt((atof( da( realrow, sizefield ) ) * sizescale)/3.1415927);
-			         /* sizefield scales up the AREA of symbol, not the diameter */
+
+		if( sizefield >= 0 ) radius = sqrt((atof( da( realrow, sizefield ) ) * sizescale)/3.1415927); /* scale the area, not the diameter */
+
+		if( colorfield >= 0 ) {
+			qcolor = da( realrow, colorfield );
+			sprintf( symcode, symtmp, qcolor );  /* for filled.. build new symcode (symtmp contains %s) */
+			Ecolor( qcolor ); /* for symbols made up of lines.. */
+			}
+
 		if( dorect ) {
 			char *color;
 			color = ""; /* added scg 9/1/05 - heatmap bug */
 			if( symfield >=0 || dupsleg ) color = symbol; /* was: sscanf( symbol, "%s", color ); // strip off any trailing space */
+			if( colorfield >= 0 ) color = qcolor;
 			Ecblock( x-rectw, y-recth, x+rectw, y+recth, color, rectoutline );
 			symbol = "";
 			}
@@ -373,7 +387,7 @@ for( irow = 0; irow < nrow; irow++ ) {
 			if( doing_alt == 1 ) symdet( "symbol", symbol, symcode, &radius );  /* restore */
 			}
 
-		if( PLS.clickmap && (mapurl != "" || maplabel != "" )) {
+		if( PLS.clickmap && (mapurl[0] != '\0' || maplabel[0] != '\0' )) {
 			if( dorect ) clickmap_entry( 'r', expandedurl, 0, x-rectw, y-recth, x+rectw, y+recth, 0, 0, expandedlabel );
 			else clickmap_entry( 'r', expandedurl, 0, x-radius, y-radius, x+radius, y+radius, 0, 0, expandedlabel );
 			}
@@ -382,37 +396,39 @@ for( irow = 0; irow < nrow; irow++ ) {
 
 	/* text */
 	if( text[0] != '\0' ) {
-		if( symbol != "" )  /* set text color etc... */
+		if( symbol[0] != '\0' )  /* set text color etc... */
 			textdet( "textdetails", textdetails, &align, &adjx, &adjy, -3, "R", 1.0 );
 		if( sizefield >= 0 ) Etextsize( (int) (atof( da( realrow, sizefield ) ) * sizescale) );
+		if( colorfield >= 0 ) Ecolor( da( realrow, colorfield ) );
 		if( verttext ) { ptx = (x+cy)+adjx; pty = y; } /* cy puts midheight of character on point */
 		else { ptx = x+adjx; pty = (y-cy)+adjy; }
 
-		convertnl( text );
+		convertnl( text );  /* caution (*text) but ok since result is always smaller than original */
 		Emov( ptx, pty );
 		if( align == '?' ) Edotext( text, 'C' );
 		else Edotext( text, align );
-		if( symbol != ""  )  /* restore symbol color etc... */
+		if( symbol[0] != '\0'  )  /* restore symbol color etc... */
 			symdet( "symbol", symbol, symcode, &radius );
 
-		if( PLS.clickmap && ( mapurl != "" || maplabel != "" )) 
+		if( PLS.clickmap && ( mapurl[0] != '\0' || maplabel[0] != '\0' )) 
 			clickmap_entry( 'r', expandedurl, 0, ptx-hw, pty, x+hw, y+txhi, 0, 0, expandedlabel );
 		}
 
 	/* label from data */
 	else if( lblfield  >= 0 ) {
 		if( sizefield >= 0 ) Etextsize( (int) (atof( da( realrow, sizefield ) ) * sizescale) );
+		if( colorfield >= 0 ) Ecolor( da( realrow, colorfield ) );
 		if( verttext) { ptx = (x+cy)+adjx; pty = y+adjy; } /* cy puts midheight of character on point */
 		else { ptx = x+adjx; pty = (y-cy)+adjy; } 
 
 		strcpy( buf, labelword );
-		GL_varsub( buf, "@VAL", da( realrow, lblfield ) );
+		GL_varsub( buf, "@VAL", da( realrow, lblfield ) ); /* buf[512] */
 
 		Emov( ptx, pty );
 		if( align == '?' ) Edotext( buf, 'C' );
 		else Edotext( buf, align );
 
-		if( PLS.clickmap && ( mapurl != "" || maplabel != "" )) {
+		if( PLS.clickmap && ( mapurl[0] != '\0' || maplabel[0] != '\0' )) {
 			hw = strlen( buf ) * Ecurtextwidth * 0.5;
 			if( GL_member( align, "C?" ))clickmap_entry( 'r', expandedurl, 0, ptx-hw, pty, x+hw, y+txhi, 0, 0, expandedlabel );
 			else if( align == 'L' ) clickmap_entry( 'r', expandedurl, 0, ptx, pty, x+(hw*2.0), y+txhi, 0, 0, expandedlabel );
@@ -424,6 +440,7 @@ for( irow = 0; irow < nrow; irow++ ) {
 	else if( linelen > 0.0 ) {
 		if( sizefield >= 0 ) hlinelen = linelen * 0.5 * atof( da( realrow, sizefield ) ); 
 					/* sizefield acts as a scale factor to linelen */
+		if( colorfield >= 0 ) Ecolor( da( realrow, colorfield ) );
 
 		if( reqlinedir != '\0' ) linedir = reqlinedir;
 		else if( xfield >= 0 && yfield >= 0 ) linedir = 'h'; 	/* arbitrary .. scg 5/16/03 */
@@ -442,10 +459,10 @@ if( verttext ) Etextdir( 0 );
 if( legendlabel[0] != '\0' ) {
 	char s[40];
 	sprintf( s, "%d", nrow );
-	GL_varsub( legendlabel, "@NVALUES", s );
+	GL_varsub( legendlabel, "@NVALUES", s ); /* legendlabel[256] */
 	if( linelen <= 0.0 && lblfield < 0 && text[0] == '\0' )
 		PL_add_legent( LEGEND_SYMBOL, legendlabel, "", symbol, "", "" );
-	else if( symbol != "" && text[0] != '\0' )
+	else if( symbol[0] != '\0' && text[0] != '\0' )
 		PL_add_legent( LEGEND_SYMBOL+LEGEND_TEXT, legendlabel, "", text, textdetails, symbol );
 	else if( linelen > 0.0 ) {
 		char dirstr[8];
