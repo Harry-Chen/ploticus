@@ -70,7 +70,7 @@ while( 1 ) {
 	else if( strcmp( attr, "resolution" )==0 ) resolution = ftokncpy( lineval );
 	else if( strcmp( attr, "xsort" )==0 ) xsort = getyn( lineval );
 	else if( strcmp( attr, "linedetails" )==0 ) linedetails = lineval;
-	else if( strcmp( attr, "legendlabel" )==0 ) tokncpy( legendlabel, lineval, 256 );
+	else if( strcmp( attr, "legendlabel" )==0 ) { strncpy( legendlabel, lineval, 255 ); legendlabel[255] = '\0'; }
 	else if( strcmp( attr, "select" )==0 ) selectex = lineval;
 	else if( strcmp( attr, "linerange" )==0 ) {
 		if( lineval[0] != '\0' ) linerangegiven = 1;

@@ -107,7 +107,7 @@ while( 1 ) {
 		if( Econv_error() ) Eerr( 2395, "invalid ylocation", lineval );
 		}
 	else if( strcmp( attr, "select" )==0 ) selex = lineval;
-	else if( strcmp( attr, "legendlabel" )==0 ) tokncpy( legendlabel, lineval, 256 );
+	else if( strcmp( attr, "legendlabel" )==0 ) { strncpy( legendlabel, lineval, 255 ); legendlabel[255] = '\0'; }
 	else if( strcmp( attr, "cluster" )==0 ) cluster = getyn( lineval );
 	else if( strcmp( attr, "clusterdiff" )==0 ) { cluster = 1; clusterdiff = ftokncpy( lineval ); }
 	else if( strcmp( attr, "clustermethod" )==0 ) { cluster = 1; clustermeth = lineval[0]; } /* h, v, 2, u, r, ..  */ 

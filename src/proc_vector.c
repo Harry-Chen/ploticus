@@ -84,7 +84,7 @@ while( 1 ) {
 	else if( strcmp( attr, "arrowheadwidth" )==0 ) ahwid = ftokncpy( lineval );
 	else if( strcmp( attr, "arrowheadcolor" )==0 ) acolor = lineval;
 	else if( strcmp( attr, "select" )==0 ) selex = lineval;
-	else if( strcmp( attr, "legendlabel" )==0 ) tokncpy( legendlabel, lineval, 256 );
+	else if( strcmp( attr, "legendlabel" )==0 ) { strncpy( legendlabel, lineval, 255 ); legendlabel[255] = '\0'; }
 	else if( strcmp( attr, "taillen" )==0 ) taillen = ftokncpy( lineval );
 	else if( strcmp( attr, "clip" )==0 ) clip = getyn( lineval );
 	else if( strcmp( attr, "type" )==0 ) type = lineval[0];

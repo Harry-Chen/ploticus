@@ -190,7 +190,7 @@ while( 1 ) {
 	else if( strncmp( attr, "labelrot", 8 )==0 ) labelrot = itokncpy( lineval );
 	else if( strcmp( attr, "select" )==0 ) selectex = lineval;
 	else if( strcmp( attr, "labelselect" )==0 ) labelselectex = lineval;
-	else if( strcmp( attr, "legendlabel" )==0 ) tokncpy( legendlabel, lineval, 256 );
+	else if( strcmp( attr, "legendlabel" )==0 ) { strncpy( legendlabel, lineval, 255 ); legendlabel[255] = '\0'; }
 	else if( strcmp( attr, "labelpos" )==0 ) lblpos = lineval;
 	else if( strcmp( attr, "barwidthfield" )==0 ) barwidthfield = fref( lineval ) -1;
 	else if( strcmp( attr, "clickmapurl" )==0 ) mapurl = lineval; 

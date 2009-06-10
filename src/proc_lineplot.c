@@ -76,7 +76,7 @@ while( 1 ) {
 		convertnl( linelabel );   /* linelabel[256] */
 		}
 	else if( strcmp( attr, "labeldetails" )==0 ) labeldetails = lineval;
-	else if( strcmp( attr, "legendlabel" )==0 ) tokncpy( legendlabel, lineval, 256 );
+	else if( strcmp( attr, "legendlabel" )==0 ) { strncpy( legendlabel, lineval, 255 ); legendlabel[255] = '\0'; }
 	else if( strcmp( attr, "linerange" )==0 ) getrange( lineval, &linestart, &linestop, 'x', EDXlo, EDXhi );
 	else if( strcmp( attr, "xstart" )==0 ) { linxstart = Econv( X, lineval ); if( Econv_error() ) linxstart = EDXlo; }
 	else if( strcmp( attr, "firstpoint" )==0 ) {

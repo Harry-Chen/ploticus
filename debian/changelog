@@ -1,3 +1,11 @@
+ploticus (2.41-2) unstable; urgency=low
+
+  * Fix bashism in run_script_test again
+    and push upstream this time Closes: #530163
+  * Upstream Bugfix: for the 'legendlabel' attribute
+
+ -- Colin Tuckley <colint@debian.org>  Wed, 10 Jun 2009 20:15:28 +0100
+
 ploticus (2.41-1) unstable; urgency=low
 
   * New Upstream version.
