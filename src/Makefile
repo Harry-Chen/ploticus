@@ -232,7 +232,7 @@ libploticus-static: $(OBJ) api.o gd18files $(XOBJ)
 # this one needs work... suggestions welcome
 libploticus-so: $(OBJ) api.o gd18files $(XOBJ)
 	$(RMCOM) libploticus.$(SHARELIBEXT)
-	$(CC) $(SHAREFLAG) -o libploticus.$(SHARELIBEXT) $(OBJ) api.o devstuff.o grgd.o $(XOBJ)
+	$(CC) $(SHAREFLAG) -o libploticus.$(SHARELIBEXT) $(OBJ) api.o devstuff.o grgd.o $(XOBJ) $(LIBS) $(GD18LIBS)
 
 apitest: apitest.o
 	echo "note: you may need to edit Makefile_api to specify additional libs for the following command.."

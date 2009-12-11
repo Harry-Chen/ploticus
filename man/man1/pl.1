@@ -12,7 +12,7 @@
         H4 { font-size: small; font-family: arial,helvetica,sans-serif; }
 -->
 </STYLE>
-<title>ploticus: pl(1)</title>
+<title>ploticus: ploticus(1)</title>
 <body bgcolor=D0D0EE vlink=0000FF>
 <br>
 <br>
@@ -20,7 +20,7 @@
 <table cellpadding=2 bgcolor=FFFFFF width=550><tr>
 <td>
   <table cellpadding=2 width=550><tr>
-  <td><br><h2>pl(1)</h2></td>
+  <td><br><h2>ploticus(1)</h2></td>
   <td align=right>
   <small>
   <a href="../doc/welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
@@ -32,17 +32,17 @@
 <br>
 .>>
 
-.TH pl(1) PL "11-MAR-2009   PL ploticus.sourceforge.net"
+.TH ploticus 1 "11-MAR-2009   PLOTICUS ploticus.sourceforge.net"
 
 .SH Name
-pl
+ploticus \- data display package
 
 .SH Synopsis
-\fCpl  -prefab \fIprefabname\fC   \fIparm=value\fC ..  [\fI-options\fR]
+\fCploticus  \-prefab \fIprefabname\fC   \fIparm=value\fC ..  [\fI-options\fR]
 .br
 \0.. OR ..
 .br
-\fCpl \fIscriptfile\fC  [\fI-options\fC]  
+\fCploticus \fIscriptfile\fC  [\fI-options\fC]  
 
 .ig >>
 <br><br><br>
@@ -83,7 +83,7 @@ pl
 <br><br><br>
 .>>
 .SH Description
-\fBpl\fR is the primary component of the 
+\fBploticus\fR is the primary component of the 
 .ig >>
 <a href="http://ploticus.sourceforge.net">
 .>>
@@ -92,7 +92,7 @@ pl
 </a>
 .>>
 .LP
-\fBpl\fR is a program that produces plots and charts from data, and 
+\fBploticus\fR is a program that produces plots and charts from data, and 
 produces results that can be viewed on web pages, paper, slides,
 or interactively on the screen.  Standard types of plots may be
 done using
@@ -112,7 +112,7 @@ done using
 </a>
 .>>
 may be supplied for greater flexibility and customization.
-\fBpl\fR may be executed from the command line or 
+\fBploticus\fR may be executed from the command line or 
 .ig >>
 <a href="cgi.html">
 .>>
@@ -436,12 +436,12 @@ By using \fC-drawdump\fR and \fC-drawdumpa\fR you can easily
 .ig >>
 <a href="prefabs.html#drawdump">
 .>>
-\0overlay or combine results from separate pl runs.
+\0overlay or combine results from separate ploticus runs.
 .ig >>
 </a>
 .>>
 The drawdump file can be rendered later in any desired format, using this command:
-\fCpl -prefab draw dumpfile=\fIfilename\fR 
+\fCploticus \-prefab draw dumpfile=\fIfilename\fR 
 .ig >>
 &nbsp; &nbsp;
 .>>
@@ -584,19 +584,19 @@ On other output devices this option does nothing.
 </a>
 .>>
 0,0 is the lower left corner.
-If -pagesize is not specified, the default size will be 8" x 8".
-Size is set before any drawing takes place and is unaffected by the -scale option.
+If \-pagesize is not specified, the default size will be 8" x 8".
+Size is set before any drawing takes place and is unaffected by the \-scale option.
 .IP
 When rendering PNG/GIF/JPEG images, this option determines amount of internal memory allocation for accommodating the image.
 The result can never be bigger than this size, and any drawing outsize the bounds will not be visible.
 \fBTo create PNG/GIF/JPEG images larger than 8" x 8", this option MUST be specified to set a bigger size.\fR
-Cropping options (below) can be used along with -pagesize as long as they result in a smaller rectangle
+Cropping options (below) can be used along with \-pagesize as long as they result in a smaller rectangle
 than the pagesize; they take effect after all drawing has been completed.
 .IP
 \fB-pagesize\fR has no effect with EPS or paginated PostScript results (the PostScript
 BoundingBox will be determined by the extent of the graphic).
 .IP
-Example: \fC-pagesize 7,3\fR
+Example: \fC\-pagesize 7,3\fR
 
 .ig >>
 <br><br>
@@ -663,7 +663,7 @@ There may be no spaces in the \fIleft,bottom,right,top\fR specification.
 Cropping takes place after design is rendered and does not
 affect coordinate locations.
 .br
-Example: \fC-croprel 0,-0.1,0,0.1\fR
+Example: \fC-croprel 0,\-0.1,0,0.1\fR
 
 .ig >>
 <br><br>
@@ -678,7 +678,7 @@ Example: \fC-croprel 0,-0.1,0,0.1\fR
 .IP \0
 If specified, result PNG/GIF/JPG image will be created at exactly this width and height in pixels.
 Does not interact with scaling or cropping... user is responsible for ensuring that content fits appropriately into the specified size.
-User is also responsible for setting -pagesize appropriately for larger images.
+User is also responsible for setting \-pagesize appropriately for larger images.
 New in 2.40
 
 .ig >>
@@ -789,7 +789,7 @@ sets the background color to \fIcolor\fR.
 .IP \0
 Use centimeters as your absolute units, instead of inches.
 On the command line this must appear to the left of any arguments dealing with
-absolute unit values, such as -pagesize.
+absolute unit values, such as \-pagesize.
 Centimeter absolute units can also be set via
 .ig >>
 <a href="../doc/settings.html">
@@ -1057,7 +1057,7 @@ The output file will automatically be
 included in the \fIcommand\fR.  For example, if a GIF file is being
 generated you might use this to invoke the xv utility: \fC-viewer xv\fR.  
 If PostScript is being generated you could use something like this to
-invoke the ghostview utility: \fC-viewer "gv -magstep -1"\fR.
+invoke the ghostview utility: \fC-viewer "gv \-magstep \-1"\fR.
 The given command must be available on your system and locatable in
 your command search path.
 This option may not be used with \fC-o stdout\fR.
@@ -1289,32 +1289,32 @@ The following example uses the
 </a>
 .>>
 .IP \0
-\fCpl -prefab scat -png datafile=results.dat x=2 y=3\fR
+\fCploticus \-prefab scat \-png datafile=results.dat x=2 y=3\fR
 
 .LP
 The following examples assume
 that you have a script file called \fClineplot1.p\fR.
 .IP \0
- \fCpl -x lineplot1.p\fR = view on X11 screen
+ \fCploticus \-x lineplot1.p\fR = view on X11 screen
 .IP
- \fCpl -png lineplot1.p\fR = create PNG image lineplot1.png
+ \fCploticus \-png lineplot1.p\fR = create PNG image lineplot1.png
 .IP
- \fCpl -gif lineplot1.p -o stdout\fR = create GIF image on standard output
+ \fCploticus \-gif lineplot1.p \-o stdout\fR = create GIF image on standard output
 .IP
- \fCpl -gif lineplot1.p -viewer xv\fR = produce GIF and view using xv 
+ \fCploticus \-gif lineplot1.p \-viewer xv\fR = produce GIF and view using xv 
 (assuming xv image viewer is available on your system).
 .IP
- \fCpl -eps lineplot1.p\fR = produce EPS file lineplot1.eps
+ \fCploticus \-eps lineplot1.p\fR = produce EPS file lineplot1.eps
 .IP
- \fCpl -eps lineplot1.p -viewer gv\fR = produce EPS and view using gv 
+ \fCploticus \-eps lineplot1.p \-viewer gv\fR = produce EPS and view using gv 
 (that's ghostview, assuming it is available on your system).
 .IP
- \fCpl -eps lineplot1.p -o lineplot.eps\fR = produce EPS into file lineplot.eps
+ \fCploticus \-eps lineplot1.p \-o lineplot.eps\fR = produce EPS into file lineplot.eps
 .IP
- \fCpl -ps lineplot1.p | lp\fR = produce paginated postscript and send to
+ \fCploticus \-ps lineplot1.p | lp\fR = produce paginated postscript and send to
 unix lp print spooler.
 .IP
- \fCpl -ps lineplot1.p -veiwer gv\fR = produce paginated postscript
+ \fCploticus \-ps lineplot1.p \-veiwer gv\fR = produce paginated postscript
 and view using ghostview.
 
 .ig >>
@@ -1362,8 +1362,8 @@ the ploticus ./prefabs subdirectory.
 \fBLC_CTYPE\fR, \fBLC_COLLATE\fR, \fBLANG\fR
 .IP \0
 Locale support.  Thanks to Oleg Bartunov oleg@sai.msu.su
-for contributing this.  \fBpl\fR must be 
-built with -DLOCALE for this to work.
+for contributing this.  \fBploticus\fR must be 
+built with \-DLOCALE for this to work.
 
 
 .ig >>

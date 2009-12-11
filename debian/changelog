@@ -1,3 +1,12 @@
+ploticus (2.41-3) unstable; urgency=low
+
+  * Fix manpages.
+  * Upstream Bugfix: fix problems building apitest.
+  * Bump Standards-Version to 3.8.3 (No changes required).
+  * Fix unresolved symbols in shared libraries Closes: #558949.
+
+ -- Colin Tuckley <colint@debian.org>  Fri, 11 Dec 2009 23:31:55 +0000
+
 ploticus (2.41-2) unstable; urgency=low
 
   * Fix bashism in run_script_test again

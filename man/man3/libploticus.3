@@ -32,7 +32,12 @@
 <br>
 .>>
 
-.TH libploticus_API PL "11-MAR-2009   PL ploticus.sourceforge.net"
+.TH libploticus 3 "11-MAR-2009   PLOTICUS ploticus.sourceforge.net"
+
+.SH Name
+Libploticus \- C language API library for ploticus
+
+.SH Description
 
 .LP
 This simple C language API 
@@ -40,19 +45,26 @@ has all of the funcionality of the
 .ig >>
 <a href="pl.1.html">
 .>>
-\0pl(1) executable
+\0ploticus program
 .ig >>
 </a>
 .>>
 and is similarly covered by the General Public License.
-Build libploticus by making certain settings in the src/Makefile.
+.LP
+\fBlibploticus\fR is built using \fCMakefile\fR.
+.LP
+.nf
+ \0 make clean
+ \0 make FPIC=\-fPIC libploticus-so
+.fi
 .LP
 Applications linking to \fBlibploticus\fR may need additional libraries
-such as \fCzlib\fR, but this depends on exactly how \fBlibploticus\fR was built (see the Makefile).
+such as \fCzlib\fR, but this depends on exactly how \fBlibploticus\fR was built.
+The specifics are noted in \fCMakefile\fR.
 The externally visible symbols in \fBlibploticus\fR begin with these prefixes: \fCploticus\fR,
 \fCPL\fR, \fCTDH\fR, \fCDT\fR, and \fCGL\fR.
 .LP
-No header file is required.
+The header file libploticus.h is required to avoid compiler warnings.
 .LP
 All functions return 0 when successful, or a non-zero error code.
 .LP
@@ -77,9 +89,9 @@ Here's a simple example (it may be found in \fC./pltestsuite/api_examp.c\fR)
  \0 int stat;
  \0 char sln[80];
  \0 stat = ploticus_init( "png", "hello.png" );
- \0 stat += ploticus_arg( "-scale", "0.8" );
+ \0 stat += ploticus_arg( "\-scale", "0.8" );
  \0 if( stat != 0 ) { 
- \0	printf( "error in pl setup\\n" ); 
+ \0	printf( "error in ploticus setup\\n" ); 
  \0     exit(1); 
  \0     }
  \0 strcpy( sln, "#proc annotate" ); ploticus_execline( sln );
@@ -100,8 +112,8 @@ To build:
 .LP
 .nf
  \0 make clean
- \0 make -f Makefile_api
- \0 make api_test -f Makefile_api
+ \0 make \-f Makefile_api
+ \0 make api_test \-f Makefile_api
 .fi
 Then, go to the \fCpltestsuite\fR directory and type: \fC../src/api_test\fR
 
@@ -156,9 +168,9 @@ but before any other ploticus function.
 It may be called as many times as necessary.
 Example: 
 .nf
-  \0 stat = ploticus_arg( "-debug", "" );
-  \0 stat += ploticus_arg( "-diagfile", "stdout" );
-  \0 stat += ploticus_arg( "-scale", "0.8" );
+  \0 stat = ploticus_arg( "\-debug", "" );
+  \0 stat += ploticus_arg( "\-diagfile", "stdout" );
+  \0 stat += ploticus_arg( "\-scale", "0.8" );
   \0 if( stat != 0 ) \fIerror\fR
 .fi
 
