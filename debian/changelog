@@ -1,3 +1,11 @@
+ploticus (2.41-3.1) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Fix "FTBFS Please Build-Depends on libjpeg-dev, not libjpeg62-dev":
+    do as the bug report requests (closes: #635488).
+
+ -- gregor herrmann <gregoa@debian.org>  Tue, 13 Sep 2011 18:04:51 +0200
+
 ploticus (2.41-3) unstable; urgency=low
 
   * Fix manpages.
