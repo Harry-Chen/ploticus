@@ -3,8 +3,8 @@ Section: misc
 Priority: optional
 Maintainer: Colin Tuckley <colint@debian.org>
 Homepage: http://ploticus.sourceforge.net
-Build-Depends: debhelper (>= 5.0.0), zlib1g-dev, libgd2-noxpm-dev, libjpeg-dev, libfreetype6-dev, libx11-dev, x11proto-core-dev, libpng12-dev
-Standards-Version: 3.8.3
+Build-Depends: debhelper (>= 5.0.0), zlib1g-dev, libgd2-noxpm-dev, libjpeg-dev, libfreetype6-dev, libx11-dev, x11proto-core-dev, libpng-dev
+Standards-Version: 3.9.3
 
 Package: ploticus
 Section: misc
@@ -34,7 +34,7 @@ Description: script driven business graphics package
 Package: libploticus0
 Section: libs
 Architecture: any
-Depends: ${shlibs:Depends}
+Depends: ${misc:Depends}, ${shlibs:Depends}
 Description: script driven business graphics library
  libploticus is not a function or mathematical plotting package like
  gnuplot, nor would it be a good choice for applications where
@@ -52,7 +52,7 @@ Description: script driven business graphics library
 Package: libploticus0-dev
 Section: libdevel
 Architecture: any
-Depends: libploticus0 (= ${binary:Version})
+Depends: ${misc:Depends}, libploticus0 (= ${binary:Version})
 Description: Development files for the ploticus library
  libploticus is not a function or mathematical plotting package like
  gnuplot, nor would it be a good choice for applications where

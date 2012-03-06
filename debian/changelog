@@ -1,3 +1,16 @@
+ploticus (2.41-4) unstable; urgency=low
+
+  * Incorporate the NMU (2.41-3.1)
+  * Fix lintian warnings for:
+      Add ${misc:Depends} to libploticus0[-dev]'s dependencies
+      Add build-arch and build-indep to debian/rules
+  * Add a new debian/source/format file
+  * Bump Standards-Version to 3.9.3 (No changes required).
+  * Fix "Please Build-Depends on libpng-dev, change from libpng12-dev"
+      do as the bug report requests (closes: #662468).
+
+ -- Colin Tuckley <colint@debian.org>  Tue, 06 Mar 2012 21:03:31 +0000
+
 ploticus (2.41-3.1) unstable; urgency=low
 
   * Non-maintainer upload.

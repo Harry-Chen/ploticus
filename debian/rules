@@ -47,6 +47,10 @@ install: build
 
 	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp
 
+build-arch: build
+
+build-indep: build
+
 # Build architecture-independent files here.
 binary-indep: build install
 # We have nothing to do by default.
