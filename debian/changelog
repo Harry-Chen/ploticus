@@ -1,3 +1,10 @@
+ploticus (2.41-5) unstable; urgency=low
+
+  * Upstream Bugfix: heatmap prefab wasn't obeying the legend=no parameter
+  * Upstream Bugfix: fixes to the error bars in chron prefab
+
+ -- Colin Tuckley <colint@debian.org>  Tue, 12 Jun 2012 21:03:31 +0100
+
 ploticus (2.41-4) unstable; urgency=low
 
   * Incorporate the NMU (2.41-3.1)

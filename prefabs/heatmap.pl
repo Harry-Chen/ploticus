@@ -212,9 +212,10 @@ areacolor: @zerocolor
   #include $chunk_doheatmap
 #endif
 
-
-#setifnotgiven legend = "max+0.7 min+0.8"
-#proc legend
+#if @legend != no
+ // legend != no added scg 2/10/10
+ #setifnotgiven legend = "max+0.7 min+0.8"
+ #proc legend
   location: @legend
   reverseorder: @reverseleg
   #ifspec legendfmt format
@@ -226,7 +227,8 @@ areacolor: @zerocolor
   #ifspec legframe frame
   #ifspec legtextdet textdetails
 
-#endproc
+ #endproc
+#endif
 
 
 //// title - added scg 8/8/05
