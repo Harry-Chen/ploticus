@@ -1,5 +1,5 @@
 /* ======================================================= *
- * Copyright 1998-2008 Stephen C. Grubb                    *
+ * Copyright 1998-2009 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */
@@ -30,7 +30,7 @@ fprintf( PLS.diagfp, "ploticus %s (win32).", PLVERSION );
 fprintf( PLS.diagfp, "ploticus %s (unix).", PLVERSION );
 #endif
 fprintf( PLS.diagfp, "  %s\n", outputformats );
-fprintf( PLS.diagfp, "Copyright 1998-2008 Steve Grubb, http://ploticus.sourceforge.net\n\n" );
+fprintf( PLS.diagfp, "Copyright 1998-2009 Steve Grubb, http://ploticus.sourceforge.net\n\n" );
 
 if( longmsg ) fprintf( PLS.diagfp, "Please see the Copyright file or web site for additional credits and information.\n\
 \n\
@@ -304,7 +304,7 @@ exit( 0 );
 }
 
 /* ======================================================= *
- * Copyright 1998-2008 Stephen C. Grubb                    *
+ * Copyright 1998-2009 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */

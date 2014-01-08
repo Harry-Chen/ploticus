@@ -11,7 +11,7 @@
 
 #include "pl.h"
 
-extern double GL_ttest();
+extern double GL_ttest( );
 
 int
 PLP_pvalue( )

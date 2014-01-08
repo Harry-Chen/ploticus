@@ -14,7 +14,7 @@ extern char *GL_getok();
 extern int TDH_err();
 
 /* Data array size */
-#define MAXITEMS 80	/* max number of fields per record */
+#define MAXITEMS 128    /* max number of fields per record (was 80, raised scg 2/21/13) */
 #define DATAMAXLEN 256  /* max length of one field - should be same value as VARMAXLEN */
 
 /* Variables list */

@@ -28,7 +28,6 @@ static char Wildcard1 = '?';
 static int Maxlen = 99999;
 static char Member_nullstring[10] = "";
 
-
 /* ================================= */
 int
 GL_initstatic()
@@ -77,7 +76,6 @@ return( 0 );
 }
 
 
-
 /* ============================================= */
 /* GETOK - get next whitespace-delimited token */
  
@@ -98,6 +96,18 @@ for( n=0;
                 Gettok_buf[n++] = string[(*index)++] )  ;
 Gettok_buf[n] = '\0' ;
 return( Gettok_buf );
+}
+
+/* ====================================================================== */
+/* MEMBER - returns char position if character c is a member of string s, 
+		0 otherwise. Char positions start with 1 for this purpose.  */
+int
+GL_member( c, s )
+char c, s[];
+{
+int i, len;
+for( i = 0, len = strlen( s ); i < len; i++ ) if( s[i] == c ) return( i+1 );
+return( 0 );
 }
 
 /* ===================================================================== */
@@ -144,17 +154,6 @@ return( 0 );
 }
 
 
-/* ====================================================================== */
-/* MEMBER - returns char position if character c is a member of string s, 
-		0 otherwise. Char positions start with 1 for this purpose.  */
-int
-GL_member( c, s )
-char c, s[];
-{
-int i, len;
-for( i = 0, len = strlen( s ); i < len; i++ ) if( s[i] == c ) return( i+1 );
-return( 0 );
-}
 
 /* ==================================================================== */
 /* MEMBER_NULLMODE - set a special mode for the benefit of shsql, to consider
@@ -709,11 +708,15 @@ int
 GL_changechars( clist, s, newchar )
 char *clist, *s, *newchar;
 {
+int i, special;
 
-int i, len;
+special = 0;
+if( strcmp( clist, "not_alnum" )==0 ) special = 1;
 
-for( i = 0, len = strlen( s ); i < len; i++ ) {
-	if( GL_member( s[i], clist )) s[i] = newchar[0];
+if( newchar[0] == '\0' ) return( 1 );
+for( i = 0; s[i] != '\0'; i++ ) {
+	if( special && !isalnum( (int)s[i] )) s[i] = newchar[0];
+	else if( !special && GL_member( s[i], clist )) s[i] = newchar[0];
 	}
 return( 0 );
 }
@@ -726,17 +729,17 @@ int
 GL_deletechars( clist, s )
 char *clist, *s;
 {
+int i, j, special;
 
-int i;
+special = 0;
+if( strcmp( clist, "not_alnum" )==0 ) special = 1;
 
-for( i = 0; ; ) {
-	if( s[i] == '\0' ) break;
-	if( GL_member( s[i], clist )) {
-		strcpy( &s[i], &s[i+1] );
-		continue;
-		}
-	else i++;
+for( i = 0, j = 0; s[i] != '\0';  ) {
+	if( special && !isalnum( (int)s[i] )) i++; 
+	else if( !special && GL_member( s[i], clist )) i++; 
+	else s[j++] = s[i++];
 	}
+s[j] = '\0';
 return( 0 );
 }
 /* ======================================================================== */

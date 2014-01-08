@@ -35,8 +35,9 @@
 #  include "zlib.h"
 #endif
 
-extern int TDH_err(), GL_member(), PLG_xrgb_to_rgb(), GL_goodnum(), PLG_colorname_to_rgb(), PL_clickmap_out();
+extern int TDH_err(), PLG_xrgb_to_rgb(), PLG_colorname_to_rgb(), PL_clickmap_out();
 extern int atoi(), chmod(), unlink(); /* sure thing or return value not used */
+extern int GL_member(), GL_goodnum();
 
 
 #define Eerr(a,b,c)  TDH_err(a,b,c) 
@@ -55,7 +56,7 @@ static char svg_cur_color[80] = "#000000";
 static char svg_dash_style[128];
 static double svg_line_width=1;
 
-static char svg_font_name[100];		/* current font name */
+static char svg_font_name[100] = "";	/* current font name */
 static int  svg_chdir;	 		/* char direction in degrees */
 static int  svg_currpointsz;		/* current char size in points */
 static char svg_font_weight[100];
@@ -120,6 +121,7 @@ strcpy( svg_tagparms, "" );
 strcpy( svg_cur_color, "#000000" );
 svg_imgsetwidth = 0; svg_imgsetheight = 0;
 strcpy( svg_imgpathname, "" );
+if( svg_font_name[0] == '\0' ) strcpy( svg_font_name, "Helvetica" );
 return( 0 );
 }
 
@@ -197,7 +199,7 @@ int Uplefty;
 
 /* set globals */
 if( dev != 's' ) dev = 's';
-strcpy( svg_font_name, "Helvetica" );
+if( svg_font_name[0] == '\0' ) strcpy( svg_font_name, "Helvetica" );
 strcpy( svg_font_weight, "" );
 strcpy( svg_font_style, "" );
 strcpy( svg_align, "start" );

@@ -6,7 +6,9 @@
 
 #include "tdhkit.h"
 #include <ctype.h>
-extern int PL_fref(), PL_fref_error(), GL_urlencode();
+extern int PL_fref(), PL_fref_error();
+extern int GL_urlencode();
+
 extern int atoi();
 
 /* PL_VALUE_SUBST - take a text line and substitute values for variables.  

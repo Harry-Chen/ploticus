@@ -9,12 +9,16 @@
 #include <ctype.h>
 #include <sys/types.h>  /* for mode_t */
 
-extern int GL_getchunk(), TDH_err(), TDH_value_subst(), TDH_getvalue(), GL_goodnum(), GL_member(), GL_getseg();
-extern int GL_substitute(), GL_ranger(), GL_wildcmp(), GL_contains(), GL_addmember(), TDH_errmode(), GL_substring();
+extern int TDH_err(), TDH_value_subst(), TDH_getvalue();
+extern int GL_getchunk(), GL_goodnum(), GL_member(), GL_getseg();
+extern int GL_substitute(), GL_ranger(), GL_wildcmp(), GL_contains(), GL_addmember(), GL_substring();
 extern int GL_autoround(), TDH_setvalue(), GL_make_unique_string(), GL_changechars(), GL_deletechars(), GL_deletemember();
 extern int GL_urlencode(), GL_urldecode();
-extern int GL_commonmembers(), GL_checksum_functions(), DT_datefunctions(), DT_timefunctions(), TDH_shfunctions(), TDH_showvars();
-extern int atoi(), sleep(), geteuid(), getegid(), chmod(), chdir(), unlink(), rename(); /* sure thing or return value not used */
+extern int GL_commonmembers(), GL_checksum_functions();
+
+extern int DT_datefunctions(), DT_timefunctions();
+extern int TDH_shfunctions(), TDH_showvars(), TDH_errmode();
+extern int atoi(), sleep(), geteuid(), getegid(), chmod(), chdir(), unlink(), rename(), mkdir(); /* sure thing or return value not used */
 /* extern char *crypt(); */ /* linux may require -lcrypt */
 
 
@@ -111,8 +115,11 @@ return( status );
 /* EVAL_FUNCTION - implement general purpose condex functions. 
 
 	Return 0 if ok, 1 if named function doesn't exist or some other error. 
-	Functions which produce a result which should always be taken as
-   	alpha rather than number should append a space to the end of the result. 
+	Functions that produce a result which should always be taken as
+   	alpha rather than number, should append a space to the end of the result. 
+
+   NOTE........... to generate new hash numbers use tdhkit/bin/wordhash 
+
 */
 static int
 eval_function( name, arg, nargs, result, typ )
@@ -135,7 +142,7 @@ char fmt[40];
 /* divert custom functions.. */
 if( name[0] == '$' && name[1] == '$' ) goto CUSTOM;
 
-/* generate a hash key by adding up chars in name. (skip leading $) */
+/* generate a hash key by adding up chars in name. (skip leading $) */  
 s = &name[1];
 hash = s[0];
 for( i = 1; s[i] != '\0'; i++ ) hash += ( i * (s[i] - 80) );
@@ -163,7 +170,7 @@ if( hash < 1000 ) {
 
 	if( hash == 189 ) {   /* $len( s ) - return string length of s */
 		LEN:
-		sprintf( result, "%d", strlen( arg[0] ) );
+		sprintf( result, "%d", (int) strlen( arg[0] ) );
 		*typ = NUMBER;
 		return( 0 );
 		}
@@ -215,6 +222,8 @@ if( hash < 1000 ) {
 		else if( strcmp( arg[1], "444" )==0 ) chmod( arg[0], 00644 );  
 		else if( strcmp( arg[1], "660" )==0 ) chmod( arg[0], 00660 );  
 		else if( strcmp( arg[1], "640" )==0 ) chmod( arg[0], 00640 );  
+		else if( strcmp( arg[1], "755" )==0 ) chmod( arg[0], 00755 );  
+		else if( strcmp( arg[1], "775" )==0 ) chmod( arg[0], 00775 );  
 		return( 0 );
 		}
 	if( hash == 374 ) {  /* chdir( dir ) */
@@ -271,6 +280,12 @@ if( hash < 1000 ) {
 		else sprintf( result, "%g", accum );
 		*typ = NUMBER;
 		return( 0 );
+		}
+
+	if( hash == 387 ) { /* $mkdir( newdirname ) */
+		stat = mkdir( arg[0], 00755 );
+		if( stat == 0 ) { strcpy( result, "0" ); return( 0 ); }
+		else { strcpy( result, "1" ); return( 1 ); }
 		}
 
 	if( hash == 399 ) { /* $capit( str ) - capitalize first letter in string and return it */
@@ -406,7 +421,6 @@ if( hash < 1000 ) {
 	if( hash == 533 ) { /* unlink( pathname ) */
 		if( nargs != 1 ) return( -1 );
 		unlink( arg[0] );
-		strcpy( result, "0" );
 		return( 0 );
 		}
 
@@ -684,9 +698,9 @@ else {
 
 	if( hash == 1518 ) { /* $changechars(clist,s,newchar) - if string s contains any of chars in clist, 
 			      * change that character to newchar */
-		strcpy( tok, arg[1] );
-		GL_changechars( arg[0], tok, arg[2] );
-		sprintf( result, "%s", tok );
+		strcpy( result, arg[1] );
+		GL_changechars( arg[0], result, arg[2] );
+		/* sprintf( result, "%s", tok ); */
 		return( 0 );
 		}
 
@@ -842,7 +856,8 @@ return( TDH_dbfunctions( hash, name, arg, nargs, result, typ ) );
 #endif
 
 EXT_SH:
-return( TDH_shfunctions( hash, name, arg, nargs, result, typ, TDH_dat, TDH_recid ) );
+return( TDH_shfunctions( hash, name, arg, nargs, result, typ ) );
+/*was: return( TDH_shfunctions( hash, name, arg, nargs, result, typ, TDH_dat, TDH_recid ) ); */
 
 EXT_CHKSUM:
 #ifndef PLOTICUS

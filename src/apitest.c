@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #define RESULT_TYPE "png"
 
 main( argc, argv )

@@ -1,3 +1,18 @@
+ploticus (2.42-1) unstable; urgency=low
+
+  * New Upstream release.
+  * Bump Standards-Version to 3.9.5 (No changes required).
+  * Upstream Bugfix: Instability with multiline attribute in execline.c
+    (LP: #692567)
+
+ -- Colin Tuckley <colint@debian.org>  Wed, 08 Jan 2014 11:02:15 +0000
+
+ploticus (2.41-6) unstable; urgency=low
+
+  * Add dpkg-buildflags to debian/rules
+
+ -- Colin Tuckley <colint@debian.org>  Mon, 13 May 2013 21:02:20 +0100
+
 ploticus (2.41-5) unstable; urgency=low
 
   * Upstream Bugfix: heatmap prefab wasn't obeying the legend=no parameter

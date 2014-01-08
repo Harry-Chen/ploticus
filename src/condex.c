@@ -15,7 +15,15 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-extern int GL_smemberi(), GL_wildcmp(), GL_containswords(), GL_smember(), GL_getseg(), GL_goodnum(), GL_slmember();
+extern int GL_containswords();
+extern int GL_smemberi( char *s, char *t );
+extern int GL_wildcmp( char *s1, char *s2, int len, int casecare );
+extern int GL_smember( char *s, char *t );
+extern int GL_getseg( char *rtn, char *inbuf, int *i, char *sep );
+extern int GL_goodnum( char *str, int *prec );
+extern int GL_slmember( char *str, char *list );
+
+
 extern int TDH_err(), TDH_function_call(), TDH_getvalue();
 
 #define stricmp( s, t ) 	strcasecmp( s, t )

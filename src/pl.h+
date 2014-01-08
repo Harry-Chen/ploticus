@@ -7,10 +7,11 @@
 
 #include <stdlib.h>
 #include "plg.h"
+#include "gl.h"
 
-#define PREFABS_DIR "/usr/share/ploticus"  	 /* INSTALLERS can set this to a valid pathname, so that users don't need to set PLOTICUS_PREFABS env var */
+#define PREFABS_DIR ""  	 /* INSTALLERS can set this to a valid pathname, so that users don't need to set PLOTICUS_PREFABS env var */
 
-#define PLVERSION "2.42-May2013" /* see also the Copyright page, and page headers and footers */
+#define PLVERSION "2.42-Feb2013" /* see also the Copyright page, and page headers and footers */
 
 /* =========== working limits.. ============ */
 #define CPULIMIT 30		/* default max amount of cpu (seconds) - setrlimit() - may be overridden */
@@ -375,36 +376,6 @@ extern int PLP_vector();
 extern int PLP_venndisk();
 extern int PLP_findnearest();
 extern int PLP_pvalue();
-
-extern int GL_addmember();
-extern int GL_changechars();
-extern int GL_close_to();
-extern int GL_commonmembers();
-extern int GL_contains();
-extern int GL_deletechars();
-extern int GL_deletemember();
-extern int GL_encode();
-extern int GL_getcgiarg();
-extern int GL_getchunk();
-extern int GL_getseg();
-extern int GL_goodnum();
-extern int GL_initstatic();
-extern int GL_make_unique_string();
-extern int GL_member();
-extern int GL_ranger();
-extern int GL_slmember();
-extern int GL_smember();
-extern int GL_smemberi();
-extern int GL_substitute();
-extern int GL_substring();
-extern int GL_sysdate();
-extern int GL_systime();
-extern int GL_varsub();
-extern int GL_wildcmp();
-extern int GL_wraptext();
-extern double GL_numgroup();
-extern int GL_urlencode();
-extern int GL_urldecode();
 
 extern int DT_build_dt();
 extern int DT_checkdatelengths();

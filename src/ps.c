@@ -35,7 +35,8 @@
 #include "special_chars.h"
 #endif
 
-extern int TDH_err(), GL_member(), PLG_xrgb_to_rgb(), GL_goodnum(), PLG_colorname_to_rgb();
+extern int TDH_err(), PLG_xrgb_to_rgb(), PLG_colorname_to_rgb();
+extern int GL_member(), GL_goodnum();
 extern int atoi(), fchmod(); /* sure thing or return value not used */
 
 #define Eerr(a,b,c)  TDH_err(a,b,c)
@@ -191,7 +192,6 @@ if( ps_latin1 ) {
   fprintf( ps_fp,  "/yacute/thorn/ydieresis\n");
   fprintf( ps_fp,  "] def\n");
   }
-
 
 /* load default font */
 if( ps_latin1 ) fprintf( ps_fp,  "%s reencodeISO\n", ps_font ); /* scg 9/27/01 */

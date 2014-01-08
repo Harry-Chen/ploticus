@@ -6,8 +6,8 @@
 
 /* routines related to categories.. */
 
-#include "pl.h"
 #include <string.h>
+#include "pl.h"
 
 #define CONTAINS 0
 #define EXACT -1

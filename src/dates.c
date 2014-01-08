@@ -24,9 +24,12 @@ SCG 11/01/04 ... but the above broke day of week computation..  jul=0 was a Satu
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
+#include <math.h>  /* for floor() */
 
 int DT_setdatefmt(), DT_setlazydates(), DT_makedate(), DT_weekday(), DT_getdtsep();
-extern int TDH_err(), GL_sysdate(), GL_goodnum(), GL_slmember(), GL_smember(), GL_member();
+extern int TDH_err();
+extern int GL_sysdate(), GL_goodnum(), GL_slmember(), GL_smember(), GL_member(), GL_getchunk();
+ 
 extern long atol();
 extern int atoi();
 
@@ -323,7 +326,7 @@ return( jul( yr, mon, day, h ) );
 }
 
 /* ======================== */
-/* JUL - take y,m,d and return julian date.  Jan 1 1977 = Julian date 0. */
+/* JUL - take y,m,d and return julian date.  */
 /* Returns 0 if ok or -1 for error */
 
 static int 
@@ -1296,7 +1299,7 @@ return( err( 199, "unrecognized function", name ) ); /* function not found */
  * #include <ctype.h>
  */
 
-extern int GL_getchunk(), DT_settimefmt(), DT_tomin(), DT_frommin(), DT_formattime(), DT_frame_mins();
+extern int DT_settimefmt(), DT_tomin(), DT_frommin(), DT_formattime(), DT_frame_mins();
 
 /* extern int DT_setdatetimefmt(), GL_getchunk(), DT_setdatefmt(), DT_settimefmt();
  * extern int DT_datetime2days(), DT_jdate(), DT_tomin(), DT_frame_mins(), TDH_err(), DT_days2datetime(), DT_fromjul(), DT_frommin();

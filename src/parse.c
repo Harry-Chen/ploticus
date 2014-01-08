@@ -71,7 +71,7 @@ else if( delim == CSV ) { sepchar = ','; quotes = 1; }
 
 cslen = strlen( comsym );
 
-datalen = strlen( data ); /* scg 9/30/03 */
+datalen = strlen( (char *) data ); /* scg 9/30/03 */
 
 /* do quote conversion if necessary .. */
 if( quotes ) for( i = 0, qon = 0; i < datalen; i++ ) {
@@ -110,10 +110,10 @@ for( i = 0, start = 0; i < (datalen+1); i++ ) {
 
 		/* skip blank and commented lines.. */
 		if( delim == SPACE ) {
-			nt = sscanf( &data[start], "%s", tok );
+			nt = sscanf( (char *) &data[start], "%s", tok );
 			if( nt < 1 || strncmp( tok, comsym, cslen )==0 ) { start = i+1; continue; }
 			}
-		else if( strncmp( &data[start], comsym, cslen )==0 ) { start = i+1; continue; }
+		else if( strncmp( (char *) &data[start], comsym, cslen )==0 ) { start = i+1; continue; }
 
 		nrows++;
 		state = 0;
@@ -122,7 +122,7 @@ for( i = 0, start = 0; i < (datalen+1); i++ ) {
 		if( delim == SPACE ) for( j = start; data[j] != '\0'; j++ ) {
 			if( state == 0 ) {
 				if( isspace( data[j] ) || data[j] == FILLCHAR ) continue; /* eat leading space */
-				field[ip++] = &data[j];		   /* set pointer to field */
+				field[ip++] = (char *) &data[j];		   /* set pointer to field */
 				nfields++;
 				state = 1; 			   /* 1 = get field */
 				}
@@ -137,7 +137,7 @@ for( i = 0, start = 0; i < (datalen+1); i++ ) {
 		else if( delim == TAB || delim == CSV ) for( j = start; data[j] != '\0'; j++ ) {
 			if( state == 0 ) {
 				if( data[j] == FILLCHAR ) continue;
-				field[ip++] = &data[j];
+				field[ip++] = (char *) &data[j];
 				nfields++;
 				state = 1;
 				}

@@ -12,10 +12,6 @@
 #define CONFIGFILE ""
 #endif
 
-#ifndef PREFABS_DIR
-#define PREFABS_DIR ""
-#endif
-
 
 #ifdef LOCALE
 #include <locale.h>
@@ -219,7 +215,8 @@ while( fgets( buf, 511, fp ) != NULL ) {
 
 	/* shared settings takes care of settings that can be set in config file OR proc settings */
 	else 	{
-		stat = PL_sharedsettings( attr, val, lineval ); 
+		stat = PL_sharedsettings( attr, lineval ); 
+		/*was: stat = PL_sharedsettings( attr, val, lineval );  */
 		if( stat == 0 && PLS.debug ) fprintf( PLS.diagfp, "config: setting %s to %s\n", attr, lineval );
 		}
 
@@ -248,12 +245,10 @@ if( PLS.cgiargs != NULL && !projectrootfound ) {
 /* this must come after config file is read, because in cgi mode PLOTICUS_PREFABS is set via config file. */
 PLS.prefabsdir = getenv( "PLOTICUS_PREFABS" );
 
-/* maybe PREFABS_DIR was set in the Makefile... */
-#ifdef UNIX
-  if( PLS.prefabsdir == NULL ) PLS.prefabsdir = PREFABS_DIR ;
-  else if( PLS.prefabsdir[0] == '\0' ) PLS.prefabsdir = PREFABS_DIR ;
-  if( PLS.prefabsdir[0] == '\0' ) PLS.prefabsdir = NULL;
-#endif
+/* maybe PREFABS_DIR was set in pl.h  ... */
+if( PLS.prefabsdir == NULL ) PLS.prefabsdir = PREFABS_DIR ;
+else if( PLS.prefabsdir[0] == '\0' ) PLS.prefabsdir = PREFABS_DIR ;
+if( PLS.prefabsdir[0] == '\0' ) PLS.prefabsdir = NULL;
 
 if( PLS.prefabsdir != NULL ) {
 	TDH_setspecialincdir( PLS.prefabsdir ); /* set special include directory (#include $foo) */

@@ -254,8 +254,15 @@ if( plotmode != SYMONLY ) {
 			linedet( "barlinedetails", buf, 0.3 );
 			Emovu( xcenter+ofs, ymin );	
 			Elinu( xcenter+ofs, yval );
-			}
-	
+			if( altwhen[0] != '\0' ) {  /* if alternative sym specified, render it w/ bars ... added 2/25/10 */
+                       		stat = do_select( altwhen, i, &doing_alt );
+                        	if( stat != 0 ) { Eerr( stat, "Select error", altwhen ); continue; }
+                        	if( doing_alt == 1 ) {
+					symdet( "altsym", altsym, symcode, &radius );
+					Emark( Eax( xcenter+ofs ), Eay( yval ), symcode, radius );
+					}
+                        	}
+			}	
 		strcpy( curcat, cat );
 		curj = j;
 		}

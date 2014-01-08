@@ -42,6 +42,7 @@ FILE *dfp, *popen();
 int delim, standardinput, fieldnameheader, cclen, buflen, literaldata, reqnfields;
 int datastart, ndatarows, irow, nrecords, nfields, totalitems, foo, sqlflag, doing_set, nfldnames;
 int blankrow, hold_delim, nscriptrows, scriptstart, showdata;
+int samplerate, readcount;
 
 TDH_errprog( "pl proc getdata" );
 
@@ -57,6 +58,7 @@ delim = SPACEQUOTE;
 showdata = standardinput = 0;
 sqlflag = nfldnames = hold_delim = 0;
 fieldnameheader = literaldata = nscriptrows = reqnfields = 0;
+samplerate = 1;
 
 definefieldnames( "" ); /* any existing field names will be wrong */
 
@@ -129,6 +131,7 @@ while( 1 ) {
 	else if( strcmp( attr, "fieldnameheader" )==0 ) fieldnameheader = getyn( lineval ); 
 	else if( strcmp( attr, "select" )==0 ) selectex = lineval;
 	else if( strcmp( attr, "nfields" )==0 ) reqnfields = itokncpy( lineval );
+	else if( strcmp( attr, "samplerate" )==0 ) samplerate = itokncpy( lineval );
 	else if( strcmp( attr, "fieldnames" )==0 ) nfldnames = definefieldnames( lineval ); 
 	else if( strcmp( attr, "fieldnamerows" )==0 ) {
 		fieldnamerows = getmultiline( lineval, "get" );
@@ -234,11 +237,17 @@ if( sqlflag ) {
 /* loop thru lines of data.. */
 first = 1;
 nrecords = 0;
+readcount = 0;
 cclen = strlen( commentchar );
 for( irow = datastart; irow < datastart+ndatarows; irow++ ) {
 
 	if( datasource != 'd' ) {
 		if( fgets( buf, MAXRECORDLEN-1, dfp ) == NULL ) break;
+		readcount++;
+		if( samplerate != 1 ) {
+			/* keep every Nth input row... reject the rest.  scg 12/7/09 */
+			if( readcount % samplerate != 0 ) continue;
+			}
 		row = buf;
 		}
 	else row = PLL.procline[ irow ];

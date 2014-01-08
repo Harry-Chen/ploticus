@@ -459,6 +459,7 @@ txtlen = strlen( firstline );
 /* go until we hit an empty line, or reach end of proc.. */
 for( iline = txtstartline; iline <= procstop ; iline++ ) {
 	line = PLL.procline[ iline ];
+	if( line == NULL ) break;  /* stmt added scg 1/7/2014 ... bug fix, multiline attribute followed immed by #proc (no blank line) causes instability */
 	for( i = 0, emptyline = 1; line[i] != '\0'; i++ ) if( !isspace( (int) line[i] )) { emptyline = 0; break; }
 	if( emptyline ) break;
 	if( mode[0] == 'g' ) txtlen += (strlen( &line[i] ) + 2);  /* mode = "get", accumulate length sans leading ws */

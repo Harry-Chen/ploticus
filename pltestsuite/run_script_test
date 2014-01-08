@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-PL="pl"
+PL="ploticus"
 echo "You will be invoking this instance of ploticus:"
 which $PL
 
