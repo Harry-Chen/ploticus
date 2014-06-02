@@ -1,3 +1,12 @@
+ploticus (2.42-2) unstable; urgency=medium
+
+  * Modify build to use "ploticus" instead of "pl"
+  * Remove all refs to ploticus-doc (no longer available)
+  * Incorporate upstream patch to src/init.c (closes: #748177)
+  * Convert to source format 3.0 (quilt)
+
+ -- Colin Tuckley <colint@debian.org>  Mon, 02 Jun 2014 18:11:41 +0100
+
 ploticus (2.42-1) unstable; urgency=low
 
   * New Upstream release.

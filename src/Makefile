@@ -1,4 +1,4 @@
-######## PLOTICUS version 2.42    Copyright 1998-2009 Stephen C. Grubb  http://ploticus.sourceforge.net
+######## PLOTICUS version 2.41    Copyright 1998-2009 Stephen C. Grubb  http://ploticus.sourceforge.net
 ########
 ######## Use this Makefile to build  pl executable  or  libploticus.  Root permission is not required.
 ######## Configure the 3 settings below then do:  make clean; make
@@ -13,12 +13,6 @@ RMCOM = rm -f
 NOX11 = -DNOX11
 NOSWF = -DNOSWF
 EXE = pl
-LIBEXT = a
-FPIC =
-ARCOM = ar r
-SHARELIBEXT = so.0.0.0
-SONAME = libploticus.so.0
-SHAREFLAG = -shared -Wl,-soname,$(SONAME)
 
 
 
@@ -31,21 +25,21 @@ SHAREFLAG = -shared -Wl,-soname,$(SONAME)
 
 
 ############ Option 1: build the pl executable (unix), no X11 ....
-# NOX11 = -DNOX11
+NOX11 = -DNOX11
 
 
 
 ############ Option 2: build the pl executable (unix), with X11 enabled .... 
-NOX11 = 
-XOBJ = x11.o interact.o
+# NOX11 = 
+# XOBJ = x11.o interact.o
 
 ############ ...AND... activate the lines below for your platform... (X11 libs & header files)
 #### linux
 # XLIBS = -L/usr/X11R6/lib -lX11
 # XINCLUDEDIR = -I/usr/X11R6/include
 #### alt linux
-XLIBS = -lX11
-XINCLUDEDIR = -I/usr/include/X11
+# XLIBS = -lX11
+# XINCLUDEDIR = -I/usr/include/X11
 #### 64bit linux
 # XLIBS = -L/usr/X11R6/lib64 -lX11
 #### solaris
@@ -106,7 +100,7 @@ XINCLUDEDIR = -I/usr/include/X11
 ### GD16H = -I/home/scg/lib
 
 ########### Option 2: use bundled GD13 (GIF only). No additional lib dependencies.
-# exetarget: pl 
+exetarget: pl 
 
 ########### Option 3: use your own GD resource.  Requires GD 1.84+, libpng, zlib, libjpeg
 # exetarget: plgd18 
@@ -117,11 +111,11 @@ XINCLUDEDIR = -I/usr/include/X11
 
 ########### Option 4: use your own GD resource with FreeType2 (ttf) fonts enabled.  
 ###########           Requires GD 1.84+, libpng, zlib, libjpeg and libfreetype
-exetarget: plgd18 
-GD18LIBS = -lgd -lpng -lz -ljpeg -lfreetype
-GD18H = 
-GDFREETYPE = -DGDFREETYPE
-ZFLAG = -DWZ
+# exetarget: plgd18 
+# GD18LIBS = -lgd -lpng -lz -ljpeg -lfreetype
+# GD18H = 
+# GDFREETYPE = -DGDFREETYPE
+# ZFLAG = -DWZ
 
 ########### Option 5: don't use GD at all.
 # exetarget: plnogd 
@@ -150,8 +144,8 @@ INSTALLBIN = /usr/local/bin
 
 
 #### For LOCALE support (non-roman alphabets & collation), uncomment the following..
-LOCALEOBJ = localef.o
-LOCALE_FLAG = -DLOCALE
+# LOCALEOBJ = localef.o
+# LOCALE_FLAG = -DLOCALE
 
 #### SVG output is always available by default.
 #### If you want compressed SVG (.svgz), and you selected GD13 or no GD above, 
@@ -166,7 +160,7 @@ LOCALE_FLAG = -DLOCALE
 # NOSVG = -DNOSVG 
 
 #### To see all possible compiler warnings, uncomment the following line..
-WALL = -Wall -g
+# WALL = -Wall
 
 
 
@@ -235,8 +229,8 @@ libploticus-static: $(OBJ) $(XOBJ) api.o gd00files gd16files
 
 # this one needs work... suggestions welcome
 libploticus-so: $(OBJ) $(GDOBJ)
-	$(RMCOM) libploticus.$(SHARELIBEXT)
-	$(CC) $(SHAREFLAG) -o libploticus.$(SHARELIBEXT) $(OBJ) $(GDOBJ)
+	$(RMCOM) libploticus.$(LIBEXT)
+	$(CC) $(SHAREFLAG) -o libploticus.$(LIBEXT) $(OBJ) $(GDOBJ)
 
 
 gd00files: 
@@ -275,7 +269,7 @@ clean:
 	$(RMCOM) *.o gd??files 
 
 distclean:  clean
-	$(RMCOM) $(EXE) libploticus.$(LIBEXT) libploticus.$(SHARELIBEXT)
+	$(RMCOM) $(EXE)
 
 
 ########

@@ -11,27 +11,21 @@ include /usr/share/dpkg/buildflags.mk
 configure: configure-stamp
 configure-stamp:
 	dh_testdir
-
 	touch configure-stamp
-
 
 build: build-stamp
 
 build-stamp: configure-stamp 
 	dh_prep 
 	dh_testdir
-
 	$(MAKE)
-
 	touch build-stamp
 
 clean:
 	dh_testdir
 	dh_testroot
 	rm -f build-stamp configure-stamp
-
 	[ ! -f Makefile ] || $(MAKE) clean
-
 	dh_clean 
 
 install: build
@@ -39,7 +33,6 @@ install: build
 	dh_testdir
 	dh_testroot
 	dh_installdirs
-
 	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp
 
 build-arch: build

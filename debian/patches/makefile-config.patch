@@ -1,0 +1,166 @@
+Description: Debianise Makefile configuration
+ The Makefiles contain information about the application
+ configuration - this needs adjusting for Debian.
+
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -1,6 +1,8 @@
+-######## PLOTICUS version 2.41    Copyright 1998-2009 Stephen C. Grubb  http://ploticus.sourceforge.net
++######## PLOTICUS version 2.42    Copyright 1998-2009 Stephen C. Grubb
++######## http://ploticus.sourceforge.net
+ ########
+-######## Use this Makefile to build  pl executable  or  libploticus.  Root permission is not required.
++######## Use this Makefile to build ploticus executable  or  libploticus.
++######## Root permission is not required.
+ ######## Configure the 3 settings below then do:  make clean; make
+ ######## Default settings should be ready to go for most linux platforms.
+ ######## Problem reports and questions may be sent to  ploticus@yahoogroups.com
+@@ -12,34 +14,40 @@
+ RMCOM = rm -f
+ NOX11 = -DNOX11
+ NOSWF = -DNOSWF
+-EXE = pl
++EXE = ploticus
++LIBEXT = a
++FPIC =
++ARCOM = ar r
++SHARELIBEXT = so.0.0.0
++SONAME = libploticus.so.0
++SHAREFLAG = -shared -Wl,-soname,$(SONAME)
+ 
+ 
+ 
+ ####################################################################
+ ########## Setting 1:
+-########## What do you wish to build?  pl executable?  libploticus?
++########## What do you wish to build? ploticus executable? libploticus?
+ ########## Select ONE option below by activating the appropriate lines...
+ ########## All other lines should be commented out.
+ ####################################################################
+ 
+ 
+-############ Option 1: build the pl executable (unix), no X11 ....
+-NOX11 = -DNOX11
++############ Option 1: build the ploticus executable (unix), no X11 ....
++# NOX11 = -DNOX11
+ 
+ 
+ 
+-############ Option 2: build the pl executable (unix), with X11 enabled .... 
+-# NOX11 = 
+-# XOBJ = x11.o interact.o
++############ Option 2: build the ploticus executable (unix), with X11 enabled ....
++NOX11 =
++XOBJ = x11.o interact.o
+ 
+ ############ ...AND... activate the lines below for your platform... (X11 libs & header files)
+ #### linux
+ # XLIBS = -L/usr/X11R6/lib -lX11
+ # XINCLUDEDIR = -I/usr/X11R6/include
+ #### alt linux
+-# XLIBS = -lX11
+-# XINCLUDEDIR = -I/usr/include/X11
++XLIBS = -lX11
++XINCLUDEDIR = -I/usr/include/X11
+ #### 64bit linux
+ # XLIBS = -L/usr/X11R6/lib64 -lX11
+ #### solaris
+@@ -56,7 +64,7 @@
+ 
+ 
+ 
+-############ Option 3: build pl executable (native win32 pl.exe)
++############ Option 3: build ploticus executable (native win32 ploticus.exe)
+ # PLATFORM = WIN32
+ # RMCOM = del
+ 
+@@ -100,7 +108,7 @@
+ ### GD16H = -I/home/scg/lib
+ 
+ ########### Option 2: use bundled GD13 (GIF only). No additional lib dependencies.
+-exetarget: pl 
++# exetarget: ploticus
+ 
+ ########### Option 3: use your own GD resource.  Requires GD 1.84+, libpng, zlib, libjpeg
+ # exetarget: plgd18 
+@@ -111,11 +119,11 @@
+ 
+ ########### Option 4: use your own GD resource with FreeType2 (ttf) fonts enabled.  
+ ###########           Requires GD 1.84+, libpng, zlib, libjpeg and libfreetype
+-# exetarget: plgd18 
+-# GD18LIBS = -lgd -lpng -lz -ljpeg -lfreetype
+-# GD18H = 
+-# GDFREETYPE = -DGDFREETYPE
+-# ZFLAG = -DWZ
++exetarget: plgd18
++GD18LIBS = -lgd -lpng -lz -ljpeg -lfreetype
++GD18H =
++GDFREETYPE = -DGDFREETYPE
++ZFLAG = -DWZ
+ 
+ ########### Option 5: don't use GD at all.
+ # exetarget: plnogd 
+@@ -135,8 +143,10 @@
+ #optional for non-standard location:  MINGH = -I/home/scg/lib
+ 
+ 
+-#### To set a hard-coded directory for prefabs files, edit the PREFABS_DIR define in pl.h before doing the build.
+-#### If the installer does this, users won't be required to have PLOTICUS_PREFABS environment variable defined.
++#### To set a hard-coded directory for prefabs files,
++#### edit the PREFABS_DIR define in pl.h before doing the build.
++#### If the installer does this, users won't be required to have
++#### PLOTICUS_PREFABS environment variable defined.
+ 
+ 
+ #### If you do a "make install", where do you want the executable(s) to be moved to?
+@@ -144,8 +154,8 @@
+ 
+ 
+ #### For LOCALE support (non-roman alphabets & collation), uncomment the following..
+-# LOCALEOBJ = localef.o
+-# LOCALE_FLAG = -DLOCALE
++LOCALEOBJ = localef.o
++LOCALE_FLAG = -DLOCALE
+ 
+ #### SVG output is always available by default.
+ #### If you want compressed SVG (.svgz), and you selected GD13 or no GD above, 
+@@ -160,7 +170,7 @@
+ # NOSVG = -DNOSVG 
+ 
+ #### To see all possible compiler warnings, uncomment the following line..
+-# WALL = -Wall
++WALL = -Wall -g
+ 
+ 
+ 
+@@ -229,8 +239,8 @@
+ 
+ # this one needs work... suggestions welcome
+ libploticus-so: $(OBJ) $(GDOBJ)
+-	$(RMCOM) libploticus.$(LIBEXT)
+-	$(CC) $(SHAREFLAG) -o libploticus.$(LIBEXT) $(OBJ) $(GDOBJ)
++	$(RMCOM) libploticus.$(SHARELIBEXT)
++	$(CC) $(SHAREFLAG) -o libploticus.$(SHARELIBEXT) $(OBJ) $(GDOBJ)
+ 
+ 
+ gd00files: 
+@@ -269,7 +279,7 @@
+ 	$(RMCOM) *.o gd??files 
+ 
+ distclean:  clean
+-	$(RMCOM) $(EXE)
++	$(RMCOM) $(EXE) libploticus.$(LIBEXT) libploticus.$(SHARELIBEXT)
+ 
+ 
+ ########
+--- a/Makefile
++++ b/Makefile
+@@ -19,7 +19,7 @@
+ 
+ install:
+ 	install -d -m 755 $(BIN)
+-	install -m 755 src/pl $(BIN)/ploticus
++	install -m 755 src/ploticus $(BIN)/ploticus
+ 	install -d -m 755 $(DESTDIR)/usr/share/man/man1
+ 	install -m 644 man/man1/pl.1 $(DESTDIR)/usr/share/man/man1/ploticus.1
+ 	install -d -m 755 $(LIB)
