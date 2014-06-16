@@ -133,6 +133,30 @@ Description: Debianise Makefile configuration
  
  
  
+@@ -208,19 +218,19 @@
+ 
+ # pl with gif support
+ pl: pl.o $(OBJ) $(XOBJ) gd00files gd13files
+-	$(CC) pl.o $(OBJ) $(GD13) $(GD) $(XOBJ) $(LIBS) $(ZLIB) $(MING) -o $(EXE)
++	$(CC) $(LDFLAGS) pl.o $(OBJ) $(GD13) $(GD) $(XOBJ) $(LIBS) $(ZLIB) $(MING) -o $(EXE)
+ 
+ # pl with png support
+ plpng: pl.o $(OBJ) $(XOBJ) gd00files gd16files
+-	$(CC) pl.o $(OBJ) $(GD16) $(GD) $(XOBJ) $(GD16LIBS) $(LIBS) $(MING) -o $(EXE)
++	$(CC) $(LDFLAGS) pl.o $(OBJ) $(GD16) $(GD) $(XOBJ) $(GD16LIBS) $(LIBS) $(MING) -o $(EXE)
+ 
+ # pl with jpeg support (user must supply gd 1.8+)
+ plgd18: pl.o $(OBJ) $(XOBJ) gd18files
+-	$(CC) pl.o grgd.o devstuff.o $(OBJ) $(XOBJ) $(GD18LIBS) $(LIBS) $(MING) -o $(EXE)
++	$(CC) $(LDFLAGS) pl.o grgd.o devstuff.o $(OBJ) $(XOBJ) $(GD18LIBS) $(LIBS) $(MING) -o $(EXE)
+ 
+ # pl with no GD support
+ plnogd: pl.o $(OBJ) $(XOBJ) nogdfiles
+-	$(CC) pl.o devstuff.o $(OBJ) $(XOBJ) $(LIBS) $(ZLIB) $(MING) -o $(EXE)
++	$(CC) $(LDFLAGS) pl.o devstuff.o $(OBJ) $(XOBJ) $(LIBS) $(ZLIB) $(MING) -o $(EXE)
+ 
+ # libploticus.a with png
+ libploticus-static: $(OBJ) $(XOBJ) api.o gd00files gd16files
 @@ -229,8 +239,8 @@
  
  # this one needs work... suggestions welcome
@@ -140,10 +164,36 @@ Description: Debianise Makefile configuration
 -	$(RMCOM) libploticus.$(LIBEXT)
 -	$(CC) $(SHAREFLAG) -o libploticus.$(LIBEXT) $(OBJ) $(GDOBJ)
 +	$(RMCOM) libploticus.$(SHARELIBEXT)
-+	$(CC) $(SHAREFLAG) -o libploticus.$(SHARELIBEXT) $(OBJ) $(GDOBJ)
++	$(CC) $(LDFLAGS) $(SHAREFLAG) -o libploticus.$(SHARELIBEXT) $(OBJ) $(GDOBJ)
  
  
  gd00files: 
+@@ -239,21 +249,21 @@
+ 
+ gd13files: 
+ 	$(CC) -c $(WALL) grgd.c -DGD13 -DPLOTICUS -I./gd13 -o grgd13.o
+-	$(CC) -c $(CFLAGS) devstuff.c -DGD13 -o devstuff13.o
++	$(CC) -c $(CFLAGS) $(CPPFLAGS) devstuff.c -DGD13 -o devstuff13.o
+ 	$(CC) -c gd13.c -I./gd13 
+ 	echo "done with gd13files" > gd13files
+ 
+ gd16files: 
+ 	$(CC) -c $(WALL) $(FPIC) grgd.c -DGD16 -DPLOTICUS -I./ -I./gd16 -o grgd16.o
+-	$(CC) -c $(CFLAGS) $(FPIC) devstuff.c -DGD16 -o devstuff16.o
++	$(CC) -c $(CFLAGS) $(CPPFLAGS) $(FPIC) devstuff.c -DGD16 -o devstuff16.o
+ 	$(CC) -c $(FPIC) -I./gd16 -I./ $(GD16H) gd16.c gd_io.c gd_io_dp.c gd_io_file.c gd_png.c
+ 	echo "done with gd16files" > gd16files
+ 
+ gd18files:
+-	$(CC) -c grgd.c devstuff.c -DGD18 $(GDFREETYPE) $(GD18H) $(CFLAGS)
++	$(CC) -c grgd.c devstuff.c -DGD18 $(GDFREETYPE) $(GD18H) $(CFLAGS) $(CPPFLAGS)
+ 
+ nogdfiles:
+-	$(CC) -c devstuff.c $(CFLAGS)
++	$(CC) -c devstuff.c $(CFLAGS) $(CPPFLAGS)
+ 
+ devgrgd:
+ 	$(CC) -c $(WALL) grgd.c -DGD13 -DPLOTICUS -I./gd13 -o grgd13.o
 @@ -269,7 +279,7 @@
  	$(RMCOM) *.o gd??files 
  

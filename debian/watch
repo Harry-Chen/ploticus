@@ -1,0 +1,5 @@
+version=3
+
+opts=uversionmangle=s/_src$//;s/^(.*linux)/0.0.$1/;s/^(\d)(\d\d)$/$1.$2/ \
+http://qa.debian.org/watch/sf.php/ploticus/ \
+(?:|.*/)ploticus(?:[_\-]v?|)(\d[^\s/]*)\.(?:tar\.xz|txz|tar\.bz2|tbz2|tar\.gz|tgz)
