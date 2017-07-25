@@ -1,3 +1,10 @@
+ploticus (2.42-4) unstable; urgency=medium
+
+  * Fix debian/watch - thanks to Iain Learmonth
+  * Bump Standards-Version to 4.0.0 (No changes required).
+
+ -- Colin Tuckley <colint@debian.org>  Tue, 25 Jul 2017 09:58:08 +0100
+
 ploticus (2.42-3) unstable; urgency=medium
 
   * Add debian/watch file. Many thanks to Bart Martens.

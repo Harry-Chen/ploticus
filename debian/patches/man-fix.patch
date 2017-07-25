@@ -1,4 +1,5 @@
 Fix roff warnings from Lintian caused by use of non-standard .ig >> / .>>
+Fix spellings
 --- a/man/man1/pl.1
 +++ b/man/man1/pl.1
 @@ -1,4 +1,4 @@
@@ -1594,9 +1595,10 @@ Fix roff warnings from Lintian caused by use of non-standard .ig >> / .>>
 +.ig
  <a href="config.html">
 -.>>
-+..
- \0ploticus configuation file
+-\0ploticus configuation file
 -.ig >>
++..
++\0ploticus configuration file
 +.ig
  </a>
 -.>>
@@ -1879,7 +1881,7 @@ Fix roff warnings from Lintian caused by use of non-standard .ig >> / .>>
  \fCname\fR specifies the argument name and \fCvalue\fR an argument value.
  If there is no argument value, \fCvalue\fR should be passed as \fC""\fR.
  All arguments are supported except \fC-f\fR, \fC-prefab\fR, and \fC-ver\fR.
-@@ -174,30 +174,30 @@
+@@ -174,33 +174,33 @@
    \0 if( stat != 0 ) \fIerror\fR
  .fi
  
@@ -1917,7 +1919,11 @@ Fix roff warnings from Lintian caused by use of non-standard .ig >> / .>>
 +..
  line.  
  Typically called multiple times, allowing ploticus scripts to be 
- generated programatically.  Script lines can contain only these directives: \fC #proc\fR, \fC #procdef\fR, 
+-generated programatically.  Script lines can contain only these directives: \fC #proc\fR, \fC #procdef\fR, 
++generated programmatically.  Script lines can contain only these directives: \fC #proc\fR, \fC #procdef\fR, 
+ \fC #endproc\fR, \fC #clone\fR and \fC #saveas\fR.  
+ You can't use set, if/else, loops, or other flow-of-control 
+ directives (but these types of things can be handled by your host application).
 @@ -217,39 +217,39 @@
  \fBCaution\fR As of ploticus version 2.40 string constants cannot be passed in this function.  See the example
  in the page intro above.
