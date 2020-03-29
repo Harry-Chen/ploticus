@@ -1,3 +1,11 @@
+ploticus (2.42-4.1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * d/control: Replace removed libgd2-noxpm-dev build-deb with libgd-dev to
+    fix FTBS (closes: #880778)
+
+ -- Guilhem Moulin <guilhem@debian.org>  Sun, 29 Mar 2020 11:06:52 +0200
+
 ploticus (2.42-4) unstable; urgency=medium
 
   * Fix debian/watch - thanks to Iain Learmonth
