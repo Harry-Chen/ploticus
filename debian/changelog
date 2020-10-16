@@ -1,3 +1,10 @@
+ploticus (2.42-4.2) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Pass CFLAGS to ensure hardening is correctly enabled (Close: #967239)
+
+ -- Moritz Muehlenhoff <jmm@debian.org>  Fri, 16 Oct 2020 16:40:57 +0200
+
 ploticus (2.42-4.1) unstable; urgency=medium
 
   * Non-maintainer upload.

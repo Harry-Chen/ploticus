@@ -2,3 +2,4 @@ set-prefabs-dir.patch
 upstream-bug-fixes.patch
 makefile-config.patch
 man-fix.patch
+hardening-pass-cflags.patch

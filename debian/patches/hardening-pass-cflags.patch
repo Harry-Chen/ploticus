@@ -1,0 +1,14 @@
+CFLAGS gets exported in debian/rules, but eventually overwritten  #967239
+
+--- ploticus-2.42.orig/src/Makefile
++++ ploticus-2.42/src/Makefile
+@@ -201,7 +201,8 @@ GD = gdfontg.o gdfontl.o gdfontmb.o gdfo
+ LIBS = $(XLIBS) -lm $(ADDLIBS) 
+ 
+ CFLAGS = $(FPIC) $(WALL) -DPLOTICUS -D$(PLATFORM) -DTDH_NOREC $(ZFLAG) $(LOCALE_FLAG) \
+-  $(NOGD) $(NOX11) $(NOPS) $(NOSVG) $(NOSWF) $(XINCLUDEDIR) $(MINGH) 
++  $(NOGD) $(NOX11) $(NOPS) $(NOSVG) $(NOSWF) $(XINCLUDEDIR) $(MINGH) \
++ `dpkg-buildflags --get CFLAGS`
+ 
+ OBJ = proc_annotate.o proc_areadef.o proc_axis.o proc_bars.o proc_rect.o proc_breakaxis.o \
+   proc_categories.o proc_curvefit.o proc_settings.o proc_drawcommands.o \
