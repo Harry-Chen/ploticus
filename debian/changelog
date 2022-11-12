@@ -1,3 +1,10 @@
+ploticus (2.42-5) unstable; urgency=medium
+
+  * QA upload.
+  * Set maintainer to Debian QA Group <packages@qa.debian.org>. (see: #990612)
+
+ -- Marcos Talau <talau@debian.org>  Sat, 12 Nov 2022 14:45:02 -0300
+
 ploticus (2.42-4.2) unstable; urgency=medium
 
   * Non-maintainer upload.
