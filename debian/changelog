@@ -1,3 +1,20 @@
+ploticus (2.42-6) unstable; urgency=medium
+
+  * QA upload.
+
+  * Added d/gbp.conf to describe branch layout.
+  * Updated vcs in d/control to Salsa.
+  * Updated d/gbp.conf to enforce the use of pristine-tar.
+  * Updated Standards-Version from 4.0.0 to 4.7.0.
+  * Use wrap-and-sort -at for debian control files
+  * Replaced obsolete libfreetype6-dev build dependency with libfreetype-dev.
+  * Trim trailing whitespace.
+  * Bump debhelper from deprecated 9 to 13.
+  * Set debhelper-compat version in Build-Depends.
+  * Fix day-of-week for changelog entries 2.20-3, 2.0.4-4, 2.0.4-3, 2.0.2-2.
+
+ -- Petter Reinholdtsen <pere@debian.org>  Fri, 14 Jun 2024 08:46:27 +0200
+
 ploticus (2.42-5) unstable; urgency=medium
 
   * QA upload.
