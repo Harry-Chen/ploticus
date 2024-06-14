@@ -215,7 +215,7 @@ ploticus (2.20-3) unstable; urgency=low
     Solves a problem with asymetric error bands.
   * Add "late fix" for proc_axis.c.  Fix found in
     http://groups.yahoo.com/group/ploticus/message/722
-    This solves a problem with cumulative rounding of 
+    This solves a problem with cumulative rounding of
     days in graphs with days stubs.
   * Add  "late fix" version of chunk_area.  Fix from
     http://ploticus.sourceforge.net/download/chunk_area
@@ -231,11 +231,11 @@ ploticus (2.20-3) unstable; urgency=low
     http://ploticus.sourceforge.net/download/proc_lineplot.c
     It clips labels, and handles the degenerate case of no points
     in the range properly.
-  * Add pltestsuite to debian package as 
+  * Add pltestsuite to debian package as
     /usr/share/doc/ploticus/examples
   * Remove recommends of libming-fonts-openoffice. The package has been
     removed from debian.                         closes: Bug#240560
-    
+
  -- James W. Penny <jpenny@debian.org>  Wed,  4 Apr 2004 22:12:00 -0500
 
 ploticus (2.20-2) unstable; urgency=low
@@ -280,7 +280,7 @@ ploticus (2.0.4-1) unstable; urgency=low
     These affect primarily cosmetic issues.
 
  -- James W. Penny <jpenny@debian.org>  Mon, 12 Aug 2002 00:20:04 -0400
- 
+
 ploticus (2.0.3-1) unstable; urgency=low
 
   * The "That Tears it, Now You Have to Update Docs Package" Release.
@@ -295,7 +295,7 @@ ploticus (2.0.3-1) unstable; urgency=low
 
 ploticus (2.0.2-2) unstable; urgency=low
 
-  *  Correct packaging  mistakes.  
+  *  Correct packaging  mistakes.
   *  First, missing : in http:                close: Bug#137577
   *  Second, should be Architecture: any.     close: Bug#141657
 
@@ -306,4 +306,3 @@ ploticus (2.0.2-1) unstable; urgency=low
   * Initial Debian package.			close: Bug#132878
 
  -- James W. Penny <jpenny@debian.org>  Mon, 18 Feb 2002 22:24:15 -0500
-

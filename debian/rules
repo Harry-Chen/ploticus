@@ -15,8 +15,8 @@ configure-stamp:
 
 build: build-stamp
 
-build-stamp: configure-stamp 
-	dh_prep 
+build-stamp: configure-stamp
+	dh_prep
 	dh_testdir
 	$(MAKE)
 	touch build-stamp
@@ -26,10 +26,10 @@ clean:
 	dh_testroot
 	rm -f build-stamp configure-stamp
 	[ ! -f Makefile ] || $(MAKE) clean
-	dh_clean 
+	dh_clean
 
 install: build
-	dh_prep 
+	dh_prep
 	dh_testdir
 	dh_testroot
 	dh_installdirs
@@ -49,7 +49,7 @@ binary-arch: build install
 	dh_testroot
 	dh_movefiles
 	dh_install
-	dh_installchangelogs 
+	dh_installchangelogs
 	dh_installdocs -A
 	dh_installexamples
 	dh_installman
