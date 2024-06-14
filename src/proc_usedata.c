@@ -1,6 +1,8 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 /* PROC USEDATA */
 
@@ -8,22 +10,18 @@
 
 #include "pl.h"
 
+int
 PLP_usedata( )
 {
-int i;
-char attr[40], val[256];
+char attr[NAMEMAXLEN], val[256];
 char *line, *lineval;
 int nt, lvp;
 int first;
 
-int stat;
-int align;
-double adjx, adjy;
 
+TDH_errprog( "pl proc usedata" );
 
-TDH_errprog( "usedata" );
-
-if( PLD.curds <= 0 ) return( Eerr( 2478, "no data have been read yet", "" ));
+if( PLD.curds < 0 ) return( Eerr( 2478, "no data have been read yet", "" ));
 
 /* get attributes.. */
 first = 1;
@@ -37,8 +35,9 @@ while( 1 ) {
 		if( atoi( val ) <= PLD.curds ) PLD.curds = atoi( val );
 		}
 	else if( stricmp( attr, "pop" )== 0 ) PLD.curds -= atoi( val );
-	else if( stricmp( attr, "original" )== 0 ) PLD.curds = 0;
+	else if( strnicmp( attr, "original", 8 )== 0 ) PLD.curds = 0;
 	else if( stricmp( attr, "fieldnames" )==0 ) definefieldnames( lineval );
+	else Eerr( 1, "attribute not recognized", attr );
 	}
 
 if( first == 1 ) PLD.curds = 0;   /* no attributes specified - (originaldata) */
@@ -52,3 +51,8 @@ setintvar( "NFIELDS", Nfields );
 return( 0 );
 }
 
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

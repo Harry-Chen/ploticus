@@ -1,9 +1,13 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
-
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 #include "tdhkit.h"
+#include <ctype.h>
+extern int PL_fref(), GL_urlencode();
+extern int atoi();
 
 /* This is similar to TDH_value_subst, but is stripped down and  accepts a data array that 
  * is an array of pointers rather than a 2d array.  It also knows about ploticus field 
@@ -12,19 +16,19 @@
 
 /* VALUE_SUBST - take a text line and substitute values for variables.  */
 
+int
 PL_value_subst( out, in, data, mode )
 char *out; /* result buffer */
 char *in;  /* input buffer */
 char *data[ MAXITEMS ];
-int mode;  /* either FOR_CONDEX (1), indicating that the line will be passed to condex(),
-		   (minor hooks related to this) or NORMAL (0) */
+int mode;  /* either FOR_CONDEX (1), indicating that the line will be passed to condex() (minor hooks);
+		   URL_ENCODED (2), indicating that values substituted in should be urlencoded;
+		    or NORMAL (0) */
 {
-int i, k, f;
+int i, k;
 char itemname[512];
 char value[255];
-int len;
 int found;
-int stat;
 int infunction;
 int ifld;
 int inlen;
@@ -56,7 +60,7 @@ for( i = 0; i < inlen; i++ ) {
 		/* truncate itemname at first char which is not alphanumeric or _ */
 		inamelen = strlen( itemname );
 		for( k = 0; k < inamelen; k++ ) {
-			if( !isalnum( itemname[k] ) && itemname[k] != '_' ) { 
+			if( !isalnum( (int) itemname[k] ) && itemname[k] != '_' ) { 
 				itemname[k] = '\0';
 				break;
 				}
@@ -66,30 +70,23 @@ for( i = 0; i < inlen; i++ ) {
 		/* @1, @2, etc... */
 		ifld = atoi( itemname );
 		if( ifld > 0 && ifld < MAXITEMS ) {
-			strcpy( value, data[ ifld-1 ] );
+			if( mode == URL_ENCODED ) GL_urlencode( data[ ifld-1 ], value );
+			else strcpy( value, data[ ifld-1 ] );
 			}
 
 		/* @fieldname .. */
 		else	{
 			ifld = PL_fref( itemname );
-			strcpy( value, data[ ifld -1 ] );
+			if( mode == URL_ENCODED ) GL_urlencode( data[ ifld-1 ], value );
+			else strcpy( value, data[ ifld -1 ] );
 			}
 
-		/* 
-		 * else	{
-		 *	stat = getvalue( value, itemname, data, recordid );
-		 *	if( stat != 0 ) return( stat );
-		 *	}
-		 */
 
 		/* special case of 0 length data item when in a condex expression but 
 		   not within a function arg list.. to prevent condex syntax errors  */
 		if( strcmp( value, "" )==0 && mode == FOR_CONDEX && !infunction )
 			strcpy( value, "_null_" ); 
 
-
-		/* strcat( out, value ); */
-		/* strcpy( &out[outlen], value );  */
 		vallen = strlen( value );
 		for( k = 0; k < vallen; k++ ) {
 			if( value[k] == ' ' && mode == FOR_CONDEX ) out[ outlen + k ] = '_';
@@ -103,8 +100,8 @@ for( i = 0; i < inlen; i++ ) {
 		}
 
 	else	{
-		if( in[i] == '$' && isalpha( in[i+1] ) ) infunction = 1;
-		if( isspace( in[i] ) ) infunction = 0;
+		if( in[i] == '$' && isalpha( (int) in[i+1] ) ) infunction = 1;
+		if( isspace( (int) in[i] ) ) infunction = 0;
 		/* len = strlen( out ); */
 		out[ outlen ] = in[i];
 		out[ outlen +1 ] = '\0';
@@ -113,3 +110,9 @@ for( i = 0; i < inlen; i++ ) {
 	}
 return( found );
 }
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

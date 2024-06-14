@@ -1,10 +1,16 @@
-/* SHELL.C  - script shell command interface
- * Copyright 1998-2002 Stephen C. Grubb  (ploticus.sourceforge.net) .
- * This code is covered under the GNU General Public License (GPL);
- * see the file ./Copyright for details. */
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
+/* SHELL.C  - script shell command interface */
 
 #include "tdhkit.h"
+#include <ctype.h>
+
+extern int TDH_setvarcon(), TDH_setvar(), TDH_getvar(), GL_deletechars();
+
 #define NL 0
 #define WS 1
 #define TAB 2
@@ -22,6 +28,7 @@ static int parsefields(), checkexit();
 
 
 /* =================================== */
+int
 TDH_shell_initstatic()
 {
 shellfp = NULL;
@@ -34,12 +41,11 @@ return( 0 );
 
 
 /* =================================== */
+int
 TDH_shellcommand( command )
 char *command;
 {
 FILE *popen();
-char *s;
-int stat;
 
 nfn = 0;
 nrows = 0;
@@ -55,9 +61,10 @@ return( 0 );
 }
 
 /* =================================== */
+int
 TDH_shellreadheader( )
 {
-int i, stat;
+int stat;
 char *s;
 
 s = fgets( namebuf, SCRIPTLINELEN-1, shellfp );
@@ -70,6 +77,7 @@ return( 0 );
 }
 
 /* =================================== */
+int
 TDH_shellresultrow( buf, fields, nfields, maxlen )
 char *buf;
 char *fields[MAXITEMS];
@@ -94,6 +102,7 @@ return( 0 );
 }
 
 /* ===================================== */
+int
 TDH_shellclose()
 {
 if( shellfp == NULL ) return( 1 );
@@ -135,7 +144,7 @@ for( i = 0, j = 0; i < len; i++ ) {
 	sp = 0;
 	if( indelim == TAB && (buf[i] == '\t' || buf[i] == '\n' ) ) sp = 1;
 	else if( indelim == NL && buf[i] == '\n' ) sp = 1;
-	else if( indelim == WS ) sp = isspace( buf[i] );
+	else if( indelim == WS ) sp = isspace( (int) buf[i] );
 	if( !sp && startfld ) {
 		f[j++] = &buf[i];
 		startfld = 0;
@@ -153,6 +162,7 @@ return( 0 );
 /* ========================================== */
 /* SHFUNCTIONS - TDH script access to shell commands */
 
+int
 TDH_shfunctions( hash, name, arg, nargs, result, typ )
 int hash;
 char *name;
@@ -164,7 +174,7 @@ int *typ;
 char *f[MAXITEMS];
 char fname[50];
 char buf[MAXRECORDLEN];
-int i, j, n, len, stat;
+int i, n, len, stat;
 
 *typ = 0; /* numeric */
 
@@ -215,7 +225,7 @@ if( hash == 3084 ) { /* $shellstripchars( chars, varname1 .. varnamen ) - remove
 
 			/* DEPRECATED - this is now automatically done in value_subst when within #shell/#endshell */
 	int start;
-	if( isalpha( arg[0][0] )) start = 0;
+	if( isalpha( (int) arg[0][0] )) start = 0;
 	else start = 1;
 	for( i = start; i < nargs; i++ ) {
         	stat = TDH_getvar( buf, arg[i] );
@@ -228,6 +238,8 @@ if( hash == 3084 ) { /* $shellstripchars( chars, varname1 .. varnamen ) - remove
 	}
 
 if( hash == 2554 ) { /* $shellreadheader() - load field name header */
+	if( arg[0][0] == 't' ) indelim = TAB;   /* added scg 3/10/06 */
+	else indelim = WS; 			/* added scg 3/10/06 */
 	stat = TDH_shellreadheader();
 	sprintf( result, "%d", stat );
 	return( 0 );
@@ -258,3 +270,8 @@ if( hash == 2138 ) { /* $shellexitcode() */
 return( err( 197, "unrecognized function", name )); /* not found */
 
 }
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

@@ -1,7 +1,8 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
-
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 #include "pl.h"
 
@@ -11,6 +12,7 @@ static int beginnum();
 
 
 /* ====================== */
+int
 PL_lib_initstatic()
 {
 Supress_convmsg = 0;
@@ -26,15 +28,16 @@ PL_da( r, c )
 int r, c;
 {
 int base;
+char progname[80];
 base = PLD.dsfirstdf[ PLD.curds ];
 if( r >= Nrecords ) { 
-	fprintf( PLS.errfp, "warning: %s data reference (rec=%d field=%d) is out of bounds\n", 
-		Eprogname, r+1, c+1 ); 
+	TDH_geterrprog( progname );
+	fprintf( PLS.errfp, "%s: warning, attempt to access data row# %d .. no such data row\n", progname, r+1 ); 
 	return( "" );
 	}
 if( c >= Nfields ) { 
-	fprintf( PLS.errfp, "warning: %s data reference (rec=%d field=%d) is out of bounds\n", 
-		Eprogname, r+1, c+1 ); 
+	TDH_geterrprog( progname );
+	fprintf( PLS.errfp, "%s: warning, attempt to access data field# %d .. no such data field\n", progname, c+1 ); 
 	return( "" );
 	}
 return( PLD.df[ base + ( r * Nfields ) + c ] );
@@ -43,7 +46,8 @@ return( PLD.df[ base + ( r * Nfields ) + c ] );
 /* FDA - access D as a 2-D array; return as double; 
    For non-plottables 0.0 is returned, but Econv_error may be called to see if 
    there was a conversion error */
-double PL_fda( r, c, ax )
+double 
+PL_fda( r, c, ax )
 int r, c;
 char ax;
 {
@@ -54,11 +58,11 @@ return( Econv( ax, da( r, c ) ) );
 /* NUM - convert string to double, and ensure that it is proper numeric
    Result is s converted to double.
    Return is 0 on ok, 1 on non-numeric. */
+int
 PL_num( s, result )
 char s[];
 double *result;
 {
-int i;
 int nt;
 
 nt = sscanf( s, "%lf", result );
@@ -71,6 +75,7 @@ else	{
 
 /* ============================= */
 /* GETCOORDS - extract a coordinate pair (two posex's) from val */
+int
 PL_getcoords( parmname, val, x, y )
 char *parmname, *val;
 double *x, *y;
@@ -90,6 +95,7 @@ else return( 0 );
 
 /* ============================= */
 /* GETBOX - extract two coordinate pairs (four posex's) from val */
+int
 PL_getbox( parmname, val, x1, y1, x2, y2 )
 char *parmname, *val;
 double *x1, *y1, *x2, *y2;
@@ -111,6 +117,7 @@ else return( 0 );
 
 /* ================== */
 /* GETRANGE - get a low/high range */
+int
 PL_getrange( lineval, lo, hi, ax, deflo, defhi )
 char *lineval;
 double *lo, *hi;
@@ -135,6 +142,7 @@ else if( nt <= 0 ) {
 	*hi = defhi;
 	return( 0 );
 	}
+return( 0 );
 }
 	
 
@@ -143,6 +151,7 @@ else if( nt <= 0 ) {
    Shell expandable file name is ok.
    Returns 0 if ok, 1 if file not available */
 
+int
 PL_file_to_buf( filename, mode, result, buflen )
 char *filename;
 int mode; /* 1 = file   2 = command */
@@ -152,8 +161,12 @@ int buflen;
 FILE *fp, *popen();
 char buf[1000];
 
+
 if( mode == 1 ) fp = fopen( filename, "r" );
-else fp = popen( filename, "r" );
+else 	{
+	if( PLS.noshell ) return( Eerr( 7203, "-noshell prohibits shell command", "" ));
+	fp = popen( filename, "r" );
+	}
 if( fp == NULL ) return( 1 );
 strcpy( result, "" );
 while( fgets( buf, 999, fp ) != NULL ) {
@@ -170,6 +183,7 @@ return( 0 );
 
 /* ========================= */
 /* SETFLOATVAR - set a DMS var to a double value */
+int
 PL_setfloatvar( varname, f )
 char *varname;
 double f;
@@ -183,6 +197,7 @@ return( 0 );
 }
 /* ========================= */
 /* SETINTVAR - set a DMS var to an integer value */
+int
 PL_setintvar( varname, n )
 char *varname;
 int n;
@@ -197,6 +212,7 @@ return( 0 );
 
 /* ========================== */
 /* SETCHARVAR - set a DMS var to a char string value */
+int
 PL_setcharvar( varname, s )
 char *varname;
 char *s;
@@ -209,30 +225,23 @@ return( 0 );
 
 /* =========================== */
 /* CONV_MSG - print a message to errfp for a data item of invalid type */
+int
 PL_conv_msg( row, col, aname )
 int row, col;
 char *aname;
 {
+char progname[80];
 N_convmsg++;
 if( Supress_convmsg ) return( 0 );
-fprintf( PLS.errfp, "%s warning, %s skipping unplottable '%s' (rec=%d field=%d)\n",
-	Eprogname, aname, da(row,col), row+1, col+1 );
-return( 0 );
-}
-
-/* =========================== */
-/* OTH_MSG - print a message to errfp for a data item of invalid type */
-PL_oth_msg( msg )
-char *msg;
-{
-N_convmsg++;
-if( Supress_convmsg ) return( 0 );
-fprintf( PLS.errfp, "%s %s\n", Eprogname, msg );
+TDH_geterrprog( progname );
+fprintf( PLS.errfp, "%s: warning, %s skipping unplottable '%s' (rec=%d field=%d)\n",
+	progname, aname, da(row,col), row+1, col+1 );
 return( 0 );
 }
 
 /* =========================== */
 /* SUPPRESS_CONVMSG - suppress invalid type messages */
+int
 PL_suppress_convmsg( mode )
 int mode;
 {
@@ -242,6 +251,7 @@ return( 0 );
 
 /* ============================= */
 /* ZERO_CONVMSGCOUNT - zero out the conv msg counter */
+int
 PL_zero_convmsgcount()
 {
 N_convmsg = 0;
@@ -249,6 +259,7 @@ return( 0 );
 }
 /* ============================= */
 /* REPORT_CONVMSGCOUNT - report on what the conv msg count is.. */
+int
 PL_report_convmsgcount()
 {
 return( N_convmsg );
@@ -258,6 +269,7 @@ return( N_convmsg );
 
 /* ========================== */
 /* SCALEBEENSET - return 1 if scaling has been set, 0 if not */
+int
 PL_scalebeenset()
 {
 if( EDXhi - EDXlo > 0.0000001 ) return( 1 );
@@ -267,7 +279,7 @@ else return( 0 );
 
 
 /* ======================== */
-/* DEFAULTINC - given a min and a max, estimate a reasonable default inc 
+/* DEFAULTINC - given a min and a max, estimate a reasonable default inc (linear or log numeric data)
  *
  * Improvements contributed by Dan Pelleg peldan@yahoo.com :
  *  we want to find a number that is:
@@ -282,12 +294,12 @@ else return( 0 );
  * Remaining scg code deleted 10/1/03...
  */
 
+int
 PL_defaultinc( min, max, inc )
 double min, max, *inc;
 {
 double diff, h, fabs();
 double ret, mult, mant;
-int i;
 
 diff = max - min;
 diff = fabs( diff );
@@ -305,7 +317,7 @@ else ret = 10.0 * mult;
 return( 0 );
 }
 
- 
+
 
 /* ======================== */
 /* REWRITENUMS - rewrite numbers, supplying a spacer (comma in US)
@@ -318,6 +330,7 @@ return( 0 );
  	Parameter num is modified.
 */
 
+int
 PL_rewritenums( num )
 char *num;
 {
@@ -347,7 +360,7 @@ for( i = 0, len = strlen( s ); i < len; i++ ) {
 tmp[i] = '\0';
 
 if( decplace < 0 ) {
-	for( ; i >= 0; i-- ) if( isdigit( s[i] ) || s[i] == '.' ) { i++; break; } /* added scg 3/25/02 */
+	for( ; i >= 0; i-- ) if( isdigit( (int) s[i] ) || s[i] == '.' ) { i++; break; } /* added scg 3/25/02 */
 	decplace = i - k;
 	}
 
@@ -382,12 +395,13 @@ beginnum( s, i )
 char *s;
 int i;
 {
-if( ( isdigit( s[i] )  || (( s[i] == '.' || s[i] == '-' ) && isdigit( s[i+1]) ) ) ) return( 1 );
+if( ( isdigit( (int) s[i] )  || (( s[i] == '.' || s[i] == '-' ) && isdigit( (int) s[i+1]) ) ) ) return( 1 );
 else return( 0 );
 }
 
 /* ============================= */
 /* CONVERTNL - change all occurrances of "\n" (backslash followed by n) to a newline character */
+int
 PL_convertnl( str )
 char *str;
 {
@@ -405,6 +419,7 @@ return( 0 );
 }
 /* ============================== */
 /* MEASURETEXT - count the number of lines present in txt and find the length of longest line. */
+int
 PL_measuretext( txt, nlines, maxlen )
 char *txt;
 int *nlines, *maxlen;
@@ -429,22 +444,26 @@ return( 0 );
 
 /* ================================= */
 /* DO_X_BUTTON */
-
+int
 PL_do_x_button( label )
 char *label;
 {
-double x, y;
-int e;
 #ifndef NOX11
+double x, y;
+double sx, sy;
+int e;
+PLG_getglobalscale( &sx, &sy );  /* turn off global scaling while we draw button.. */
+PLG_setglobalscale( 1.0, 1.0 );
 while( 1 ) {
 	if( PL_clickmap_getdemomode() ) clickmap_show( 'x' ); /* added scg 11/23/01 */
-	Ecolor( "black" );
 	Elinetype( 0, 0.5, 1.0 );
 	Ecblock( 0.1, 0.1, 1.0, 0.3, "yellow", 0 );
 	Emov( 0.5, 0.12 );
 	Etextsize( 12 );
+	Ecolor( "black" );
 	Ecentext( label );
 	Ecblockdress( 0.1, 0.1, 1.0, 0.3, 0.06, "0.6", "0.8", 0.0, "" );
+	Eflush();
 	Esavewin();
         Egetkey( &x, &y, &e );
 	if( e < 1000 || (y < 0.3 && x < 1.0 )) {
@@ -456,5 +475,13 @@ while( 1 ) {
 	else if( PLS.usingcm ) fprintf( PLS.diagfp, "%g %g\n", x*2.54, y*2.54 ); /* in cm */
         else fprintf( PLS.diagfp, "%g %g\n", x, y ); /* mouse click location in inches from lower-left */
 	}
+PLG_setglobalscale( sx, sy ); /* restore global scaling.. */
 #endif
+return( 0 );
 }
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

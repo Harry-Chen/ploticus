@@ -1,11 +1,15 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 /* PROC PROCESSDATA - perform various processing to the data set */
 
 #include "tdhkit.h" /* for MAXITEMS */
 #include "pl.h"
+
+extern int unlink();
 
 #define MAXFLD MAXITEMS
 #define MAXBREAKFLDS 5
@@ -18,17 +22,17 @@ static int nkpfld;
 static int stackmode = 1;
 static FILE *outfp;
 static int breakcurrow = 0;
-static int break_orig_ds = -1;
 static int eofcount = 0;
 
 static int bor(), out(), eor(), dofld();
+static int jadvance();
 
 /* ================================= */
+int
 PLP_processdata_initstatic()
 {
 stackmode = 1;
 breakcurrow = 0;
-break_orig_ds = -1;
 eofcount = 0;
 return(0);
 }
@@ -36,32 +40,27 @@ return(0);
 
 /* ================================= */
 
+int
 PLP_processdata( )
 {
-int i;
-char attr[40], val[256];
+int i, j, k;
+char attr[NAMEMAXLEN], val[256];
 char *line, *lineval;
 int nt, lvp;
 int first;
 
 char buf[256];
 int stat;
-int align;
-double adjx, adjy;
 char tmpfile[256];
-char procfile[256];
-char action[40];
-int j;
+char action[NAMEMAXLEN];
 int showresults;
 int nfld;
 int fld[MAXFLD];
 double accum[MAXFLD];
 char rformat[40];
 int keepall;
-char outfmt[40];
-int k;
+/* char outfmt[40]; */
 char outbuf[256];
-int ds;
 char selectex[256];
 char tok[256];
 int dispformatnum;
@@ -74,8 +73,11 @@ double count;
 int istart;
 int select_result, select_error;
 int nocloseoutfp;
+char select1[256], select2[256];
+char nacode[20];
+int tagfld;
 
-TDH_errprog( "processdata" );
+TDH_errprog( "pl proc processdata" );
 
 
 
@@ -89,11 +91,15 @@ nkpfld = 0;
 strcpy( action, "" );
 stackmode = 1;
 strcpy( selectex, "" );
+strcpy( select1, "" );
+strcpy( select2, "" );
 dispformatnum = 0;
 strcpy( tmpfile, "" );
 outfile = 0;
 select_error = 0;
 nocloseoutfp = 0;
+strcpy( nacode, "=" );
+tagfld = -1;
 
 
 /* get attributes.. */
@@ -105,7 +111,8 @@ while( 1 ) {
 	lineval = &line[lvp];
 
 	if( stricmp( attr, "action" )==0 ) strcpy( action, val );
-	else if( stricmp( attr, "fields" )==0 ) {
+	else if( stricmp( attr, "fieldnames" )==0 ) definefieldnames( lineval );
+	else if( strnicmp( attr, "field", 5 )==0 ) {
 		int ix; ix = 0; i = 0; 
 		while( 1 ) {
 			strcpy( tok, GL_getok( lineval, &ix ) );
@@ -138,10 +145,13 @@ while( 1 ) {
 			}
 		nrejfld = i;
 		}
+	else if( stricmp( attr, "tagfield" )==0 ) tagfld = fref( val )-1;
 
 	else if( stricmp( attr, "resultformat" )==0 ) strcpy( rformat, lineval );
 	else if( stricmp( attr, "select" )==0 ) strcpy( selectex, lineval );
-	else if( stricmp( attr, "fieldnames" )==0 ) definefieldnames( lineval );
+	else if( stricmp( attr, "leftselect" )==0 ) strcpy( select1, lineval );
+	else if( stricmp( attr, "rightselect" )==0 ) strcpy( select2, lineval );
+	else if( stricmp( attr, "missingdatacode" )==0 ) strcpy( nacode, val );
 	else if( stricmp( attr, "showresults" )==0 ) {
 		if( strnicmp( val, YESANS, 1 )==0 ) showresults = 1;
 		else showresults = 0;
@@ -154,9 +164,6 @@ while( 1 ) {
                 if( strnicmp( val, YESANS, 1 ) ==0 ) stackmode = 1;
                 else stackmode = 0;
                 }
-        else if( stricmp( attr, "fieldnames" )==0 ) {
-                definefieldnames( lineval );
-                }
         else if( stricmp( attr, "outfile" )==0 ) {
                 strcpy( tmpfile, val );
                 outfile = 1;
@@ -167,7 +174,7 @@ while( 1 ) {
 	}
 
 if( strcmp( action, "breakreset" )!= 0 ) {
-	if( Nrecords < 1 ) return( Eerr( 17, "No data have been read yet w/ proc getdata", "" ) );
+	if( Nrecords < 1 ) return( Eerr( 17, "Current data set is empty, nothing to process", "" ) );
 	}
 	
 if( GL_slmember( action, "per* tot* acc*") && nfld < 1 ) 
@@ -197,7 +204,7 @@ if( rformat[0] == 'n' ) {  /* if resultformat begins with 'n', user wants rewrit
 	dispformatnum = 1; 
 	strcpy( rformat, &rformat[1] );
 	}
-sprintf( outfmt, "\"%s\" ", rformat );
+/* sprintf( outfmt, "\"%s\" ", rformat ); */  /* pulled scg 5/18/06, unsure why quoting was used.. */  
 for( i = 0; i < MAXFLD; i++ ) accum[i] = 0.0;
 
 if( stackmode ) {
@@ -239,7 +246,7 @@ if( strcmp( action, "breaks" )==0 ) {
 	i = breakcurrow;
 
 	/* save initial contents of break fields.. */
-	/* also set DMS vars BREAKFIELD1 .. N */
+	/* also set vars BREAKFIELD1 .. N */
 	for( j = 0; j < nfld; j++ ) {
 		strncpy( breakbuf[j], da( i, fld[j] ), 50 );
 		breakbuf[j][50] = '\0';
@@ -278,7 +285,6 @@ if( strcmp( action, "breaks" )==0 ) {
 /* breakreset */
 else if( strcmp( action, "breakreset" )==0 ) {
 	breakcurrow = 0;
-	break_orig_ds = -1;
 	eofcount = 0;
 	return( 0 );
 	}
@@ -351,7 +357,9 @@ else if( strncmp( action, "per", 3 )==0 ) {
 				for( k = 0; k < nfld; k++ ) if( j == fld[k] ) break;
 				if( k != nfld ) {
 				    if( keepall ) out( da( i, j ) );
-				    sprintf( outbuf, outfmt, (atof(da( i, j )) / accum[k]) * 100.0 );
+				    /* sprintf( outbuf, outfmt, (atof(da( i, j )) / accum[k]) * 100.0 ); */
+				    sprintf( outbuf, rformat, (atof(da( i, j )) / accum[k]) * 100.0 ); /* changed scg 5/18/06 - quoted
+														values not plottable */
 				    out( outbuf );
 				    }
 				else out( da( i, j ) );
@@ -494,16 +502,133 @@ else if( strncmp( action, "tot", 3 )==0 )  {
 	}
 
 
+/* join */
+else if( strcmp( action, "join" )==0 || strcmp( action, "leftjoin" )==0 || strcmp( action, "rightjoin" )==0 ) {
+	int irec1, irec2, inprogress, diff, prec;
+	char *f1, *f2;
+	inprogress= 1;
+	irec1 = irec2 = -1;
+	jadvance( select1, &irec1, &inprogress );   /* advance LHS to first matching record */  
+	if( inprogress ) jadvance( select2, &irec2, &inprogress );   /* advance RHS to first matching record */
+
+	while( inprogress ) {
+	
+		/* compare all join fields.. when first difference encountered break; save strcmp diff */
+		for( diff = 0, i = 0; i < nfld; i++ ) {
+			f1 = da( irec1, fld[i] );
+			f2 = da( irec2, fld[i] );
+			/* if both are integers, do a numeric comparison.. */
+			if( GL_goodnum( f1, &prec ) && GL_goodnum( f2, &prec )) diff = atoi( f1 ) - atoi( f2 );
+			/* otherwise do a strcmp */
+			else diff = strcmp( da( irec1, fld[i]),   da( irec2, fld[i] ));
+			if( diff != 0 ) break;
+			}
+
+		if( diff == 0 ) {
+			/* if diff == 0 then join left record with right record and output */
+			bor();
+			for( i = 0; i < Nfields; i++ ) if( dofld( i )) out( da( irec1, i ));
+			for( i = 0; i < Nfields; i++ ) if( dofld( i )) out( da( irec2, i ));
+			eor();
+
+			jadvance( select1, &irec1, &inprogress );   /* advance LHS to next matching record */  
+			if( inprogress ) jadvance( select2, &irec2, &inprogress );   /* advance RHS to next matching record */
+			if( !inprogress ) break;
+			}
+
+		else if( diff < 0 ) {
+			if( action[0] == 'l' ) { /* leftjoin... output missing RHS fields.. */
+				bor();
+				for( i = 0; i < Nfields; i++ ) if( dofld( i )) out( da( irec1, i ));
+				for( i = 0; i < Nfields; i++ ) if( dofld( i )) out( nacode );
+				eor();
+				}
+			jadvance( select1, &irec1, &inprogress );
+			}
+
+		else if( diff > 0 ) {
+			if( action[0] == 'r' ) { /* rightjoin... output missing LHS fields.. */
+				bor();
+				for( i = 0; i < Nfields; i++ ) if( dofld( i )) out( nacode );
+				for( i = 0; i < Nfields; i++ ) if( dofld( i )) out( da( irec2, i ));
+				eor();
+				}
+			jadvance( select2, &irec2, &inprogress );
+			}
+		}
+	}
+
+
+/* stats */
+
+else if( strcmp( action, "stats" )==0 )  {
+	double val, min, max, sqrt();
+	int n, prec, nbad;
+
+	n = 0; 
+	nbad = 0;
+	max = NEGHUGE;
+	min = PLHUGE;
+	
+	/* accum[0] holds sum, accum[1] holds sumsq.. */
+	for( j = 0; j < Nrecords; j++ ) {
+			
+		if( selectex[0] != '\0' ) { /* process against selection condition if any.. */
+	              	stat = do_select( selectex, j, &select_result );
+			if( stat ) select_error += stat;
+	               	if( select_result == 0 || stat ) continue; /* reject */
+	               	}
+		for( k = 0; k < nfld; k++ ) {
+			strcpy( tok, da( j, fld[k] ) );
+			if( !GL_goodnum( tok, &prec )) { nbad++; continue; }
+			n++;
+			val = atof( tok );
+			accum[0] += val;  /* sum */
+			accum[1] += (val * val); /* sum squared */
+			if( val > max ) { 
+				max = val; 
+				if( tagfld >= 0 ) strcpy( breakbuf[0], da( j, tagfld )); 
+				}
+			if( val < min ) { 
+				min = val; 
+				if( tagfld >= 0) strcpy( breakbuf[1], da( j, tagfld )); 
+				}
+			}
+		}
+	setintvar( "N", n );
+	setfloatvar( "TOTAL", accum[0] );
+	setintvar( "NMISSING", nbad );
+	if( n == 0 ) { setcharvar( "MEAN", "n/a" ); }
+	else	{
+		setfloatvar( "MEAN", accum[0]/(double)n );
+		if( n > 1 ) setfloatvar( "SD", sqrt( ( accum[1] - (accum[0]*accum[0]/(double)n )) / ((double)n-1.0) ) );
+		else setcharvar( "SD", "n/a" ); 
+		setfloatvar( "MAX", max );
+		if( tagfld >= 0 ) setcharvar( "MAX_ID", breakbuf[0] ); /* fixed scg 3/8/05 */
+		setfloatvar( "MIN", min );
+		if( tagfld >= 0 ) setcharvar( "MIN_ID", breakbuf[1] ); /* fixed scg 3/8/05 */
+		}
+	return( 0 );
+	}
+
 
 else	{
+	int do_numrows, foundrows;
+	char numstr[20];
+
+	do_numrows = 0;
+	if( strcmp( action, "numberrows" )==0 ) do_numrows = 1;
+
 	/* just write out fields */
-	for( i = 0; i < Nrecords; i++ ) {
+	for( i = 0, foundrows = 0; i < Nrecords; i++ ) {
 		if( selectex[0] != '\0' ) { /* process against selection condition if any.. */
                		stat = do_select( selectex, i, &select_result );
 			if( stat ) select_error += stat;
                 	if( select_result == 0 || stat ) continue; /* reject */
                 	}
+		foundrows++;
 		bor();
+		if( do_numrows ) { sprintf( numstr, "%d", foundrows ); out( numstr ); }
 		for( j = 0; j < Nfields; j++ ) if( dofld( j ) ) out( da( i, j ) );
 		eor();
 		}
@@ -555,9 +680,9 @@ if( stackmode ) {
 if( !stackmode && !outfile ) {
 	if( PLS.debug ) fprintf( PLS.diagfp, "processdata (action = %s) writing to tmp file and invoking proc getdata..\n", 
 				action );
-	getdata_specialmode( 1, tmpfile, showresults );
+	PL_getdata_specialmode( 1, tmpfile, showresults );
 	PLP_getdata();
-	getdata_specialmode( 0, "", 0 );
+	PL_getdata_specialmode( 0, "", 0 );
 	unlink( tmpfile );
 	}
 
@@ -610,4 +735,30 @@ if( !stackmode ) fprintf( outfp, "\n" );
 else PL_enddatarow(); 
 return( 0 );
 }
+
+/* ============================= */
+/* routines for JOIN */
+
+static int
+jadvance( select, irow, flag )
+char *select;
+int *irow, *flag;
+{
+int sresult;
+(*irow)++;
+if( *flag ) {
+	for( ; *irow < Nrecords; (*irow)++ ) {
+		do_select( select, *irow, &sresult );
+		if( sresult ) break;
+		}
+	if( *irow >= Nrecords ) *flag = 0;
+	}
+return( 0 );
+}
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 

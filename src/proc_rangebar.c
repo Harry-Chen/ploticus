@@ -1,6 +1,8 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 /* PROC RANGEBAR - render boxplots */
 
@@ -16,7 +18,8 @@ static int calculate_stats();
 #ifdef NONANSI
 static int dblcompare();
 #else
-static int dblcompare(double *f, double *g);
+static int dblcompare(const void *a, const void *b);
+/* static int dblcompare(double *f, double *g); */
 #endif
 
 static double Iqr, Lotail, Hitail;
@@ -24,6 +27,7 @@ static int Skipmed = 0;
 static int Logmean = 0;
 
 /* ========================= */
+int
 PLP_rangebar_initstatic()
 {
 Skipmed = 0;
@@ -33,10 +37,11 @@ return( 0 );
 
 
 /* ========================= */
+int
 PLP_rangebar()
 {
 int i;
-char attr[40], val[256];
+char attr[NAMEMAXLEN], val[256];
 char *line, *lineval;
 int nt, lvp;
 int first;
@@ -58,8 +63,8 @@ char tailmode[80];
 char nlocation[40];
 double nloc;
 int printn;
-char missword[40];
-char nword[40];
+char missword[NAMEMAXLEN+1];
+char nword[NAMEMAXLEN+1];
 char mlocation[40];
 double mloc;
 int printm;
@@ -68,7 +73,7 @@ double barwidth, hb;
 double h[5];
 char taildet[256];
 char outlinedet[256];
-char barcolor[40];
+char barcolor[COLORLEN];
 int baroutline;
 char ntextdet[256];
 char mtextdet[256]; /* 3/6/01 */
@@ -98,10 +103,12 @@ double outlinelen;
 char outlierlinedet[256];
 int result;
 FILE *statfp;
-char datafieldname[40];
+char datafieldname[NAMEMAXLEN+1];
 char briefstatstag[256];
 double exp();
 int mwhenexists; /* 3/6/01 */
+double radius;
+char symcode[50];
 
 
 TDH_errprog( "pl proc rangebar" );
@@ -200,7 +207,7 @@ while( 1 ) {
 							(calculations already done exteranally) */
 		/* nplotfields = sscanf( lineval, "%d %d %d %d %d %d", 
 			&pf[0], &pf[1], &pf[2], &pf[3], &pf[4], &pf[5], &pf[6] ); */
-		char fld[40], *GL_getok();
+		char fld[NAMEMAXLEN+1], *GL_getok();
 		int ix;
 		ix = 0;
 		for( i = 0; ; i++ ) {
@@ -625,8 +632,6 @@ if( showoutliers ) {
 	if( Eflip ) Etextdir( 90 );
 	if( outlierlinedet[0] != '\0' ) linedet( "outlierlinedetails", outlierlinedet, 0.5 );
 	for( i = 0; i < Nrecords; i++ ) {
-		double radius;
-		char symcode[50];
 
 		if( selectex[0] != '\0' ) { /* process against selection condition if any.. */
 						/* added 10/29/99 */
@@ -668,7 +673,7 @@ if( showoutliers ) {
 					}
 				}
 			if( outlblfld > 0 ) {
-				textdet( "outlierlabeldetails", outlbldet, &align, &adjx, &adjy, -3, "R" );
+				textdet( "outlierlabeldetails", outlbldet, &align, &adjx, &adjy, -3, "R", 1.0 );
 				if( align == '?' ) align = 'L';
 				if( Eflip ) Emov( barloc+0.1+adjx, Ea( Y, fval )+adjy );
 				else Emov( barloc+0.1+adjx, Ea( Y, fval )-((Ecurtextheight*0.35)+adjy) );
@@ -695,7 +700,7 @@ if( meansym[0] != '\0' ) {
 SKIPOUT:
 
 if( printn ) {
-	textdet( "ntextdetails", ntextdet, &align, &adjx, &adjy, -2, "R" );
+	textdet( "ntextdetails", ntextdet, &align, &adjx, &adjy, -2, "R", 1.0 );
 	sprintf( buf, "%g", stats[0] );
 	GL_varsub( nword, "@N", buf );
 	if( baseax == 'y' ) Emov( (barloc-(Ecurtextheight*0.3)) + adjx, nloc + adjy );
@@ -703,7 +708,7 @@ if( printn ) {
 	Ecentext( nword );
 	}
 if( printm && (stats[10] != 0.0 || !mwhenexists) ) {  /* modified 3/6/01 per H. Jaffee request */
-	textdet( "mtextdetails", mtextdet, &align, &adjx, &adjy, -2, "R" );
+	textdet( "mtextdetails", mtextdet, &align, &adjx, &adjy, -2, "R", 1.0 );
 	sprintf( buf, "%g", stats[10] );
 	GL_varsub( missword, "@M", buf );
 	/* Emov( barloc, mloc ); */
@@ -727,10 +732,9 @@ char axis;
 char *selectex;
 double stats[];
 {
-double total, val, val2, mean, stddev, totsq, min, max;
-double tmp;
-int i, j, n, ip;
-int sorted, nbad;
+double total, val, mean, stddev, totsq, min, max;
+int i, n;
+int nbad;
 double sqrt(), log();
 int result;
 int stat;
@@ -833,12 +837,29 @@ if( i == 0 ) Hitail = stats[7]; /* handle degenerate case */
 return( 0 );
 }
 
+
 /* ============================= */
+
 static int
-dblcompare( f, g )
-double *f, *g;
+dblcompare( a, b )
+const void *a, *b;
+
+/* static int dblcompare( f, g )
+ * double *f, *g;
+ */  /* changed to eliminate gcc warnings  scg 5/18/06 */
+
 {
+double *f, *g;
+f = (double *)a;
+g = (double *)b;
+
 if( *f > *g ) return( 1 );
 if( *f < *g ) return( -1 );
 return( 0 );
 }
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

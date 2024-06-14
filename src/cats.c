@@ -1,17 +1,24 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 /* routines related to categories.. */
 
 #include "pl.h"
+#include <string.h>
+
+#define CONTAINS 0
+#define EXACT -1
 
 
 static char **cats[2] = { NULL, NULL };	  /* category list backbone (X, Y) */
 static int ncats[2] = { 0, 0 };		  /* number of categories in list (X, Y) */
 static int nextcat[2] = { 0, 0 };	  /* used by nextcat() for looping across categories (not widely used)*/
 static int dont_init_ncats[2] = { 0, 0 }; /* for when items have been prepended */
-static int catcompmethod[2] = { 0, 0 };	  /* category comparison method: 0 = contains   -1 = exact   >0 = compare 1st n characters */
+static int catcompmethod[2] = { CONTAINS, CONTAINS };	  /* category comparison method: 
+							     0 = contains   -1 = exact   >0 = compare 1st n characters */
 
 static int sys_init[2] = { 0, 0 };	  /* 1 if category list malloced and ready to go.. */
 static int req_ncats[2] = { MAXNCATS, MAXNCATS }; /* size of category lists */
@@ -22,6 +29,7 @@ static int curcat[2] = { 0, 0 };	  /* used with roundrobin category lookup */
 
 /* ================================================= */
 /* CATFREE - free all malloced storage and initialize to original state.. */
+int
 PL_catfree()
 {
 int i, j;
@@ -37,7 +45,7 @@ cats[0] = NULL; cats[1] = NULL;
 ncats[0] = 0; ncats[1] = 0;  
 nextcat[0] = 0; nextcat[1] = 0;
 dont_init_ncats[0] = 0; dont_init_ncats[1] = 0;
-catcompmethod[0] = 0; catcompmethod[1] = 0;
+catcompmethod[0] = CONTAINS; catcompmethod[1] = CONTAINS;
 sys_init[0] = 0; sys_init[1] = 0;
 req_ncats[0] = MAXNCATS; req_ncats[1] = MAXNCATS;
 check_uniq[0] = 1; check_uniq[1] = 1;
@@ -49,6 +57,7 @@ return( 0 );
 
 /* ================================================= */
 /* SETCATS - fill categories list */
+int
 PL_setcats( ax, bigbuf )
 char ax;
 char *bigbuf;
@@ -57,9 +66,9 @@ int df;
 int axi, textloc;
 int i, j;
 char buf[200];
-char fname[50];
+char fname[NAMEMAXLEN];
 int bigbuflen, buflen, ix, ixhold;
-char fieldspec[80], selex[128];
+char fieldspec[80], selex[256];
 int stat, result;
 char *s, *t;
 int tlen;
@@ -97,7 +106,7 @@ if( strnicmp( bigbuf, "datafield", 9 )==0 ) {  /* fill cats list from a data fie
 		else strcpy( fname, &fieldspec[10] ); 
 
 		/* optional selectrows=xxx xx xxx */ /* scg 2/28/02 */
-		while( isspace( bigbuf[ix] ) && bigbuf[ix] != '\0' ) ix++ ;  /* advance */
+		while( isspace( (int) bigbuf[ix] ) && bigbuf[ix] != '\0' ) ix++ ;  /* advance */
 		ixhold = ix;
 		strcpy( buf, GL_getok( bigbuf, &ix ) );
 		if( strnicmp( buf, "selectrows=", 11 )==0 ) strcpy( selex, &bigbuf[ixhold+11] );
@@ -150,13 +159,23 @@ else	{		/* fill cats list from literal text chunk.. */
 		GL_getseg( buf, bigbuf, &textloc, "\n" );
 		buflen = strlen( buf );
 
-		if( ncats[ axi ] >= MAXNCATS )
-			return( Eerr( 4825, "category list is full, some entries ignored (use proc categories to raise)", "" ));
 
-		s = (char *) malloc( buflen+1 );
-		cats[ axi ][ ncats[ axi ]] = s;
-		strcpy( s, buf );
-		ncats[ axi ]++;
+		if( check_uniq[ axi ] ) {
+			/* make sure we don't have it already.. added scg 6/1/06 */
+			for( j = 0; j < ncats[ axi ]; j++ ) {
+				if( stricmp( cats[ axi ][j], buf ) ==0 ) break;
+				}
+			}
+		else j = ncats[ axi ];
+
+		if( j == ncats[ axi ] ) { 	/* only add it if not yet seen.. */  /* added scg 6/1/06 */
+			if( ncats[ axi ] >= MAXNCATS )
+				return( Eerr( 4825, "category list is full, some entries ignored (use proc categories to raise)", "" ));
+			s = (char *) malloc( buflen+1 );
+			cats[ axi ][ ncats[ axi ]] = s;
+			strcpy( s, buf );
+			ncats[ axi ]++;
+			}
 		}
 	}
 dont_init_ncats[ axi ] = 0; /* for future go-rounds */
@@ -168,12 +187,13 @@ return( 0 );
 /* ======================================================= */
 /* ADDCAT - prepend or append a category to the cat list */
 /*          If prepend, this must be called before main cats list is set up */
+int
 PL_addcat( ax, pos, name )
 char ax;  	/* 'x' or 'y' */
 char *pos;	/* "pre" or "post" */
 char *name;	/* category name */
 {
-int axi, buflen, i;
+int axi, buflen;
 char *s;
 
 if( ax == 'x' ) axi = 0;
@@ -203,6 +223,7 @@ return( 0 );
 /* =============================================== */
 /* NEXTCAT - for getting categories sequentially.. get next category in list.
       nextcat var maintains current position. */
+int
 PL_nextcat( ax, result, maxlen )
 char ax;
 char *result;
@@ -222,20 +243,25 @@ return( 0 );
 
 /* ================================================ */
 /* GETCAT - get category name for slot n */
-char *
-PL_getcat( ax, n )
+int
+PL_getcat( ax, n, result, maxlen )
 char ax;
 int n;
+char *result;		/* changed to strcpy into a buffer, scg 8/4/04 */
+int maxlen;
 {
 int axi;
 if( ax == 'x' ) axi = 0;
 else axi = 1;
-if( n >= ncats[ axi ] ) return( NULL );
-return( cats[ axi ][ n ] );
+if( n >= ncats[ axi ] ) return( 1 );
+else strncpy( result,  cats[ axi ][ n ], maxlen );
+result[ maxlen ] = '\0';
+return( 0 );
 }
 
 /* ================================================ */
 /* NCATS - return number of categories for an axis */
+int
 PL_ncats( ax )
 char ax;
 {
@@ -249,6 +275,7 @@ return( ncats[ axi ] );
 /* ================================================ */
 /* FINDCAT - category look up.  Return slot (0 .. max) or -1 if not found */
 /*    roundrobin search option is more efficient when categories will tend to be accessed in order */
+int
 PL_findcat( ax, s )
 char ax, *s;
 {
@@ -265,12 +292,11 @@ if( roundrobin[ axi ] ) {
 	}
 else j = 0;
 
-
 /* contains */
-if( catcompmethod[axi] == 0 ) { for( ; j < ncats[ axi ]; j++ ) { if( strnicmp( s, cats[axi][j], slen )==0 ) break; }}
+if( catcompmethod[axi] == CONTAINS ) { for( ; j < ncats[ axi ]; j++ ) { if( strnicmp( s, cats[axi][j], slen )==0 ) break; }}
 
 /* exact */
-else if( catcompmethod[axi] == -1 ) { for( ; j < ncats[ axi ]; j++ ) { if( stricmp( s, cats[axi][j] )==0 ) break; }}
+else if( catcompmethod[axi] == EXACT ) { for( ; j < ncats[ axi ]; j++ ) { if( stricmp( s, cats[axi][j] )==0 ) break; }}
 
 /* specified length */
 else if( catcompmethod[axi] > 0 ) { for( ; j < ncats[ axi ]; j++ ) { if( strnicmp( s, cats[axi][j], catcompmethod[axi] )==0 ) break; }}
@@ -292,6 +318,7 @@ else 	{
 
 /* ================================================ */
 /* SETCATPARMS - set the category comparison method */
+int
 PL_setcatparms( ax, what, parm )
 char ax;
 char *what;
@@ -311,3 +338,8 @@ else if( strcmp( what, "roundrobin" )==0 ) roundrobin[axi] = parm;
 return( 0 );
 }
 
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

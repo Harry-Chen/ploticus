@@ -1,16 +1,20 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
-
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 #include "pl.h"
+extern int PLGS_z(), PLGG_setimfmt(), PLGG_getimfmt(), PLGS_fmt();
 
 /* ========================== */
 /* DEVAVAIL - returns 1 if specified device driver or resource is available
 	in this build, or 0 if not. */
+int
 PL_devavail( dev )
 char *dev;
 {
+
 if( dev[0] == 'x' ) {  /* x11 */
 #ifdef NOX11
 	return( 0 );
@@ -69,14 +73,15 @@ return( 0 );
 
 /* ========================== */
 /* DEVSTRING - creates a string listing the output format options available with this build. */
+int
 PL_devstring( s )
 char *s;
 {
 /* Added svg option - BT 05/11/01 */
-strcpy( s, "Available output formats: ps eps " );
+strcpy( s, "This build can produce: ps eps " );
 #ifndef NOSVG
  strcat( s, "svg " );
- #ifdef WZ 
+ #if WZ || GD16 || GD18
        	strcat( s, "svgz " );
  #endif
 #endif
@@ -106,13 +111,13 @@ return( 0 );
 /* ========================== */
 /* DEVNAMEMAP - translate between internal and external 
 	representation of output device code */
+int
 PL_devnamemap( s, t, mode )
 char *s; /* internal (PLS.device) */
 char *t; /* external (command line opt[1] or DEVICE */
 int mode; /* 1 = set s given t    2 = set t given s */
 {
 char c;
-char imfmt[20];
 
 if( mode == 1 ) {
 	c = tolower(t[0]);
@@ -173,6 +178,7 @@ else if( mode == 2 ) {
 #endif
 	else if( *s == 'f' ) strcpy( t, "swf" );
 	else if( *s == 'x' ) strcpy( t, "x11" );
+	else if( *s == 'n' ) strcpy( t, "nodevice" );
 	else return( Eerr( 8025, "unrecognized internal device rep", "" ) );
 	return( 0 );
 	}
@@ -185,6 +191,7 @@ else return( Eerr( 8027, "invalid devnamemap mode", "" ) );
 
    Returns 0 if ok; 1 if usage error 
 */
+int
 PL_makeoutfilename( scriptfn, outfn, dev, page )
 char *scriptfn; /* script name (or if -o and page > 1, may be the output file name given on command line) */
 char *outfn;
@@ -224,3 +231,9 @@ if( page > 1 ) sprintf( &outfn[ len ], ".p%d.%s", page, imfmt );
 else sprintf( &outfn[ len ], ".%s", imfmt );
 return( 0 );
 }
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

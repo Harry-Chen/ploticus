@@ -1,34 +1,31 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 /* PROC BEVELRECT - bevelled rectange, e.g. for button */
 
 #include "pl.h"
 
-
+int
 PLP_rect()
 {
-int i;
-char attr[40], val[256];
+char attr[NAMEMAXLEN], val[256];
 char *line, *lineval;
 int nt, lvp;
 int first;
 
-int stat;
-int align;
-double adjx, adjy;
-
 double xlo, ylo, xhi, yhi;
-char color[40];
+char color[COLORLEN];
 double bevelsize;
-char lowbevelcolor[40], hibevelcolor[40], shadowcolor[40];
+char lowbevelcolor[COLORLEN], hibevelcolor[COLORLEN], shadowcolor[COLORLEN];
 double shadowsize;
 int gotrect;
 char outline[128];
 int ioutline;
 char mapurl[MAXPATH];
-char maplabel[256];
+char maplabel[MAXTT];
 int clickmap_on;
 
 TDH_errprog( "pl proc rect" );
@@ -74,6 +71,10 @@ while( 1 ) {
 	else if( stricmp( attr, "clickmaplabel" )==0 ) {
 		if( PLS.clickmap ) { strcpy( maplabel, lineval ); clickmap_on = 1; }
 		}
+        else if( stricmp( attr, "clickmaplabeltext" )==0 ) {
+                if( PLS.clickmap ) { getmultiline( "clickmaplabeltext", lineval, MAXTT, maplabel ); clickmap_on = 1; }
+                }
+
 	else if( stricmp( attr, "outline" )==0 ) {
 		strcpy( outline, lineval );
 		if( GL_smember( val, "no none" )==0 ) ioutline = 1;
@@ -87,11 +88,10 @@ while( 1 ) {
 /* now do the plotting work.. */
 
 if( !gotrect ) return( Eerr( 695, "No rectangle specified", "" ));
+if( stricmp( color, "none" )==0 ) strcpy( color, "" );/* "none" added scg 1/21/05 */
 
-if( color[0] != '\0' ) {
-	linedet( "outline", outline, 0.5 );
-	Ecblock( xlo, ylo, xhi, yhi, color, ioutline );
-	}
+linedet( "outline", outline, 0.5 );
+Ecblock( xlo, ylo, xhi, yhi, color, ioutline );
 
 if( bevelsize > 0.0 || shadowsize > 0.0 ) 
 	Ecblockdress( xlo, ylo, xhi, yhi,
@@ -101,3 +101,9 @@ if( clickmap_on ) clickmap_entry( 'r', mapurl, 0, xlo, ylo, xhi, yhi, 0, 0, mapl
 
 return( 0 );
 }
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

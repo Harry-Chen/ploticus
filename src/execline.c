@@ -1,6 +1,8 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 #include "pl.h"
 #include "tdhkit.h"
@@ -11,10 +13,10 @@
 
 static int execline_init = 0;
 static int lastbs; 	      /* indicates that previous line ended with a backslash, indicating continuation.. */
-static char procname[40];
-static char saveas_name[40];
+static char procname[NAMEMAXLEN];
+static char saveas_name[NAMEMAXLEN];
 static char last_proctok[20]; /* either #proc or #procdef */
-static char clone_name[40];
+static char clone_name[NAMEMAXLEN];
 static int nlhold;
 static char clonelist[200];
 static int holdmemflag = 0;
@@ -23,6 +25,7 @@ static int prevlineblank = 0;	/* prevent -echo from spitting out lots of adjacen
 static int proc_call();
 
 /* ================================================================= */
+int
 PL_execline_initstatic()
 {
 execline_init = 0;
@@ -36,10 +39,11 @@ return( 0 );
  * Returns 0 if ok, or a non-zero error code 
  */
 
+int
 PL_execline( line )
 char *line;	/* line of script file.. */   /* if const, new trailing newline and no #ifspec! (these modify line) */
 {
-int i, j, ix, stat;
+int i, ix, stat;
 char buf2[256];
 int buflen, endproc, procstat;
 
@@ -241,6 +245,7 @@ else 	{
 /* HOLDMEM - allow other modules to tell execline() to not free the lines 
    for the current proc.. Used by getdata.
  */
+int
 PL_holdmem( stat )
 int stat;
 {
@@ -255,8 +260,8 @@ char *procname;
 {
 int stat;
 int n;
-char attr[40], val[256];
-char *line, *lineval;
+char attr[NAMEMAXLEN], val[256];
+char *line;
 int nt, lvp;
 int first;
 
@@ -292,6 +297,7 @@ else if( stricmp( procname, "bars" )==0 ) stat = PLP_bars();
 else if( stricmp( procname, "rangebar" )==0 ) stat = PLP_rangebar();
 else if( stricmp( procname, "scatterplot" )==0 ) stat = PLP_scatterplot();
 else if( stricmp( procname, "vector" )==0 ) stat = PLP_vector();
+else if( stricmp( procname, "venndisk" )==0 ) stat = PLP_venndisk();
 else if( stricmp( procname, "annotate" )==0 ) stat = PLP_annotate();
 else if( stricmp( procname, "legend" )==0 ) stat = PLP_legend();
 else if( stricmp( procname, "curvefit" )==0 ) stat = PLP_curvefit();
@@ -338,8 +344,8 @@ int *linevalpos, *nt;
 {
 static int cloneix, stop, state;
 static char *line;
-int i, j, k, ix, alen;
-char clone_name[40];
+int i, j, ix, alen;
+char clone_name[NAMEMAXLEN];
 
 /* states:  0 = init   1 = getting clone  2 = getting proc  3 = done */
 
@@ -379,7 +385,7 @@ if( state == 1 || state == 2 ) {
 	if( PLL.curline >= PLL.nlines ) return( NULL );
 	if( flag == 2 ) { /* multirow */
 		for( i = 0; PLL.procline[ PLL.curline ][ i ] != '\0'; i++ ) 
-			if( !isspace( PLL.procline[ PLL.curline ][ i ] ) ) break;
+			if( !isspace( (int) PLL.procline[ PLL.curline ][ i ] ) ) break;
 		line = &(PLL.procline[ PLL.curline ][ i ]);
 		}
 	else	{  /* single row attr: val */
@@ -438,6 +444,7 @@ return( NULL );
 	frame: yes
 */
    
+int
 PL_getmultiline( parmname, firstline, maxlen, result )
 char *parmname, *firstline;
 int maxlen;
@@ -485,7 +492,7 @@ while( 1 ) {
 	else	{
 		/* allow backslash to represent start of text, so that leading blanks can be displayed  4/19/02 */
 		for( i = 0; i < len; i++ ) {
-			if( line[i] == '\\' && isspace( line[i+1] ) ) continue; /* skip the backslash */
+			if( line[i] == '\\' && isspace( (int) line[i+1] ) ) continue; /* skip the backslash */
 			else result[ rlen++ ] = line[i];
 			}
 		result[ rlen++ ] = '\n';
@@ -494,3 +501,10 @@ while( 1 ) {
 	}
 return( 0 );
 }
+
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

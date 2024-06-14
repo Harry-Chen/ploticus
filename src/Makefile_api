@@ -13,8 +13,11 @@
 ######## Applications will need environment variable PLOTICUS_PREFABS set to the full pathname
 ######## of the ./prefabs directory.  
 ########
+######## Note: if you build both libploticus.a and the pl executable from the same source code,
+######## you MUST do a 'make clean' in between...
+########
 ######## PLOTICUS data display engine.  Software, documentation, and examples.  
-######## Copyright 1998-2004 Stephen C. Grubb  (scg@jax.org)
+######## Copyright 1998-2005 Stephen C. Grubb  (stevegrubb@gmail.com)
 ######## Covered by GPL; see the file ./Copyright for details. 
 
 # defaults..
@@ -24,6 +27,7 @@ PLATFORM = UNIX
 RMCOM = rm -f
 XOBJ = x11.o interact.o
 ZFLAG = -DWZ
+LIBEXT = a
 
 
 ######## Step 1. What's your OS platform?
@@ -33,7 +37,7 @@ ZFLAG = -DWZ
 XINCLUDEDIR = -I/usr/X11R6/include
 
 #### For Solaris 2.x uncomment the following..
-# XINCLUDEDIR = -I/usr/openwin/include
+# INCLUDEDIR = -I/usr/openwin/include
 
 #### For Windows/NT compiled using MinGW uncomment the following..
 #### (this is not yet supported)
@@ -43,9 +47,15 @@ XINCLUDEDIR = -I/usr/X11R6/include
 # NOXFLAG = -DNOX11
 # NORLIMFLAG = -DNORLIMIT
 
-#### For Max OS X uncomment the following.. 
+#### To build libploticus as a Max OS X static lib uncomment the following.. 
 # CC = cc
 # XINCLUDEDIR = -I/usr/X11R6/include
+
+#### To build libploticus as a Max OS X dynamic lib uncomment the following..
+# CC = cc -fno-common
+# XINCLUDEDIR = -I/usr/X11R6/include
+# ARCOM = gcc -dynamiclib -flat_namespace -undefined suppress -o 
+# LIBEXT = dylib
 
 #### For Cygwin uncomment the following..
 # PLATFORM = WIN32
@@ -83,11 +93,12 @@ GDLEVEL = -DGD16
 #### GD 1.3 (psuedo-gif)
 # GDLEVEL = -DGD13
 
-#### Omit all GD references
+#### No GD at all
 # NOGDFLAG = -DNOGD
 
 
 ####### Step 3. It is possible to bundle GD code (1.3 or 1.6) directly into libploticus.  
+####### (For PNG support you need your own copy of zlib and libpng)
 ####### Do you wish to do this? Uncomment one of the following:
 
 #### Yes, version 1.6 (png)
@@ -102,9 +113,10 @@ GDINC = -I./gd16
 # GDOBJ =
 
 
-#### If Yes, to specify a nonstandard location of your GD, ZLIB, etc. header files, 
+#### If Yes above, and if your GD, PNG, ZLIB, etc. header files (eg. png.h) are in a non-standard place,
 #### supply the following line, eg. GDHEADERS = -I/home/fred/include
-GDHEADERS = 
+# GDHEADERS = 
+# eg. GDHEADERS = -I/home/scg/lib
 
 #### If No, and you will be linking to your own copy of GD 1.84+ and want FreeType2 support, 
 #### uncomment the following..
@@ -126,9 +138,10 @@ LIBDIR = /usr/local/lib
 #### If ZLIB will NOT be available, uncomment the following..
 # ZFLAG =  
 
-#### To disable all X11 output capability from any of the above unix builds, uncomment the following..
+#### To disable all X11 output capability from any of the above unix builds, uncomment the following 3 lines..
 NOXFLAG = -DNOX11
 XOBJ =
+XINCLUDEDIR = 
 
 #### To disable all PostScript / EPS output capability, uncomment the following..
 # NOPSFLAG = -DNOPS
@@ -154,6 +167,10 @@ NORLIMFLAG = -DNORLIMIT
 # LOCALE_FLAG = -DLOCALE
 
 
+#### To see all possible compiler warnings, uncomment the following line..
+# WALL = -Wall
+
+
 
 ######## Done.  Now save this file and type:  make clean; make -f Makefile_api
 ########
@@ -162,7 +179,7 @@ NORLIMFLAG = -DNORLIMIT
 
 
 
-CFLAGS = -DPLOTICUS -D$(PLATFORM) -DTDH_NOREC $(ZFLAG) $(FLAGS) $(LOCALE_FLAG) $(GDLEVEL) $(GDHEADERS) $(GDINC)\
+CFLAGS = $(WALL) -DPLOTICUS -D$(PLATFORM) -DTDH_NOREC $(ZFLAG) $(FLAGS) $(LOCALE_FLAG) $(GDLEVEL) $(GDHEADERS) $(GDINC)\
   $(NOGDFLAG) $(NOXFLAG) $(NOPSFLAG) $(NOSVGFLAG) $(NOSWFFLAG) $(XINCLUDEDIR) $(MINGH) $(NORLIMFLAG) \
   -DPREFABS_DIR=\"$(PREFABS_DIR)\"
 
@@ -170,9 +187,9 @@ OBJ = proc_annotate.o proc_areadef.o proc_axis.o proc_bars.o proc_rect.o proc_br
   proc_categories.o proc_curvefit.o proc_settings.o proc_defineunits.o proc_drawcommands.o \
   proc_getdata.o proc_import.o proc_legend.o proc_legendentry.o proc_line.o proc_lineplot.o \
   proc_page.o proc_pie.o proc_print.o proc_rangebar.o proc_rangesweep.o proc_usedata.o \
-  proc_scatterplot.o proc_vector.o proc_symbol.o proc_processdata.o proc_tabulate.o clickmap.o\
+  proc_scatterplot.o proc_vector.o proc_symbol.o proc_processdata.o proc_tabulate.o proc_venndisk.o clickmap.o\
   plhead.o execscriptfile.o execline.o lib.o details.o parse.o units.o preliminaries.o \
-  process_arg.o plvalue_subst.o cats.o fieldnames.o autorange.o select.o memstuff.o \
+  process_arg.o plvalue_subst.o cats.o fieldnames.o autorange.o nearest.o select.o memstuff.o \
   color.o plg.o init.o arrow.o mark.o block.o pcode.o ps.o svg.o swf.o stub.o winscale.o lineclip.o smoothfit.o \
   condex.o dates.o dbinterface.o err.o functions.o glroutines.o reslimits.o secondaryops.o  \
   shell.o sinterp.o tdhkit.o times.o value.o value_subst.o variable.o custom.o datetime.o \
@@ -180,15 +197,17 @@ OBJ = proc_annotate.o proc_areadef.o proc_axis.o proc_bars.o proc_rect.o proc_br
   $(LOCALEOBJ)
 
 libploticus: $(OBJ) $(GDOBJ) $(XOBJ)
-	$(RMCOM) libploticus.a
-	$(ARCOM) libploticus.a $(OBJ) $(GDOBJ) $(XOBJ)
+	$(RMCOM) libploticus.$(LIBEXT)
+	$(ARCOM) libploticus.$(LIBEXT) $(OBJ) $(GDOBJ) $(XOBJ)
 
 
 install: libploticus
-	mv libploticus.a $(LIBDIR)
+	mv libploticus.$(LIBEXT) $(LIBDIR)
 
 api_test: api_test.o
-	cc api_test.o libploticus.a -lm -o api_test
+	echo "note: you may need to edit Makefile_api to specify additional libs for the following command.."
+#	$(CC) api_test.o libploticus.$(LIBEXT) -lm -o api_test
+	$(CC) api_test.o libploticus.a /home/scg/lib/libpng.a /home/scg/lib/libz.a -lm -o api_test
 
 #         some additional libraries likely will be required here..
 

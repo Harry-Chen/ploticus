@@ -1,6 +1,9 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
+
 /* windbarb features contributed by Andrew Phillips */
 
 /* PROC VECTOR - render a display of vectors */
@@ -8,22 +11,26 @@
 #include "pl.h"
 
 #define TWOPI 6.2831854
+#define HALFPI 1.5707963
 
+int
 PLP_vector()
 {
 int i;
-char attr[40], val[256];
+char attr[NAMEMAXLEN], val[256];
 char *line, *lineval;
 int nt, lvp;
 int first, stat;
 int xfield, yfield, dirfield, magfield, colorfield, exactcolorfield, clip;
 double dirrange, lenscale, x, y, newx, newy, len, dir, ahlen, ahwid;
 double sin(), cos(), basedir, constantlen, holdx, holdy;
-char acolor[COLORLEN], linedetails[128], legendlabel[128], selex[128];
+char acolor[COLORLEN], linedetails[128], legendlabel[256], selex[128];
 double barblimitbig, barblimitmedium, barblimitsmall, barblimittiny, barbdir, mag;
 char dirunits, zeroat, clockdir, lenunits, type;
+int x2field, y2field;
+double taillen;
 
-TDH_errprog( "pl proc scatterplot" );
+TDH_errprog( "pl proc vector" );
 
 xfield = -1;
 yfield = -1;
@@ -46,6 +53,9 @@ type = 'a'; /* arrow */
 lenscale = 1.0;
 constantlen = 0.0;
 clip = 1;
+x2field = -1;
+y2field = -1;
+taillen = 0.1;
 
 barblimitbig = 50.0; /* Magnitude limits */
 barblimitmedium = 10.0;
@@ -66,6 +76,8 @@ while( 1 ) {
 	if( stricmp( attr, "xfield" )==0 ) xfield = fref( val ) -1;
 	else if( stricmp( attr, "yfield" )==0 ) yfield = fref( val ) -1;
 	else if( stricmp( attr, "dirfield" )==0 ) dirfield = fref( val ) -1;
+	else if( stricmp( attr, "x2field" )==0 ) x2field = fref( val ) -1;
+	else if( stricmp( attr, "y2field" )==0 ) y2field = fref( val ) -1;
 	else if( stricmp( attr, "dirrange" )==0 ) dirrange = atof( val );
 	else if( stricmp( attr, "dirunits" )==0 ) dirunits = tolower( val[0] );
 	else if( stricmp( attr, "clockdir" )==0 ) clockdir = tolower( val[0] );
@@ -83,6 +95,7 @@ while( 1 ) {
 	else if( stricmp( attr, "arrowheadcolor" )==0 ) strcpy( acolor, val );
 	else if( stricmp( attr, "select" )==0 ) strcpy( selex, lineval );
 	else if( stricmp( attr, "legendlabel" )==0 ) strcpy( legendlabel, lineval );
+	else if( stricmp( attr, "taillen" )==0 ) taillen = atof( val );
 	else if( stricmp( attr, "clip" )==0 ) {
 		if( strnicmp( val, YESANS,  1 )==0 ) clip = 1;
 		else clip = 0;
@@ -104,13 +117,23 @@ if( Nrecords < 1 ) return( Eerr( 17, "No data has been read yet w/ proc getdata"
 if( !scalebeenset() )
          return( Eerr( 51, "No scaled plotting area has been defined yet w/ proc areadef", "" ) );
 
+if( type == 'e' ) type = 'i';
+
 if( xfield < 0 || yfield < 0 ) return( Eerr( 2205, "xfield and yfield are both required", "" ));
-if( dirfield < 0 ) return( Eerr( 2205, "dirfield required", "" ));
-if( magfield < 0 && constantlen == 0.0 ) return( Eerr( 2205, "either magfield or constantlen required", "" ));
-if( magfield < 0 && type == 'b' ) return( Eerr( 2205, "magfield must be specified when type is barb", "" ));
+
+if( dirfield < 0 && ( x2field < 0 || y2field < 0 )) return( Eerr( 2205, "dirfield or x2field&y2field required", "" ));
+
+if( magfield < 0 && constantlen == 0.0 && (x2field < 0 || y2field < 0 )) 
+	return( Eerr( 2205, "magfield, constantlen, or x2field&y2field required", "" ));
+
+if( magfield < 0 && type == 'b' && (x2field < 0 || y2field < 0 )) 
+	return( Eerr( 2205, "magfield oe x2field/y2field required when type is barb", "" ));
+
 if( barblimitbig <= 0 || barblimitmedium <= 0 || barblimitsmall <= 0 ) return( Eerr( 2205, "barblimits must be grater then 0", ""));
 
 if( strnicmp( legendlabel, "#usefname", 9 )==0 ) getfname( dirfield+1, legendlabel );
+
+if( !GL_member( type, "abelit" )) type = 'a';
 
 
 /* now do the plotting work.. */
@@ -146,7 +169,7 @@ for( i = 0; i < Nrecords; i++ ) {
 	/* if colorfield used, get color.. */
         if( colorfield >= 0 ) {
                 strcpy( linedetails, "" );
-                get_legent( da( i, colorfield ), linedetails, NULL, NULL );
+                PL_get_legent( da( i, colorfield ), linedetails, NULL, NULL );
 		linedet( "colorfield", linedetails, 0.5 );
                 }
 	else if( exactcolorfield >= 0 ) {
@@ -154,28 +177,38 @@ for( i = 0; i < Nrecords; i++ ) {
 		linedet( "exactcolorfield", linedetails, 0.5 );
 		}
 
-	/* dir and len.. */
-	dir = atof( da( i, dirfield ) );
-	if( magfield >= 0 ) mag = atof( da( i, magfield ) );
-	if( constantlen > 0.0 ) len = constantlen;
-	/* else len = atof( da( i, magfield ) ); */
-	else len = mag;
-
-	if( clockdir == '+' ) dir *= -1.0;
-
-	/* convert to absolute units.. */
+	/* convert x,y to absolute units.. */
 	x = Eax( x );
 	y = Eay( y );
 
-	/* normalize dir and len.. */
-	dir = basedir + ((dir / dirrange) * TWOPI );
-	len *= lenscale;
-	if( lenunits == 'x' || lenunits == 'd' || lenunits == 'u' ) len = Eax( len ) - Eax( 0.0 );
-	else if( lenunits == 'y' ) len = Eay( len ) - Eay( 0.0 );
+	/* added scg 12/19/03 */
+	if( x2field >= 0 && y2field >=0 ) {
+		newx = Eax( fda( i, x2field, 'x' ) );
+		newy = Eay( fda( i, y2field, 'y' ) );
+		}
 
+	else	{
+		/* dir and len.. */
+		dir = atof( da( i, dirfield ) );
+		if( magfield >= 0 ) mag = atof( da( i, magfield ) );
+		if( constantlen > 0.0 ) len = constantlen;
+		/* else len = atof( da( i, magfield ) ); */
+		else len = mag;
+	
+		if( clockdir == '+' ) dir *= -1.0;
+	
+		/* normalize dir and len.. */
+		dir = basedir + ((dir / dirrange) * TWOPI );
+		len *= lenscale;
+		if( lenunits == 'x' || lenunits == 'd' || lenunits == 'u' ) len = Eax( len ) - Eax( 0.0 );
+		else if( lenunits == 'y' ) len = Eay( len ) - Eay( 0.0 );
+	
+		newx = x + (len * cos( dir ));
+		newy = y + (len * sin( dir ));
+		}
 
-	newx = x + (len * cos( dir ));
-	newy = y + (len * sin( dir ));
+	/* skip degenerate cases.. added scg 5/24/05 */
+	if( x == newx && y == newy ) continue;
 
 	if( clip ) {
 		holdx = newx; holdy = newy;
@@ -188,12 +221,23 @@ for( i = 0; i < Nrecords; i++ ) {
 			continue;
 			}
 		}
-	if( type == 'a' )
-		Earrow( x, y, newx, newy, ahlen, ahwid, acolor );
 
-	/* Barbs */
-	/* windbarb features contributed by Andrew Phillips */
+	/* arrow */
+	if( type == 'a' ) {
+		Earrow( x, y, newx, newy, ahlen, ahwid, acolor );
+		}
+
+	/* line or error bar */
+	else if( type == 'l' || type == 'i' || type == 't' ) {
+		Emov( x, y );
+		Elin( newx, newy );
+		if( type == 'i' ) PLG_perptail( x, y, newx, newy, taillen );
+		if( type == 'i' || type == 't' ) PLG_perptail( newx, newy, x, y, taillen );
+		}
+
+	/* windbarb */  
 	else if( type == 'b' ) {
+		/* contributed by Andrew Phillips */
 	  	int bigBarbCount, mediumBarbCount, smallBarbCount, curBarb, b;
 	    	double x1, x2, x3, y1, y2, y3, newMag, barbLen, barbSpace, barbAdjust;
 
@@ -292,12 +336,18 @@ for( i = 0; i < Nrecords; i++ ) {
                  Elin( newx, newy );
                }
 
-           } 
+           } /* end of barbs */ 
 
 
 	} /* end data rows loop */
 
-if( legendlabel[0] != '\0' ) add_legent( LEGEND_LINE, legendlabel, "", linedetails, "", "" );
+if( legendlabel[0] != '\0' ) PL_add_legent( LEGEND_LINE, legendlabel, "", linedetails, "", "" );
 
 return( 0 );
 }
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

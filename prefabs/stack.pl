@@ -63,8 +63,9 @@
 #endif
 #if @yrange = ""
   yautorange: datafields=@y,@y2,@y3,@y4 combomode=@combomode incmult=2.0  nearest=@ynearest
-#elseif @yrange = 0
-  yautorange: datafields=@y,@y2,@y3,@y4 combomode=@combomode incmult=2.0 lowfix=0 nearest=@ynearest
+//#elseif @yrange = 0
+#elseif $ntoken( 2, @yrange ) = ""
+  yautorange: datafields=@y,@y2,@y3,@y4 combomode=@combomode incmult=2.0 mininit=@yrange nearest=@ynearest
 #else
   yrange: @yrange
 #endif
@@ -191,6 +192,13 @@ stubcull: yes
   reverseorder: @reverseleg
   #ifspec legendfmt format
   #ifspec legendsep sep
+  #ifspec legwrap wraplen
+  #ifspec legbreak extent
+  #ifspec legtitle title
+  #ifspec legbox backcolor
+  #ifspec legframe frame
+  #ifspec legtextdet textdetails
+
 #endif
 
 //// user post-plot include..

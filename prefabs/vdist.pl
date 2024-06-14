@@ -37,7 +37,7 @@
 #setifnotgiven bindiv = 5.0
 #setifnotgiven distdotspread = 2.0
 #setifnotgiven distcolor = blue
-#setifnotgiven distdotshape = diamond
+#setifnotgiven distdotshape = pixdiamond
 #setifnotgiven distdotsize = 0.04
 
 #setifnotgiven ptselect = ""
@@ -64,8 +64,9 @@
 #endif
 #if @yrange = ""
   yautorange: datafield=@df nearest=@ynearest 
-#elseif @yrange = 0
-  yautorange: datafield=@df nearest=@ynearest lowfix=0
+//#elseif @yrange = 0
+#elseif $ntoken( 2, @yrange ) = ""
+  yautorange: datafield=@df nearest=@ynearest mininit=@yrange
 #else
   yrange: @yrange
 #endif
@@ -105,7 +106,7 @@ bin size = @binsize
   #endif
   clusterfact: @distdotspread
   yfield: 1
-  symbol: shape=@distdotshape style=fill fillcolor=@distcolor radius=@distdotsize
+  symbol: shape=@distdotshape style=fill color=@distcolor radius=@distdotsize
   #saveas D
 #endif
 

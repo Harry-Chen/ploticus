@@ -11,7 +11,12 @@
 //// set up plotting area..
 #proc areadef
 rectangle: @rectangle
-#ifspec unittype xscaletype
+#if @context = chron && @unittype = date
+  // this is done so that partial date formats eg. mm/yyyy are handled correctly by 2.20..
+  xscaletype: date @datefmt
+#else
+  #ifspec unittype xscaletype
+#endif
 #ifspec ylog yscaletype
 #ifspec xlog xscaletype
 #if @autow = yes

@@ -1,7 +1,8 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
-
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 #include "pl.h"
 #include "tdhkit.h"
@@ -18,19 +19,24 @@
 #include <locale.h>
 #endif
 
+extern int PLGS_setparms(), PLGF_setparms();
+extern int fchmod(), chdir();
+
 
 /* =========================================== */
 /* DO_PRELIMINARIES - set defaults, read config file, etc. */
-
+int
 PL_do_preliminaries()
 {
 char buf[512];
 FILE *fp;
 char *filename, *getenv();
-char tag[80];
-char value[512];
+char attr[80];
+char val[512];
+char *lineval;
+int ix;
 int valused, found;
-int nt, stat, j;
+int i, stat, j;
 int projectrootfound;
 char pathslash;
 char uniq[80];
@@ -55,6 +61,9 @@ PLS.clickmap = 0;
 PLS.usingcm = 0;
 strcpy( PLS.viewer, "" );
 strcpy( PLS.mapfile, "" );
+PLS.noshell = 0;
+TDH_prohibit_shell( 0 );
+
 #ifndef NORLIMIT
 TDH_reslimits( "cpu", CPULIMIT );
 #endif
@@ -95,7 +104,7 @@ pathslash = PATH_SLASH;
 GL_make_unique_string( uniq, 0 );
 sprintf( PLS.tmpname, "%s%cplo%s", TDH_tmpdir, pathslash, uniq ); 
 
-/* make cgierrfile (default /tmp/cplcgi_err) for cgi errors */
+/* make cgierrfile (default /tmp/plcgi_err) for cgi errors */
 sprintf( cgierrfile, "%s%cplcgi_err", TDH_tmpdir, PATH_SLASH );
 
 
@@ -118,6 +127,7 @@ if( PLS.cgiargs != NULL ) {
 				fchmod( fileno( PLS.errfp ), 00666 );
 #endif
 				}
+			TDH_errfile( PLS.errfp ); /* set it for TDH */
 			return( 1 );
 			}
 		strcat( buf, cgiprogname );
@@ -168,66 +178,53 @@ if( fp == NULL ) {
 	return( 0 );
 	}
 
+
 /* get user settings.. */
 while( fgets( buf, 511, fp ) != NULL ) {
 	buf[ strlen( buf ) -1 ] = '\0';
-	strcpy( value, "" );
-	nt = sscanf( buf, "%s %s", tag, value );
-	if( nt < 1 ) continue; /* skip blank lines */
-	if( GL_member( tag[0], "#/" )) continue; /* skip comments of various kinds */
+	ix = 0;
+	strcpy( attr, GL_getok( buf, &ix ) );
+	if( attr[0] == '\0' ) continue;
+	if( attr[0] == '#' || attr[0] == '/' ) continue; /* skip comments of various kinds */
+	while( isspace( (int) buf[ix] ) )ix++;
+	lineval = &buf[ix];
+	strcpy( val, GL_getok( buf, &ix ) );
+
+	if( attr[ strlen( attr ) -1 ] == ':' ) attr[ strlen( attr ) - 1 ] = '\0';
 
 
-	if( strcmp( tag, "units:" )==0 ) {
-		if( tolower( value[0] ) == 'c' ) { PLS.usingcm = 1; setintvar( "CM_UNITS", 1 ); }
-		else { PLS.usingcm = 0; setintvar( "CM_UNITS", 0 ); }
-		}
+	/* attributes that exist in config file, but not proc settings, go here: */
 
-	else if( strcmp( tag, "projectroot:" )==0 ) {
-		stat = chdir( value );
+	if( strcmp( attr, "projectroot" )==0 ) {
+		stat = chdir( val );
 		if( stat != 0 ) goto CGI_BAD_CHDIR;
 		projectrootfound = 1;
+		if( PLS.debug ) fprintf( PLS.diagfp, "config: found projectroot.. chdir to %s..\n", val );
 		}
 
-#ifndef NORLIMIT
-	else if( stricmp( tag, "cpulimit:" )==0 ) TDH_reslimits( "cpu", atoi( value ) );
-#endif
+	else if( strcmp( attr, "option" )==0 ) {
+		val[0] = '\0';
+		sscanf( buf, "%*s %s %s", attr, val );
 
-	else if( strcmp( tag, "option:" )==0 ) {
-		value[0] = '\0';
-		sscanf( buf, "%*s %s %s", tag, value );
-		PL_process_arg( tag, value, &valused, &found );	
-		if( !found ) Eerr( 2784, "invalid option in config file", tag );
+		/* check for embedded '=' in attr.. if found indicates prefab parm setting.. send lineval as attr.. */
+		for( i = 0, found = 0; attr[i] != '\0'; i++ ) if( attr[i] == '=' ) { found = 1; break; }
+		if( found ) { strcpy( attr, lineval ); strcpy( val, "" ); }
+
+		if( PLS.debug ) fprintf( PLS.diagfp, "config file: got option: %s %s\n", attr, val );
+		PL_process_arg( attr, val, &valused, &found );	
+		if( !found ) Eerr( 2784, "invalid 'option:' in config file", attr );
 		}
 
-	else if( strcmp( tag, "numbernotation:" )==0 ) {
-		if( stricmp( value, "us" )==0 ) PLS.bignumspacer = ',';
-		else if( stricmp( value, "euro" )==0 ) PLS.bignumspacer = '.';
-		else PLS.bignumspacer = '\0';
+	/* shared settings takes care of settings that can be set in config file OR proc settings */
+	else 	{
+		stat = PL_sharedsettings( attr, val, lineval ); 
+		if( stat == 0 && PLS.debug ) fprintf( PLS.diagfp, "config: setting %s to %s\n", attr, lineval );
 		}
-	else if( strcmp( tag, "numberspacerthreshold:" )==0 ) PLS.bignumthres = atoi( value ); /* scg 2/28/02 */
 
-#ifndef NOSVG
-	else if( stricmp( tag, "xml_encoding:" )==0 ) PLGS_setxmlparms( "encoding", value );
-        else if( stricmp( tag, "xml_declaration:" )==0 ) {
-                if( stricmp( value, YESANS )==0 ) PLGS_setxmlparms( "xmldecl", "1" );
-                else PLGS_setxmlparms( "xmldecl", "0" );
-                }
-        else if( stricmp( tag, "svg_tagparms:" )==0 ) {
-		int ix;
-		ix = 0;
-		GL_getok( buf, &ix );
-		PLGS_setxmlparms( "svgparms", &buf[ix] );
-		}
-#endif
-
-	else if( stricmp( tag, "dtsep" )==0 ) DT_setdtsep( value[0] ); 
-		
-	/* can't do this because there might be general tdh tags.. */
-	/* else 	{ 
-	 *	Eerr( 2749, "Unrecognized tag in config file", tag );
-	 *	continue;
-	 *	}
+	/* don't forget that there are other settings (tmpdir, date-related, etc.) 
+	 * that were handled by the TDH config file reader !! 
 	 */
+
 	}
 
 fclose( fp );
@@ -237,7 +234,7 @@ if( PLS.cgiargs != NULL && !projectrootfound ) {
 	CGI_BAD_CHDIR:
 	PLS.errfp = fopen( cgierrfile, "w" );
 	if( PLS.errfp != NULL ) {
-		fprintf( PLS.errfp, "cgi mode: no projectroot in config file, or could not cd to projectroot dir.\n" );
+		fprintf( PLS.errfp, "cgi mode: no projectroot in config file, or could not chdir to projectroot\n" );
 #ifdef UNIX
 		fchmod( fileno( PLS.errfp ), 00666 );
 #endif
@@ -255,7 +252,7 @@ else if( PLS.prefabsdir[0] == '\0' ) PLS.prefabsdir = PREFABS_DIR ;
 if( PLS.prefabsdir[0] == '\0' ) PLS.prefabsdir = NULL;
 #endif
 if( PLS.prefabsdir != NULL ) {
-	setsid( PLS.prefabsdir ); /* set special include directory (#include $foo) */
+	TDH_setspecialincdir( PLS.prefabsdir ); /* set special include directory (#include $foo) */
         /* note: prefabsdir must reference static storage, either via getenv() or constant */
 	}
 
@@ -266,7 +263,7 @@ return( 0 );
 
 /* ====================================== */
 /* BEGIN - initializations that are done AFTER config file and args are looked at.. */
-
+int
 PL_begin()
 {
 char buf[128];
@@ -299,7 +296,8 @@ TDH_setvar( "PLVERSION", buf );
 
 if( PLS.clickmap ) {  /* .map filename */
 	if( PLS.mapfile[0] == '\0' ) {
-		if( PLS.outfile[0] != '\0' ) makeoutfilename( PLS.outfile, PLS.mapfile, 'm', 1);
+		if( PLS.clickmap == 2 ) strcpy( PLS.mapfile, "stdout" );  /* csmap defaults to stdout..  scg 8/26/04  */
+		else if( PLS.outfile[0] != '\0' ) makeoutfilename( PLS.outfile, PLS.mapfile, 'm', 1);
 		else strcpy( PLS.mapfile, "unnamed.map" );
 		}
 	PL_clickmap_init();
@@ -307,4 +305,11 @@ if( PLS.clickmap ) {  /* .map filename */
 
 return( 0 );
 }
+
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 

@@ -124,10 +124,14 @@ void gdImageRectangle(gdImagePtr im, int x1, int y1, int x2, int y2, int color);
 /* Solid bar. Upper left corner first, lower right corner second. */
 void gdImageFilledRectangle(gdImagePtr im, int x1, int y1, int x2, int y2, int color);
 int gdImageBoundsSafe(gdImagePtr im, int x, int y);
-void gdImageChar(gdImagePtr im, gdFontPtr f, int x, int y, int c, int color);
+void gdImageChar(gdImagePtr im, gdFontPtr f, int x, int y, int c, int color); 
 void gdImageCharUp(gdImagePtr im, gdFontPtr f, int x, int y, int c, int color);
-void gdImageString(gdImagePtr im, gdFontPtr f, int x, int y, unsigned char *s, int color);
-void gdImageStringUp(gdImagePtr im, gdFontPtr f, int x, int y, unsigned char *s, int color);
+
+void gdImageString(gdImagePtr im, gdFontPtr f, int x, int y, unsigned char *s, int color); 
+void gdImageStringUp(gdImagePtr im, gdFontPtr f, int x, int y, unsigned char *s, int color); 
+/* void gdImageString(gdImagePtr im, gdFontPtr f, int x, int y, char *s, int color);  this avoids gcc4 warning */
+/* void gdImageStringUp(gdImagePtr im, gdFontPtr f, int x, int y, char *s, int color); this avoids gcc4 warning */
+
 void gdImageString16(gdImagePtr im, gdFontPtr f, int x, int y, unsigned short *s, int color);
 void gdImageStringUp16(gdImagePtr im, gdFontPtr f, int x, int y, unsigned short *s, int color);
 

@@ -1,8 +1,8 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
-
-
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 /* Postscript driver.	(c) 1989-96 Steve Grubb, Marvin Newhouse
 
@@ -29,7 +29,14 @@
 #ifndef NOPS
 
 #include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+#ifdef PLOTICUS
 #include "special_chars.h"
+#endif
+
+extern int TDH_err(), GL_member(), PLG_xrgb_to_rgb(), GL_goodnum(), PLG_colorname_to_rgb();
+extern int atoi(), fchmod(); /* sure thing or return value not used */
 
 #define Eerr(a,b,c)  TDH_err(a,b,c)
 
@@ -46,31 +53,39 @@ static int ps_device;		/* 'p' = monochrome, 'c' = color, 'e' = eps (color) */
 static int ps_orient;		/* paper orientation (-1 = not done) */
 static int ps_orgx, ps_orgy;	/* location of origin on page */
 static int ps_theta;		/* current rotation for page orientation */
-static char ps_font[50];		/* current font name */
+static char ps_font[60];		/* current font name */
 static int ps_chdir;	 	/* char direction in degrees */
 static int ps_curpointsz;		/* current char size in points */
 static int ps_specialpointsz;		/* current char size in pts for special chars */
 static int ps_stdout;		/* 1 if Epf is stdout */
 static int ps_paginate = 1;
 static long ps_bbloc;
-double atof();
 static FILE *ps_fp;
 static int ps_latin1 = 1;		/* use latin1 character encoding */
+static double ps_darken = 1.0;		/* factor to darken all colors (1.0 = none) 
+				           Used when printing graphics that were originally light lines on dark (lxlogo renderd) */
 
+#ifdef PLOTICUS
 static int ps_print_special();
 static int ps_set_specialsz();
+#endif
+
+extern double atof();
 
 /* ============================= */
+int
 PLGP_initstatic()
 {
 ps_paginate = 1;
 ps_latin1 = 1;
+ps_darken = 1.0;
 
 return( 0 );
 }
 
 
 /* ============================= */
+int
 PLGP_setup( name, dev, f )    
 char *name; /* arbitrary name */
 char dev;  /* 'p' = monochrome   'c' = color   'e' = eps */
@@ -109,7 +124,7 @@ if( !ps_stdout ) {
 /* print header */
 fprintf( ps_fp,  "%%!PS-Adobe-3.0 EPSF-3.0\n" );
 fprintf( ps_fp,  "%%%%Title: %s\n", name );
-fprintf( ps_fp,  "%%%%Creator: ploticus (ploticus.sourceforge.net)\n" );
+fprintf( ps_fp,  "%%%%Creator: ploticus (http://ploticus.sourceforge.net)\n" );
 if( ps_paginate ) fprintf( ps_fp,  "%%%%Pages: (atend)\n" );
 if( ps_device == 'e' ) {
 	if( !ps_stdout ) ps_bbloc = ftell( ps_fp );
@@ -191,6 +206,7 @@ return( 0 );
 
 
 /* ============================= */
+int
 PLGP_moveto( x, y )
 double x, y;
 {
@@ -203,6 +219,7 @@ return( 0 );
 
 
 /* ============================= */
+int
 PLGP_lineto( x, y )
 double x, y;
 {
@@ -214,6 +231,7 @@ return( 0 );
 }
 
 /* ============================== */
+int
 PLGP_closepath()
 {
 fprintf( ps_fp, "closepath\n" );
@@ -221,6 +239,7 @@ return( 0 );
 }
 
 /* ============================== */
+int
 PLGP_stroke( )
 {
 fprintf( ps_fp, "st\n" );
@@ -229,6 +248,7 @@ return( 0 );
 
 
 /* ============================= */
+int
 PLGP_path( x, y )
 double x, y;
 {
@@ -240,6 +260,7 @@ return( 0 );
 
 /* ============================= */
 /* set current color for text and lines */
+int
 PLGP_color( color )
 char *color;
 {
@@ -249,6 +270,7 @@ int slen;
 
 /* color parameter can be in any of these forms:
    "rgb(R,G,B)"  where R(ed), G(reen), and B(lue) are 0.0 (none) to 1.0 (full)
+   "xrgb(xxxxxx)" or "xrgb(xxxxxxxxxxxx)"
    "hsb(H,S,B)"  where H(ue), S(aturation), and B(rightness) range from 0.0 to 1.0.
    "cmyk(C,M,Y,K)"  where values are 0.0 to 1.0
    "gray(S)"	 where S is 0.0 (black) to 1.0 (white)
@@ -262,9 +284,15 @@ for( i = 0, slen = strlen( color ); i < slen; i++ ) {
 if( strncmp( color, "rgb", 3 )==0 ) {
 	n = sscanf( color, "%*s %lf %lf %lf", &r, &g, &b );
 	if( n != 3 ) { Eerr( 12031, "Invalid color", color ); return(1); }
-	if( ps_device == 'p' ) fprintf( ps_fp, "%g setgray\n", PLG_rgb_to_gray( r, g, b ) );
-	else fprintf( ps_fp, "%g %g %g setrgbcolor\n", r, g, b );
+	if( ps_device == 'p' ) fprintf( ps_fp, "%g setgray\n", PLG_rgb_to_gray( r, g, b ) * ps_darken );
+	else fprintf( ps_fp, "%g %g %g setrgbcolor\n", r*ps_darken, g*ps_darken, b*ps_darken );
 	}
+else if( strncmp( color, "xrgb", 4 )==0 ) {
+	if (PLG_xrgb_to_rgb( &color[5], &r, &g, &b)) return(1);
+	if( ps_device == 'p' ) fprintf( ps_fp, "%g setgray\n", PLG_rgb_to_gray( r, g, b )*ps_darken );
+	else fprintf( ps_fp, "%g %g %g setrgbcolor\n", r*ps_darken, g*ps_darken, b*ps_darken );
+	}
+
 else if( strncmp( color, "hsb", 3 )==0 ) {
 	n = sscanf( color, "%*s %lf %lf %lf", &r, &g, &b );
 	if( n != 3 ) { Eerr( 12031, "Invalid color", color ); return(1); }
@@ -283,15 +311,15 @@ else if( strncmp( color, "cmyk", 4 )==0 ) { /* added scg 10/26/00 */
 else if( strncmp( color, "gray", 4 )==0 || strncmp( color, "grey", 4 )==0 ) {
 	n = sscanf( color, "%*s %lf", &r );
 	if( n != 1 ) { Eerr( 12031, "Invalid color", color ); return(1); }
-	fprintf( ps_fp, "%g setgray\n", r );
+	fprintf( ps_fp, "%g setgray\n", r*ps_darken );
 	}
 else if( GL_goodnum( color, &i ) ) {
-	fprintf( ps_fp, "%s setgray\n", color );
+	fprintf( ps_fp, "%g setgray\n", atof(color) *ps_darken );
 	}
 else	{	/* color names */
 	PLG_colorname_to_rgb( color, &r, &g, &b );
-	if( ps_device == 'p' ) fprintf( ps_fp, "%g setgray\n", PLG_rgb_to_gray( r, g, b ) );
-	else fprintf( ps_fp, "%g %g %g setrgbcolor\n", r, g, b );
+	if( ps_device == 'p' ) fprintf( ps_fp, "%g setgray\n", PLG_rgb_to_gray( r, g, b )*ps_darken );
+	else fprintf( ps_fp, "%g %g %g setrgbcolor\n", r*ps_darken, g*ps_darken, b*ps_darken );
 	}
 return( 0 );
 }
@@ -299,6 +327,7 @@ return( 0 );
 
 /* ============================== */
 /* fill current path with current color */
+int
 PLGP_fill( )
 {
 fprintf( ps_fp,  "closepath\nfill\n" );
@@ -306,6 +335,7 @@ return( 0 );
 }
 
 /* ============================== */
+int
 PLGP_paper( i )
 int i;
 {
@@ -319,10 +349,12 @@ if( i == 1 ) { /* handle landscape mode-- it's put into portrait mode before beg
 	fprintf( ps_fp,  "%d %d %d sset\n", ps_theta, ps_orgx, ps_orgy );
 	} 
 ps_orient = (int) i;
+return( 0 );
 }
 
 
 /* ================================= */
+int
 PLGP_text( com, x, y, s, w )
 char com;
 double x, y;
@@ -330,7 +362,7 @@ char *s;
 double w;
 {
 char str[400];
-int i, j, k, slen;
+int i, j, slen;
 
 x = (x*72)+MARG_X;  y = (y*72)+MARG_Y; w *= 72;
 
@@ -340,7 +372,7 @@ if( ps_chdir != 0 ) fprintf( ps_fp,  "%d %-5.2f %-5.2f sset 0 0 mv\n", ps_chdir,
 else fprintf( ps_fp,  "%-5.2f %-5.2f mv ", x, y );
 
 if( GL_member( com, "CJ" )) {
-	GL_strip_ws( s );
+	/* GL_strip_ws( s ); */ /* removed scg 8/23/04 (suscript) */
 
 	/* escape out parens and substitute special char requests with 'm' for centering */
 	for( i = 0, j = 0, slen = strlen( s ); i < slen; i++ ) {
@@ -363,18 +395,22 @@ ps_specialpointsz = ps_curpointsz;
 fprintf( ps_fp, "\n(" );
 for( i = 0, slen = strlen( s ); i < slen; i++ ) {
 	if( s[i] == '(' || s[i] == ')' ) { fprintf( ps_fp, "\\%c", s[i]); }
+#ifdef PLOTICUS
 	else if( s[i] == '\\' && s[i+1] == 's' ) { ps_set_specialsz( &s[i+2] ); i += 3; }
 	else if( s[i] == '\\' && s[i+1] == '(' ) { ps_print_special( &s[i+2] ); i += 3; }
+#endif
 	else if( s[i] == '\\' ) fprintf( ps_fp, "\\%c", s[i] ); /* scg 1-6-97 */
 	else { fprintf( ps_fp, "%c", s[i] ); }
 	}
 fprintf( ps_fp, ") sh\n" );
 
 if( ps_chdir != 0 ) fprintf( ps_fp,  "%-5.2f %-5.2f %d sclr\n", -x, -y, -ps_chdir ); /* restore */
+return( 0 );
 }
 
 
 /* ================================= */
+int
 PLGP_pointsize( p )
 int p;
 {
@@ -383,10 +419,12 @@ if( ps_latin1 ) fprintf( ps_fp,  "%s reencodeISO\n", ps_font ); /* scg 09/27/01 
 else fprintf( ps_fp,  "%s findfont\n", ps_font ); 
 
 fprintf( ps_fp,  "%d scalefont\nsetfont\n", p );
+return( 0 );
 }
 
 
 /* ================================== */
+int
 PLGP_font( f )
 char *f;
 {
@@ -398,17 +436,21 @@ if( strcmp( f, ps_font ) != 0 ) {
 
 	fprintf( ps_fp,  "%d scalefont setfont\n", ps_curpointsz );
 	}
+return( 0 );
 }
 
 /* ================================== */
+int
 PLGP_chardir( t )
 int t;
 {
 ps_chdir = t;
+return( 0 );
 }
 
 
 /* ================================== */
+int
 PLGP_linetype( s, x, y )
 char *s;
 double x, y;
@@ -436,28 +478,31 @@ else 	{
 		if( dash[ ltype ][ i ] > 0 ) fprintf( ps_fp,  "%3.1f ", dash[ ltype ][ i ] * y );
 	fprintf( ps_fp,  "] 0 setdash\n" );
 	}
+return( 0 );
 }
 	
 
 /* =================================== */
-
+int
 PLGP_show()
 {
 if( ps_orient == 1 )fprintf( ps_fp,  "%d %d %d sclr\n", -ps_orgx, -ps_orgy, -ps_theta ); /* restore rotation */
 ps_orient = -1; 
 if( ps_device != 'e' ) fprintf( ps_fp, "showpage\n" ); /* condition added scg 9/26/03 */
+return( 0 );
 }
 
 /* =================================== */
-
+int
 PLGP_newpage( p )
 int p;
 {
 if( ps_paginate )fprintf( ps_fp, "\n\n\n%%%%Page: %d %d\n", p, p );
+return( 0 );
 }
 
 /* =================================== */
-
+int
 PLGP_trailer( pp, x1, y1, x2, y2 )
 int pp; 
 double x1, y1, x2, y2;
@@ -488,6 +533,7 @@ if( ps_fp != NULL ) fclose( ps_fp );
 return( 0 );
 }
 
+#ifdef PLOTICUS
 /* ================================= */
 /* ================================= */
 /* ================================= */
@@ -500,7 +546,6 @@ static int
 ps_set_specialsz( s )
 char *s;
 {
-int i;
 char tmp[5];
 /*
  * Check for two characters to set the point size for special chars
@@ -518,6 +563,7 @@ else 	{
 	sprintf( sbuf, "\\s%c%c", s[0], s[1] );
 	Eerr( 12033, "Invalid \\s operator", sbuf );
 	}
+return( 0 );
 }
 
 /* ================================= */
@@ -572,11 +618,13 @@ Eerr( 12035, "warning: special symbol not found", sbuf );
 fprintf( ps_fp, "??" );
 return( -1 );
 }
+#endif
+
 /* ========== */
 /* fontname - given a base name (such as /Helvetica) and a modifier
    such as I (italic) B (bold) or BI (bold italic), build the postscript
    font name and copy it into name. */
-
+int
 PLGP_fontname( basename, name )
 char *basename; 
 char *name; /* in: B, I, or BI.  out: full postscript font name */
@@ -618,5 +666,23 @@ if( strcmp( name, "bi" )==0 ) {
 return( 0 );
 }
 
+/* =========================== */
+/* SETTINGS */
+int
+PLGP_settings( attr, val )
+char *attr, *val;
+{
+double atof();
+if( strcmp( attr, "ps_latin1_encoding") == 0 ) ps_latin1 = atoi( val );
+else if( strcmp( attr, "darken") == 0 ) ps_darken = atof( val );
+
+return( 0 );
+}
 
 #endif  /* NOPS */
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

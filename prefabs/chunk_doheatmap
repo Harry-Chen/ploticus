@@ -19,7 +19,10 @@
   #else
     #set next = $arith( @i-1 )
     #set next = $nmember( @next, @cutofflist )
-    #set next = $arith( @next-1 )
+    #if @next !like *.*
+      // only do this when not working with decimal cutoffs.. scg 3/6/06
+      #set next = $arith( @next-1 )
+    #endif
     #if @next = @h
       label: @h
     #else
@@ -52,3 +55,4 @@ cluster: yes
   rectangle: @xbinsize @ybinsize @outline
 #endif
 #endproc
+

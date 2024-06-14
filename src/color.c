@@ -1,13 +1,17 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
-
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 /* Routines for color conversions */
 #include <stdio.h>
-#define Eerr(a,b,c)  TDH_err(a,b,c)
+#include <string.h>
 
-#define MAXCOLORS 34
+#define Eerr(a,b,c)  TDH_err(a,b,c)
+extern int TDH_err();
+
+#define MAXCOLORS 35
 #define stricmp( s, t )              strcasecmp( s, t )
 
 struct PLG_colorlist {
@@ -56,14 +60,17 @@ static struct PLG_colorlist colorname[MAXCOLORS] = {
 
 	{ "orange", 1, .62, .14 },
 	{ "redorange", 1, .5, 0 },
-	{ "lightorange", 1, .80, .60 } };
+	{ "lightorange", 1, .80, .60 },
+	{ "lightgray", 0.85, 0.85, 0.85 }   };
 
 /* =============================== */
+int
 PLG_colorname_to_rgb( color, r, g, b )
 char *color;
 double *r, *g, *b;
 {
 int i;
+if( color[0] == '\0' ) { *r = *g = *b = 0.0; return( 0 ); }
 for( i = 0; i < MAXCOLORS; i++ ) {
 	if( stricmp( color, colorname[i].name )==0 ) {
 		*r = colorname[i].r;
@@ -95,6 +102,7 @@ return( gray );
 
 /* =============================== */
 /* for i values 0 - 19 assign a usable color */
+int
 PLG_icolor( i, color )
 int i;
 char *color;
@@ -125,3 +133,62 @@ char *c;
 strcpy( color, c );
 return( 0 );
 }
+
+/* =============================== */
+/* this routine contributed by Harshula Jayasuriya and colleages ... added 6/18/04 scg */
+int
+PLG_xrgb_to_rgb( color, r, g, b )
+char *color;
+double *r, *g, *b;
+{
+char *p;
+unsigned int nhexdig = 0;
+unsigned char hexdig[12];
+int i;
+
+/* gather as many hex digits as possible */
+for (i = 0, p = color ; i < 12 ; i++, p++) {
+	if (*p >= '0' && *p <= '9')
+		hexdig[nhexdig++] = (*p - '0');
+	else if (*p >= 'a' && *p <= 'f')
+		hexdig[nhexdig++] = (*p - 'a' + 10);
+	else if (*p >= 'A' && *p <= 'F')
+		hexdig[nhexdig++] = (*p - 'A' + 10);
+	else
+		break;
+	}
+
+/*
+ * Check for one these formats:
+ * rrggbb
+ * rrrrggggbbbb
+ */
+switch (nhexdig) {
+	case 6:
+	#define x2(i)	((hexdig[(i)+0]<<4) | (hexdig[(i)+1]))
+	    	*r = (double)x2(0)/255.0;
+	    	*g = (double)x2(2)/255.0;
+	    	*b = (double)x2(4)/255.0;
+		break;
+	case 12:
+	#define x4(i)	((hexdig[(i)+0]<<12) | \
+			 (hexdig[(i)+1]<< 8) | \
+			 (hexdig[(i)+2]<< 4) | \
+			 (hexdig[(i)+3]    ))
+	    	*r = (double)x4(0)/255.0;
+	    	*g = (double)x4(4)/255.0;
+	    	*b = (double)x4(8)/255.0;
+		break;
+	default:
+		Eerr( 12001, "Bad X11 RGB triple ", color );
+		*r = 0; *g = 0; *b = 0;
+		return( 1 );
+	}
+return( 0 );
+}
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

@@ -1,10 +1,11 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
-
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 /* routines related to interactivity, generally X11 */
-
+#include <unistd.h>  /* for usleep() */
 #include "plg.h"
 
 /* event modes */
@@ -15,9 +16,7 @@
 /* info concerning the most recent event.. */
 static double Eevx, Eevy;
 static int Eeid;
-static double savex = 0.0, savey = 0.0;
-static int savec = 0;
-static char semfile[128] = "";
+/* static char semfile[128] = ""; */
 
 
 /* ==================================== */
@@ -34,13 +33,12 @@ static char semfile[128] = "";
 /* ==================================== */
 /* GETKEY - get mouse position (x, y) and event code.. */
 /* when using postscript, this will do a showpage, endoffile, and exit. */
-
+int
 PLG_getkey( x, y, e )
 double *x, *y;
 int *e;
 {
-int i, stat;
-FILE *fp;
+int stat;
 
 if( Edev == 'p' ) { /* postscript-- eject page and return.. */
 	Eshow(); 
@@ -52,7 +50,6 @@ if( Edev == 'g' ) { /* gif, finish up and return */
 	}  
 
 Eeid = 0;
-i = 0;
 
 /* note: the following loop has to run quick enough so as not to
    miss any keystrokes of a fast typist.. */
@@ -64,18 +61,8 @@ while( 1 ) {
 		break;
 		}
 
-	/* every few seconds check the semaphore file.. */
-	/* if( i >= 250 ) {
-	 *	if( semfile[0] != '\0' ) Eprocess_drawfile( semfile );
-	 *	i = 0;
-	 *	}
-	 */
-	i++;
-
-	/* loop delay */
-	usleep( 20000 ); /* 50 cycles per second */
+	usleep( 20000 ); /* loop delay - resulting in 50 cycles per second */
 	}
-/*  */
 
 return( 0 );
 }
@@ -84,7 +71,7 @@ return( 0 );
 /* =================================== */
 /* GETCLICK wait until a key or button is hit.. */
 /* when using postscript, this will do a showpage and return. */
-
+int
 PLG_getclick()
 {
 double x, y;
@@ -106,13 +93,11 @@ return( Egetkey( &x, &y, &e ) );
    and then a key, mouse, expose, or resize event happens. Never called 
    directly by applications.  
 */
-
+int
 PLG_he( x, y, e )
 double x, y;
 int e;
 {
-int i;
-char id[4];
 
 /* set global vars for async processes.. */
 EEvent = e; EEventx = x; EEventy = y;
@@ -137,6 +122,7 @@ return( 1 );
 
 /* ==================== */
 /* the following routines provide a place to save/retrieve an event */
+int
 PLG_savekey( lx, ly, c )
 double lx, ly;
 int c;
@@ -162,21 +148,29 @@ return( 0 );
 	when blocking for input.
    s is the full path name of the semiphore file. 
 */
-   
-PLG_setsemfile( s )
-char *s;
-{
-strcpy( semfile, s );
-return( 0 );
-}
+/* PLG_setsemfile( s )
+* char *s;
+* {
+* strcpy( semfile, s );
+* return( 0 );
+* }
+*/
 
 /* ==================================== */
 /* Execute the semfile */
-PLG_semfile()
-{
-FILE *fp;
-if( Edev == 'p' ) return(0); /* postscript-- just return.. */
-/* if( semfile[0] != '\0' ) Eprocess_drawfile( semfile ); */
-return( 0 );
-}
+/* PLG_semfile()
+* {
+* FILE *fp;
+* if( Edev == 'p' ) return(0); // postscript-- just return.. 
+* // if( semfile[0] != '\0' ) Eprocess_drawfile( semfile ); 
+* return( 0 );
+* }
+*/
 #endif
+
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

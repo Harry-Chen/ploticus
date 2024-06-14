@@ -22,8 +22,11 @@ echo "--------- timely..." >> $OUT
 $PL -$MODE $OPTS  timely.htm 2>> $OUT
 echo "Note: some numbers should have appeared above..
 " >> $OUT
-echo "--------- clickmap_mouse... (should produce a server-side image map file..)" >> $OUT
-$PL -$MODE $OPTS -map clickmap_mouse.htm >> $OUT
+
+echo "--------- clickmap_mouse... (should produce a server-side image map file clickmap_mouse.map ..)" >> $OUT
+$PL -$MODE $OPTS clickmap_mouse.htm -map -mapfile mouse.map >> $OUT
+wc -l mouse.map >> $OUT
+
 echo "--------- kmslide..." >> $OUT
 $PL -$MODE $OPTS  kmslide.htm 2>> $OUT
 echo "--------- propbars1..." >> $OUT
@@ -78,5 +81,14 @@ echo "--------- vector1..." >> $OUT
 $PL -$MODE $OPTS  vector1.htm 2>> $OUT
 echo "--------- windbarbs..." >> $OUT
 $PL -$MODE $OPTS  windbarbs.htm 2>> $OUT
+echo "--------- supstubs..." >> $OUT
+$PL -$MODE $OPTS  supstubs.htm 2>> $OUT
 
-echo "24 plots done.. Finished."
+echo "25 plots done.. "
+
+echo "--------- legends232..." >> $OUT
+$PL -$MODE $OPTS  legends232.htm 2>> $OUT
+echo "--------- venn..." >> $OUT
+$PL -$MODE $OPTS  venn.htm 2>> $OUT
+
+echo "27 plots done.. Finished."

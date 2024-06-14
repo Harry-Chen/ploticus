@@ -1,24 +1,20 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
-
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 /* PROC DEFINEUNITS - allow special units to be defined for an axis separate from AREADEF */
 	
 #include "pl.h"
 
+int
 PLP_defineunits()
 {
-int i;
-char attr[40], val[256];
+char attr[NAMEMAXLEN], val[256];
 char *line, *lineval;
 int nt, lvp;
 int first;
-
-int stat;
-int align;
-double adjx, adjy;
-
 
 char axis;
 char units[40];
@@ -47,3 +43,10 @@ Esetunits( axis, units );
 
 return( 0 );
 }
+
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

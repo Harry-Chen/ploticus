@@ -1,22 +1,20 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 /* PROC LEGENDENTRY - proc to define one legend entry */
 
 #include "pl.h"
 
+int
 PLP_legendentry( )
 {
-int i;
-char attr[40], val[256];
+char attr[NAMEMAXLEN], val[256];
 char *line, *lineval;
 int nt, lvp;
 int first;
-
-int stat;
-int align;
-double adjx, adjy;
 
 char label[120];
 char sampletype[80];
@@ -45,7 +43,7 @@ while( 1 ) {
 	lineval = &line[lvp];
 
 	if( stricmp( attr, "label" )==0 ) strcpy( label, lineval );
-	else if( stricmp( attr, "tag" )==0 ) strcpy( tag, lineval );
+	else if( stricmp( attr, "tag" )==0 ) strcpy( tag, val ); /* was lineval, but docs say single token.  scg 11/21/03 */
 	else if( stricmp( attr, "sampletype" )==0 ) strcpy( sampletype, val );
 	else if( stricmp( attr, "details" )==0 ) strcpy( spec1, lineval );
 	else if( stricmp( attr, "details2" )==0 ) strcpy( spec2, lineval );
@@ -63,7 +61,13 @@ else if( stricmp( sampletype, "line+symbol" )==0 ) samptyp = LEGEND_LINE + LEGEN
 else if( stricmp( sampletype, "text+symbol" )==0 ) samptyp = LEGEND_TEXT + LEGEND_SYMBOL;
 else if( stricmp( sampletype, "none" )==0 ) samptyp = 0;
 
-add_legent( samptyp, label, tag, spec1, spec2, spec3 );
+PL_add_legent( samptyp, label, tag, spec1, spec2, spec3 );
 
 return( 0 );
 }
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

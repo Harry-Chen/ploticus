@@ -1,3 +1,9 @@
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
+
 /* SVG Driver for Ploticus - Copyright 2001 Bill Traill (bill@traill.demon.co.uk).
  * Portions Copyright 2001, 2002 Stephen C. Grubb 
  * Covered by GPL; see the file ./Copyright for details. */
@@ -23,6 +29,15 @@
 #ifndef NOSVG
 
 #include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+#ifdef WZ
+#  include "zlib.h"
+#endif
+
+extern int TDH_err(), GL_member(), PLG_xrgb_to_rgb(), GL_goodnum(), PLG_colorname_to_rgb(), PL_clickmap_out();
+extern int atoi(), chmod(), unlink(); /* sure thing or return value not used */
+
 
 #define Eerr(a,b,c)  TDH_err(a,b,c) 
 #define stricmp(a,b) strcasecmp(a,b) 
@@ -36,8 +51,8 @@ static FILE *svg_fp;
 static double svg_x_size;		/* width of the drawing area */
 static double svg_y_size;		/* height of the drawing area */
 static int  svg_path_in_prog =0;	/* flag to indicate if an svg path is in progress */
-static char svg_cur_color[1024];
-static char svg_dash_style[1024];
+static char svg_cur_color[80] = "#000000";
+static char svg_dash_style[128];
 static double svg_line_width=1;
 
 static char svg_font_name[100];		/* current font name */
@@ -72,12 +87,15 @@ static int svg_xmldecl = 1;
 static int svg_clickmap = 0;
 static int svg_debug = 0;
 static char svg_tagparms[80] = "";
+/* static char svg_linkparms[128] = ""; */  /* discontinued 5/29/06 - use the new [target=new] syntax in clickmapurl instead */
+static int svg_generic_js = 0;
 
 static int esc_txt_svg();
 static int svg_set_style();
 static int svg_print_style();
 
 /* ============================= */
+int
 PLGS_initstatic()
 {
 svg_path_in_prog = 0;
@@ -96,6 +114,7 @@ svg_xmldecl = 1;
 svg_clickmap = 0;
 svg_debug = 0;
 strcpy( svg_tagparms, "" );
+strcpy( svg_cur_color, "#000000" );
 return( 0 );
 }
 
@@ -124,7 +143,7 @@ if (!strcmp(svg_align, "start")) strcpy(align,"&as;");
 if (!strcmp(svg_align, "middle")) strcpy(align,"&am;");
 if (!strcmp(svg_align, "end")) strcpy(align,"&ae;");
 
-sprintf (svg_new_style,"style=\"%s%s%s&sw;%3.1f;%s%s&fs;%d;%s\"",
+sprintf (svg_new_style,"style=\"%s%s%s&sw;%3.1f;%s%s&fs;%dpt;%s\"",  /* pt added after font size integer.. scg 3/16/06 */
 	fill,stroke,font,svg_line_width,fontw,fonts,svg_currpointsz,align);
 return( 0 );
 }
@@ -144,6 +163,7 @@ return( 0 );
 
 /* ======================================== */
 /* SETPARMS - allow caller to pass required parms that svg driver needs - MUST be called before setup() */
+int
 PLGS_setparms( debug, tmpname, clickmap )
 int debug;
 char *tmpname;
@@ -158,6 +178,7 @@ return( 0 );
 
 /* ============================= */
 /* SETUP */
+int
 PLGS_setup( name, dev, outfile, pixs_inch, Ux, Uy, Upleftx, Uplefty )
 char *name; /* arbitrary name */
 char dev;  /* 'p' = monochrome   'c' = color   'e' = eps */
@@ -181,7 +202,7 @@ svg_currpointsz = 10;
 svg_pixs_inch = pixs_inch; /* scg */
 svg_path_in_prog =0;		
 svg_line_width=1;
-svg_dotag = 0;  	   
+/* svg_dotag = 0;  	   */  /* this may be set to 1 (from command line) before this point, so leave svg_dotag alone.. scg 1/20/06 */
 strcpy( svg_style, "" );
 strcpy( svg_new_style, "" );
 svg_style_in_prog = 0;	
@@ -211,8 +232,22 @@ svg_y_size = Uy * pixs_inch;
 
 if( svg_xmldecl ) fprintf( svg_fp, "<?xml version=\"1.0\" encoding=\"%s\" standalone=\"no\"?>\n", svg_encoding );
 
-fprintf( svg_fp, "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 20001102//EN\"\n");
-fprintf( svg_fp, "\"http://www.w3.org/TR/2000/CR-SVG-20001102/DTD/svg-20001102.dtd\" [\n");
+/* changing this section as a result of echlin mouseover enhancement.. scg 6/21/04 */
+fprintf( svg_fp, "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 20010904//EN\" \n" );
+fprintf( svg_fp, "  \"http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd\" [ \n" );
+if( svg_clickmap && !svg_generic_js ) {
+	fprintf( svg_fp, "     <!ATTLIST svg \n" );
+	fprintf( svg_fp, "        xmlns:a3 CDATA #IMPLIED \n" );
+	fprintf( svg_fp, "        a3:scriptImplementation CDATA #IMPLIED> \n" );
+	fprintf( svg_fp, "     <!ATTLIST script \n " );
+	fprintf( svg_fp, "        a3:scriptImplementation CDATA #IMPLIED> \n" );
+	}
+
+/* this section was: 
+ * fprintf( svg_fp, "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 20001102//EN\"\n");
+ * fprintf( svg_fp, "\"http://www.w3.org/TR/2000/CR-SVG-20001102/DTD/svg-20001102.dtd\" [\n");
+ */
+
 fprintf( svg_fp, "<!ENTITY ff \"font-family:\">\n"); 
 fprintf( svg_fp, "<!ENTITY fs \"font-size:\">\n"); 
 fprintf( svg_fp, "<!ENTITY fw \"font-weight:\">\n"); 
@@ -229,11 +264,35 @@ fprintf( svg_fp, "-->\n");
 
 svg_bbofs = ftell( svg_fp ); /* remember location of the viewBox line so we can update it later.. -scg */
 
+/* <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 539.60 421.04" onload="init(evt)"
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     xmlns:a3="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
+     a3:scriptImplementation="Adobe">
+<script type="text/ecmascript" a3:scriptImplementation="Adobe" xlink:href="ViewBox.js"/>
+<script type="text/ecmascript" a3:scriptImplementation="Adobe" xlink:href="GraphPopups.js"/>
+ */
+
 /* these two statements will be overridden at eof when bounding box is known.. -scg  */
 /* a significant amount of padding is provided */
 /* xmlns=  added 10/2/03 scg */
-fprintf( svg_fp, "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0  %-5.2f %-5.2f\">\n", svg_x_size,svg_y_size); 
-fprintf( svg_fp, "<g tranform=\"translate(0,0)\"                                                                       \n" ); 
+fprintf( svg_fp, "<svg xmlns=\"http://www.w3.org/2000/svg\" \n" );
+svg_bbofs = ftell( svg_fp ); /* remember location of the viewBox line so we can update it later.. -scg */
+
+/* CAUTION! all of the following code is replicated below (search on "bbofs") */
+fprintf( svg_fp, "  viewBox=\"0 0  %-5.2f %-5.2f\" \n", svg_x_size,svg_y_size); 
+fprintf( svg_fp, "  xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" ); /* moved up from below .. scg 3/16/06 */
+if( svg_clickmap && !svg_generic_js ) {
+	fprintf( svg_fp, "  onload=\"init(evt)\"\n" );
+	/* xmlns:xlink used to be here.. scg 3/16/06 */
+	fprintf( svg_fp, "  xmlns:a3=\"http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/\" \n" );
+	fprintf( svg_fp, "  a3:scriptImplementation=\"Adobe\" >\n" );
+	fprintf( svg_fp, "<script type=\"text/ecmascript\" a3:scriptImplementation=\"Adobe\" xlink:href=\"ViewBox.js\"/> \n" );
+	fprintf( svg_fp, "<script type=\"text/ecmascript\" a3:scriptImplementation=\"Adobe\" xlink:href=\"GraphPopups.js\"/> \n" );
+	}
+else fprintf( svg_fp, " > \n" );
+
+fprintf( svg_fp, "<g tranform=\"translate(0,0)\"                                                                       \n\n" ); 
+/* END of code that's replicated below */
 
 /* print out default style */
 fprintf( svg_fp, "<g style=\"%s%s%s\">\n",svg_def_fill,svg_def_stroke,svg_def_font);
@@ -246,6 +305,7 @@ return( 0 );
 
 /* ============================= */
 /* MOVETO */
+int
 PLGS_moveto( x, y )
 double x, y;
 {
@@ -274,6 +334,7 @@ return( 0 );
 
 /* ============================= */
 /* LINETO */
+int
 PLGS_lineto( x, y )
 double x, y;
 {
@@ -301,6 +362,7 @@ return( 0 );
 
 /* ============================== */
 /* STROKE - render a stroke (line) */
+int
 PLGS_stroke( )
 {
 char dash[50] = "";
@@ -314,6 +376,7 @@ return( 0 );
 
 /* ============================= */
 /* PATH - add an element to a path (either new or existing) */
+int
 PLGS_path( x, y )
 double x, y;
 {
@@ -342,6 +405,7 @@ return( 0 );
 
 /* ============================= */
 /* COLOR - set current color for text and lines */
+int
 PLGS_color( color )
 char *color;
 {
@@ -352,6 +416,7 @@ int slen;
 
 /* color parameter can be in any of these forms:
    "rgb(R,G,B)"  where R(ed), G(reen), and B(lue) are 0.0 (none) to 1.0 (full)
+   "xrgb(xxxxxx)" or "xrgb(xxxxxxxxxxxx)"
    "gray(S)"	 where S is 0.0 (black) to 1.0 (white)
    "S"		 same as above
     or, a color name such as "blue" (see color.c)
@@ -364,39 +429,37 @@ for( i = 0, slen = strlen( color ); i < slen; i++ ) {
 if( strncmp( color, "rgb", 3 )==0 ) {
 	n = sscanf( color, "%*s %lf %lf %lf", &r, &g, &b );
 	if( n != 3 ) { Eerr( 12031, "Invalid color", color ); return(1); }
-	r *= 255;
-	g *= 255;
-	b *= 255;
-	red = (int)r;	
-	green = (int)g;	
-	blue = (int)b;	
+	r *= 255; g *= 255; b *= 255;
+	red = (int)r; green = (int)g;	blue = (int)b;	
 	 sprintf( svg_cur_color, "#%02x%02x%02x", red, green, blue);
 	}
 else if( strncmp( color, "gray", 4 )==0 || strncmp( color, "grey", 4 )==0 ) {
 	int gray;
 	n = sscanf( color, "%*s %lf", &r );
 	if( n != 1 ) { Eerr( 12031, "Invalid color", color ); return(1); }
-	gray = r * 256;
+	gray = r * 255; /* was 256.. changed scg 6/17/04 */
 	sprintf( svg_cur_color, "#%02x%02x%02x", gray, gray, gray);
+	}
+else if( strncmp( color, "xrgb", 4 )==0 ) {
+	if (PLG_xrgb_to_rgb( &color[5], &r, &g, &b)) return(1);
+	r *= 255; g *= 255; b *= 255;
+	red = (int)r; green = (int)g; blue = (int)b;
+	sprintf( svg_cur_color, "#%02x%02x%02x", red, green, blue);
 	}
 else if( GL_goodnum( color, &i ) ) {
 	float no;
 	int gray;
 	sscanf(color,"%f",&no);
 
-	gray = no * 256;
+	gray = no * 255; /* was 256.. changed scg 6/17/04 */
 
 	sprintf( svg_cur_color, "#%02x%02x%02x", gray, gray, gray);
 	}
 else	{	/* color names */
 	PLG_colorname_to_rgb( color, &r, &g, &b );
 
-	r *= 255;
-	g *= 255;
-	b *= 255;
-	red = (int)r;	
-	green = (int)g;	
-	blue = (int)b;	
+	r *= 255; g *= 255; b *= 255;
+	red = (int)r;	green = (int)g;	blue = (int)b;	
 	sprintf( svg_cur_color, "#%02x%02x%02x", red, green, blue);
 	}
 
@@ -407,6 +470,7 @@ return( 0 );
 
 /* ============================== */
 /* FILL - fill current path with current color */
+int
 PLGS_fill( )
 {
 if (svg_path_in_prog) fprintf( svg_fp, "z\" fill=\"%s\" stroke=\"%s\"/>\n",svg_cur_color,svg_cur_color);
@@ -429,9 +493,15 @@ for( i = 0, len = 0; s[i] != '\0'; i++ ) {
 
 		/* pass &#dddd and &#xHHHH constructs transparently.. */
 		/* bug - (was: s[i+1] = '#' ) fixed oct 03 scg */
-		if( s[i+1] == '#' && ( s[i+2] == 'x' || isdigit( s[i+2] ) ) ) { strcpy( &out[len], "&" ); len++; }
+		if( s[i+1] == '#' && ( s[i+2] == 'x' || isdigit( (int) s[i+2] ) ) ) { 
+			strcpy( &out[len], "&" ); 
+			len++; 
+			}
 
- 		else { strcpy( &out[len], "&amp;" ); len+= 5; }
+ 		else 	{ 
+			strcpy( &out[len], "&amp;" ); 
+			len+= 5; 
+			}
 		}
 	else out[len++] = s[i];
 	}
@@ -442,6 +512,7 @@ return( 0 );
 
 /* ================================= */
 /* TEXT - render some text */
+int
 PLGS_text( com, x, y, s, w )
 char com;
 double x, y;
@@ -474,6 +545,7 @@ return( 0 );
 
 /* ================================= */
 /* POINTSIZE - set text point size */
+int
 PLGS_pointsize( p )
 int p;
 {
@@ -484,6 +556,7 @@ return( 0 );
 
 /* ================================== */
 /* FONT - set font */
+int
 PLGS_font( f )
 char *f;
 {
@@ -494,6 +567,7 @@ return( 0 );
 
 /* ================================== */
 /* CHARDIR - set text direction */
+int
 PLGS_chardir( t )
 int t;
 {
@@ -504,6 +578,7 @@ return( 0 );
 
 /* ================================== */
 /* LINETYPE - set line style */
+int
 PLGS_linetype( s, x, y )
 char *s;
 double x, y;
@@ -542,13 +617,14 @@ return( 0 );
 
 /* =================================== */
 /* TRAILER do end of file stuff */
-
+int
 PLGS_trailer( x1, y1, x2, y2 )
 double x1, y1, x2, y2;
 {
 char *buf;
-FILE *outfp;
-int i;
+#ifdef WZ
+  FILE *outfp;
+#endif
 
 if (svg_style_in_prog) fprintf( svg_fp, "</g>");
 fprintf( svg_fp, "</g>\n" );   /* close default style */
@@ -559,7 +635,7 @@ if( svg_clickmap ) {
 	/* set a style for clickmap section */
 	if( svg_debug ) fprintf( svg_fp, "<g style=\"fill-opacity:0;fill:red;stroke:#00ff00;stroke-width:0.4;\">\n" );
 	else fprintf( svg_fp, "<g style=\"fill-opacity:0;fill:red;\">\n" );
-	PL_clickmap_out( 0, 0 );
+	PL_clickmap_out( 0, 0 );  /* this will call PLGS_clickregion() (herein).. */ 
 	fprintf( svg_fp, "</g>\n" ); /* close style */
 	}
 #endif
@@ -571,7 +647,19 @@ fprintf( svg_fp, "</svg>\n" );
 /* now go back and update viewbox - scg */
 fseek( svg_fp, svg_bbofs, SEEK_SET );	
 /* xmlns=  added 10/2/03 scg */
-fprintf( svg_fp, "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 %-5.2f %-5.2f\" %s>\n", (x2-x1) * svg_pixs_inch, (y2-y1) * svg_pixs_inch, svg_tagparms );
+fprintf( svg_fp, "  viewBox=\"0 0 %-5.2f %-5.2f\"   %s   \n", (x2-x1) * svg_pixs_inch, (y2-y1) * svg_pixs_inch, svg_tagparms );
+fprintf( svg_fp, "  xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" );
+if( svg_clickmap && !svg_generic_js ) {
+	/* all this is replicated below (search on "bbofs") */
+	fprintf( svg_fp, "  onload=\"init(evt)\"\n" );
+	/* xmlns:xlink used to be here.. scg 3/16/06 */
+	fprintf( svg_fp, "  xmlns:a3=\"http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/\" \n" );
+	fprintf( svg_fp, "  a3:scriptImplementation=\"Adobe\" >\n" );
+	fprintf( svg_fp, "<script type=\"text/ecmascript\" a3:scriptImplementation=\"Adobe\" xlink:href=\"ViewBox.js\"/> \n" );
+	fprintf( svg_fp, "<script type=\"text/ecmascript\" a3:scriptImplementation=\"Adobe\" xlink:href=\"GraphPopups.js\"/> \n" );
+	}
+else fprintf( svg_fp, ">\n" );
+
 fprintf( svg_fp, "<g transform=\"translate(%-5.2f,%-5.2f)\" >", 
 	x1*svg_pixs_inch *-1.0, 
 	(svg_y_size - (y2 * svg_pixs_inch)) *-1.0 );
@@ -579,7 +667,7 @@ fprintf( svg_fp, "<g transform=\"translate(%-5.2f,%-5.2f)\" >",
 if( svg_dotag ) {
 	printf( "<embed src=\"%s\" name=\"svg_Embed\" width=\"%-5.2f\" height=\"%-5.2f\" \n",
 		svg_filename, (x2-x1)* svg_pixs_inch, (y2-y1) * svg_pixs_inch );
-	printf( "type=\"image/svg-xml\" pluginspage=\"http://www.adobe.com/svg/viewer/install/\"> \n" );
+	printf( "type=\"image/svg+xml\" pluginspage=\"http://www.adobe.com/svg/viewer/install/\"> \n" ); /* changed from svg- to svg+ */
 	}
 
 fclose( svg_fp );
@@ -623,6 +711,7 @@ return( 0 );
    such as I (italic) B (bold) or BI (bold italic), build the 
 	font style and weight strings */
 
+int
 PLGS_fontname( basename, name )
 char *basename; 
 char *name; /* in: B, I, or BI.  out: still the font name but statics now hold the font style and weight */
@@ -646,6 +735,8 @@ return( 0 );
 
 /* ================================ */
 /* SHOWTAG - set flag to write a suitable html <embed> tag to stdout */
+
+int
 PLGS_showtag( mode )
 int mode;
 {
@@ -655,6 +746,8 @@ return( 0 );
 
 /* ================================= */
 /* Z - turn on / off compression (svgz) */
+
+int
 PLGS_z( mode )
 int mode;
 {
@@ -668,6 +761,8 @@ return( 0 );
 
 /* ================================== */
 /* ZLEVEL - set the compression level */
+
+int
 PLGS_zlevel( level )
 int level;
 {
@@ -678,6 +773,8 @@ return( 0 );
 
 /* ================================== */
 /* FMT - return the output file type, either svg or svgz */
+
+int
 PLGS_fmt( tag )
 char *tag;
 {
@@ -689,55 +786,68 @@ return( 0 );
 /* ================================== */
 /* define a rectangular region for click hyperlink to url */
 /* use <a xlink:href...>, and associate it with an invisble rectangle */
-PLGS_clickregion( url, x1, y1, x2, y2 )
-char *url;
+
+int
+PLGS_clickregion( url, label, targetstr, x1, y1, x2, y2 )
+char *url, *label, *targetstr;
 int x1, y1, x2, y2; /* these are in absolute space x100 */
 {
 int i;
 double xx1, yy1, xx2, yy2, fabs();
-char str[100];
+
 
 xx1 = ( ( (double)(x1) / 100.0 ) * svg_pixs_inch ) + MARG_X;
 yy1 = svg_y_size - ( ( (double)(y1) / 100.0 ) * svg_pixs_inch ) + MARG_Y;
 xx2 = ( ( (double)(x2) / 100.0 ) * svg_pixs_inch ) + MARG_X;
 yy2 = svg_y_size - ( ( (double)(y2) / 100.0 ) * svg_pixs_inch ) + MARG_Y;
-fprintf( svg_fp, "<a xlink:href=\"" );
-for( i = 0; url[i] != '\0'; i++ ) {
-	if( url[i] == '&' ) fprintf( svg_fp, "&amp;" );
-	else if( url[i] == '<' ) fprintf( svg_fp, "&lt;" );
-	else if( url[i] == '>' ) fprintf( svg_fp, "&gt;" );
-	else fprintf( svg_fp, "%c", url[i] );
+
+/* <a xlink for click url link.. */
+if( url[0] != '\0' ) {
+	fprintf( svg_fp, "<a %s xlink:href=\"", targetstr );
+	/* ampersands etc. must be encoded this way to survive svg rendering pass!! */
+	for( i = 0; url[i] != '\0'; i++ ) {
+	   if( url[i] == '&' ) fprintf( svg_fp, "&amp;" );
+	   else if( url[i] == '<' ) fprintf( svg_fp, "&lt;" );
+	   else if( url[i] == '>' ) fprintf( svg_fp, "&gt;" );
+	   else fprintf( svg_fp, "%c", url[i] );
+	   }
+	fprintf( svg_fp, "\">\n" );
 	}
-fprintf( svg_fp, "\">\n<rect x=\"%.4g\" y=\"%.4g\" width=\"%.4g\" height=\"%.4g\"/></a>\n", xx1, yy1, xx2-xx1, fabs(yy2-yy1) );
+
+/* rect */
+fprintf( svg_fp, "<rect x=\"%.4g\" y=\"%.4g\" width=\"%.4g\" height=\"%.4g\" ", xx1, yy1, xx2-xx1, fabs(yy2-yy1) );
+
+/* mouseover label ... */
+
+/* <rect x="529.9" y="252" width="5.76" height="5.76" 
+ *    onmouseover='DisplayInfo(evt, "14-MAY-2004.14:45: 349" )' 
+ *    onmouseout='RemoveInfo ();' />
+ */
+if( label[0] != '\0' ) {
+	if( !svg_generic_js ) fprintf( svg_fp, "onmouseover='DisplayInfo(evt, \"" ); /* for the echlin setup */
+	for( i = 0; label[i] != '\0'; i++ ) {
+		if( label[i] == '&' ) fprintf( svg_fp, "&amp;" );
+		else if( label[i] == '<' ) fprintf( svg_fp, "&lt;" );
+		else if( label[i] == '>' ) fprintf( svg_fp, "&gt;" );
+		else if( label[i] == '"' && !svg_generic_js ) fprintf( svg_fp, "&quot;" ); /* added 6/21/04 scg */
+		else if( label[i] == '\'' && !svg_generic_js ) fprintf( svg_fp, " " ); /* added 10/12/05 scg */
+		else fprintf( svg_fp, "%c", label[i] );
+		}
+	if( !svg_generic_js ) fprintf( svg_fp, "\" )' onmouseout='RemoveInfo ();'" ); /* for the echlin setup */
+	}
+
+/* close rect */
+fprintf( svg_fp, " />\n" );
+if( url[0] != '\0' ) fprintf( svg_fp, "</a>\n" );
 return( 0 );
 }
 
-/* ======================================= */
-/*  BEGINOBJ - begin a <a xlink:href=... construct */
-PLGS_objbegin( url )
-char *url;
-{
-int i;
-fprintf( svg_fp, "<a xlink:href=\"" );
-for( i = 0; url[i] != '\0'; i++ ) {
-	if( url[i] == '&' ) fprintf( svg_fp, "&amp;" );
-	else if( url[i] == '<' ) fprintf( svg_fp, "&lt;" );
-	else if( url[i] == '>' ) fprintf( svg_fp, "&gt;" );
-	else fprintf( svg_fp, "%c", url[i] );
-	}
-fprintf( svg_fp, "\">\n" );
-return( 0 );
-}
-/* ======================================= */
-/*  ENDOBJ - end the <a xlink:href=... construct */
-PLGS_objend( )
-{
-fprintf( svg_fp, "</a>\n" );
-return( 0 );
-}
+
 
 /* ======================================== */
 /* SETXMLPARMS - set various xml language related parameters.. */
+
+int
 PLGS_setxmlparms( parm, value )
 char *parm, *value;
 {
@@ -751,8 +861,23 @@ else if( stricmp( parm, "xmldecl" )==0 ) svg_xmldecl = value[0] - '0';
 /* set misc parms to be present in the <svg> tag.. */
 else if( stricmp( parm, "svgparms" )==0 ) strcpy( svg_tagparms, value );
 
-else Eerr( 27505, "unrecognized svg xml parameter", parm );
+/* set misc parms to be present in the <a> tag.. */
+/* else if( stricmp( parm, "linkparms" )==0 ) strcpy( svg_linkparms, value ); */  /* discontinued - use the new [target=new] syntax in clickmapurl instead */
+
+/* indicate that we should use generic mouseover javascript */
+else if( stricmp( parm, "mouseover_js" )==0 ) {
+	if( stricmp( value, "generic" )==0 ) svg_generic_js = 1;
+	else svg_generic_js = 0;
+	}
+
+else Eerr( 27505, "unrecognized svg xmlparm received", parm );
 return( 0 );
 }
 
 #endif  /* NOSVG */
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

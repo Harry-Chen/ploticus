@@ -8,6 +8,8 @@
 //// set defaults..
 #setifnotgiven colors = "dullyellow"
 #setifnotgiven title = ""
+#setifnotgiven data = ""
+#setifnotgiven inlinedata = ""
 
 // stick with the prefab convention where 'legend' contains legend location..
 #setifnotgiven legend = no
@@ -27,6 +29,13 @@
     #setifnotgiven  radius = 1
     #setifnotgiven  legend = "4 3"
 #endif
+
+// following added scg 8/4/04...
+#proc settings
+  encodenames: yes
+  #ifspec encodenames
+  enable_suscripts: yes
+  #ifspec enable_suscripts
 
 
 #include $chunk_read
@@ -51,6 +60,7 @@ center: @center
 radius: @radius
 datafield: @values
 #ifspec labels labelfield
+#ifspec wraplen
 #if @labelfarout like -*
   labelmode: label
 #elseif @dolegend = 1
@@ -69,11 +79,21 @@ datafield: @values
 #ifspec labelfarout
 #ifspec clickmapurl
 #ifspec clickmaplabel
+#ifspec labelfmtstring
   
+#write stderr
+  legend: @legend
+#endwrite
 
 #if @dolegend = 1
   #proc legend
   location: @legend
   #ifspec legendfmt format
   #ifspec legendsep sep
+  #ifspec legwrap wraplen 
+  #ifspec legbreak extent
+  #ifspec legtitle title
+  #ifspec legbox backcolor
+  #ifspec legframe frame
+  #ifspec legtextdet textdetails
 #endif

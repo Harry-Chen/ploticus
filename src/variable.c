@@ -1,7 +1,10 @@
-/* VARIABLE.C - assign/ get value of a variable
- * Copyright 1998-2002 Stephen C. Grubb  (ploticus.sourceforge.net) .
- * This code is covered under the GNU General Public License (GPL);
- * see the file ./Copyright for details. */
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
+
+/* VARIABLE.C - assign/ get value of a variable */
 
 #include "tdhkit.h"
 
@@ -17,6 +20,7 @@ static int badvarwarn = 0;
 static int Lasti = 0; /* remember which slot was set / gotten most recently .. */
 
 /* =================================== */
+int
 TDH_setvar_initstatic()
 {
 Ns = 0;
@@ -28,6 +32,7 @@ return( 0 );
 /* SETVAR - set the named variable to the given value.
 	Allocates a space in the vars list if necessary.
  */
+int
 TDH_setvar( name, value )
 char *name, *value;
 {
@@ -49,6 +54,7 @@ return( 0 );
 }
 /* =================================== */
 /* GETVAR - get the value of the named variable */
+int
 TDH_getvar( name, value )
 char *name, *value;
 {
@@ -77,6 +83,7 @@ return( Value[i] );
 
 /* =================================== */
 /* CLEARALLVAR - clear the list of variables. */
+int
 TDH_clearallvar( )
 {
 Ns = 0;
@@ -85,6 +92,7 @@ return( 0 );
 
 /* ===================================== */
 /* WARN_ON_BADVAR - turn on warning when undeclared vars are encountered. */
+int
 TDH_warn_on_badvar()
 {
 badvarwarn = 1;
@@ -93,6 +101,7 @@ return( 0 );
 
 /* ===================================== */
 /* SETVARCON - do a setvar() but perhaps do shsql field conversions first */
+int
 TDH_setvarcon( name, value, convert )
 char *name, *value;
 int convert; /* if 1 do conversion */
@@ -109,7 +118,14 @@ return( TDH_setvar( name, value ) );
 
 /* ====================================== */
 /* GET_VAR_I - get Lasti */
+int
 TDH_get_var_i()
 {
 return( Lasti );
 }
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

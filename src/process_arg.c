@@ -1,48 +1,62 @@
-/*
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
-
-/* ================== */
 /* PROCESS_ARG - process one command line argument from pl */
 
 #include "pl.h"
 extern char TDH_tmpdir[];
+extern int PLGS_showtag(), PLGS_zlevel(), PLGS_setxmlparms();
+extern int chmod(), fchmod(), chdir();
 
+
+int
 PL_process_arg( opt_in, val, valused, found )
 char *opt_in; /* option */
 char *val; /* argument that follows option */
 int *valused; /* 1 if val was used, 0 if not */
 int *found; /* 1 if option found here, 0 if not */
 {
-int i, j;
-int vardec;
-char buf[256];
-int nt;
-char opt[256];
-int slen;
-int rtnstat;
+int j, nt, slen, rtnstat, olen, vardec;
+char buf[256], opt[256];
 
 if( PLS.debug ) { fprintf( PLS.diagfp, "Got command line arg(s): %s ", opt_in ); fflush( PLS.diagfp ); }
 
 *found = 1;
 rtnstat = 0;
-if( opt_in[0] == '-' ) strcpy( opt, &opt_in[1] );
-else strcpy( opt, opt_in );
-
-
 vardec = 0;
-for( j = 0, slen = strlen( opt ); j < slen; j++ ) {
-	if( opt[j] == '=' ) {
-		vardec = 1;
-		break;
+
+/* all parameters and args processed herein are truncated silently to length 255.  changed, scg 5/30/06 */
+if( opt_in[0] == '-' ) strncpy( opt, &opt_in[1], 255 ); 
+else strncpy( opt, opt_in, 255 ); 
+opt[255] = '\0';  
+
+/* see if it is a var=value parameter.. if so get it, we're done */
+if( opt_in[0] != '-' ) {   /* condition added scg 5/30/06 */
+	for( j = 0, slen = strlen( opt ); j < slen; j++ ) {
+		if( opt[j] == '=' ) { 	/* yes, its a var=value parameter */
+			int ix;
+			char varname[40];
+       			strcpy( buf, opt );
+       			ix = 0;
+        		GL_getseg( varname, buf, &ix, "=" );
+        		TDH_setvar( varname, &buf[ix] );
+			if( PLS.debug ) fprintf( PLS.diagfp, " ...setting var %s to: %s.\n", varname, &buf[ix] );
+			*valused = 0;
+			return( rtnstat );
+			}
 		}
 	}
 
 /* add to list of parameters set on command line.. */
-if( !vardec ) {
-	strcat( PLS.cmdlineparms, opt );
-	strcat( PLS.cmdlineparms, " " );
+olen = strlen( opt );
+if( olen < 40 ) {  /* length check added.. scg 3/16/06 */
+	if( (strlen( PLS.cmdlineparms ) + olen) < 290 ) {
+		strcat( PLS.cmdlineparms, opt );
+		strcat( PLS.cmdlineparms, " " );
+		}
 	}
 
 *valused = 1;
@@ -73,10 +87,15 @@ else if( strcmp( opt, "debug" )==0) {
 		}
 	}
 
+else if( strcmp( opt, "bbdebug" )==0 ) {
+        Epcodedebug( 2, stderr ); /* tell pcode.c to output bounding box diagnostics */
+	*valused = 0; 
+	}
+
 else if( strcmp( opt, "tightcrop" )==0 ) { Etightbb(1); *valused = 0; }
 
 
-else if( strncmp( opt, "crop", 4 )==0 ) {
+else if( strcmp( opt, "crop" )==0 || strcmp( opt, "croprel" ) ==0 ) {
 	double cropx1, cropy1, cropx2, cropy2;
 	nt = sscanf( val, "%lf,%lf,%lf,%lf", &cropx1, &cropy1, &cropx2, &cropy2 );
 	if( nt != 4 ) 
@@ -130,6 +149,7 @@ else if( strcmp( opt, "maxrows" )==0 ) { if( atoi( val ) > 1000 ) PLD.maxrows = 
 else if( strcmp( opt, "maxfields" )==0 ) { if( atoi( val ) > 10000 ) PLD.maxdf = atoi( val ); }
 else if( strcmp( opt, "maxproclines" )==0 ) { if( atoi( val ) > 500 ) PLL.maxproclines = atoi( val ); }
 else if( strcmp( opt, "maxvector" )==0 ) { if( atoi( val ) > 500 ) PLVsize = atoi( val ); }
+else if( strcmp( opt, "maxdrawpoints" )==0 ) { PLG_setmaxdrivervect( atoi( val )); }
 else if( strcmp( opt, "dir" )==0 ) chdir( val );
 else if( strcmp( opt, "outlabel" )==0 ) Esetoutlabel( val );
 
@@ -145,6 +165,7 @@ else if( strcmp( opt, "mapfile" )==0 ) {
 else if( strcmp( opt, "landscape" )==0 ) { PLS.landscape = 1; *valused = 0; }
 else if( strcmp( opt, "portrait" )==0 ) { PLS.landscape = 0; *valused = 0; PLS.winw = 8.5; PLS.winh = 11.0; } 
 else if( strcmp( opt, "showbad" )==0 ) { suppress_convmsg( 0 ); *valused = 0; }
+else if( strcmp( opt, "noshell" )==0 || strcmp( opt, "nosh" )==0 ) { PLS.noshell = 1; TDH_prohibit_shell( 1 ); *valused = 0; }
 else if( strcmp( opt, "font" )==0) strcpy( Estandard_font, val ); 
 else if( strcmp( opt, "textsize" )==0) Estandard_textsize = atoi( val );
 else if( strcmp( opt, "linewidth" )==0) Estandard_lwscale = atof( val );
@@ -159,6 +180,15 @@ else if( strcmp( opt, "backcolor" )==0) {
 	}
 
 else if( strcmp( opt, "viewer" )==0 || strcmp( opt, "v" )==0 ) { if( PLS.cgiargs == NULL ) strcpy( PLS.viewer, val ); }
+else if( strcmp( opt, "errmsgpre" )==0 ) TDH_errprogsticky( val ); /* added 3/25/04 - scg */
+else if( strcmp( opt, "drawdump" )==0 ) {
+	PLG_setdumpfile( val, "w" ); /* added 8/5/04 - scg */
+	PLS.device = 'n'; /* null device */
+	}
+else if( strcmp( opt, "drawdumpa" )==0 ) {
+	PLG_setdumpfile( val, "a" ); /* added 8/5/04 - scg */
+	PLS.device = 'n'; /* null device (added 6/7/05 - scg) */
+	}
 #ifndef NOSVG
 else if( strcmp( opt, "tag" )==0) { PLGS_showtag( 1 ); *valused = 0; }
 else if( strcmp( opt, "zlevel" )==0) PLGS_zlevel( atoi( val ) ); 
@@ -183,14 +213,15 @@ else if( strcmp( opt, "diagfile" )==0 ) {
 
 else if( strcmp( opt, "errfile" )==0 ) {
 	if( PLS.cgiargs != NULL ) goto FINISH; /* don't allow this in cgi mode.. scg 2/8/02 */
-	if( GL_smember( val, "stderr STDERR" )) PLS.errfp = stderr; /* portability  */
-	else if( GL_smember( val, "stdout STDOUT" )) PLS.errfp = stdout; /* portability  */
+	if( GL_smember( val, "stderr STDERR" )) { PLS.errfp = stderr; TDH_errmode( "stderr" ); } 
+	else if( GL_smember( val, "stdout STDOUT" )) { PLS.errfp = stdout; TDH_errmode( "cgi" ); } 
 	else	{
                 PLS.errfp = fopen( val, "w" ); /* diagnostics */
                 if( PLS.errfp == NULL ) {
                         fprintf( stderr, "warning, cannot open -errfile %s, using stderr\n", val );
                         PLS.errfp = stderr;
                         }
+		else TDH_errfile( PLS.errfp ); /* set it for TDH */
                 }
 	}
 
@@ -199,16 +230,12 @@ else if( strcmp( opt, "echo" )==0 ) {
 	else if( stricmp( val, "diag" )==0 ) PLS.echolines = 2;
 	else { PLS.echolines = 2; *valused = 0; }
 	}
+
+else if( strcmp( opt, "ping" )==0 ) {
+	printf( "ploticus %s \n", PLVERSION );
+	exit(0);
+	}
  
-else if( vardec ) {	/* its a VAR=VALUE pair */
-	int ix;
-	char varname[40];
-       	strcpy( buf, opt );
-       	ix = 0;
-        GL_getseg( varname, buf, &ix, "=" );
-        TDH_setvar( varname, &buf[ix] );
-	*valused = 0;
-        }
 
 else 	{ *found = 0; *valused = 0; }
 
@@ -220,3 +247,9 @@ if( PLS.debug ) {
 
 return( rtnstat );
 }
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

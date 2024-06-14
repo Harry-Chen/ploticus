@@ -46,6 +46,10 @@
 #setifnotgiven y4 = ""
 #setifnotgiven ptshape4 = triangle
 #setifnotgiven color4 = powderblue
+#setifnotgiven ptstyle = filled
+#if @ptstyle !in filled,outline
+  #set ptstyle = filled
+#endif
 
 #setifnotgiven name = "#usefname"
 #setifnotgiven name2 = "#usefname"
@@ -110,6 +114,7 @@ labeldistance: @LBLDIST
   xfield: @x
   yfield: @y
   linedetails: color=@corrcolor width=0.5
+  #ifspec maxinpoints
 
   #proc annotate
   location: max min-@REGLBL
@@ -176,12 +181,16 @@ labeldistance: @LBLDIST
   #ifspec ptselect2 select
 #endif
 
+// scat prefab will always attempt to use pix* shapes..
+#if @ptshape !like pix*
+  #set ptshape = "pix" @ptshape
+#endif
 
 //// do the data points last so they are on top of the rest of the stuff..
 #proc scatterplot
 xfield: @x
 yfield: @y
-symbol: shape=@ptshape style=filled radius=@ptsize fillcolor=@ptcolor
+symbol: shape=@ptshape style=@ptstyle radius=@ptsize color=@ptcolor
 #ifspec clickmapurl
 #ifspec clickmaplabel
 legendlabel: @name
@@ -191,10 +200,14 @@ legendlabel: @name
 
 //// optional 2nd set of points...
 #if @x2 != "" && @y2 != ""
+  #if @ptshape2 !like pix*
+    #set ptshape2 = "pix" @ptshape2
+  #endif
+
   #proc scatterplot
   xfield: @x2
   yfield: @y2
-  symbol: shape=@ptshape2 style=filled radius=@ptsize fillcolor=@ptcolor2
+  symbol: shape=@ptshape2 style=@ptstyle radius=@ptsize color=@ptcolor2
   legendlabel: @name2
   #ifspec ptselect2 select
   #ifspec cluster
@@ -202,10 +215,14 @@ legendlabel: @name
 
 //// optional 3d set of points...
 #if @x3 != "" && @y3 != ""
+  #if @ptshape3 !like pix*
+    #set ptshape3 = "pix" @ptshape3
+  #endif
+
   #proc scatterplot
   xfield: @x3
   yfield: @y3
-  symbol: shape=@ptshape3 style=filled radius=@ptsize fillcolor=@ptcolor3
+  symbol: shape=@ptshape3 style=@ptstyle radius=@ptsize color=@ptcolor3
   legendlabel: @name3
   #ifspec ptselect3 select
   #ifspec cluster
@@ -213,10 +230,14 @@ legendlabel: @name
 
 //// optional 4th set of points...
 #if @x4 != "" && @y4 != ""
+  #if @ptshape4 !like pix*
+    #set ptshape4 = "pix" @ptshape4
+  #endif
+
   #proc scatterplot
   xfield: @x4
   yfield: @y4
-  symbol: shape=@ptshape4 style=filled radius=@ptsize fillcolor=@ptcolor4
+  symbol: shape=@ptshape4 style=@ptstyle radius=@ptsize color=@ptcolor4
   legendlabel: @name4
   #ifspec ptselect4 select
   #ifspec cluster
@@ -228,6 +249,13 @@ legendlabel: @name
   location: @legend
   #ifspec legendfmt format
   #ifspec legendsep sep
+  #ifspec legwrap wraplen
+  #ifspec legbreak extent
+  #ifspec legtitle title
+  #ifspec legbox backcolor
+  #ifspec legframe frame
+  #ifspec legtextdet textdetails
+
 #endif
 
 

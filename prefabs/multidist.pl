@@ -142,8 +142,9 @@ ID = @ID
 #include $chunk_area
 #if @yrange = ""
   yautorange: datafield=2 nearest=@ynearest 
-#elseif @yrange = 0
-  yautorange: datafield=2 lowfix=0 nearest=@ynearest 
+//#elseif @yrange = 0
+#elseif $ntoken( 2, @yrange ) = ""
+  yautorange: datafield=2 mininit=@yrange nearest=@ynearest 
 #else
   yrange: @yrange
 #endif
@@ -197,6 +198,12 @@ ID = @ID
   location: @legend
   #ifspec legendfmt format
   #ifspec legendsep sep
+  #ifspec legwrap wraplen
+  #ifspec legbreak extent
+  #ifspec legtitle title
+  #ifspec legbox backcolor
+  #ifspec legframe frame
+  #ifspec legtextdet textdetails
 #endif
 
 //// user post-plot include

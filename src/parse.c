@@ -1,6 +1,8 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 /* Parse data into fields by assigning char * pointers to beginning
    of each field, and inserting nulls into the data buffer. 
@@ -24,9 +26,10 @@
  */
 
 /* ============================================ */
-
+int
 PL_parsedata( data, delimmethod, comsym, field, maxd, nr, nf, nd )
 unsigned char *data; 	/* for LOCALE scg 3/15/00 */
+/* char *data;  	// for LOCALE scg 3/15/00 //   this avoids gcc4 warning */
 char *delimmethod;	/* one of: space (whitespace w/ quotes), whitespace (no quotes), tab, comma */
 char *comsym;		/* user symbol signifying beginning of comment */
 char *field[]; 		/* array of pointers to fields */
@@ -157,3 +160,9 @@ for( i = 0, start = 0; i < (datalen+1); i++ ) {
 
 return( 0 );
 }
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

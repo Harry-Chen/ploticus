@@ -8,8 +8,10 @@
 
 /* general includes and defines.. */
 #include <stdio.h> 
+#include <string.h>
 
-char *GL_getok();
+extern char *GL_getok();
+extern int TDH_err();
 
 /* Data array size */
 #define MAXITEMS 80	/* max number of fields per record */
@@ -49,6 +51,7 @@ char *GL_getok();
 /* value_subst modes */
 #define NORMAL 0
 #define FOR_CONDEX 1
+#define URL_ENCODED 2
 
 #define DBNULL "null"		/* the word "null" */
 
@@ -90,8 +93,12 @@ struct sinterpstate {
 	} ;
 
 /* ==== macros ==== */
+#ifndef stricmp
 #define stricmp( s, t ) 	strcasecmp( s, t )
+#endif
+#ifndef strnicmp
 #define strnicmp( s, t, n )     strncasecmp( s, t, n )
+#endif
 #define err(a,b,c) 		TDH_err(a,b,c)
 
 /* ==== fseek defines ==== */
@@ -121,5 +128,11 @@ extern char TDH_fdfpath[];
 #endif
 
 
+extern int GL_getchunk(), GL_getseg(), GL_goodnum(), GL_member(), GL_slmember(), GL_smember(), GL_smemberi(), GL_sysdate(), GL_systime();
+extern int TDH_condex(), TDH_err(), TDH_getvalue(), TDH_getvar(), TDH_readconfig(), TDH_setvalue(), TDH_setvar();
+extern int TDH_value_subst(), TDH_valuesubst_settings();
+
+extern int TDH_fieldmap(), TDH_altfmap(), TDH_loadfieldmap();
+extern int TDH_errprog(), TDH_errmode();
 
 #endif

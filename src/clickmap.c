@@ -1,7 +1,8 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
-
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 /* MAPFILE - generate a clickable imagemap.  All related bookkeeping is here. 
 
@@ -12,6 +13,9 @@
  */
 
 #include "pl.h"
+#include <string.h>
+extern int chmod();
+
 #define MAXENTRIES 500
 #define SERVERSIDE 1
 #define CLIENTSIDE 2
@@ -30,9 +34,13 @@ static int mapstatus = 0; /* 1 if we are in the process of doing a map; 0 otherw
 static int demomode = 0;  /* 1 if we are in demo mode */
 static int intersect = 0;
 
+extern int PLGS_clickregion();
+static int get_targetstr();
+
+
 /* ========================= */
 /* INIT - initialize clickmap facility & make various settings */
-
+int
 PL_clickmap_init()
 {
 
@@ -50,6 +58,8 @@ return( 0 );
 /* ========================= */
 /* ENTRY - add one map entry */
 /* typs: 'r' = rectangle, lower left x,y and upper right x,y;   'p' = point */
+
+int
 PL_clickmap_entry( typ, url, pmode, x1, y1, x2, y2, textpad, clipmode, title )
 /* mapentry */
 char typ;
@@ -59,16 +69,17 @@ int pmode; /* processing mode; 0 = none, 1 = sub into tpurl as x, 2 = sub into t
 double x1, y1, x2, y2;
 int textpad; /* add extra padding to text */
 int clipmode;  /* 0 = no clip;  1 = clip X to plotting area  2 = clip Y to plotting area */
-char *title; /* client-side only.. this will be supplied as the title= attribute */
+char *title; /* client-side only.. this will be supplied as the title= attribute - can be large (MAXTT) */
 {
 int i;
-double r, sx, sy;
+double sx, sy;
+
 
 if( imap >= MAXENTRIES-1 ) return( Eerr( 2706, "too many clickmap regions, ignoring", url ) );
 if( !mapstatus ) return( Eerr( 2707, "-map or -csmap must be specified on command line", "" ) );
 
 if( url[0] == '\0' && title[0] == '\0' ) return( 0 ); /* degenerate case */
-if( PLS.device == 's' && url[0] == '\0' ) return( 0 ); /* mouseover not yet supported for svg */
+/* if( PLS.device == 's' && url[0] == '\0' ) return( 0 ); */ /* mouseover not yet supported for svg */
 
 /* do character conversions within url.. */
 for( i = 0; url[i] != '\0'; i++ ) {
@@ -80,7 +91,7 @@ urls[ imap ] = (char *) malloc( strlen( url ) + 1 );
 strcpy( urls[ imap ], url );
 
 titles[ imap ] = NULL;
-if( PLS.clickmap == CLIENTSIDE ) {
+if( title[0] != '\0' ) {
 	int tlen;
 	tlen = strlen( title );
 	if( tlen > 0 ) {
@@ -120,6 +131,7 @@ return( 0 );
 /* SVG: tx and ty may be anything (they aren't used).  For SVG the entries must be
    in opposite order than image clickmap file, hence the two gotos herein. */
 
+int
 PL_clickmap_out( tx, ty )
 int tx, ty; /* translate vector  - should be 0, 0 for svg */
 {
@@ -128,6 +140,7 @@ FILE *fp;
 char buf[255];
 int ox1, oy1, ox2, oy2;
 int loopstart, loopend, loopinc;
+char targetstr[80];
 
 if( imap < 1 ) return( Eerr( 2795, "Warning, no map regions were assigned", PLS.mapfile ) );
 
@@ -158,6 +171,8 @@ if( intersect ) for( i = loopstart; i != loopend; i += loopinc ) {
 				strcpy( buf, tpurl );
 				GL_varsub( buf, "@XVAL", urls[ i ] );
 				GL_varsub( buf, "@YVAL", urls[ j ] );
+				strcpy( targetstr, "" );
+				get_targetstr( buf, targetstr );
 
 				/* take greatest x1 */
 				if( box[ i ].x1 > box[j].x1 ) ox1 = box[i].x1;
@@ -188,14 +203,14 @@ if( intersect ) for( i = loopstart; i != loopend; i += loopinc ) {
 					}
 
 #ifndef NOSVG
-				if( PLS.device == 's' ) PLGS_clickregion( buf, ox1, oy1, ox2, oy2 );
+				if( PLS.device == 's' ) PLGS_clickregion( buf, "", targetstr, ox1, oy1, ox2, oy2 );
 				else
 #endif
 				if( PLS.clickmap == SERVERSIDE ) 
 					fprintf( fp, "rect %s	%d,%d	%d,%d\n", buf, ox1-tx, oy1-ty, ox2-tx, oy2-ty );
 				else if( PLS.clickmap == CLIENTSIDE ) 
-					fprintf( fp, "<area shape=\"rect\" href=\"%s\" coords=\"%d,%d,%d,%d\" >\n", 
-						buf, ox1-tx, oy1-ty, ox2-tx, oy2-ty );
+					fprintf( fp, "<area shape=\"rect\" href=\"%s\" coords=\"%d,%d,%d,%d\" %s >\n", 
+						buf, ox1-tx, oy1-ty, ox2-tx, oy2-ty, targetstr );
 				}
 			continue;
 			}
@@ -222,25 +237,38 @@ for( i = loopstart; i != loopend; i += loopinc ) {
 		}
 	else strcpy( buf, urls[i] );
 
+	/* handle <area> tag attributes construct eg. [target=xxx] - added scg 5/11/06 */
+	strcpy( targetstr, "" );
+	get_targetstr( buf, targetstr );
+
+
 #ifndef NOSVG
-	if( PLS.device == 's' ) PLGS_clickregion( buf, box[ i ].x1, box[ i ].y1, box[ i ].x2, box[ i ].y2 );
+	if( PLS.device == 's' ) {
+		if( titles[i] == NULL ) PLGS_clickregion( buf, "", targetstr, box[ i ].x1, box[ i ].y1, box[ i ].x2, box[ i ].y2 );
+		else PLGS_clickregion( buf, titles[i], targetstr, box[ i ].x1, box[ i ].y1, box[ i ].x2, box[ i ].y2 );
+		}
 	else 
 #endif
+
 	if( PLS.clickmap == SERVERSIDE ) fprintf( fp, "rect %s	%d,%d	%d,%d\n", 
 				buf, box[ i ].x1 - tx, box[ i ].y1 - ty, box[ i ].x2 - tx, box[ i ].y2 - ty );
+
 	else if( PLS.clickmap == CLIENTSIDE ) {
 		fprintf( fp, "<area shape=\"rect\" %s%s%c coords=\"%d,%d,%d,%d\" ",
 			(buf[0] == '\0') ? "nohref" : "href=\""   , buf,    (buf[0] == '\0' ) ? ' ' : '"',
 			box[ i ].x1 - tx, box[ i ].y1 - ty, box[ i ].x2 - tx, box[ i ].y2 - ty );
-		if( titles[i] != NULL ) fprintf( fp, "title=\"%s\" >\n", titles[i] );
-		else fprintf( fp, ">\n" );
+		if( titles[i] != NULL ) fprintf( fp, "title=\"%s\" %s >\n", titles[i], targetstr );
+		else fprintf( fp, "%s >\n", targetstr );
 		}
 	}
 
 if( PLS.device == 's' ) goto DO_INTERSECTS;
 
 if( PLS.clickmap == CLIENTSIDE && PLS.device != 's' ) { /* do default */
-	if( defaulturl[0] != '\0' ) fprintf( fp, "<area shape=\"default\" href=\"%s\">\n", defaulturl );
+	strcpy( buf, defaulturl );
+	strcpy( targetstr, "" );
+	get_targetstr( buf, targetstr );
+	if( defaulturl[0] != '\0' ) fprintf( fp, "<area shape=\"default\" href=\"%s\" %s >\n", buf, targetstr );
 	if( demomode ) fprintf( fp, "</map>\n<img src=\"%s\" usemap=\"#demo1\">\n", PLS.outfile );
 	}
 
@@ -258,11 +286,14 @@ return( 0 );
 
 /* =========================== */
 /* SHOW - display map regions using a green outline - for svg this is done in svg.c */
+
+int
 PL_clickmap_show( dev )
-/* showmapfile( dev ) */
 char dev;
 {
 int i;
+extern int PLGX_color(), PLGX_linetype(), PLGX_rawline(), PLGG_color(), PLGG_linetype(), PLGG_rawline();
+
 if( PLS.device == 's' ) return( 0 );
 if( imap < 1 ) return( Eerr( 2937, "Warning, no map regions were assigned", PLS.mapfile ) );
 if( dev == 'x' ) {
@@ -298,6 +329,7 @@ return( 0 );
 }
 
 /* ========================== */
+int
 PL_clickmap_free()
 {
 int i;
@@ -313,6 +345,7 @@ return( 0 );
 
 /* ========================= */
 /* INPROGRESS - return 1 if we are doing a clickmap, 0 otherwise */
+int
 PL_clickmap_inprogress()
 {
 return( mapstatus );
@@ -320,6 +353,7 @@ return( mapstatus );
 
 /* ========================= */
 /* DEMOMODE - set demo mode */
+int
 PL_clickmap_demomode( mode )
 int mode;
 {
@@ -330,6 +364,7 @@ return( 0 );
 
 /* ========================= */
 /* GETDEMOMODE - return 1 if we are in demo mode, 0 otherwise */
+int
 PL_clickmap_getdemomode()
 {
 return( demomode );
@@ -337,6 +372,7 @@ return( demomode );
 
 /* ========================= */
 /* SETDEFAULTURL - set the "default" url */
+int
 PL_clickmap_setdefaulturl( url )
 char *url;
 {
@@ -346,6 +382,7 @@ return( 0 );
 
 /* ========================== */
 /* SETURLT - set the url template to be used for plot area grid mapping */
+int
 PL_clickmap_seturlt( url )
 char *url;
 {
@@ -353,3 +390,28 @@ strcpy( tpurl, url );
 return( 0 );
 }
 
+/* =========================== */
+static int
+get_targetstr( buf, targetstr )
+char *buf, *targetstr;
+{
+int j;
+if( buf[0] == '[' ) {
+	for( j = 0; buf[j] != '\0'; j++ ) {
+		if( buf[j] == '[' ) buf[j] = ' ';
+		if( buf[j] == ']' ) {
+			buf[j] = ' ';
+			sscanf( buf, "%s", targetstr );
+			strcpy( buf, &buf[j+1] );
+			break;
+			}
+		}
+	} 
+return( 0 );
+}
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

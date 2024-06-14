@@ -14,5 +14,5 @@ pl -prefab dist x=1  data=data6  curve=yes  binsize=0.05 barwidth=0.08  ygrid=ye
 
 echo dist2..
 pl -prefab dist x=1  data=data8  cats=yes  yrange=0  stubvert=yes  barwidth=0.05  \
-	ylbl="# Hits"   order=rev  \
+	ylbl="# Hits"   order=rev   \
 	-$DEV -o ${OUTDIR}dist2.$DEV $ARGS

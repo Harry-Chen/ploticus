@@ -1,27 +1,29 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 /* PROC ANNOTATE - arbitrary placement of text, arrow, etc. */
 
 #include "pl.h"
 
+/* these statics are here to share values with calc_arrow() */
 static double ahx, ahy, atx, aty, ahsize;
 static double ah2x, ah2y, at2x, at2y;
 static double boxw, boxh, ulx, uly;
 static int arrowh, arrowt, arrow2h, arrow2t;
-static int do_arrows();
+static int do_arrows(), calc_arrow();
 static char arrowdet[256];
 
+int
 PLP_annotate()
 {
-int i;
-char attr[40], val[256];
+char attr[NAMEMAXLEN], val[256];
 char *line, *lineval;
 int nt, lvp;
 int first;
 
-int stat;
 int align;
 double adjx, adjy;
 double x, y;
@@ -30,19 +32,20 @@ char fromfile[256];
 int fromfilemode;
 int nlines, maxlen;
 char box[256];
-char backcolor[40];
+char backcolor[COLORLEN];
 int verttext;
 double bm;
 char mapurl[MAXPATH];
 double bevelsize, shadowsize;
-char lowbevelcolor[40], hibevelcolor[40], shadowcolor[40];
+char lowbevelcolor[COLORLEN], hibevelcolor[COLORLEN], shadowcolor[COLORLEN];
 int ioutline;
-char maplabel[256];
+char maplabel[MAXTT];
 int clickmap_on;
 int do_ellipse;
 double bd_1, bd_2, bd_3, bd_4;
 int backdim;
-double cx, cy;
+double cx, cy, px, py;
+int clip;
 
 
 TDH_errprog( "pl proc annotate" );
@@ -72,6 +75,7 @@ strcpy( maplabel, "" );
 clickmap_on = 0;
 do_ellipse = 0;
 backdim = 0;
+clip = 0;
 
 
 
@@ -134,6 +138,10 @@ while( 1 ) {
 	else if( stricmp( attr, "clickmaplabel" )==0 ) {
 		if( PLS.clickmap ) { strcpy( maplabel, lineval ); clickmap_on = 1; }
 		}
+        else if( stricmp( attr, "clickmaplabeltext" )==0 ) {
+                if( PLS.clickmap ) { getmultiline( "clickmaplabeltext", lineval, MAXTT, maplabel ); clickmap_on = 1; }
+                }
+
 	else if( stricmp( attr, "boxmargin" )==0 ) {
 		bm = atof( val );
 		if( PLS.usingcm ) bm /= 2.54;
@@ -152,25 +160,31 @@ while( 1 ) {
 		PL_getbox( "backdim", lineval, &bd_1, &bd_2, &bd_3, &bd_4 );
 		backdim = 1;
 		}
-
+        else if( stricmp( attr, "clip" )==0 ) {
+		if( strnicmp( val, YESANS, 1 )==0 ) clip = 1;
+		else clip = 0;
+		}
 	else Eerr( 1, "attribute not recognized", attr );
 	}
 
 
-
 if( fromfilemode > 0 ) file_to_buf( fromfile, fromfilemode, PL_bigbuf, MAXBIGBUF );
 
-textdet( "textdetails", textdetails, &align, &adjx, &adjy, 0, "R" );
+textdet( "textdetails", textdetails, &align, &adjx, &adjy, 0, "R", 1.0 );
 if( align == '?' ) align = 'C';
+
+px = x + adjx;
+py = y + adjy;
 
 /* figure backing box */
 measuretext( PL_bigbuf, &nlines, &maxlen );
 boxw = (maxlen+2) * Ecurtextwidth;
 boxh = (nlines*1.2) * Ecurtextheight;
-uly = y + Ecurtextheight;
-if( align == 'C' ) ulx = x - (boxw/2.0); 
-else if( align == 'L' ) ulx = x;
-else if( align == 'R' ) ulx = x + boxw;
+uly = py + Ecurtextheight;
+if( align == 'C' ) ulx = px - (boxw/2.0); 
+else if( align == 'L' ) ulx = px;
+else if( align == 'R' ) ulx = px - boxw;
+
 
 if( bm != 0.0 ) {
 	ulx -= bm;
@@ -178,6 +192,8 @@ if( bm != 0.0 ) {
 	boxw += (bm*2);
 	boxh += (bm*2);
 	}
+
+if( clip ) PLG_pcodeboundingbox( 0 ); /* clip the annotation to the cropped size (by turning off bb) */
 
 if( backcolor[0] != '\0' || ( box[0] != '\0' && strnicmp( box, "no", 2 )!= 0 ) ) {
 	if( box[0] != '\0' && strnicmp( box, "no", 2 )!= 0 ) {
@@ -212,12 +228,14 @@ if( clickmap_on ) {
 	}
 
 /* now render the text.. */
-textdet( "textdetails", textdetails, &align, &adjx, &adjy, 0, "R" ); /* need to do again */
+textdet( "textdetails", textdetails, &align, &adjx, &adjy, 0, "R", 1.0 ); /* need to do again */
 if( align == '?' ) align = 'C';
 Emov( x + adjx, y + adjy );
 if( verttext ) Etextdir( 90 );
 Edotext( PL_bigbuf, align );
 if( verttext ) Etextdir( 0 );
+
+if( clip ) PLG_pcodeboundingbox( 1 ); /* restore */
 
 return( 0 );
 }
@@ -240,12 +258,12 @@ if( arrow2h ) {
 	if( !arrow2t ) calc_arrow( ulx, uly, boxw, boxh, ah2x, ah2y, &at2x, &at2y );
 	Earrow( at2x, at2y, ah2x, ah2y, ahsize, 0.4, "" );
 	}
-
+return( 0 );
 }
 
 /* ================== */
 /* figure where tail of arrow should be */
-
+static int
 calc_arrow( ulx, uly, boxw, boxh, ahx, ahy, tailx, taily )
 double ulx, uly, boxw, boxh, ahx, ahy, *tailx, *taily;
 {
@@ -287,3 +305,9 @@ else { atx = ahx; aty = ahy; } /* ? */
 *taily = aty;
 return( 0 );
 }
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

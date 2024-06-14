@@ -1,4 +1,7 @@
 /* test libploticus - execute a bunch of scripts in the pltestsuite directory.. */
+
+/* execute this in the ./pltestsuite directory! */
+
 #include <stdio.h>
 
 #define NSCRIPTS 34
@@ -55,9 +58,9 @@ for( i = 0; i < NSCRIPTS; i++ ) {
 
 	strcpy( oname, scriptfiles[i] );
 	oname[ strlen( oname )-4 ] = '\0';
-	sprintf( outfilename, "api_test_output/%s.png", oname );
+	sprintf( outfilename, "api_test_output/%s.swf", oname );
 
-	stat = ploticus_init( "png", outfilename );
+	stat = ploticus_init( "swf", outfilename );
 	if( stat ) { fprintf( stderr, "error %d on ploticus_init\n", stat ); exit(1); }
 
 	/* for the clickmap example, specify -map .. */

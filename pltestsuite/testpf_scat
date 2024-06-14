@@ -13,7 +13,7 @@ pl  -prefab scat  data=data1  x=2  y=3  \
 	-$DEV -o ${OUTDIR}scat1.$DEV $ARGS
 
 echo scat2..
-pl  -prefab scat  data=data1  x=2  y=3  id=1 xlbl="Total Ch"  ylbl="White Blood Cell Count"  corr=yes  \
+pl  -prefab scat  data=data1  x=2  y=3  id=1 xlbl="Total Ch"  ylbl="White Blood Cell Count"  corr=yes  ptstyle=outline \
 	-$DEV -o ${OUTDIR}scat2.$DEV $ARGS
 
 echo scat3..
@@ -22,7 +22,7 @@ pl  -prefab scat  data=data3  x=2  y=6  err=3  xerr=7  corr=yes "select=@2 < 0.6
 	-$DEV -o ${OUTDIR}scat3.$DEV $ARGS
 
 echo scat4..
-pl -prefab scat data=data25 delim=tab x=3 y=4 err=5 ptselect="@2 = A" xerr=6 \
+pl  -prefab scat data=data25 delim=tab x=3 y=4 err=5 ptselect="@2 = A" xerr=6 \
 	x2=3 y2=4 err2=5 ptselect2="@2 = B" xerr2=6 \
 	-$DEV -o ${OUTDIR}scat4.$DEV $ARGS
 

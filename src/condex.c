@@ -1,15 +1,23 @@
-/* CONDEX.C
- * Copyright 1998-2002 Stephen C. Grubb  (ploticus.sourceforge.net) .
- * This code is covered under the GNU General Public License (GPL);
- * see the file ./Copyright for details. */
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 /* 
-  This routine takes a conditional expression as a single string argument.
+  Take a conditional expression as a single string argument.
   If the expression is true, 1 is returned.
   If the expression is false, 0 is returned.
   If there was an error in the expression, -1 is returned.
 */
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
+
+extern int GL_smemberi(), GL_wildcmp(), GL_containswords(), GL_smember(), GL_getseg(), GL_goodnum(), GL_slmember();
+extern int TDH_err(), TDH_function_call(), TDH_getvalue();
+
 #define stricmp( s, t ) 	strcasecmp( s, t )
 #define strnicmp( s, t, u ) 	strncasecmp( s, t, u )
 #define err(a,b,c) 		TDH_err(a,b,c)
@@ -36,9 +44,10 @@ extern char *TDH_dat, *TDH_recid;
 
 
 /* ================================== */
+int
 TDH_condex_initstatics()
 {
-listsep = ',';	/* persist-from-midriff (matters?) */
+listsep = ',';	/* persist-from-quisp (matters?) */
 evalflag = 0;
 nofunc = 0;
 return( 0 );
@@ -46,16 +55,14 @@ return( 0 );
 
 
 /* ================================== */
+int
 TDH_condex( cond, eval )
 char cond[];
 int eval;  /* 1 = cond contains vars that need to be evaluated  0 = not */
 {
-int s[NCLAUSE], i, j, k, rtn, ii, ix, negate;
+int s[NCLAUSE], i, j, k, rtn, ix, negate;
 char args[NTOKS][MAXTOK], tok[MAXTOK];
 int argc;
-int ixtmp;
-char nexttok[MAXTOK];
-int typ, stat, p;
 double atof();
 int condlen;
 
@@ -80,7 +87,7 @@ for( i = 1; ; i++ ) {
 	strcpy( args[ i ], GL_getok( cond, &ix ) );
 
 	/* function may be multiple args - concatenate..*/
-	if( !nofunc  && args[i][0] == '$' && ( isalpha( args[i][1] ) || args[i][1] == '$' ) ) {
+	if( !nofunc  && args[i][0] == '$' && ( isalpha( (int) args[i][1] ) || args[i][1] == '$' ) ) {
 		while( args[i][ strlen( args[i]) - 1 ] != ')' ) {
 			if( ix >= condlen ) break;
 			strcat( args[i], GL_getok( cond, &ix ));
@@ -134,7 +141,7 @@ evalclause( args, start, stop )
 char args[NTOKS][MAXTOK];
 int start, stop;
 {
-int s[NCLAUSE], i, j, k, rtn, ii;
+int s[NCLAUSE], i, j, k, rtn;
 
 for( i = 0; i < NCLAUSE; i++ ) s[i] = 1;
 i = 0;
@@ -162,12 +169,11 @@ evalstmt( args, start )
 char args[NTOKS][MAXTOK];
 int start;
 {
-char r1[MAXTOK], r2[MAXTOK], op[MAXTOK], val1[MAXTOK], val2[MAXTOK];
+char r1[MAXTOK], r2[MAXTOK], op[MAXTOK];
 int i, t1, t2, i1, i2;
 double diff;
 double atof(), a2f();
 int slen;
-int stat;
 
 if( strcmp( args[start], "@_matchscore" )==0 ) sprintf( r1, "%d", Matchscore ); /* allow capture from a leftward 'contains' */
 else strcpy( r1, args[start] ); 
@@ -213,6 +219,7 @@ else if( tolower( op[0] ) == 'l' ) return( ! GL_wildcmp( r1, r2, strlen( r2 ), 0
 /* 'contains' */
 #ifndef PLOTICUS
 else if( strnicmp( op, "contains", 8 )==0 ) {
+	int stat;
 	stat = GL_containswords( r2, r1 ); /* delimit words on any space/punct */
 	if( stat < 0 ) stat = 20; 	/* to keep summation on track.. also so that initial check for 'contains' works */
 	if( !Matchscore_used ) Matchscore = stat;
@@ -280,9 +287,8 @@ yield( v, t )
 char v[];
 int *t;
 {
-int t2, i, i1, p;
 double atof(), a2f();
-int status;
+int p, status;
 char tok[256];
 
 /* if evalflag, v likely contains one or more unevaluated vars */
@@ -291,10 +297,10 @@ char tok[256];
 *t = -1;
 
 /* if v is a $function call, evaluate it .. */
-if( !nofunc && v[0] == '$' && (isalpha( v[1] ) || v[1] == '$' ) ) {
+if( !nofunc && v[0] == '$' && (isalpha( (int) v[1] ) || v[1] == '$' ) ) {
 
 	/* shsql always operates in nofunc mode.  This #ifdef avoids function-related
-	   references in shsql-only applications.  Midriff, which uses condex for both
+	   references in shsql-only applications.  QUISP, which uses condex for both
 	   shsql and script processing, and needs the functions code, must be linked such
 	   that tdhkit.a has precidence over libshsql.a
 	*/
@@ -331,6 +337,7 @@ return( 1 );
 /* ============================== */
 
 /* CONDEX_LISTSEP - allow setting of list delimiter character in case comma is unacceptable */
+int
 TDH_condex_listsep( c )
 char c;
 {
@@ -340,6 +347,7 @@ return( 0 );
 
 /* ============================== */
 /* CONDEX_NOFUNC - don't take special action on tokens beginning with dollar signs */
+int
 TDH_condex_nofunc( mode )
 int mode;
 {
@@ -350,8 +358,15 @@ return( 0 );
 
 /* =============================== */
 /* CONDEX_MATCHSCORE - return most recent match score (-1 indicates not used) */
+int
 TDH_condex_matchscore()
 {
 if( !Matchscore_used ) return( -1 );
 else return( Matchscore );
 }
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

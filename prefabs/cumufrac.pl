@@ -47,7 +47,7 @@ yrange: 0 @NRECORDS
 #if @logmode = linear
   xautorange: datafield=@x,@x2 nearest=@xnearest 
 #else
-  xautorange: datafield=@x,@x2 lowfix=0.05 nearest=@xnearest 
+  xautorange: datafield=@x,@x2 mininit=0.05 nearest=@xnearest 
 #endif
 #endproc
 
@@ -139,6 +139,8 @@ yrange: 0 1
 yaxis.stubs: inc 0.2
 yaxis.location: min-0.2
 
+
+
 // do legend
 #if @legend != "no"
   #if @name != "#usefname" || @header = yes
@@ -146,6 +148,13 @@ yaxis.location: min-0.2
     location: @legend
     #ifspec legendfmt format
     #ifspec legendsep sep
+  #ifspec legwrap wraplen
+  #ifspec legbreak extent
+  #ifspec legtitle title
+  #ifspec legbox backcolor
+  #ifspec legframe frame
+  #ifspec legtextdet textdetails
+
   #endif
 #endif
 

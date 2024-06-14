@@ -1,7 +1,8 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
-
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 /* ROUTINES FOR WORKING WITH VARIOUS UNITS */
 /* These routines may be thought of as "sitting on top of" the routines in ./src/graphic.c 
@@ -33,6 +34,7 @@ static int evalbound();
 
 
 /* ============================ */
+int
 PL_units_initstatic()
 {
 strcpy( unitdesc[0], "" ); strcpy( unitdesc[1], "" );
@@ -48,6 +50,7 @@ return( 0 );
 
 /* ============================ */
 /* SETUNITS - set up for special units on an axis */
+int
 PL_setunits( axis, s )
 char axis;
 char *s;
@@ -116,6 +119,7 @@ return( 0 );
 }
 /* ============================ */
 /* GETUNITS - report on what units are in effect on the given axis. */
+int
 PL_getunits( axis, result )
 char axis;
 char *result;
@@ -135,6 +139,7 @@ return( 0 );
 
 /* ============================ */
 /* GETUNITSUBTYPE - report on subtype of units are in effect on the given axis. */
+int
 PL_getunitsubtype( axis, result )
 char axis;
 char *result;
@@ -150,6 +155,7 @@ return( 0 );
 
 /* ============================ */
 /* SETSCALE - set scaling for an axis - special units supported */
+int
 PL_setscale( axis, alo, ahi, scalelo, scalehi )
 char axis;
 double alo, ahi;
@@ -254,6 +260,7 @@ else	{
 }
 /* ============================= */
 /* CONV_ERROR check of Econv() error status */
+int
 PL_conv_error()
 {
 return( conv_errflag );
@@ -261,6 +268,7 @@ return( conv_errflag );
 
 /* ============================= */
 /* UPRINT - produce a string containing the external representation of a value */
+int
 PL_uprint( result, axis, f, format )
 char *result;
 char axis;
@@ -299,7 +307,7 @@ else if( unittyp[i] == DATE ) {
 
 	if( format[0] != '\0' )  {
 		stat = DT_formatdate( s, format, result );
-		if( stat != 0 ) return( Eerr( 802, "error in converting date format", format ));
+		if( stat != 0 ) strcpy( result, s );  /* was an error   scg 12/18/03 */
 		}
 	else strcpy( result, s );
 	}
@@ -309,7 +317,7 @@ else if( unittyp[i] == TIME ) {
 	if( stat != 0 ) return( Eerr( 803, "error in parsing time", s));
 	if( format[0] != '\0' ) {
 		stat = DT_formattime( s, format, result );
-		if( stat != 0 ) return( Eerr( 804, "error in converting time format", format ));
+		if( stat != 0 ) strcpy( result, s );  /* was an 804 error  scg 12/18/03 */
 		}
 	else strcpy( result, s );
 	}
@@ -318,7 +326,7 @@ else if( unittyp[i] == DATETIME ) {
 	stat = DT_days2datetime( f, s );
 	if( format[0] != '\0' ) {
 		stat = DT_formatdatetime( s, format, result );
-		if( stat != 0 ) return( Eerr( 804, "error in converting datetime format", format ));
+		if( stat != 0 ) strcpy( result, s );  /* was an 804 error  scg 12/18/03 */
 		}
 	else strcpy( result, s );
 	}
@@ -349,6 +357,7 @@ return( 0 );
 
 	Returns 0 if ok, 1 on error.
 */
+int
 PL_posex( val, axis, result )
 char *val, axis;
 double *result;
@@ -357,6 +366,7 @@ return( pex( val, axis, result, 0 ) );
 }
 
 /* ------------ */
+int
 PL_lenex( val, axis, result )
 char *val, axis;
 double *result;
@@ -373,10 +383,7 @@ int mode; /* 0 = position,  1 = length */
 			need to normalize against minima */
 {
 int i;
-int len;
-double f;
 int stat;
-char modifier[12];
 char *subval[2];
 int nval;
 double result2;
@@ -424,14 +431,12 @@ char axis;
 double *result;
 int mode;	/* 0 = position  1 = length (no sp. units in lengths)  */
 {
-int i;
-int len;
 char buf[255];
-int stat;
-char modifier[12];
 double atof();
 int nt;
 double f;
+int len;
+char modifier[12];
 
 /* check for min and max.. */
 if( strnicmp( val, "min", 3 )==0 ) { *result = Elimit( axis, 'l', 'a' ); return( 0 ); }
@@ -542,6 +547,7 @@ else if( stricmp( tok, "yymmm" )==0 ) { strcpy( desc, "yymmm" ); sprintf( tok, "
 else if( GL_slmember( tok, "yy?mm" )) { strcpy( desc, "yy/mm" ); sprintf( tok, "yy/mm/dd" ); }
 else if( GL_slmember( tok, "yyyy?mm" )) { strcpy( desc, "yyyy/mm" ); sprintf( tok, "yyyy/mm/dd" ); }
 else if( GL_slmember( tok, "yy" )) { strcpy( desc, "yy" ); sprintf( tok, "yymmdd" ); }
+else if( GL_slmember( tok, "yyyy" )) { strcpy( desc, "yyyy" ); sprintf( tok, "yyyy/mm/dd" ); }  /* added scg 2/2/05 */
 else if( GL_slmember( tok, "mm?yy" )) { strcpy( desc, "mm/yy" ); sprintf( tok, "dd/mm/yy" ); }
 else if( GL_slmember( tok, "mm?yyyy" )) { strcpy( desc, "mm/yyyy" ); sprintf( tok, "dd/mm/yyyy" ); }
 else if( GL_slmember( tok, "yyqn" )) { strcpy( desc, "yyqn" ); sprintf( tok, "yy/mm/dd" ); }
@@ -581,6 +587,9 @@ else if( strcmp( desc, "yyyy/mm" )==0 ) {
 else if( strcmp( desc, "yy" )==0 ) {
 	if( slen == 2 ) sprintf( result, "%s0101", s );  
 	}
+else if( strcmp( desc, "yyyy" )==0 ) {  /* added scg 2/2/05 */
+	if( slen == 4 ) sprintf( result, "%s/01/01", s );  
+	}
 else if( strcmp( desc, "mm/yy" )==0 ) {
 	if( slen == 5 ) sprintf( result, "01/%s", s );  
 	result[2] = '/'; result[5] = '/';
@@ -615,6 +624,7 @@ return( 0 );
 }
 
 /* ======================= */
+int
 PL_setcatslide( axis, amount )
 char axis;
 double amount;
@@ -625,6 +635,7 @@ return( 0 );
 }
 /* ======================= */
 /* ES_INR - see if a string-based value is in range for the given axis */
+int
 PL_s_inr( axis, val )
 char axis;
 char *val;
@@ -640,6 +651,7 @@ else return( 0 );
 }
 /* ======================= */
 /* EF_INR - see if a float-based value is in range for the given axis */
+int
 PL_f_inr( axis, val )
 char axis;
 double val;
@@ -654,3 +666,8 @@ else return( 0 );
 }
 
 
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

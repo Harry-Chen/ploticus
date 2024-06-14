@@ -33,7 +33,8 @@
 #setifnotgiven tab = ""
 #setifnotgiven tabmode = "mid"
 #setifnotgiven xyears = ""
-#setifnotgiven xmargin = ""
+// #setifnotgiven xmargin = ""
+// xmargin set below.. scg 10/21/04
 #setifnotgiven curve = ""
 #setifnotgiven order = "5"
 #setifnotgiven omitweekends = "no"
@@ -48,20 +49,30 @@
 #if @timefld != ""
   #set unittype = datetime
 #endif
-#if @unittype = time
-  #setifnotgiven nearest = hour
-  #setifnotgiven stubfmt = HHA
-#else
-  #setifnotgiven nearest = day
-  #setifnotgiven stubfmt = "MMMdd"
+
+/////// change to use the new 'datematic' feature..
+// #if @unittype = time
+//  #setifnotgiven nearest = hour
+//  #setifnotgiven stubfmt = HHA
+// #else
+//  #setifnotgiven nearest = day
+//  #setifnotgiven stubfmt = "MMMdd"
+// #endif
+// #setifnotgiven xinc = "7"
+#setifnotgiven nearest = datematic
+#setifnotgiven xinc = datematic
+#if @xinc != datematic
+  #if @unittyp = time
+    #setifnotgiven stubfmt = HHA
+  #else
+    #setifnotgiven stubfmt = "MMMdd"
+  #endif
 #endif
 
-//// load standard parameters..
-#setifnotgiven xinc = "7"
 #include $chunk_setstd
 
-#proc datesettings
-format: @datefmt
+#proc settings
+dateformat: @datefmt
 omitweekends: @omitweekends
 
 #musthave data
@@ -111,10 +122,11 @@ omitweekends: @omitweekends
   #set xnearest = @nearest
 #endif
 
+// changed these to setifnotgiven - scg 10/21/04
 #if @mode = bars
-  #set xmargin = 1
+  #setifnotgiven xmargin = 1
 #else
-  #set xmargin = 0
+  #setifnotgiven xmargin = 0
 #endif
 
 //// plot area
@@ -131,9 +143,10 @@ omitweekends: @omitweekends
   #set combomode = normal
 #endif
 #if @yrange = ""
-  yautorange: datafields=@y,@y2,@y3,@y4 incmult=2.0  nearest=@ynearest  combomode=@combomode
-#elseif @yrange = "0"
-  yautorange: datafields=@y,@y2,@y3,@y4 incmult=2.0 lowfix=0 nearest=@ynearest  combomode=@combomode
+  yautorange: datafields=@y,@y2,@y3,@y4 incmult=2.0  nearest=@ynearest  combomode=@combomode  
+// #elseif @yrange = "0"
+#elseif $ntoken( 2, @yrange ) = ""
+  yautorange: datafields=@y,@y2,@y3,@y4 incmult=2.0 mininit=@yrange  nearest=@ynearest  combomode=@combomode
 #else
   yrange: @yrange
 #endif
@@ -205,15 +218,20 @@ omitweekends: @omitweekends
   #saveas B
 
 #elseif @mode = line
-  #proc lineplot
+  #procdef lineplot
   xfield: @x
-  yfield: @y
   linedetails: @linedet
   stairstep: @step
+  #ifspec gapmissing
+  // the following was added - scg 11/19/04..
+  #ifspec lineclip clip
+  #saveas L
+
+  #proc lineplot
+  #clone L
+  yfield: @y
   #ifspec ptselect select
   #ifspec fill
-  #ifspec gapmissing
-  #saveas L
 #endif
 legendlabel: @name
 
@@ -328,6 +346,13 @@ legendlabel: @name
     location: @legend
     #ifspec legendfmt format
     #ifspec legendsep sep
+  #ifspec legwrap wraplen
+  #ifspec legbreak extent
+  #ifspec legtitle title
+  #ifspec legbox backcolor
+  #ifspec legframe frame
+  #ifspec legtextdet textdetails
+
 #endif
 
 

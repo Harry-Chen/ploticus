@@ -20,6 +20,6 @@ pl  -prefab pie  data=data23  delim=tab  values=2  labels=1  colorfld=3  title="
 	-$DEV -o ${OUTDIR}pie3.$DEV $ARGS
 
 echo pie4..
-pl  -prefab pie  data=data23  delim=tab  values=2  labels=1  colorfld=3  labelback=dullyellow  firstslice=90 \
-	center="4 3" radius=1.5 \
+pl  -prefab pie  data=data23  delim=tab  values=2  "labelfmtstring= @1\n(@PCT%)" colorfld=3  labelback=dullyellow  firstslice=90 \
+	center="4 3" radius=1.5  \
 	-$DEV -o ${OUTDIR}pie4.$DEV $ARGS

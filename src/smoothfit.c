@@ -43,7 +43,7 @@
 
   static int npoints, k, kp, NpointsMax, banksize, npt;
   static double xratio, yratio, sxmin, symin;
-  static int finished, jtype, closed, flgis, iw;
+  static int closed, flgis, iw;
   static double P1, P2, P3, P4, P5, P6, W1, W2, W3, A, B, C, R, S, T, Z;
   static double CO, SO, CT, ST, CTU, STU, XNT, DX1, DY1, DX2, DY2, XO, YO, DX, DY, XT, YT;
   static double XA, XB, YA, YB, U1, U2, U3, TJ, SB, STH;
@@ -66,7 +66,7 @@ static void computeCubicCoeffs() ;
 static int smooth() ;
 static void zero(int *kCode, double AZ, double BZ, double E2, double *X, double *Y, int maxiterations);
 static void checkMaxIterations(int *kCode, int *IT, int J1, double *X, double X2, int maxiterations);
-static int getNPoint() ;
+/* static int getNPoint() ; */
 static double* getX ();
 static double* getY ();
 static double min( double f, double g );
@@ -75,7 +75,7 @@ static double max( double f, double g );
 
 /* --------------------------------------------------- */
 /* SMOOTHFIT - ploticus entry point  */
-
+int
 PL_smoothfit( in, ninp, out, noutp )
 double in[][2]; /* input vector */
 int ninp; 	/* # input points */
@@ -731,9 +731,11 @@ static void checkMaxIterations(int *kCode, int *IT, int J1, double *X, double X2
 }
 
 /* ------------------------------- */
-static int getNPoint() { 
-  return(npoints);
-} 
+/* 
+ * static int getNPoint() { 
+ *  return(npoints);
+ * } 
+ */
 
 /* ------------------------------- */
 static double* getX () {

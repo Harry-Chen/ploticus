@@ -50,6 +50,7 @@
 #endif
 
 
+
 //// load standard parameters..
 #include $chunk_setstd
 
@@ -82,11 +83,12 @@
   #else
     yautorange: datafields=@y,@y2,@y3,@y4 incmult=2.0 nearest=@ynearest 
   #endif
-#elseif @yrange = 0
+//#elseif @yrange = 0
+#elseif $ntoken( 2, @yrange ) = ""
   #if @y2 = ""
-    yautorange: datafields=@y,@err combomode=hilo incmult=2.0 lowfix=0 nearest=@ynearest 
+    yautorange: datafields=@y,@err combomode=hilo incmult=2.0 mininit=@yrange nearest=@ynearest 
   #else
-    yautorange: datafields=@y,@y2,@y3,@y4 incmult=2.0 lowfix=0 nearest=@ynearest 
+    yautorange: datafields=@y,@y2,@y3,@y4 incmult=2.0 mininit=@yrange nearest=@ynearest 
   #endif
 #else
   yrange: @yrange
@@ -294,6 +296,13 @@ pointsymbol: @pointsym
   location: @legend
   #ifspec legendfmt format
   #ifspec legendsep sep
+  #ifspec legwrap wraplen
+  #ifspec legbreak extent
+  #ifspec legtitle title
+  #ifspec legbox backcolor
+  #ifspec legframe frame
+  #ifspec legtextdet textdetails
+
 #endif
 
 

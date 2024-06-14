@@ -1,13 +1,17 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 /* PROC GETDATA - get some data.  Data may be specified literally, or
 	gotten from a file or a command.  */
 
 #include "pl.h"
 #include "tdhkit.h"
+#include <string.h>
 
+#define COMMANDMAX 1024
 
 static int do_filter();
 
@@ -16,6 +20,7 @@ static char pathname[MAXPATH] = "";
 static int nscriptrows = 0, scriptstart;
 
 /* =============================== */
+int
 PLP_getdata_initstatic()
 {
 specialmode = showresults = 0;
@@ -25,26 +30,23 @@ return( 0 );
 }
 
 /* =============================== */
+int
 PLP_getdata( )
 {
 int i, j;
 char buf[ MAXRECORDLEN ]; /* 2/21/01 */
-char attr[40], val[256]; 
+char attr[NAMEMAXLEN], val[256]; 
 char *line, *lineval;
 int nt, lvp;
 
 int stat;
-int align;
-double adjx, adjy;
 
 char datafile[256];
-char command[512];
+char command[COMMANDMAX];
 char commentchar[12];
 FILE *dfp, *popen();
-int len;
 char delim_method[30];
 char tok[256];
-char str[256];
 char selectex[256];
 int standardinput;
 int rotaterec;
@@ -60,8 +62,10 @@ char datasource;
 char *row;
 int nrecords, nfields, totalitems, foo;
 int sqlflag;
+int doing_set;
+int nfldnames;
 
-TDH_errprog( "getdata" );
+TDH_errprog( "pl proc getdata" );
 
 
 
@@ -82,6 +86,7 @@ nscriptrows = 0;
 reqnfields = 0;
 pfnames = NULL;
 sqlflag = 0;
+nfldnames = 0;
 
 
 /* get attributes.. */
@@ -93,19 +98,27 @@ if( !specialmode ) while( 1 ) {
 	lineval = &line[lvp];
 
 
-	if( stricmp( attr, "file" )==0 ) 
+	if( stricmp( attr, "file" )==0 ) {
+		if( PLS.cgiargs != NULL ) strcpy( pathname, lineval );
+		else	{
 #ifdef WIN32
-		strcpy( pathname, lineval ); /* to avoid invoking 'cat' .. */ /* changed to lineval  scg 10/16/03 */
+			strcpy( pathname, lineval ); /* to avoid invoking 'cat' .. */ /* changed to lineval  scg 10/16/03 */
 #else
-		strcpy( datafile, val );
+			strcpy( datafile, val );
 #endif
-		
+			}
+		}
 
 	else if( stricmp( attr, "pathname" )==0 ) strcpy( pathname, lineval );
+
 	else if( stricmp( attr, "command" )==0 ) strcpy( command, lineval );
-	else if( stricmp( attr, "commentchar" )==0 ) strcpy( commentchar, val );
+	else if( stricmp( attr, "commandmr" )==0 ) getmultiline( "commandmr", lineval, COMMANDMAX, command );
+
 	else if( stricmp( attr, "sql" )==0 ) { strcpy( command, lineval ); sqlflag = 1; }
+	else if( stricmp( attr, "sqlmr" )==0 ) { getmultiline( "sqlmr", lineval, COMMANDMAX, command ); sqlflag = 1; }
+
 	else if( strnicmp( attr, "delim", 5 )==0 ) strcpy( delim_method, val );
+	else if( stricmp( attr, "commentchar" )==0 ) strcpy( commentchar, val );
 
 	else if( stricmp( attr, "data" )==0 ) {
 		if( nt == 2 ) {
@@ -134,7 +147,7 @@ if( !specialmode ) while( 1 ) {
 					PLL.procline[i][j] = ' ';
 					break;
 					}
-				else if( !isspace( PLL.procline[i][j] )) break;  /* no need to search entire line.. scg 11/25/02 */
+				else if( !isspace( (int) PLL.procline[i][j] )) break;  /* no need to search entire line.. scg 11/25/02 */
 				}
 			}
 		}
@@ -153,10 +166,10 @@ if( !specialmode ) while( 1 ) {
 		}
 	else if( stricmp( attr, "select" )==0 ) strcpy( selectex, lineval );
 	else if( stricmp( attr, "nfields" )==0 ) reqnfields = atoi( val );
-	else if( stricmp( attr, "fieldnames" )==0 ) definefieldnames( lineval ); 
+	else if( stricmp( attr, "fieldnames" )==0 ) nfldnames = definefieldnames( lineval ); 
 	else if( stricmp( attr, "fieldnamerows" )==0 ) {
 		getmultiline( "fieldnamerows", lineval, MAXBIGBUF, PL_bigbuf );  
-		definefieldnames( PL_bigbuf );
+		nfldnames = definefieldnames( PL_bigbuf );
 		}
 	else if( stricmp( attr, "pf_fieldnames" )==0 ) pfnames = lineval;
 
@@ -175,6 +188,9 @@ if( specialmode ) strcpy( delim_method, "tab" );
 /* now do the work.. */
 
 
+PLP_processdata_initstatic();   /* reset proc_processdata "break" pointer.. scg 8/4/04 */
+
+
 if( !GL_slmember( delim_method, "s* c* t* w*" )) {
 	Eerr( 5839, "Warning, invalid delim specification, using 'space'", delim_method );
 	strcpy( delim_method, "space" );
@@ -183,17 +199,24 @@ if( !GL_slmember( delim_method, "s* c* t* w*" )) {
 
 /* determine source of data.. */
 if( sqlflag ) datasource = 'q';
+
 else if( command[0] != '\0' ) datasource = 'c';					/* shell command */
+
 else if( literaldata ) {
 	if( nscriptrows > 0 ) Eerr( 5792, "Warning, filter ignored (it cannot be used with in-script data)", "" );
 	datasource = 'd';    							/* in-script data statement */
 	}
-else if( standardinput || strcmp( datafile, "-" ) ==0 ) datasource = 's'; 	/* stdin */
+
+else if( standardinput || strcmp( datafile, "-" ) ==0 || 			/* pathname added scg 5/24/05 */
+	strcmp( pathname, "-" )==0 ) datasource = 's'; 				/* stdin */
+
 else if( datafile[0] != '\0' ) { 						/* shell-expandable file name */
-	sprintf( command, "cat %s", datafile ); 
+	sprintf( command, "cat \"%s\"", datafile ); 
 	datasource = 'c'; 
 	} 
+
 else if( pathname[0] != '\0' ) datasource = 'p'; 				/* explicit full pathname */
+
 else { PLS.skipout = 1; return( Eerr( 407, "No data, file, or command was specified", "" ) ); }
 
 
@@ -208,8 +231,9 @@ if( datasource == 'p' ) {  /* 'pathname' given.. */
 	}
 else if( datasource == 's' ) dfp = stdin;
 else if( datasource == 'c' ) {
+	if( PLS.noshell ) return( Eerr( 401, "-noshell prohibits #proc getdata command", "" ) );
 	dfp = popen( command, "r" );
-	if( dfp == NULL ) { PLS.skipout = 1; return( Eerr( 401, "Cannot open", command ) ); }
+	if( dfp == NULL ) { PLS.skipout = 1; return( Eerr( 401, "Cannot execute command", command ) ); }
 	}
 
 
@@ -239,7 +263,7 @@ if( sqlflag ) {
 		strcpy( &PL_bigbuf[blen], " " ); blen++;
 		}
 	PL_bigbuf[blen] = '\0';
-	definefieldnames( PL_bigbuf );
+	nfldnames = definefieldnames( PL_bigbuf );
 	for( nrecords = 0; ; nrecords++ ) {
 		if( PLD.curdf + nfields >= PLD.maxdf ) {
 			Eerr( 406, "Data capture truncated (too many data fields; try raising -maxfields)", "" );
@@ -269,23 +293,37 @@ for( irow = datastart; irow < datastart+ndatarows; irow++ ) {
 		}
 	else row = PLL.procline[ irow ];
 
+
 	/* skip empty lines */
 	if( row[0] == '\n' || row[0] == '\0' ) continue;
 
-	/* get first token.. */
-	nt = sscanf( row, "%s", tok );
-	if( nt < 1 ) continue;	/* skip lines having nothing but whitespace.. */
 
-	/* skip comments */
-	if( tolower( delim_method[0] ) == 'c' && strncmp( row, commentchar, cclen )==0 ) continue;
-	else if( strncmp( tok, commentchar, cclen )==0 ) continue;
+
+	/* be careful w/ sscanf here.. with comma-delimited you can have very long lines with no whitespace */
+
+	if( tolower( delim_method[0] ) == 'c' ) {		/* fixed 12-18-03 */
+		/* skip comment lines */
+		if( strncmp( row, commentchar, cclen )==0 ) continue;
+		/* (lines containing nothing but whitespace are illegal with comma delim) */
+		}
+	else	{
+		/* skip lines containing nothing but whitespace chars.. */
+		/* and skip comment lines */
+		nt = sscanf( row, "%s", tok );
+		if( nt < 1 ) continue;	
+		if( strncmp( tok, commentchar, cclen )==0 ) continue;
+		}
 
 	buflen = strlen( row );
 
 	if( datasource != 'd' && row[ buflen-2 ] == 13 ) strcpy( &buf[ buflen-2 ], "\n" ); /* DOS LF */
 
+	/* look for #set.. */
+	doing_set = 0;
+	for( j = 0; row[j] != '\0'; j++ ) if( strncmp( &row[j], "#set ", 5 )== 0 ) { doing_set = 1; break; }
+
 	/* #set var = value .. this can be used in data files.. - added scg 11/13/00 */
-	if( strcmp( tok, "#set" )==0 ) {
+	if( doing_set ) {
 		int ix, oldix;
 		char varname[40];
 		ix = 0;
@@ -301,13 +339,18 @@ for( irow = datastart; irow < datastart+ndatarows; irow++ ) {
 		continue;
 		}
 
+
 	/* field name header.. */
 	if( first && fieldnameheader ) {
-		definefieldnames( row );  /* takes whitespace or comma delimited.. */
+		nfldnames = definefieldnames( row );  /* takes whitespace or comma delimited.. */
 		first = 0;
 		continue;
 		}
 	first = 0;
+
+	
+	/* if field names given and nfields not given, set expected # fields using # field names.. scg 3/15/06 */
+	if( reqnfields <= 0 && nfldnames > 0 ) reqnfields = nfldnames; 
 
 
 	/* optional select */
@@ -376,7 +419,7 @@ if( rotaterec ) {   /* swap nrecords and nfields */
 	}
 
 
-if( nrecords == 0 ) fprintf( PLS.diagfp, "warning: no data fields found..\n" );
+/* if( nrecords == 0 ) fprintf( PLS.diagfp, "warning: no data fields found..\n" ); */ /* pulling this.. scg 3/25/04 */
 if( PLS.debug ) fprintf( PLS.diagfp, "getdata has read %d records; there are %d fields per record.\n", Nrecords, Nfields );
 
 if( showresults ) {
@@ -455,7 +498,8 @@ return( 0 ); /* return results in buf */
 /* GETDATA_SPECIALMODE - allow getdata to read in a data file without accessing 
 	attribute list.  Used by proc processdata.  TAB delimitation is always
 	used when operating in special mode */
-getdata_specialmode( mode, dfn, showr )
+int
+PL_getdata_specialmode( mode, dfn, showr )
 int mode;
 char *dfn;
 int showr;
@@ -466,3 +510,8 @@ showresults = showr;
 return( 0 );
 }
 
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

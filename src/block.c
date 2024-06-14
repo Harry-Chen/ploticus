@@ -1,15 +1,18 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
-
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 /* do a rectangle, with shading and/or outline */
 
 #include "plg.h"
+extern int atoi();
 
 static double box_x1 = 0.0, box_y1 = 0.0, box_x2 = 0.0, box_y2 = 0.0;
 
 /* ========================================== */
+int
 PLG_cblock_initstatic( )
 {
 box_x1 = 0.0;
@@ -21,19 +24,21 @@ return( 0 );
 
 /* ========================================== */
 /* CBLOCK - all coords in abs space, color fill */
+int
 PLG_cblock( xlo, ylo, xhi, yhi, color, outline )
 double xlo, ylo, xhi, yhi;
 char *color;
 int outline;
 {
 double gxlo, gylo, gxhi, gyhi;
+double lw;
 
 /* if hatch pattern.. */
 if( strnicmp( color, "hatch", 5 )==0 ) {
 	double oldwidth, oldpatfact; 
-	int oldlt, hnum, i, j;
+	int oldlt, hnum;
 	double h, start, stop, inc;
-	char oldcolor[40];
+	char oldcolor[COLORLEN];
 	char dir;
 
 	/* save current line width, dash style.. */
@@ -58,8 +63,11 @@ if( strnicmp( color, "hatch", 5 )==0 ) {
 	 */
 	Ecolor( "black" );
 
-	if( hnum <= 3 ) Elinetype( 1, 0.1, 1.0 );
-	else Elinetype( 0, 0.1, 1.0 );
+	if( Edev == 's' ) lw = 0.5; /* svg needs thicker lines here.. */
+	else lw = 0.1;
+
+	if( hnum <= 3 ) Elinetype( 1, lw, 1.0 );
+	else Elinetype( 0, lw, 1.0 );
 
 	if( hnum == 1 || hnum == 8 ) inc = 0.04; /* v light */
 	else if( hnum == 2 || hnum == 4 || hnum == 5 || hnum == 9 ) inc = 0.03; /* light */
@@ -102,7 +110,7 @@ if( strnicmp( color, "hatch", 5 )==0 ) {
 else if( color[0] != '\0' ) {
 	if( Edev == 'g' ) {
 		double tmp;
-		char gcolor[80];
+		char gcolor[COLORLEN];
 		/* this is a code exception made because gif driver 
 		   gives much better performance on filled rectangles
 		   than on filled polygons */
@@ -135,24 +143,31 @@ if( outline ) {
 	Elin( xlo, ylo ); /* close.. */
 	Elin( xlo, yhi ); /* and go one more to get last corner mitre right.. */
 	}
+
+return( 0 );
 }
 /* ============================================== */
 /* SETLASTBOX - set last box */
+int
 PLG_setlastbox( x1, y1, x2, y2 )
 double x1, y1, x2, y2;
 {
 box_x1 = x1; box_y1 = y1; box_x2 = x2; box_y2 = y2;
+return( 0 );
 }
 /* ============================================== */
 /* GETLASTBOX - get dimensions of most recently generated box.. */
+int
 PLG_getlastbox( x1, y1, x2, y2 )
 double *x1, *y1, *x2, *y2;
 {
 *x1 = box_x1; *y1 = box_y1; *x2 = box_x2; *y2 = box_y2;
+return( 0 );
 }
 
 /* ============================================== */
 /*  BLOCKDRESS - color shadowing/3-d effect for rectangles */
+int
 PLG_cblockdress( xlow, ylow, xhi, yhi, 
 	bevelsize, lowbevelcolor, hibevelcolor, shadowsize, shadowcolor)
 double xlow, ylow, xhi, yhi;
@@ -187,4 +202,12 @@ if( shadowsize > 0.0 && shadowcolor[0] != '\0' ) {
         Ecblock( xlow+shadowsize, ylow-shadowsize, xhi+shadowsize, ylow, shadowcolor, 0 );
         Ecblock( xhi, ylow-shadowsize, xhi+shadowsize, yhi-shadowsize, shadowcolor, 0 );
 	}
+
+return( 0 );
 }
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

@@ -1,22 +1,29 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 /* PROC LINEPLOT - draw a lineplot */
 
 /* Jan 15 01 - went from dat2d to dat3d so that original data row is preserved */
 
 #include "pl.h"
+#define MAXALT 200
 #define MOVE 0
 #define LINE 1
 #define PATH 2
 
-static int dblcompare( double *f, double *g );
 
+static int dblcompare( const void *a, const void *b );
+/* static int dblcompare( double *f, double *g ); */
+static int placenum();
+
+int
 PLP_lineplot()
 {
 int i;
-char attr[40], val[256];
+char attr[NAMEMAXLEN], val[256];
 char *line, *lineval;
 int nt, lvp;
 int first;
@@ -50,10 +57,9 @@ int ptlabelfield;
 char ptlabeldetails[256];
 double ptlblstart, ptlblstop;
 double sob;
-double oldx;
 double linxstart;
-char fillcolor[40];
-char legendlabel[120];
+char fillcolor[COLORLEN];
+char legendlabel[256]; /* raised (can contain urls for clickmap) scg 4/22/04 */
 int npoints;
 double f, sum, cr;
 int instancemode;
@@ -65,7 +71,7 @@ char legsamptyp[20];
 char altsym[120];
 char altwhen[256];
 int nalt;
-int altlist[102];
+int altlist[MAXALT+2];
 int anyvalid;
 int realrow;
 int gapmissing, ingap;
@@ -75,6 +81,8 @@ double firstx, firsty;
 int sortopt;
 int relax_xrange;
 int fillmode;
+/* char oldcolor[COLORLEN]; */
+double typical_interval;
 
 TDH_errprog( "pl proc lineplot" );
 
@@ -111,6 +119,7 @@ clipping = 0;
 firstpt = 0;
 sortopt = 0;
 relax_xrange = 0;
+typical_interval = -99.0;
 
 
 /* get attributes.. */
@@ -168,7 +177,10 @@ while( 1 ) {
 		}
 	else if( stricmp( attr, "gapmissing" )==0 ) {
 		if( strnicmp( val, YESANS, 1 )==0 ) gapmissing = 1;
-		else if( strnicmp( val, "small", 4 )==0 ) gapmissing = 2;
+		else if( stricmp( val, "small" )==0 ) gapmissing = 2;
+		else if( stricmp( val, "auto" )==0 ) gapmissing = 3;
+		else if( stricmp( val, "autosmall" )==0 ) gapmissing = 4;
+		else if( stricmp( val, "autozero" )==0 ) gapmissing = 5;
 		else gapmissing = 0;
 		}
 	else if( stricmp( attr, "clip" )==0 ) {
@@ -268,7 +280,7 @@ for( i = 0; i < Nrecords; i++ ) {
 	if( altwhen[0] != '\0' ) { /* check altwhen condition.. */
                 stat = do_select( altwhen, i, &result );
                 if( stat != 0 ) { Eerr( stat, "Select error", altwhen ); continue; }
-                if( result == 1 && nalt < 100 ) {
+                if( result == 1 && nalt < MAXALT ) {
 			/* altlist[nalt] = j/2; */
 			altlist[nalt] = j/3;
 			nalt++;
@@ -370,6 +382,12 @@ if( accum ) {
 /* set line parameters */
 linedet( "linedetails", linedetails, 1.0 );
 
+if( fillmode ) {
+	/* strcpy( oldcolor, Ecurcolor ); */
+	Ecolor( fillcolor ); /* scg 6/18/04 */
+	}
+	
+
 first = 1;
 lasty = 0.0;
 lastx = 0.0;
@@ -399,6 +417,16 @@ for( i = 0; i < npoints; i++ ) {
 		y = lasty;
 		break; 
 		}
+	if( !first && ( gapmissing == 3 || gapmissing == 4 || gapmissing == 5 )) {
+		if( typical_interval < 0.0 ) typical_interval = (x - lastx)*1.01;
+		else if( x - lastx > typical_interval ) {
+			if( gapmissing == 5 ) { Elinu( lastx+typical_interval, 0.0 ); Elinu( x-typical_interval, 0.0 ); }
+			else ingap = 1;
+			}
+		}
+
+	if( !anyvalid && !Ef_inr( Y, y ) ) continue; /* 1/9/03 scg - anyvalid should not become 1 if out of range in Y */
+
 	anyvalid = 1;
 	if( first ) {
 		Emovu( x, y );
@@ -416,9 +444,10 @@ for( i = 0; i < npoints; i++ ) {
 		Epathu( lastx, lasty );
 		if( stairstep ) Epathu( x, lasty );
 		else Epathu( x, y );
-		Ecolorfill( fillcolor );
+		/* Ecolorfill( fillcolor ); */ /* using Efill .. scg 6/18/04 */
+		Efill();
 		}
-	if( gapmissing == 2 && ingap ) {        /* do a quarter-length nib at previous location */
+	if( ( gapmissing == 2 || gapmissing ==4 ) && ingap ) {        /* do a quarter-length nib at previous location */
 		double nib;
 		Emovu( lastx, lasty );
 		nib = (x-lastx) * 0.25;
@@ -440,7 +469,10 @@ for( i = 0; i < npoints; i++ ) {
 	ingap = 0;
 	}
 
-if( !anyvalid ) return( 0 ); /* no plottable data points.. exit */
+if( !anyvalid ) { /* no plottable data points.. exit */  
+	/* Ecolor( oldcolor ); */ /* don't do color chg - scg 5/10/05 */
+	return( 0 ); 
+	} 
 
 /* if last point was invalid, back up to most recent valid point.. */
 if( x < (NEGHUGE+1) || y < (NEGHUGE+1) ) { x = lastx; y = lasty; }
@@ -454,7 +486,8 @@ if( lastseglen > 0.0 ) {
 	if( fillmode ) {
 		Emov( Eax(x), Eay(cr) ); Epath( lastx, Eay(cr) ); 
 		Epath( lastx, Eay(y) ); Epath( Eax(x), Eay(y) );
-		Ecolorfill( fillcolor );
+		/* Ecolorfill( fillcolor ); */ /* using Efill .. scg 6/18/04 */
+		Efill();
 		}
 	else 	Elin( lastx, Eay( y ) );
 	}
@@ -498,6 +531,8 @@ for( i = 0; i < npoints; i++ ) {
 		if( x < EDXlo || x > EDXhi || y < EDYlo || y > EDYhi ) continue;
 		}
 
+	lasty = y;
+
 	if( x >= ptlblstart && x <= ptlblstop ) {
 		if( donumbers && stairstep ) {
 			if( i == npoints-1 || GL_close_to( x, linestop, 0.01 ) ) {  
@@ -509,6 +544,7 @@ for( i = 0; i < npoints; i++ ) {
 			}
 		else if( donumbers && !stairstep ) 
 			  placenum( shownums, x, x, y, numstrfmt, linedetails );
+		if( donumbers && fillmode ) Ecolor( fillcolor ); /* scg 6/18/04 */
 		}
 
 	if( dopoints ) {
@@ -521,7 +557,7 @@ for( i = 0; i < npoints; i++ ) {
 		Emark( Eax(x), Eay(y), symcode, radius );
 		}
 	if( ptlabelfield && x >= ptlblstart && x <= ptlblstop ) {
-		textdet( "ptlabeldetails", ptlabeldetails, &align, &adjx, &adjy, -4, "R" );
+		textdet( "ptlabeldetails", ptlabeldetails, &align, &adjx, &adjy, -4, "R", 1.0 );
 		if( align == '?' ) align = 'C';
 		Emov( Eax( x ) + adjx, Eay( y ) + adjy );
 		Edotext( da( realrow, ptlabelfield ), align );
@@ -531,30 +567,30 @@ for( i = 0; i < npoints; i++ ) {
 
 if( label[0] != '\0' ) {
         GL_varsub( label, "@YFINAL", numstr );
-        textdet( "labeldetails", labeldetails, &align, &adjx, &adjy, -2, "R" );
+        textdet( "labeldetails", labeldetails, &align, &adjx, &adjy, -2, "R", 1.0 );
         if( align == '?' ) align = 'L';
-        Emov( lastx+0.05+adjx, (Eay( y )-(Ecurtextheight*.35))+adjy );
+        Emov( lastx+0.05+adjx, (Eay( lasty )-(Ecurtextheight*.35))+adjy );
         Edotext( label, align );
         }
  
 if( legendlabel[0] != '\0' ) {
-	if( fillmode ) add_legent( LEGEND_COLOR, legendlabel, "", fillcolor, "", "" );
+	if( fillmode ) PL_add_legent( LEGEND_COLOR, legendlabel, "", fillcolor, "", "" );
 	else if( pointsym[0] != '\0' && stricmp( pointsym, "none" )!= 0 ) {
 		if( tolower(legsamptyp[0]) == 's' && strlen( legsamptyp ) <= 6 )
-			add_legent( LEGEND_SYMBOL, legendlabel, "", pointsym, "", "" );
+			PL_add_legent( LEGEND_SYMBOL, legendlabel, "", pointsym, "", "" );
 		else
-			add_legent( LEGEND_LINE+LEGEND_SYMBOL, legendlabel, "", linedetails, pointsym, "" );
+			PL_add_legent( LEGEND_LINE+LEGEND_SYMBOL, legendlabel, "", linedetails, pointsym, "" );
 		}
-	else add_legent( LEGEND_LINE, legendlabel, "", linedetails, "", "" );
+	else PL_add_legent( LEGEND_LINE, legendlabel, "", linedetails, "", "" );
 	}
 
-
+/* if( fillmode ) Ecolor( oldcolor ); */ /* restore */
 return( 0 );
 }
 
 /* ----------------------- */
 /* place one line plot number  */
-
+static int
 placenum( shownums, x1, x2, y, numstrfmt, linedetails )
 char *shownums;
 double x1, x2, y;
@@ -565,7 +601,7 @@ int align;
 double adjx, adjy;
 
 /* change to text color, size, etc.. */
-textdet( "numbers", shownums, &align, &adjx, &adjy, -4, "R" );
+textdet( "numbers", shownums, &align, &adjx, &adjy, -4, "R", 1.0 );
 if( align == '?' ) align = 'C';
 Emov( Eax( (x1+x2)/2.0 ) + adjx, Eay(y)+0.02+adjy );
 /* sprintf( numstr, numstrfmt, y ); */
@@ -578,11 +614,26 @@ return( 0 );
 
 /* ------------------------- */
 static int
-dblcompare( f, g )
-double *f, *g;
+dblcompare( a, b )
+const void *a, *b;
+
+/* dblcompare( f, g )
+ * double *f, *g;
+ */  /* changed to eliminate gcc warnings  scg 5/18/06 */
+
 {
+double *f, *g;
+f = (double *)a;
+g = (double *)b;
+
 if( *f > *g ) return( 1 );
 if( *f < *g ) return( -1 );
 return( 0 );
 }
 
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

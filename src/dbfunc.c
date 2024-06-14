@@ -1,12 +1,16 @@
-/* DBFUNCT.C
- * Copyright 1998-2001 Stephen C. Grubb  (www.sgpr.net) .
- * This code is covered under the GNU General Public License (GPL);
- * see the file ./Copyright for details. */
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
-/* TDH script access to retrieve rows from abstract SQL database */
+/* TDH script access (via functions) to retrieve rows from abstract SQL database */
 
 #include "tdhkit.h"
 #define MAXCONNECTS 4	/* if this is changed, see MAXCONNECTS elsewhere herein.. */
+
+extern int TDH_sqlnames(), TDH_sqlrow(), TDH_sqlpushrow(), TDH_sqlrowcount(), TDH_sqltabdef(), TDH_sqlwritable();
+
 
 static char *sqlnames[ MAXCONNECTS ][MAXITEMS];
 static int nsqlnames[ MAXCONNECTS ] = { 0, 0, 0, 0 };
@@ -16,6 +20,7 @@ static int spflen[ MAXCONNECTS ] = { 0, 0, 0, 0 };
 static int errorcode[ MAXCONNECTS ] = { 0, 0, 0, 0 };
 static int nullrep = 1;	/* 0 = noconvert, 1 = blank, 2 = null, 3 = nbsp */
 
+int
 TDH_dbfunctions( hash, name, arg, nargs, result, typ )
 int hash;
 char *name;
@@ -25,7 +30,7 @@ char *result;
 int *typ;
 {
 char *f[MAXITEMS];
-char varname[50];
+char varname[NAMEMAXLEN];
 
 int i, j, n, len, stat;
 int dbc;
@@ -72,6 +77,12 @@ if( hash == 625 ) { /* $sqlrow() - fetch a row of results.  Fields will be acces
 	return( 0 );
 	}
 
+if( hash == 1604 ) { /* $sqlpushrow() - added 2/24/04 scg */
+	TDH_sqlpushrow( dbc );
+	strcpy( result, "0" );
+	return( 0 );
+	}
+
 if( hash == 1882 ) { /* $sqlrowcount() - return number of rows presented or affected by last sql command */
 	sprintf( result, "%d", TDH_sqlrowcount( dbc ) );
 	return( 0 );
@@ -83,6 +94,7 @@ if( hash == 997 ) { /* $sqlerror() - return error code of most recent sql comman
 	}
 
 
+#ifdef DROP
 if( hash == 1607 ) { /* $sqlgetnames( dumpmode ) - load sql result field names so fields can be accessed as variables
  			* by name later.  Dumpmode is an optional argument;
  			* if specified, field names are also written to standard output.
@@ -109,11 +121,37 @@ if( hash == 1607 ) { /* $sqlgetnames( dumpmode ) - load sql result field names s
 	strcpy( result, "0" );
 	return( 0 );
 	}
+#endif
 
-if( hash == 1168 ) { /* $sqlprefix() - set result field name prexix */
+if( hash == 913 ) { 	/* $sqltabdef( table ) - return a commalist of all field names in table */
+	TDH_altfmap( 1 );
+	if( dbc ) j = 1;
+	else j = 0;
+	stat = TDH_sqltabdef( arg[j], sqlnames[dbc], &nsqlnames[dbc] );
+	TDH_altfmap( 0 );
+
+	/* check return status.. non-zero indicates error */
+	if( stat != 0 ) { sprintf( result, "%d", stat ); return( 0 ); }
+
+	/* return */
+	strcpy( result, "" );
+	for( len = 0, j = 0; j < nsqlnames[dbc]; j++ ) {
+		sprintf( &result[len], "%s,", sqlnames[dbc][j] );
+		len += strlen( sqlnames[dbc][j] ) + 1;
+		}
+	return( 0 );
+	}
+	
+
+if( hash == 1168 ) { /* $sqlprefix() - set result field name prefix */
 	if( GL_smember( arg[0], "1 2 3 4" ) ) strcpy( varprefix[dbc], arg[1] );		/* MAXCONNECTS */
 	else strcpy( varprefix[dbc], arg[0] );
 	strcpy( result, "0" );
+	return( 0 );
+	}
+
+if( hash == 1523 ) { /* $sqlwritable() - return 0 if current process has write permission on database, nonzero otherwise */
+	sprintf( result, "%d", TDH_sqlwritable() );
 	return( 0 );
 	}
 
@@ -131,6 +169,7 @@ return( err( 197, "unrecognized function", name ) ); /* not found */
 
 /* ======================== */
 /* NEWQUERY -   */
+int
 TDH_dbnewquery( dbc )
 int dbc;
 {
@@ -143,6 +182,7 @@ return( 0 );
 
 /* ========================= */
 /* SQLROW_NULLREP - set the null representation for $sqlrow() */
+int
 TDH_sqlrow_nullrep( rep )
 int rep;
 {
@@ -152,6 +192,7 @@ return( 0 );
 
 /* ========================== */
 /* ERRORCODE - set error code */
+int
 TDH_dberrorcode( dbc, code, mode )
 int dbc, code;
 int mode; /* 0 = set unconditionally;  1 = set only when errorcode[dbc] is zero */
@@ -160,3 +201,9 @@ if( mode == 1 && errorcode[ dbc ] != 0 ) return( 0 );
 errorcode[ dbc ] = code;
 return( 0 );
 }
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

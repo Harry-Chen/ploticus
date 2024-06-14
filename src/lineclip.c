@@ -1,7 +1,8 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
-
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 /* Cohen-Sutherland line clip.
 
@@ -21,7 +22,7 @@
 static unsigned int boundscode();
 
 
-
+int
 PLG_lineclip( x1, y1, x2, y2, rx1, ry1, rx2, ry2 )
 double *x1, *y1, *x2, *y2, rx1, ry1, rx2, ry2;
 {
@@ -66,6 +67,7 @@ for( i = 0; i < 4; i++ ) {
 		}
 	}
 /* never reach here */
+return( 0 );
 }
 
 /* -------------------------------------- */
@@ -83,3 +85,8 @@ else if( x < rx1 ) code |= LEFT;
 return( code );
 }
 
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

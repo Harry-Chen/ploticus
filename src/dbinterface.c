@@ -1,7 +1,8 @@
-/* DBINTERFACE.C
- * Copyright 1998-2002 Stephen C. Grubb  (ploticus.sourceforge.net) .
- * This code is covered under the GNU General Public License (GPL);
- * see the file ./Copyright for details. */
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 /* TDH abstract database interface.  
    Interfaces to other databases should be implemented here.
@@ -13,6 +14,9 @@
 
 #include "tdhkit.h"
 
+extern int TDH_dbnewquery(), TDH_dberrorcode();
+
+
 #define SHSQL  2
 #define MYSQL  10
 #define ORACLE  20
@@ -21,6 +25,9 @@
 #define TDH_DB 0
 #endif
 
+#if TDH_DB == SHSQL
+  extern int SHSQL_sql(), SHSQL_getrow(), SHSQL_pushrow(), SHSQL_getnames(), SHSQL_tabdef(), SHSQL_getnrows(), SHSQL_writable();
+#endif
 
 
 
@@ -28,6 +35,7 @@
    SQLCOMMAND - submit an sql command and return its execution status (0 = normal). 
  */
 
+int 
 TDH_sqlcommand( dbc, sql )
 int dbc; 	/* connection identifier (0 - 3) */
 char *sql; 	/* sql command */
@@ -39,7 +47,6 @@ int stat;
 #else
   TDH_dbnewquery( dbc ); /* notify $sqlrow() function of new query */
 #endif
-
 
 #if TDH_DB == SHSQL
   stat = SHSQL_sql( dbc, sql );
@@ -59,17 +66,42 @@ return( stat );
    N will be set to the number of fields.
 */
 
+int
 TDH_sqlrow( dbc, fields, n )
 int dbc;
 char *fields[];  /* size should be 256 */
 int *n;
 {
+int stat;
 
 #if TDH_DB == SHSQL 
-  return( SHSQL_getrow( dbc, fields, n ) );
+  stat = SHSQL_getrow( dbc, fields, n );
 #endif
 
+#if TDH_DB > 1
+  /* this must be done here to report on locked records when a SELECT .. FOR UPDATE is done.  Added scg 3/8/06  */
+  TDH_dberrorcode( dbc, stat ); /* save return code so $sqlerror() can provide it later.. */
+#endif
+
+return( stat );
 }
+
+/* ========================================================================== 
+   SQLPUSHROW - allow next call to sqlrow() to get same row again.
+*/
+
+int
+TDH_sqlpushrow( dbc )
+int dbc;
+{
+
+#if TDH_DB == SHSQL 
+  return( SHSQL_pushrow( dbc ) );
+#endif
+
+return( 0 );
+}
+
 
 /* ========================================================================= 
    SQLNAMES - fetch names of result fields from most recent SQL SELECT.
@@ -78,6 +110,7 @@ int *n;
    N will be set to the number of names (same as number of fields).
  */
 
+int
 TDH_sqlnames( dbc, fields, n )
 int dbc;
 char *fields[]; 
@@ -88,11 +121,14 @@ int *n;
   return( SHSQL_getnames( dbc, fields, n ) );
 #endif
 
+return( 0 );
 }
 
 /* ===========================================================================
    SQLTABDEF - fetch the names of a table's fields 
  */
+
+int
 TDH_sqltabdef( table, fields, n )
 char *table;
 char *fields[];
@@ -102,12 +138,15 @@ int *n;
 #if TDH_DB == SHSQL
   return( SHSQL_tabdef( table, fields, n ) );
 #endif
+
+return( 0 );
 }
 
 /* ==========================================================================
    SQLROWCOUNT - return # of rows presented or affected by last sql command 
  */
 
+int
 TDH_sqlrowcount( dbc )
 int dbc;
 {
@@ -115,6 +154,22 @@ int dbc;
 #if TDH_DB == SHSQL
   return( SHSQL_getnrows( dbc ) );
 #endif
+
+return( 0 );
+}
+
+/* ==========================================================================
+   SQLWRITABLE - return 0 if current process is allowed to write to the database, non-zero otherwise.
+ */
+int
+TDH_sqlwritable()
+{
+
+#if TDH_DB == SHSQL
+  return( SHSQL_writable() );
+#endif
+
+return( 0 );
 }
 
 
@@ -124,6 +179,8 @@ int dbc;
 /* ============================= */
 /* SQLGET - convenience routine to retrieve one field using default db connection.  
    Return 0 or an error code. */
+
+int
 TDH_sqlget( sql, result )
 char *sql;
 char *result;
@@ -146,6 +203,8 @@ return( 0 );
 
 /* =============================== */
 /* SQLGETS - convenience routine to retrieve multiple fields.  Return 0 or an error code. */
+
+int
 TDH_sqlgets( sql, fields )
 char *sql;
 char *fields[];
@@ -161,3 +220,9 @@ if( stat != 0 ) return( stat );
 return( 0 );
 }
 
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

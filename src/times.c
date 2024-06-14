@@ -1,9 +1,16 @@
-/* TIMES.C  - time arithmetic and format conversion library
- * Copyright 1998-2002 Stephen C. Grubb  (ploticus.sourceforge.net) .
- * This code is covered under the GNU General Public License (GPL);
- * see the file ./Copyright for details. */
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
+
+/* TIMES.C  - time arithmetic and format conversion library */
 
 #include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+extern int TDH_err(), GL_systime(), DT_maketime();
 
 /* Compile flag NO_DT may be used to disable all date/time functionality.
 
@@ -49,6 +56,7 @@ static int Nodaylimit = 0;
 double atof();
 
 /* ============================= */
+int
 DT_time_initstatic()
 {
 Hr = 0; Min = 0; Sec = 0.0;
@@ -60,6 +68,7 @@ return( 0 );
 
 /* ============================= */
 /* SETTIMEFMT - set the "current time format" */
+int
 DT_settimefmt( fmt )
 char *fmt;
 {
@@ -96,6 +105,7 @@ return( 0 );
 /* ============================= */
 /* TOMIN - take a time in the "current format" and return # minutes since 00:00:00 */
 /* Return 0 on valid input; return non-zero on invalid input */
+int
 DT_tomin( s, result )
 char *s; /* time */
 double *result; /* returned */
@@ -114,7 +124,7 @@ else strcpy( t, s );
 
 /* validate t */
 tlen = strlen( t );
-if( !isdigit(t[0]) || !isdigit(t[tlen-1]) /* || !isdigit(t[tlen-2]) */ ) /* relaxed 7/17/01 */
+if( !isdigit( (int) t[0]) || !isdigit( (int) t[tlen-1]) /* || !isdigit( (int) t[tlen-2]) */ ) /* relaxed 7/17/01 */
 	{ *result = 0.0; return( 1 ); }
 
 if( format == HHMM || format == HHMMSS ) {
@@ -140,6 +150,7 @@ return( 0 );
 
 /* ============================ */
 /* FROMMIN - take # minutes since 00:00:00 and return time string in current format */
+int
 DT_frommin( s, result )
 double s; /* sec may be < 0 for "now" */
 char *result;
@@ -166,6 +177,7 @@ return( 0 );
 /* ============================= */
 /* GETHMS - get hour, min, sec components of most recent time 
 	processed by tomin() for frommin() */
+int
 DT_gethms( hour, min, sec )
 int *hour, *min;
 double *sec;
@@ -178,6 +190,7 @@ return( 0 );
 
 /* ============================= */
 /* MAKETIME - given h m s, build time string using current format. */
+int
 DT_maketime( hr, min, sec, result )
 int hr, min;
 double sec;
@@ -192,12 +205,12 @@ return( 0 );
 
 /* ============================== */
 /* take time in current format and convert to outformat */
+int
 DT_formattime( s, outformat, result )
 char *s, *outformat, *result;
 {
 char oldformat[30];
 double min;
-int hampm;
 char c;
 char ampm[4];
 char fmt[40];
@@ -248,6 +261,8 @@ return( 0 );
 
 /* =============================== */
 /* TIMEDIFF - find difference between two times */
+
+int
 DT_timediff( s1, s2, diff )
 char *s1, *s2;
 double *diff; /* s1-s2 difference in minutes */
@@ -269,6 +284,7 @@ return( 0 );
    Return 2 if function not found here.
 */
 
+int
 DT_timefunctions( hash, name, arg, nargs, result, typ )
 int hash;
 char *name;
@@ -277,7 +293,7 @@ int nargs;
 char *result;
 int *typ;
 {
-int stat, i;
+int stat;
 
 
 #ifdef NO_DT
@@ -361,3 +377,10 @@ if( hash == 621 ) { /* $timesec() - return number of seconds since midnight for 
 return( err( 198, "unrecognized function", name ) );
 }
 #endif
+
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

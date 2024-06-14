@@ -13,6 +13,7 @@
 #setifnotgiven order = "natural"
 #setifnotgiven fld = ""
 
+
 //// load standard parameters..
 #include $chunk_setstd
 
@@ -71,14 +72,15 @@ datafield1: @x
 #else
   order1: @order
 #endif
-#ifspec savetbl savetable
+#ifspec savetbl showresults
 
 //// now that we have the distribution, recompute the plotting area with a auto Y range
 #include $chunk_area
 #if @yrange = ""
   yautorange: datafield=2 nearest=@ynearest 
-#elseif @yrange = 0
-  yautorange: datafield=2 lowfix=0 nearest=@ynearest 
+//#elseif @yrange = 0
+#elseif $ntoken( 2, @yrange ) = ""
+  yautorange: datafield=2 mininit=@yrange nearest=@ynearest 
 #else
   yrange: @yrange
 #endif

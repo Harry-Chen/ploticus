@@ -1,6 +1,8 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
- * Covered by GPL; see the file ./Copyright for details. */
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 /* PROC PIE  - render a pie graph */
 
@@ -13,27 +15,26 @@
 #define LABEL 2
 #define LINELABEL 3
 
+int
 PLP_pie()
 {
-char attr[40], val[256];
+char attr[NAMEMAXLEN], val[256];
 char *line, *lineval;
 int nt, lvp;
 int first;
 
 char buf[256];
 int j;
-int stat;
 int align;
 double adjx, adjy;
 int df;
 double cx, cy, radius;
 double theta;
 char color[MAXSLICE][40];
-char color1[40];
+char color1[COLORLEN];
 int lblfld;
 double total;
 double ux, uy, stop;
-double uux, uuy;
 int ncolors;
 double starttheta;
 double sin(), cos();
@@ -56,21 +57,20 @@ char pctfmt[30];
 int colorfield;
 int nlines, maxlen;
 double boxwid, boxhi;
-char mapurl[MAXPATH];
-char expurl[MAXPATH];
-char maplabel[MAXPATH];
-char explabel[MAXPATH];
+char mapurl[256], expurl[256];
+char maplabel[MAXTT], explabel[MAXTT];
 double labx, laby;
 int irow;
 int ilabmode;
 int clickmap_on;
 double dval;
-char labelback[40];
+char labelback[COLORLEN];
 int labelbackoutline;
 int exactcolorfield;
+char lblfmtstring[256];
+int wraplen;
 
-
-TDH_errprog( "pie" );
+TDH_errprog( "pl proc pie" );
 
 
 
@@ -99,6 +99,8 @@ strcpy( maplabel, "" );
 clickmap_on = 0;
 strcpy( labelback, "" );
 labelbackoutline = 0;
+strcpy( lblfmtstring, "" );
+wraplen = 0;
 
 /* get attributes.. */
 first = 1;
@@ -119,6 +121,9 @@ while( 1 ) {
 	else if( stricmp( attr, "clickmaplabel" )==0 ) {
 		if( PLS.clickmap ) { strcpy( maplabel, lineval ); clickmap_on = 1; }
 		}
+        else if( stricmp( attr, "clickmaplabeltext" )==0 ) {
+                if( PLS.clickmap ) { getmultiline( "clickmaplabeltext", lineval, MAXTT, maplabel ); clickmap_on = 1; }
+                }
 	else if( stricmp( attr, "colors" )==0 ) {
 		int i, ix;
 		for( i = 0, ix = 0; i < MAXSLICE; i++ ) {
@@ -132,6 +137,7 @@ while( 1 ) {
 		lbltextgiven = 1;
 		}
 	else if( stricmp( attr, "labelfield" )==0 ) lblfld = fref( val ) - 1;
+	else if( stricmp( attr, "labelfmtstring" )==0 ) strcpy( lblfmtstring, lineval ); /* added scg 8/20/04 */
 	else if( stricmp( attr, "colorfield" )==0 ) colorfield = fref( val ) - 1;
 	else if( stricmp( attr, "exactcolorfield" )==0 ) exactcolorfield = fref( val ) - 1;
 	else if( stricmp( attr, "outlinedetails" )==0 ) strcpy( outlinedetails, lineval );
@@ -154,6 +160,7 @@ while( 1 ) {
 			}
 		nexpl = i;
 		}
+	else if( stricmp( attr, "wraplen" )==0 ) wraplen = atoi( val );
 	else Eerr( 1, "attribute not recognized", attr );
 	}
 
@@ -222,7 +229,7 @@ for( j = 0; j < 2; j++ ) { /* first time - colors; 2nd time, lines */
 			
 		first = 1;
 		stheta = theta;
-		if( j == 1 && strnicmp( outlinedetails, "no", 2 )==0 ) break; /* goto DOLAB; */
+		if( j == 1 && strnicmp( outlinedetails, "no", 2 )==0 ) /* break; */ goto DOLAB;  /* changed again, scg 4/29/05 */
 		for( ; theta > stop; theta -= 0.03 ) {
 			if( theta - stop < 0.03 ) theta = stop;
 			x = cx + (radius * cos( theta ));
@@ -251,7 +258,7 @@ for( j = 0; j < 2; j++ ) { /* first time - colors; 2nd time, lines */
 
 			if( colorfield >=0 ) {  
                 		strcpy( color1, "" );
-                		get_legent( da( irow, colorfield ), color1, NULL, NULL );
+                		PL_get_legent( da( irow, colorfield ), color1, NULL, NULL );
 				Ecolorfill( color1 );
                 		}
 
@@ -270,51 +277,68 @@ for( j = 0; j < 2; j++ ) { /* first time - colors; 2nd time, lines */
 
 		/* labeling */  /* if doing legend, handle this during j == 0 because color is available;
 				   otherwise do labeling during j == 1 to avoid color fill obliterating labels.. */
+		DOLAB:
 		if( ( j == 0 && ilabmode == LEGEND ) || ( j == 1 && ilabmode != 0 ) ) {
 			strcpy( label, "" );
-			if( lblfld >= 0 ) strcpy( label, da( irow, lblfld ) );
-			else if( lbltextgiven ) GL_getseg( label, PL_bigbuf, &ibb, "\n" );
 
 			sprintf( pctstr, pctfmt, (atof( da( irow, df ) ) / total)*100.0 );
-
 			if( PLS.bignumspacer ) rewritenums( pctstr ); /* added 4/5/03 */
+
+			if( lblfld >= 0 ) strcpy( label, da( irow, lblfld ) );
+			else if( lbltextgiven ) GL_getseg( label, PL_bigbuf, &ibb, "\n" );
+			else if( lblfmtstring[0] != '\0' ) { /* added scg 8/20/04 */
+				strcpy( buf, lblfmtstring );
+				GL_varsub( buf, "@PCT", pctstr );
+				do_subst( label, buf, irow, NORMAL );
+				}
+
 
 			GL_varsub( label, "@PCT", pctstr );
 			convertnl( label );
 
 			/* allow @field substitutions into url */
 			if( clickmap_on ) {
-				do_subst( expurl, mapurl, irow, NORMAL );
+				do_subst( expurl, mapurl, irow, URL_ENCODED );
 				do_subst( explabel, maplabel, irow, NORMAL );
 				}
 
 			/* if( ilabmode == LEGEND )  */ /* changed 7/14/03 scg */
 			if( j == 0 && ilabmode == LEGEND ) { 
-				if( color1[0] != '\0' ) add_legent( LEGEND_COLOR, label, "", color1, "", "" );
-				else add_legent( LEGEND_COLOR, label, "", color[irow], "", "" );
+				if( color1[0] != '\0' ) PL_add_legent( LEGEND_COLOR, label, "", color1, "", "" );
+				else PL_add_legent( LEGEND_COLOR, label, "", color[irow], "", "" );
 				}
 
 			/* else if( ilabmode == LABEL )  */ /* changed 7/14/03 scg */
 			else if( j == 1 && ilabmode == LABEL ) {
 				double htheta;
+				double x1, y1, x2, y2;
+				int centerit = 0;
 				htheta = stop + ((stheta - stop) / 2.0 );
 				x = cx + ( (radius * lblfarout) * cos( htheta ) );
 				y = cy + ( (radius * lblfarout) * sin( htheta ) );
+				if( wraplen ) GL_wraptext( label, wraplen ); /* added scg 8/16/05 */
 				measuretext( label, &nlines, &maxlen );
-				boxwid = (maxlen * Ecurtextwidth) / 2.0;
-				boxhi = nlines * Ecurtextheight;
 				labx = x+ux;
 				laby = y+uy;
-				if( labelback[0] != '\0' ) 
-					Ecblock( labx-boxwid-0.1, laby-boxhi+(Ecurtextheight*0.6), 
-						labx+boxwid+0.1, laby+Ecurtextheight, labelback, labelbackoutline );
+				boxhi = nlines * Ecurtextheight;
+				boxwid = (maxlen * Ecurtextwidth);
+				
+				if( (htheta >= 7.7 && htheta <= 8.2 ) || (htheta >= 4.5 && htheta <= 5.0 )) centerit = 1;
+				if( centerit ) { x1 = labx-(boxwid/2.0); x2 = labx+(boxwid/2.0); }
+				else if( x < cx ) { x1 = labx - boxwid; x2 = labx; }
+				else { x1 = labx; x2 = labx + boxwid; }
+				y1 = laby-boxhi; y2 = laby;
 
-				textdet( "textdetails", textdetails, &align, &adjx, &adjy, -2,"R");
+				if( labelback[0] != '\0' ) 
+					Ecblock( x1-0.1, y1+(Ecurtextheight*0.6), x2+0.1, y2+Ecurtextheight, labelback, labelbackoutline );
+
+				textdet( "textdetails", textdetails, &align, &adjx, &adjy, -2,"R", 1.0 );
 				Emov( labx, laby );
-				Ecentext( label );
-				if( clickmap_on ) clickmap_entry( 'r', expurl, 0, labx-boxwid, laby+Ecurtextheight-boxhi, 
-						labx+boxwid, laby+Ecurtextheight, 1, 0, explabel );
-					
+				if( !centerit && x < cx ) Erightjust( label );
+				else if( !centerit && x >= cx ) Etext( label );
+				else Ecentext( label );
+				if( clickmap_on ) 
+					clickmap_entry( 'r', expurl, 0, x1, y1+Ecurtextheight, x2, y2+Ecurtextheight, 1, 0, explabel );
 				linedet( "linedetails", outlinedetails, 0.5 ); /* restore */
 				}
 
@@ -325,6 +349,7 @@ for( j = 0; j < 2; j++ ) { /* first time - colors; 2nd time, lines */
 				/* w = radius * lblfarout;
 				 * if( w < (1.1 * radius) ) z = lblfarout;
 				 */
+				if( wraplen ) GL_wraptext( label, wraplen ); /* added scg 8/16/05 */
 				measuretext( label, &nlines, &maxlen );
 				boxwid = maxlen * Ecurtextwidth;
 				boxhi = nlines * Ecurtextheight;
@@ -345,7 +370,7 @@ for( j = 0; j < 2; j++ ) { /* first time - colors; 2nd time, lines */
 				Elin( x+ux, y+uy );
 				if( x+ux < cx ) {
 					Elin( (cx+ux)-w, y+uy );
-					textdet( "textdetails", textdetails, &align, &adjx, &adjy, -2,"R");
+					textdet( "textdetails", textdetails, &align, &adjx, &adjy, -2,"R", 1.0 );
 					labx = ((cx+ux)-w)-0.1;
 					laby = y+uy;
 					if( labelback[0] != '\0' ) 
@@ -360,7 +385,7 @@ for( j = 0; j < 2; j++ ) { /* first time - colors; 2nd time, lines */
 					}
 				else 	{
 					Elin( (cx+ux)+w, y+uy );
-					textdet( "textdetails", textdetails, &align, &adjx, &adjy, -2,"R");
+					textdet( "textdetails", textdetails, &align, &adjx, &adjy, -2,"R", 1.0 );
 					labx = cx+ux+w+0.1;
 					laby = y+uy;
 					if( labelback[0] != '\0' ) 
@@ -383,3 +408,9 @@ for( j = 0; j < 2; j++ ) { /* first time - colors; 2nd time, lines */
 
 return( 0 );
 }
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

@@ -1,21 +1,45 @@
-/* DATES.C - date arithmetic, formatting, and conversion library
- * Copyright 1998-2002 Stephen C. Grubb  (ploticus.sourceforge.net) .
- * This code is covered under the GNU General Public License (GPL);
- * see the file ./Copyright for details. */
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
 /* Compile flag NO_DT will disable all date/time functionality.  */
+
+/*
+SCG 6/16/04  
+	Date arithmetic problem related to pre-1970 leap years fixed.  While working on this, 
+	I decided to change the base julian year to 1970 (was 1977) to conform to community 
+	expectations v/v unix epoch  (this should be transparent unless somebody is taking our 
+	julian dates and exporting them).  Also, dates back to 1754 are now ok.
+
+SCG 11/01/04 ... but the above broke day of week computation..  jul=0 was a Saturday, now a 
+	Thursday.. there were some hidden dependencies on jul0 = Saturday.  Fixed as noted in code.
+	NOTE: Noweekend mode is not supported for dates before 1/1/70 (day of week result is incorrect).
+ */
+
 
 #ifndef NO_DT
 
 #include <stdio.h>
 #include <ctype.h>
+#include <string.h>
+
+int DT_setdatefmt(), DT_setlazydates(), DT_makedate(), DT_weekday(), DT_getdtsep();
+extern int TDH_err(), GL_sysdate(), GL_goodnum(), GL_slmember(), GL_smember(), GL_member();
+extern long atol();
+extern int atoi();
+
 #define stricmp( s, t )         strcasecmp( s, t )
 #define strnicmp( s, t, n )     strncasecmp( s, t, n )
 #define err(a,b,c) 		TDH_err(a,b,c)
 
+#define BASEYR  1970		/* 1970 = start of unix epoch */
+#define BASEOLDYR  1754		/* old, but not so old as to run into Sep 1752 anomoly */
+#define DAYS_FROM_BASEOLD_TO_BASE  78892     /* # days from 1/1/1755 to 1/1/1970 */
+				/* assert: BASEYR and BASEOLDYR must be 2 yrs past a leap year */
 #define NUMBER 0
 #define ALPHA 1
-#define REFYEAR 1977
 
 #define NTYPES 28
 
@@ -50,13 +74,13 @@ static char Fullmonth[12][16] = { "January", "February", "March", "April", "May"
 static char Abbrevmonth[12][10] = { "Jan", "Feb", "Mar", "Apr", "May", "June", 
 				"July", "Aug", "Sept", "Oct", "Nov", "Dec" };
 
-static char Dwdays[8][10] = { "", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
+static char Dwdays[8][10] = { "", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" }; 
 				  /* should be 3 chars each, capitalized as shown */
 
 static char Fmtstring[20] = "mmddyy"; /* the current format */
 static char Defaultfmt[20] = "mmddyy"; /* date format the user has chosen as "default" */
 
-static int Pivotyear = 77;  /* a year >= pivotyear is considered 1900's.  a year < pivotyear is considered 2000's. */
+static int Pivotyear = 70;  /* a year >= pivotyear is considered 1900's.  a year < pivotyear is considered 2000's. */
 
 /* the following are maintained internally.. */
 static int Dispfmt = 2;
@@ -66,7 +90,7 @@ static char Moncase[4] = "Aaa";
 static int Yr;	/* most recent year sent to jdate (4 digit year) */
 static int Mon;	/* most recent month sent to jdate (1-12) */
 static int Day; /* most recent day sent to jdate */
-static int Iwk; /* integer representation of day of week, 1 = sunday */
+/* static int Iwk; */ /* integer representation of day of week, 1 = sunday */
 static int Lazydays; /* 0 = normal  1 = allow 00 for day portion to signify 'unknown' */
 static int Lazymonths; /* 0 = normal  1 = allow 00 for month portion to signify 'unknown' */
 static int Lazydayinuse;  
@@ -78,6 +102,7 @@ static int jul();
 
 
 /* ========================= */
+int
 DT_initstatic()
 {
 strcpy( Dmonths[0], "jan" ); strcpy( Dmonths[1], "feb" ); strcpy( Dmonths[2], "mar" );
@@ -95,8 +120,8 @@ strcpy( Abbrevmonth[3], "Apr" ); strcpy( Abbrevmonth[4], "May" ); strcpy( Abbrev
 strcpy( Abbrevmonth[6], "Jul" ); strcpy( Abbrevmonth[7], "Aug" ); strcpy( Abbrevmonth[8], "Sep" );
 strcpy( Abbrevmonth[9], "Oct" ); strcpy( Abbrevmonth[10], "Nov" ); strcpy( Abbrevmonth[11], "Dec" );
 
-strcpy( Dwdays[0], "" ); strcpy( Dwdays[1], "Sun" ); strcpy( Dwdays[1], "Mon" ); strcpy( Dwdays[2], "Tue" ); 
-strcpy( Dwdays[3], "Wed" ); strcpy( Dwdays[4], "Thu" ); strcpy( Dwdays[5], "Fri" ); strcpy( Dwdays[6], "Sat" );
+strcpy( Dwdays[0], "" ); strcpy( Dwdays[1], "Sun" ); strcpy( Dwdays[2], "Mon" ); strcpy( Dwdays[3], "Tue" ); 
+strcpy( Dwdays[4], "Wed" ); strcpy( Dwdays[5], "Thu" ); strcpy( Dwdays[6], "Fri" ); strcpy( Dwdays[7], "Sat" );
 
 strcpy( Fmtstring, "mmddyy" ); /* the current format */
 strcpy( Defaultfmt, "mmddyy" ); /* date format the user has chosen as "default" */
@@ -116,12 +141,12 @@ return( 0 );
 /* ========================= */
 /* SETDATEPARMS - allow parameters such as month names, weekday names, etc.
    to be set dynamically. */
+int
 DT_setdateparms( parmname, value )
 char *parmname;
 char *value;
 {
-int i, nt, stat;
-char tok[80];
+int  nt, stat;
 
 #ifdef NO_DT
   return( err( 7950, "Date/time support not included in this build", "" ));
@@ -190,6 +215,7 @@ return( 0 );
 /* Handles various date formats.  The keyword TODAY may also be used. */
 /* Returns 0 if date is ok; otherwise an error code. */
 
+int
 DT_jdate( s, h )
 char *s; 	/* input date */
 long *h;	/* julian date result */
@@ -198,9 +224,8 @@ int mon, day, yr;
 int i;
 char cmon[20]; /* most recent text month sent to jdate */
 int nt;
-char str[20];
 
-if( strcmp( s, "today" )==0 || strcmp( s, "TODAY" )==0 ) {
+if( stricmp( s, "today" )==0 ) {
 	GL_sysdate( &mon, &day, &yr );
 	return( jul( yr, mon, day, h ) );
 	}
@@ -290,7 +315,7 @@ if( Lazydays && day == 0 ) { Lazydayinuse = 1; day = 1; }
 
 /* sanity checks.. */
 if( !Longyr && yr > 99 ) return( 7 );
-if( Longyr && ( yr < 1800 || yr > 2400 ) ) return( 8 );
+if( Longyr && ( yr < BASEOLDYR || yr > 2400 ) ) return( 8 );
 if( mon < 1 || yr < 0 || day < 0 || day > 31 ) return( 9 );
 
 
@@ -298,17 +323,20 @@ return( jul( yr, mon, day, h ) );
 }
 
 /* ======================== */
-/* JUL - take y,m,d and return julian date.  Jan 1 1977 = Julian date 0.
+/* JUL - take y,m,d and return julian date.  Jan 1 1977 = Julian date 0. */
 /* Returns 0 if ok or -1 for error */
 
 static int 
-jul( y, m, d, jul )
+jul( y, m, d, julian )
 int y;		/* year */
 int m;		/* month */
 int d;		/* day */
-long *jul;	/* julian date result */
+long *julian;	/* julian date result */
 {
-int i, leap;
+int i, leap, refyear, yfc, rfc, win1, win2;
+long jul;
+
+refyear = BASEYR;
 
 /* make sure month is in range.. */
 if( m < 1 || m > 12 ) return( -1 ); 
@@ -317,14 +345,18 @@ Mon = m;
 /* decrement month so it serves as index into array... */
 m--; 				    
 			
-/* if a two-digit year - adjust using pivot */
+/* if input date contains a two-digit year - adjust using pivot */
 if( y < 100 ) {			    
 	if( y >= Pivotyear ) y += 1900;
 	else if( y < Pivotyear ) y += 2000;
 	}
 Yr = y; /* remember year */
 
-/* see if it is a leap year (every forth year except non-milenneal 00 years) */
+/* handle input dates before 1970.. */
+if( y < BASEOLDYR ) return( -1 );  /* too old */
+if( y < BASEYR ) refyear = BASEOLDYR;  /* switch to BASEOLDYR as year basis for calculations */
+
+/* see if input date is a leap year.. a leap year is every 4 years except century boundary (except when year % 400 == 0) */
 if( y % 4 == 0 && (y % 100 != 0 || y % 400 == 0 )) leap = 1;
 else leap = 0;
 
@@ -333,36 +365,68 @@ if( leap && m == 1 ) {
 	if( d < 1 || d > Dmdays[m]+leap ) return( -1 );
 	}
 else if( d < 1 || d > Dmdays[ m ] ) return( -1 ); /* bad day */
-
 Day = d;
 
-/* calculate julian date (reference date 1/1/1977 = 0 */
-*jul = ( y - REFYEAR ) * 365 + ( ( y - REFYEAR ) / 4 );
-for( i = 0; i < m; i++ ) *jul += Dmdays[i];
-if( m > 1 ) *jul += leap; /* only after feb */
-*jul += (d -1); 
-if( y < REFYEAR ) (*jul)--; /* correct for zero crossing */
+/* calculate julian date.. */
+jul = ( y - refyear ) * 365;  			/* accumulate days in the years up until the current year */
+for( i = 0; i < m; i++ ) jul += Dmdays[i];	/* accumulate days in months this year up until the current month */
+jul += (d -1); 					/* and add days in the current month */
+
+/* add 1 for every Feb 29 crossed.. */
+yfc = y % 4;
+rfc = refyear % 4;
+win1 = refyear + rfc;   /* win1 will be the leapyear following ref yr */
+win2 = y - yfc;		/* win2 will be the leapyear preceding input yr */
+
+if( win1 > win2 ) ; 		    /* do nothing; no Feb 29s crossed */
+else	{
+	if( win1 == win2 ) ;       /* do nothing; perhaps 1 Feb 29 crossed; */
+	else jul += ((win2 - win1) / 4);  /* 1 or more Feb 29s crossed */
+	if( yfc > 0 || m > 1 ) jul += 1;  /* if a non-leap year, or if a leap year date after Feb, add 1 */
+	}
+/* fprintf( stderr, "[y = %d  yfc=%d  win1=%d  win2=%d  (win2-win1)/4= %d   jul after: %d]\n", 
+ * 	y, yfc, win1, win2, (win2-win1)/4, jul ); */
+
+
+/* subtract 1 for every century boundary (1800 or 1900, but not 2000) crossed.. */
+if( refyear == BASEOLDYR ) {
+	/* there's no Feb 29 in 1800.. so if our date is after Feb 28, 1800 subtract 1.. */
+	/* and there's no Feb 29 in 1900.. so if our date is after Feb 28, 1900 subtract 1.. */
+	if( y == 1800 && m > 1 ) jul--;			
+	else if( y > 1800 ) jul--;
+	if( y == 1900 && m > 1 ) jul--;			
+	else if( y > 1900 ) jul--;
+	}
+
+if( refyear == BASEOLDYR ) jul -= DAYS_FROM_BASEOLD_TO_BASE;   /* put back in 0=1970 space */
 
 if( Noweekendmode ) {    /* added scg 5/22/00 */
 	int nweekends;
-	i = (*jul) % 7;
+	i = jul % 7; 
 	if( i == 0 ) i = 7;
 	if( i < 0 ) i = (7 + i);
 
-	/* 1==sunday  7==saturday */
-	if( Noweekendmode == 2 && ( i == 1 || i == 7 ) ) return(  -1 );  /* reject sunday or saturday */
-        if( i == 1 ) (*jul) += 1; /* sunday: change to monday */
-        if( i == 7 ) (*jul) -= 1; /* saturday: change to friday */
+	/* changed the following ... day-of-week bug - scg 11/01/04 */
+	/* 2==saturday  3==sunday */
+	if( Noweekendmode == 2 && ( i == 2 || i == 3 ) ) return(  -1 );  /* reject sunday or saturday */
+        if( i == 3 ) jul += 1; /* sunday: change to monday */
+        if( i == 2 ) jul -= 1; /* saturday: change to friday */
 
-	nweekends =  ((*jul) / 7) + 1;
-	(*jul) -= (nweekends * 2);  /* deduct 2 days per weekend */
+
+	/* nweekends =  (jul / 7) + 1; */ /* changed ... day-of-week bug - scg 11/01/04 */
+	nweekends =  (jul / 7);
+	if( i >= 2 && i < 7 ) nweekends++; 
+	jul -= (nweekends * 2);  /* deduct 2 days per weekend */
 	}
+
+*julian = jul;
 return( 0 );
 }
+
 /* ======================== */
 /* FROMJUL - given a julian date, return text representation in the current format. */
-/* dates earlier than 1 Jan 1800 not supported */
 
+int
 DT_fromjul( jul, result )
 long jul;	/* input julian date */
 char *result;	/* result */
@@ -371,17 +435,22 @@ int y, m, day, n;
 int stat;
 int baseyear;
 
-if( jul < 0 ) { /* convert to 0 = 1 JAN 1800 */  /* added scg 10/25/01 */
-	jul += 64648;
-	baseyear = 1800;
+if( jul < 0 ) { 	/* use BASEOLDYR */
+	jul += DAYS_FROM_BASEOLD_TO_BASE;
+	baseyear = BASEOLDYR;
 	}
-else baseyear = REFYEAR;
+else baseyear = BASEYR;
 
-if( jul < 0 ) return( 1 );  /* error */
+if( jul < 0 ) return( 1 );  /* date too old */
 
 if( Noweekendmode ) {  /* added scg 5/22/00 */
-	int nweekends;
-	nweekends = (jul / 5) + 1;
+	int nweekends, iw;
+
+	/* nweekends = (jul / 5) + 1; */ /* changed ... day-of-week bug.. scg 11/01/04 */
+	iw = jul % 5;
+	nweekends = jul / 5;
+	if( iw >= 2 ) nweekends++;
+
 	jul += (nweekends * 2);  /* add 2 days per weekend */
 	}
 
@@ -409,6 +478,7 @@ return( stat );
    Capitalization of text months is determined by case of the 'm'.
    Returns 0 if OK; returns 1 if date format unrecognized. */
 
+int
 DT_setdatefmt( s )
 char *s;	/* the new date format */
 {
@@ -439,6 +509,7 @@ return( 1 );
 
 /* ======================== */
 /* GETDATEFMT - get the current date format. */
+int
 DT_getdatefmt( s )
 char *s;
 {
@@ -448,6 +519,7 @@ return( 0 );
 
 /* ============================= */
 /* DEFAULTDATEFMT - set current date format back to user-specified default. */
+int
 DT_defaultdatefmt( )
 {
 DT_setdatefmt( Defaultfmt );
@@ -456,6 +528,7 @@ return( 0 );
 
 /* ============================= */
 /* SETLAZYDATES - turn on/off lazy months or lazy days */
+int
 DT_setlazydates( mon, day )
 int mon;	/* 1 = allow lazy months; 0 = don't */
 int day; 	/* 1 = allow lazy days; 0 = don't */
@@ -470,6 +543,7 @@ return( 0 );
 /* MAKEDATE - produce a date string using m, d, y,
    in 'format' or if format="", the current date format.
    Returns 0 if ok, or non-zero on error. */
+int
 DT_makedate( yr, mon, day, format, result )
 int yr, mon, day; /* year month and day */
 char *format;	  /* format to use, or "" for current date format */
@@ -508,7 +582,7 @@ if( Dispfmt >= 10 && Dispfmt <=19 ) { /* handle capitalization of text months */
 	if( mon == 0 ) strcpy( cmon, "???" );
 	else 	{
 		strcpy( cmon, Dmonths[ mon-1 ] );
-		for( i = 0; i < 3; i++ ) if( isupper( Moncase[i] )) cmon[i] = toupper( cmon[i] );
+		for( i = 0; i < 3; i++ ) if( isupper( (int) Moncase[i] )) cmon[i] = toupper( (int) cmon[i] );
 		}
 	}
 	
@@ -555,6 +629,7 @@ return( 0 );
 
 /* ============================= */
 /* TODAYSDATE - produce today's date in the "current date format". */
+int
 DT_todaysdate( s )
 char *s;	/* returned - todays date in the current date format */
 {
@@ -582,6 +657,7 @@ return( stat );
 
 	yymmm yy?mmm yy?mmm yy?mm, etc.
 */
+int
 DT_formatdate( date, fmt, result )
 char *date;	/* old date */
 char *fmt; 	/* new format */
@@ -590,10 +666,11 @@ char *result;	/* result- date converted to new format */
 long jul;
 int stat;
 int oldlazyday, oldlazymon;
-int i, makeupper;
+int i;
 char wkd[20];
 int found;
 int slen;
+int iwk;
 
 /* go into lazy mode always, (save/restore current lazy state) */
 oldlazyday = Lazydays;
@@ -621,9 +698,9 @@ else if( GL_slmember( fmt, "mon* dd_* full wfull www_* '*" )) {
 	else if( strcmp( fmt, "dd_mon,_yyyy" )==0 ) 
 		sprintf( result, "%02d %s, %04d", Day, Abbrevmonth[Mon-1], Yr );
 	else if( GL_smember( fmt, "wfull www_*" )) {
-		DT_weekday( date, wkd );
+		DT_weekday( date, wkd, &iwk );
 		if( strcmp( fmt, "www_dd_mon,_yyyy" )==0 ) 
-			sprintf( result, "%s %s %d, %d", wkd, Day, Abbrevmonth[Mon-1], Yr );
+			sprintf( result, "%s %d %s, %d", wkd, Day, Abbrevmonth[Mon-1], Yr );
 		else
 			sprintf( result, "%s %s %d, %d", wkd, Abbrevmonth[Mon-1], Day, Yr );
 		}
@@ -632,46 +709,48 @@ else if( GL_slmember( fmt, "mon* dd_* full wfull www_* '*" )) {
 	}
 else if( tolower(fmt[0]) == 'y' ) {
   found = 1;
-  if( GL_slmember( fmt, "yymm" )) sprintf( result, "%02d%02d", (Yr%100), Mon );
-  else if( GL_slmember( fmt, "yymmm" )) sprintf( result, "%02d%c%s", (Yr%100), fmt[2], Dmonths[Mon-1] );
+  if(          strcmp( fmt, "yymm" )==0 ) sprintf( result, "%02d%02d", (Yr%100), Mon );
+  else if(     stricmp( fmt, "yymmm" )==0 ) sprintf( result, "%02d%c%s", (Yr%100), fmt[2], Dmonths[Mon-1] );
   else if( GL_slmember( fmt, "yy?mmm" )) sprintf( result, "%02d%c%s", (Yr%100), fmt[2], Dmonths[Mon-1] );
   else if( GL_slmember( fmt, "yy?mm" )) sprintf( result, "%02d%c%02d", (Yr%100), fmt[2], Mon );
-  else if( GL_slmember( fmt, "yyyymm" )) sprintf( result, "%4d%02d", Yr, Mon );
+  else if(     strcmp( fmt, "yyyymm" )==0 ) sprintf( result, "%4d%02d", Yr, Mon );
   else if( GL_slmember( fmt, "yyyy?mm" )) sprintf( result, "%4d%c%02d", Yr, fmt[4], Mon );
-  else if( GL_slmember( fmt, "yy" )) sprintf( result, "%02d", Yr%100 );
-  else if( GL_slmember( fmt, "yyyy" )) sprintf( result, "%4d", Yr );
-  else if( GL_slmember( fmt, "yyqn" )) { sprintf( result, "%02dq%d", (Yr%100), ((Mon-1)/3)+1 ); }
-  else if( GL_slmember( fmt, "yyyyqn" )) { sprintf( result, "%dq%d", Yr, ((Mon-1)/3)+1 ); }
+  else if(      strcmp( fmt, "yy" )==0 ) sprintf( result, "%02d", Yr%100 );
+  else if(      strcmp( fmt, "yyyy" )==0 ) sprintf( result, "%4d", Yr );
+  else if(     stricmp( fmt, "yyqn" )==0 ) { sprintf( result, "%02dq%d", (Yr%100), ((Mon-1)/3)+1 ); }
+  else if(     stricmp( fmt, "yyyyqn" )==0 ) { sprintf( result, "%dq%d", Yr, ((Mon-1)/3)+1 ); }
   else found = 0;
   }
 else if( tolower(fmt[0]) == 'm' ) {
   found = 1;
-  if( GL_slmember( fmt, "mmyy" )) sprintf( result, "%02d%02d", Mon, (Yr%100) );
-  else if( GL_slmember( fmt, "mmmyy" )) sprintf( result, "%s%02d", Dmonths[Mon-1], (Yr%100) );
+  if(           strcmp( fmt, "mmyy" )==0 ) sprintf( result, "%02d%02d", Mon, (Yr%100) );
+  else if(     stricmp( fmt, "mmmyy" )==0 ) sprintf( result, "%s%02d", Dmonths[Mon-1], (Yr%100) );
   else if( GL_slmember( fmt, "mmm?yy" )) sprintf( result, "%s%c%02d", Dmonths[Mon-1], fmt[3], (Yr%100) );
   else if( GL_slmember( fmt, "mm?yy" )) sprintf( result, "%d%c%02d", Mon, fmt[2], (Yr%100) );
-  else if( GL_slmember( fmt, "mmyyyy" )) sprintf( result, "%02d%4d", Mon, Yr );
-  else if( GL_slmember( fmt, "mmmyyyy" )) sprintf( result, "%s%4d", Dmonths[Mon-1], Yr );
+  else if(      strcmp( fmt, "mmyyyy" )==0 ) sprintf( result, "%02d%4d", Mon, Yr );
+  else if(     stricmp( fmt, "mmmyyyy" )==0 ) sprintf( result, "%s%4d", Dmonths[Mon-1], Yr );
   else if( GL_slmember( fmt, "mm?yyyy" )) sprintf( result, "%d%c%4d", Mon, fmt[2], Yr );
-  else if( GL_slmember( fmt, "mmmdd" )) sprintf( result, "%s%d", Dmonths[Mon-1], Day );
+  else if(     stricmp( fmt, "mmmdd" )==0 ) sprintf( result, "%s%d", Dmonths[Mon-1], Day );
   else if( GL_slmember( fmt, "mm?dd" )) sprintf( result, "%d%c%d", Mon, fmt[2], Day );
   else if( GL_slmember( fmt, "mmm?dd" )) sprintf( result, "%s%c%d", Dmonths[Mon-1], fmt[3], Day );
-  else if( GL_slmember( fmt, "mmm" )) sprintf( result, "%s", Dmonths[Mon-1] );
-  else if( GL_slmember( fmt, "mm" )) sprintf( result, "%d", Mon );
-  else if( GL_slmember( fmt, "m" )) sprintf( result, "%c", Dmonths[Mon-1][0] );
+  else if(     stricmp( fmt, "mmm" )==0 ) sprintf( result, "%s", Dmonths[Mon-1] );
+  else if(      strcmp( fmt, "mm" )==0 ) sprintf( result, "%d", Mon );
+  else if(     stricmp( fmt, "m" )==0 ) sprintf( result, "%c", Dmonths[Mon-1][0] );
   else found = 0;
   }
 else	{
   found = 1;
-  if( GL_slmember( fmt, "dd" )) sprintf( result, "%02d", Day );
-  else if( GL_slmember( fmt, "d" )) sprintf( result, "%d", Day );
-  else if( GL_slmember( fmt, "w" )) { DT_weekday( date, wkd ); sprintf( result, "%c", wkd[0] ); }
-  else if( GL_slmember( fmt, "www" )) { DT_weekday( date, wkd ); sprintf( result, "%s", wkd ); }
-  else if( GL_slmember( fmt, "q" )) { sprintf( result, "%d", ((Mon-1)/3)+1 ); }
-  else if( GL_slmember( fmt, "nq" )) { sprintf( result, "%dq", ((Mon-1)/3)+1 ); }
-  else if( GL_slmember( fmt, "qn" )) { sprintf( result, "q%d", ((Mon-1)/3)+1 ); }
-  else if( GL_slmember( fmt, "nqyy" )) { sprintf( result, "%dq%02d", ((Mon-1)/3)+1, (Yr%100) ); }
-  else if( GL_slmember( fmt, "nqyyyy" )) { sprintf( result, "%dq%d", ((Mon-1)/3)+1, Yr ); }
+  if(       strcmp( fmt, "dd" )==0 ) sprintf( result, "%02d", Day );
+  else if(  strcmp( fmt, "d" )==0 ) sprintf( result, "%d", Day );
+  else if( GL_slmember( fmt, "dd?mmm" )) sprintf( result, "%02d%c%s", Day, fmt[2], Dmonths[Mon-1] ); /* added scg 5/11/04 */
+  else if( stricmp( fmt, "ddmmm" )==0 ) sprintf( result, "%02d%s", Day, Dmonths[Mon-1] ); /* added scg 5/11/04 */
+  else if( stricmp( fmt, "w" )==0 ) { DT_weekday( date, wkd, &iwk ); sprintf( result, "%c", wkd[0] ); }
+  else if( stricmp( fmt, "www" )==0 ) { DT_weekday( date, wkd, &iwk ); sprintf( result, "%s", wkd ); }
+  else if( stricmp( fmt, "q" )==0 ) { sprintf( result, "%d", ((Mon-1)/3)+1 ); }
+  else if( stricmp( fmt, "nq" )==0 ) { sprintf( result, "%dq", ((Mon-1)/3)+1 ); }
+  else if( stricmp( fmt, "qn" )==0 ) { sprintf( result, "q%d", ((Mon-1)/3)+1 ); }
+  else if( stricmp( fmt, "nqyy" )==0 ) { sprintf( result, "%dq%02d", ((Mon-1)/3)+1, (Yr%100) ); }
+  else if( stricmp( fmt, "nqyyyy" )==0 ) { sprintf( result, "%dq%d", ((Mon-1)/3)+1, Yr ); }
   else found = 0;
   }
 
@@ -679,7 +758,7 @@ if( !found ) stat = DT_makedate( Yr, Mon, Day, fmt, result );
 
 /* capitalization.. */
 for( i = 0, slen = strlen( fmt ); i < slen; i++ ) {
-	if( isupper( fmt[i] ) ) result[i] = toupper( result[i] );
+	if( isupper( (int) fmt[i] ) ) result[i] = toupper( (int) result[i] );
 	}
 
 return( stat );
@@ -689,6 +768,7 @@ return( stat );
 /* DAYSDIFF - find # days difference between two dates.
    Both dates should be in "current date format". 
    Return 0 if OK, or non-zero on error (bad date argument). */
+int
 DT_daysdiff( d1, d2, ndays )
 char *d1, *d2;  /* two dates, in current date format */
 long *ndays;	/* result: difference d1 - d2 in days */
@@ -705,6 +785,7 @@ return( 0 );
 /* DATEINRANGE - determine if testdate is within the range
    defined by earlydate and late date, exclusive.
    Returns 1 if so, 0 if not, or -1 on error. */
+int
 DT_dateinrange( testdate, earlydate, latedate )
 char *testdate, *earlydate, *latedate;
 {
@@ -721,6 +802,7 @@ else return( 0 );
 /* DAYSDIFF_M - find # days difference between two dates, of different format.
    Each date arg may be in any supported format- format for each date arg must be specified.
    Return 0 if OK, or non-zero on error (bad date argument). */
+int
 DT_daysdiff_m( d1, fmt1, d2, fmt2, ndays )
 char *d1, *d2; /* two dates, in any supported format */
 char *fmt1, *fmt2; /* format of date1 and date2 */
@@ -744,6 +826,7 @@ return( 0 );
 /* DATEADD - add ndays to date to produce a new date.
    date should be in "current date format". 
    Return 0 if OK, or non-zero on error (bad date argument). */
+int
 DT_dateadd( date, ndays, result )
 char *date;	/* date, in current date format */
 int ndays;	/* number of days to add to date */
@@ -763,28 +846,32 @@ return( 0 );
 /* WEEKDAY - find day of week that a certain date fell on / falls on.
    TDH_date should be in "current date format".
    Return 0 if OK, or non-zero on error (bad date) */
-DT_weekday( date, result )
+int
+DT_weekday( date, result, iwk )
 char *date; 	/* date, in current date format */
 char *result;	/* result */
+int *iwk;	/* 1 - 7 representation of result */
 {
 long jul;
-int i;
-int stat;
+int i, stat, wdix;
+
 stat = DT_jdate( date, &jul );
 if( stat != 0 ) return( stat );
 if( Noweekendmode ) {
 	i = jul % 5;
-	strcpy( result, Dwdays[i+2] );
-	Iwk = i+2;
+	/* changed .. day-of-week bug  scg 11/1/04 */
+	if( i >= 2 && i <= 4) *iwk = i;
+	else *iwk = i+5;
+	strcpy( result, Dwdays[ (*iwk) ] );
 	return( 0 );
 	}
 else	{
 	i = jul % 7;
 	if( i == 0 ) i = 7;
 	if( i < 0 ) i = (7 + i);
-	/* 1==sunday  7==saturday */
-	strcpy( result, Dwdays[i] );
-	Iwk = i;
+	wdix = ((i + 4) % 7) + 1;
+	strcpy( result, Dwdays[wdix] ); 
+	*iwk = wdix;
 	return( 0 );
 	}
 }
@@ -807,12 +894,12 @@ else	{
 		are considered 2000's.
 	    3. Ages over 100 cannot be handled.
 */
+int
 DT_yearsold( birthday, date, age )
 char *birthday, *date;  /* two dates in current date format */
 int *age;		/* result: age in years */
 {
 int by, bm, bd, dy, dm, dd, ty;
-char buf[20];
 int yeardiff;
 long jdt;
 int stat;
@@ -854,8 +941,10 @@ if( yeardiff < 0 ) yeardiff += 100;
 return( 0 );
 }
 
+#ifdef PLOTICUS
 /* ================================= */
 /* GROUP - adjust date for grouping */
+int
 DT_group( interval, mode, in, out )
 char interval; /*  'h' = hour, 'd' = day, 'w' = week, 'm' = month, 'q' = quarter, 'y' = year */
 char mode;   /* 'm' = mid  'f' = first of */
@@ -865,11 +954,14 @@ int i, stat;
 long jul;
 char buf[20];
 int datetime;
+char dtsep[4];
+
+DT_getdtsep( dtsep ); /* added scg 5/25/06 */
 
 /* strip off time portion if 'in' is datetime.. */
 datetime = 0;
-for( i = 0; in[i] != '\0'; i++ ) if( in[i] == '.' ) break;
-if( in[i] == '.' ) {
+for( i = 0; in[i] != '\0'; i++ ) if( in[i] == dtsep[0] ) break;
+if( in[i] == dtsep[0] ) {
 	strcpy( buf, &in[i+1] );
 	in[i] = '\0';
 	datetime = 1;
@@ -889,21 +981,22 @@ if( interval == 'm' ) {
 	else DT_makedate( Yr, Mon, 1, "", out );
 	}
 else if( interval == 'w' ) {
-	DT_weekday( in, buf ); /* sets Iwk */
-	if( mode == 'm' ) jul += (4 - Iwk);
-	else jul -= (Iwk - 1);
+	int iwk;
+	DT_weekday( in, buf, &iwk ); 
+	if( mode == 'm' ) jul += (4 - iwk);
+	else jul -= (iwk - 1);
 	DT_fromjul( jul, out );
 	}
 else if( interval == 'd' ) {
 	strcpy( out, in );
-	if( datetime && mode == 'm' ) strcat( out, ".12:00" );
-	else if( datetime && mode == 'm' ) strcat( out, ".00:01" );
+	if( datetime && mode == 'm' ) { strcat( out, dtsep ); strcat( out, "12:00" ); }
+	else if( datetime && mode == 'm' ) { strcat( out, dtsep ); strcat( out, "00:01" ); }
 	}
 else if( interval == 'h' ) {
 	/* time portion is in buf.. */
-	if( mode == 'm' && in[0] ) sprintf( out, "%s.%c%c:30", in, buf[0], buf[1] );
+	if( mode == 'm' && in[0] ) sprintf( out, "%s%s%c%c:30", in, dtsep, buf[0], buf[1] );
 	else if( mode == 'm' && !in[0] ) sprintf( out, "%c%c:30", buf[0], buf[1] );
-	else if( mode == 'f' && in[0] ) sprintf( out, "%s.%c%c:00", in, buf[0], buf[1] );
+	else if( mode == 'f' && in[0] ) sprintf( out, "%s%s%c%c:00", in, dtsep, buf[0], buf[1] );
 	else if( mode == 'f' && ! in[0] ) sprintf( out, "%c%c:00", buf[0], buf[1] );
 	}
 else if( interval == 'q' ) {
@@ -917,13 +1010,15 @@ else if( interval == 'q' ) {
 else if( interval == 'y' && mode == 'm' ) DT_makedate( Yr, 6, 30, "", out );
 else if( interval == 'y' && mode == 'f' ) DT_makedate( Yr, 1, 1, "", out );
 	
-if( datetime && GL_member( interval, "mwqy" )) strcat( out, ".00:01" );
+if( datetime && GL_member( interval, "mwqy" )) { strcat( out, dtsep ); strcat( out, "00:01" ); }
 return( 0 );
 }
+#endif
 
 
 /* ================================= */
 /* MONTHNAME - allow apps to access month names stored herein */
+int
 DT_monthname( m, format, result )
 int m; /* month where 1 = Jan */
 char *format;
@@ -931,10 +1026,12 @@ char *result;
 {
 if( strcmp( format, "char" )==0 ) sprintf( result, "%c", Abbrevmonth[m-1][0] );
 else if( strcmp( format, "abbrev" )==0 ) sprintf( result, "%s", Abbrevmonth[m-1] );
+return( 0 );
 }
 
 /* ================================= */
 /* GETMDY - get month, day, and year of date most recently processed with jdate() */
+int
 DT_getmdy( m, d, y )
 int *m, *d, *y;
 {
@@ -947,12 +1044,105 @@ return( 0 );
 /* ======================== */
 /* CHECKDATELENGTHS - turn on/off checking of date lengths.  On (1) is more
    strict. */
+int
 DT_checkdatelengths( mode )
 int mode;
 {
 checklengths = mode;
 return( 0 );
 }
+
+/* ======================== */
+/* REASONABLE - given stype (date or datetime), and min and max, 
+   determine a reasonable default increment amount and units, a 
+   default display format, and other parameters useful to ploticus.
+   Returns 0 if it comes up with something, 1 on error. */
+
+int 
+DT_reasonable( stype, min, max, inc, units, dispfmt, autom, autoy, autod, minc, munits, nearest )
+char *stype;
+double min, max; 	/* in basic units (days for date & datetime;  minutes for time stype) */
+double *inc; 		/* returned: stub inc  */
+char *units, *dispfmt, *autom, *autoy, *autod;  	/* returned: stub inc units, stubformat, automonts, autoyears, autodays */
+double *minc; 		/* returned: minor tic inc */
+char *munits, *nearest; /* returned: minor tic units, autorange nearest= */
+{
+double diff;
+int dtflag;
+
+strcpy( nearest, "" ); strcpy( dispfmt, "" ); strcpy( autom, "" ); strcpy( autoy, "" ); strcpy( autod, "" ); 
+strcpy( munits, "" ); strcpy( nearest, "" );
+*inc = 0.0; *minc = 0.0;
+
+diff = max - min;
+if( diff <= 0.0 ) return( 1 );
+
+if( strcmp( stype, "datetime" )==0 ) dtflag = 1;
+else dtflag = 0;
+
+if( strncmp( stype, "date", 4 )==0 ) { /* date and datetime */
+	if( diff < 7.0 && dtflag ) strcpy( autod, "ddMmm" );
+	else if( diff < 120.0 ) strcpy( autom, "Mmmyy" ); 
+	else if( diff < 1500.0 ) strcpy( autoy, "'yy" );
+
+	if( diff < 0.6 && dtflag ) { *inc = 1.0; strcpy( units, "hour" ); strcpy( dispfmt, "hha" ); strcpy( nearest, "hour" ); }
+	else if( diff < 2.0 && dtflag ) { 
+		*inc = 6.0; strcpy( units, "hour" ); strcpy( dispfmt, "hha" ); 
+		*minc = 1.0; strcpy( munits, "hour" ); strcpy( nearest, "6hour" ); 
+		}
+	else if( diff < 22.0 ) { *inc = 1.0; strcpy( units, "day" ); strcpy( dispfmt, "d" ); strcpy( nearest, "day" ); } 
+	else if( diff < 120.0 ) { 
+		if( Noweekendmode ) *inc = 5.0;
+		else *inc = 7.0;
+		strcpy( units, "day" ); strcpy( dispfmt, "d" ); 
+		*minc = 1.0; strcpy( munits, "day" ); strcpy( nearest, "monday" );
+		} 
+	else if( diff < 185.0 ) { 
+		*inc = 1.0; strcpy( units, "month" ); strcpy( dispfmt, "Mmm" ); 
+		*minc = 1.0; strcpy( munits, "day" ); strcpy( nearest, "month" ); 
+		}
+	else if( diff < 350.0 ) { *inc = 1.0; strcpy( units, "month" ); strcpy( dispfmt, "Mmm" ); strcpy( nearest, "month" ); }
+	else if( diff < 1500.0 ) { *inc = 1.0; strcpy( units, "month" ); strcpy( dispfmt, "M" ); strcpy( nearest, "month" ); }
+	else if( diff < 4000.0 ) { 
+		*inc = 1.0; strcpy( units, "year" ); strcpy( dispfmt, "'yy" ); 
+		*minc = 3.0; strcpy( munits, "month" ); strcpy( nearest, "year" ); 
+		}
+	else if( diff < 8000.0 ) { *inc = 5; strcpy( units, "years" ); strcpy( dispfmt, "'yy" ); strcpy( nearest, "5year" ); } 
+	else { *inc = 10; strcpy( units, "years" ); strcpy( dispfmt, "'yy" ); strcpy( nearest, "10year" ); } 
+	}
+
+else if( strcmp( stype, "time" )==0 ) {
+	/* diff in minutes */
+	if( diff < 1.5 ) { *inc = 0.166666666666; strcpy( dispfmt, "mm:ss" ); strcpy( nearest, "minute" ); }
+	else if( diff < 12.0 ) { 
+		*inc = 1.0; strcpy( dispfmt, "mm:ss" ); strcpy( nearest, "minute" ); 
+		*minc = 0.166666666666; strcpy( munits, "minute" );
+		}
+	else if( diff < 30.0 ) { 
+		*inc = 5.0; strcpy( dispfmt, "hh:mm" ); strcpy( nearest, "minute" ); 
+		*minc = 1; strcpy( munits, "minute" );
+		}
+	else if( diff < 60.0 ) {
+		*inc = 10.0; strcpy( dispfmt, "hh:mm" ); strcpy( nearest, "10minute" ); 
+		*minc = 1.0; strcpy( munits, "minute" );
+		}
+	else if( diff < 180.0 ) {
+		*inc = 30.0; strcpy( dispfmt, "hh:mm" ); strcpy( nearest, "30minute" ); 
+		*minc = 10.0; strcpy( munits, "minute" );
+		}
+	else if( diff < 500.0 ) {
+		*inc = 60.0; strcpy( dispfmt, "hhA" ); strcpy( nearest, "hour" ); 
+		*minc = 30.0; strcpy( munits, "minute" );
+		}
+	else 	{
+		*inc = 180.0; strcpy( dispfmt, "hhA" ); strcpy( nearest, "hour" ); 
+		*minc = 60.0; strcpy( munits, "minute" );
+		}
+	}
+
+return( 0 );
+}
+
 
 #endif
 /* ======================== */
@@ -962,6 +1152,7 @@ return( 0 );
    Return 2 if function not found here.
  */
 
+int
 DT_datefunctions( hash, name, arg, nargs, result, typ )
 int hash;
 char *name;
@@ -970,7 +1161,7 @@ int nargs;
 char *result;
 int *typ;
 {
-int i, stat;
+int stat;
 
 #ifdef NO_DT
   return( err( 199, "date functions not supported in this build", "" ) ); 
@@ -1013,7 +1204,6 @@ if( hash < 1000 ) {
 		}
 	
 	if( hash == 540 ) { /* $dateadd(date,ndays) - result is new date given date + ndays */
-		int ndays, j;
 		stat = DT_dateadd( arg[0], atoi( arg[1] ), result );
 		if( stat != 0 ) { err( 1608, "$dateadd error", "" ); return( 1 ); }
 		return( 0 );
@@ -1039,6 +1229,7 @@ else	{
 		}
 	
 	
+#ifdef PLOTICUS
 	if( hash == 1215 ) { /* $dategroup( mode, date ) - take a date in current format and return
 	   		      * it, adjusted to either midmonth, midweek, etc. for grouping purposes. */
 	
@@ -1046,6 +1237,7 @@ else	{
 		if( stat != 0 ) { err( stat, "$dategroup error", arg[2] ); return( 1 ); }
 		return( 0 );
 		}
+#endif
 	
 	if( hash == 1252 ) { /* $formatdate(date,fmt) - format the date, using fmt which is any of 
 			      * the supported format strings) */
@@ -1085,3 +1277,10 @@ else	{
 return( err( 199, "unrecognized function", name ) ); /* function not found */
 }
 #endif
+
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

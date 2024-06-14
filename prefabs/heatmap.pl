@@ -12,6 +12,8 @@
 #setifnotgiven symbol = ""
 #setifnotgiven outline = ""
 
+
+
 #include $chunk_setstd
 
 #if @xcats != ""
@@ -89,17 +91,21 @@ areacolor: @zerocolor
 #if @xcats = yes
   xscaletype: categories
   xcategories: datafield=@x
-  xaxis.stubs: usecategories
-  #ifspec xlbl xaxis.label
-  #ifspec xlbldet xaxis.labeldetails
-  #ifspec stubfmt xaxis.stubformat
-  #ifspec xstubfmt xaxis.stubformat
-  #ifspec stubvert xaxis.stubvert
-  #ifspec xgrid xaxis.grid
+  catcompmethod: exact
+  #if @xaxis != "none"
+    xaxis.stubs: usecategories
+    #ifspec xlbl xaxis.label
+    #ifspec xlbldet xaxis.labeldetails
+    #ifspec stubfmt xaxis.stubformat
+    #ifspec xstubfmt xaxis.stubformat
+    #ifspec stubvert xaxis.stubvert
+    #ifspec xgrid xaxis.grid
+  #endif
 #elseif @xrange = ""
   xautorange: datafield=@x incmult=2.0
-#elseif @xrange = 0
-  xautorange: datafield=@x lowfix=0 incmult=2.0
+//#elseif @xrange = 0
+#elseif $ntoken( 2, @xrange ) = ""
+  xautorange: datafield=@x mininit=@xrange incmult=2.0
 #else
   xrange: @xrange
 #endif
@@ -107,15 +113,19 @@ areacolor: @zerocolor
 #if @ycats = yes
   yscaletype: categories
   ycategories: datafield=@y
-  yaxis.stubs: usecategories
-  #ifspec ylbl yaxis.label
-  #ifspec ylbldet yaxis.labeldetails
-  #ifspec ystubfmt yaxis.stubformat
-  #ifspec ygrid yaxis.grid
+  catcompmethod: exact
+  #if @yaxis != none
+    yaxis.stubs: usecategories
+    #ifspec ylbl yaxis.label
+    #ifspec ylbldet yaxis.labeldetails
+    #ifspec ystubfmt yaxis.stubformat
+    #ifspec ygrid yaxis.grid
+  #endif
 #elseif @yrange = ""
   yautorange: datafield=@y incmult=2.0
-#elseif @yrange = 0
-  yautorange: datafield=@y lowfix=0 incmult=2.0
+//#elseif @yrange = 0
+#elseif $ntoken( 2, @yrange ) = ""
+  yautorange: datafield=@y mininit=@yrange incmult=2.0
 #else
   yrange: @yrange
 #endif
@@ -162,7 +172,9 @@ areacolor: @zerocolor
     #set RANGEMAX = @MAXDUPS
   #endif
 
-  #if @RANGEMAX <= 8
+  #if @RANGEMAX <= 1
+    #set cutofflist = "1.0,0.8,0.6,0.4,0.2,0"
+  #elseif @RANGEMAX <= 8
     #set cutofflist = "6,5,4,3,2,1"
   #elseif @RANGEMAX <= 15
     #set cutofflist = "12,10,8,6,4,1"
@@ -179,8 +191,13 @@ areacolor: @zerocolor
   #proc legend
     reset: yes
 
-  #include $chunk_doheatmap
+  // moved this down.. needs to also happen w/ contentfield   scg 4/11/04
+  // #include $chunk_doheatmap  
 
+#endif
+
+#if @contentfield != "" || @autocuts = 1
+  #include $chunk_doheatmap
 #endif
 
 
@@ -190,10 +207,22 @@ areacolor: @zerocolor
   reverseorder: @reverseleg
   #ifspec legendfmt format
   #ifspec legendsep sep
+  #ifspec legwrap wraplen
+  #ifspec legbreak extent
+  #ifspec legtitle title
+  #ifspec legbox backcolor
+  #ifspec legframe frame
+  #ifspec legtextdet textdetails
+
+#endproc
+
+
+//// title - added scg 8/8/05
+#include $chunk_title
+
 
 //// user post-plot include..
 #if @include2 != ""
   #include @include2
 #endif
-
 

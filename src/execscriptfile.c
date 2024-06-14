@@ -1,3 +1,9 @@
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
+
 #include "pl.h"
 #include "tdhkit.h"
 
@@ -6,10 +12,11 @@
  * Returns 0 if ok, or a non-zero error code 
  */
 
+int
 PL_exec_scriptfile( scriptfile )
 char *scriptfile;
 {
-int i, ix, stat;
+int ix, stat;
 struct sinterpstate ss; 
 char buf[ SCRIPTLINELEN ];
 char buf2[ 256 ];
@@ -37,7 +44,6 @@ while( 1 ) {
 		return( 1 );
 		}
         else if( stat != SINTERP_MORE ) break;
-
 
 	ix = 0; 
 	strcpy( buf2, GL_getok( buf, &ix ) ); /* check first token on line.. */
@@ -98,3 +104,9 @@ if( ss.sfp[0] != NULL ) fclose( ss.sfp[0] );
 return( 0 );
 }
 
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */

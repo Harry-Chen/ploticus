@@ -1,22 +1,25 @@
-/* GLROUTINES.C - general library routines
- * Copyright 1998-2002 Stephen C. Grubb  (ploticus.sourceforge.net) .
- * This code is covered under the GNU General Public License (GPL);
- * see the file ./Copyright for details. */
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
 
-/* OS-specific #defines in rand() below. */
 
 #include <stdio.h> 
+#include <string.h>
 #include <ctype.h>
 #include <time.h>
 #include <stdlib.h>
+
+extern int GL_member(), GL_encode(), GL_wildcmp();
+extern int getpid();
+
 #define stricmp( s, t ) 	strcasecmp( s, t )
 #define strnicmp( s, t, n )     strncasecmp( s, t, n )
 
 #define DATAMAXLEN 256
 
-static int getdecplaces();
-static int wcmp();
-static int domember();
+static int getdecplaces(), wcmp();
 
 static char Sep = ',';  /* separator character for lists */
 static char Gettok_buf[256];
@@ -25,6 +28,9 @@ static char Wildcard1 = '?';
 static int Maxlen = 99999;
 static char Member_nullstring[10] = "";
 
+
+/* ================================= */
+int
 GL_initstatic()
 {
 Sep = ',';
@@ -35,11 +41,11 @@ strcpy( Member_nullstring, "" );
 return( 0 );
 }
 
-
 /* ================================= */
 /* thanks to Markus Hoenicka for this more portable sysdate and systime code */
 /* SYSDATE - get today's date */ 
 
+int
 GL_sysdate( mon, day, yr )
 int	*mon, *day, *yr ;
 {
@@ -56,6 +62,7 @@ return( 0 );
 
 /* ================================= */
 /* SYSTIME - get current time */ 
+int
 GL_systime( hour, min, sec )
 int	*hour, *min, *sec ;
 {
@@ -69,26 +76,13 @@ ltime = localtime(&clock);
 return( 0 );
 }
 
-/* ===================================================== */
-/* RAND returns a "random" number between 0.0 and 1.0 */
-double GL_rand()
-{
-double r;
-static int first = 1;
-if( first ) {
-	srand( getpid() % 1000 );
-	first = 0;
-	}
-r = rand() / (double)(RAND_MAX);
-if( r < 0.0 || r > 1.0 ) { printf( "%f: rand return out of range\n", r ); return( -1.0 ); }
-return( r );
-}
 
 
 /* ============================================= */
 /* GETOK - copied so that buffer size could be increased.. */
  
-char *GL_getok( string, index )
+char 
+*GL_getok( string, index )
 char    *string;
 int     *index;
 {
@@ -110,6 +104,7 @@ return( Gettok_buf );
 /* SMEMBER - look for s in list t (white-space delimited).  Case sensitive.
    If found return 1 else 0. */
 
+int
 GL_smember( s, t )
 char s[], t[];
 {
@@ -130,6 +125,7 @@ return( 0 );
 /* SMEMBERI - look for s in list t (white-space delimited).  Case insensitive.
    If found return 1 else 0. */
 
+int
 GL_smemberi( s, t )
 char s[], t[];
 {
@@ -147,36 +143,11 @@ while( 1 ) {
 return( 0 );
 }
 
-/* =========================================== */
-/* SLMEMBER - Return 1 if str is matches any items in list.
-	List is a space-delimited list of tokens.  The tokens in the
-	list may contain ? or * wildcard characters.  The match is
-	Case insensitive.
-
-	scg 3-19-97
-*/
-GL_slmember( str, list )
-char *str;
-char *list;
-{
-char tok[100], *GL_getok();
-int i;
-i = 0;
-while( 1 ) {
-        strcpy( tok, GL_getok( list, &i ) );
-        if( tok[0] == '\0' ) break;
-	if( Member_nullstring[0] != '\0' ) {
-		if( strcmp( str, Member_nullstring)== 0 && stricmp( tok, "null" )==0 )return( 1 );
-		}
-        if( GL_wildcmp( str, tok, strlen(tok), 0 ) == 0 ) return( 1 );
-        }
-return( 0 );
-}
-
 
 /* ====================================================================== */
 /* MEMBER - returns char position if character c is a member of string s, 
 		0 otherwise. Char positions start with 1 for this purpose.  */
+int
 GL_member( c, s )
 char c, s[];
 {
@@ -188,6 +159,8 @@ return( 0 );
 /* ==================================================================== */
 /* MEMBER_NULLMODE - set a special mode for the benefit of shsql, to consider
    "null" or "NULL" equivalent to some code such as "=" */
+
+int
 GL_member_nullmode( s )
 char *s;
 {
@@ -205,6 +178,7 @@ return( 0 );
 	whether the case is a valid number or not.
 */
 
+int
 GL_goodnum( str, prec )
 char *str;
 int *prec;
@@ -215,11 +189,11 @@ bad = 0; *prec = -1;
 len = strlen( str );
 
 /* find limit of trailing whitespace.. */
-for( i = len-1; i >= 0; i-- ) if( !isspace( str[i] ) ) break;
+for( i = len-1; i >= 0; i-- ) if( !isspace( (int) str[i] ) ) break;
 len = i+1;
 
 /* skip over leading whitespace.. */
-for( i = 0; i < len; i++ ) if( !isspace( str[i] ) ) break;
+for( i = 0; i < len; i++ ) if( !isspace( (int) str[i] ) ) break;
 start = i;
 
 /* screen out degenerate cases.. */
@@ -234,7 +208,12 @@ for( p = start; p < len; p++ ) {
 		else bad=1; 
 		}
 	else if( p == start && ( str[p] == '-' || str[p] == '+' ) );
-	else if( ! isdigit( str[p]) ) bad=1;
+	else if( p > start && tolower(  (int) str[p]) == 'e' ) {  /* handle scientific notation ... scg 7/29/04 */
+		p++;
+		if( str[p] != '-' && str[p] != '+' ) bad=1;
+		if( p+1 >= len ) bad=1;
+		}
+	else if( ! isdigit( (int) str[p]) ) bad=1;
 	}
 
 /* return.. */
@@ -254,7 +233,7 @@ else return( 1 );
    SCG 12-2-96
 */
 
-
+int
 GL_getseg( rtn, inbuf, i, sep )
 char rtn[];
 char inbuf[];
@@ -291,6 +270,7 @@ return( eol );
 /* ==================================================================== */
 /* GETCHUNK - Get tokens, which are separated by any member of sepstring */
 
+int
 GL_getchunk( rtn, line, i, sepstring )
 char rtn[];
 char line[];
@@ -309,11 +289,166 @@ while( 1 ){
 	if( n >= (Maxlen-1) ) break;
 	}
 rtn[n] = '\0' ;
+return( 0 );
 }
 
+/* ============================================= */
+/* MAKE_UNIQUE_STRING - generate an identifier using date, time, and pid */
+
+int
+GL_make_unique_string( s, i )
+char *s;
+int i;  /* may be sent as an integer.. if 0 getpid() will be used.. */
+{
+int mon, day, yr, hr, min, sec, pid;
+GL_sysdate( &mon, &day, &yr );
+GL_systime( &hr, &min, &sec );
+s[0] = GL_encode( yr % 100 );
+s[1] = GL_encode( mon );
+s[2] = GL_encode( day );
+s[3] = GL_encode( hr );
+s[4] = GL_encode( min );
+s[5] = GL_encode( sec );
+if( i == 0 ) pid = getpid();
+else pid = i;
+s[6] = GL_encode( pid % 62 );
+pid = pid / 62;
+s[7] = GL_encode( pid % 62 );
+s[8] = GL_encode( pid / 62 );
+s[9] = '\0';
+
+return( 0 );
+}
+
+/* encode - derive a character representation of a number (number must be in range 0 - 62) */
+int
+GL_encode( a )
+int a;
+{
+if( a >= 0 && a <= 9 ) return( a + '0' );
+else if( a > 35 ) return( (a-36) + 'A' ); /* A-Z    26 letters + 9 = 35 */
+else if( a > 9 ) return( (a-10) + 'a' ); /* a-z */
+else return( '0' );
+}
+
+/* decode - decode a character representation of a number */
+int
+GL_decode( a )
+int a;
+{
+if( a >= '0' && a <= '9' ) return( a - '0' );
+else if( a >= 'a' ) return( (a - 'a')+10 ); /* a-z */
+else if( a >= 'A' ) return( (a - 'A')+36 ); /* A-Z    26 letters + 9 = 35 */
+else return( '0' );
+}
+
+/* ============================================= */
+/* EXPAND_TABS Takes a string parameter 'in' and expands tabs into spaces, placing the
+      result into parameter 'out'.  
+ */
+int
+GL_expand_tabs( out, in )
+char in[], out[];
+{
+int i, j, k, l, len;
+
+out[0] = '\0';
+k = 0;
+for( i = 0, len = strlen( in ); i < len; i++ ) {
+	if( in[i] == '\t' ) {
+		j =  8 - ( k % 8 ); /* 1 to 8 spaces needed */
+		for( l = 0; l < j; l++ ) out[k++] = ' ';
+		}
+	else out[k++] = in[i];
+	}
+out[k] = '\0';
+return( 0 );
+}
+
+
+/* ==================================================== */
+/* WRAPTEXT - wrap txt so that no line exceeds maxchars.  Wrap is done by changing certain whitespace chars to '\n' */
+int GL_wraptext( txt, maxchars )
+char *txt;    /* the text */
+int maxchars; /* max # of chars per line after wrap */
+{
+int i, lb, spaceat;
+lb = 0;
+spaceat = -1;
+for( i = 0; txt[i] != '\0'; i++ ) {
+        if( i - lb > maxchars ) {
+                if( spaceat == -1 ) spaceat = i; /* for wierd situations - no space found, break right here */
+                txt[spaceat] = '\n';
+                lb = spaceat;
+                spaceat = -1;
+                }
+        else if( txt[i] == '\n' ) { lb = i; spaceat = -1; } /* newline already present in txt.. respect it.. */
+        else if( isspace( (int) txt[i] ) ) spaceat = i; 
+        }
+return( 0 );
+}
+
+/* test for wraptext */
+/* main( argc, argv )
+ * int argc; char **argv;
+ * {
+ * char buf[256];
+ * if( argc < 2 ) exit(1);
+ * strcpy( buf, argv[1] );
+ * GL_wraptext( buf, atoi( argv[2] ) );
+ * printf( "%s\n", buf );
+ * }
+ */
+
+
+#ifndef BAREBONES  /* getgui, lxlogo */
+
+/* ===================================================== */
+/* RAND returns a "random" number between 0.0 and 1.0 */
+double 
+GL_rand()
+{
+double r;
+static int first = 1;
+if( first ) {
+	srand( getpid() % 1000 );
+	first = 0;
+	}
+r = rand() / (double)(RAND_MAX);
+if( r < 0.0 || r > 1.0 ) { printf( "%f: rand return out of range\n", r ); return( -1.0 ); }
+return( r );
+}
+
+
+/* =========================================== */
+/* SLMEMBER - Return 1 if str is matches any items in list.
+	List is a space-delimited list of tokens.  The tokens in the
+	list may contain ? or * wildcard characters.  The match is
+	Case insensitive.
+
+	scg 3-19-97
+*/
+int
+GL_slmember( str, list )
+char *str;
+char *list;
+{
+char tok[100], *GL_getok();
+int i;
+i = 0;
+while( 1 ) {
+        strcpy( tok, GL_getok( list, &i ) );
+        if( tok[0] == '\0' ) break;
+	if( Member_nullstring[0] != '\0' ) {
+		if( strcmp( str, Member_nullstring)== 0 && stricmp( tok, "null" )==0 )return( 1 );
+		}
+        if( GL_wildcmp( str, tok, strlen(tok), 0 ) == 0 ) return( 1 );
+        }
+return( 0 );
+}
 /* ==================================================================== */
 /* SETMAXLEN - set maximum token length for GETSEG (future: others) */
-
+int
 GL_setmaxlen( maxlen )
 int maxlen;
 {
@@ -340,7 +475,7 @@ return( 0 );
 
  */
 
-
+int
 GL_wildcmp( char *s1, char *s2, int len, int casecare )
 /* s1  = data value
    s2  = query value which can contain wildcards - not null terminated.
@@ -348,7 +483,7 @@ GL_wildcmp( char *s1, char *s2, int len, int casecare )
    casecare = 0 for case-insensitive, 1 for case-sensitive
  */
 {
-int i, nwc, wcp, stat, stat2;
+int i, nwc, wcp, stat;
 
 
 if( len == 0 ) return( strlen( s1 ) );
@@ -363,7 +498,7 @@ else if( tolower( s1[0] ) > tolower( s2[0] ) ) return( 1 );  /* way off */
 if( s2[0] == Wildcard && s2[1] == Wildcard ) { s2 = &s2[1]; len--; }
 if( s2[len-1] == Wildcard && s2[len-2] == Wildcard ) len--;
 
-/* see if any wild cards were used.. */
+/* see if any "*" wild cards were used.. */
 nwc = 0;
 for( i = 0; i < len; i++ ) if( s2[i] == Wildcard ) { nwc++; wcp = i; }
 
@@ -432,15 +567,15 @@ static int
 wcmp( char *s1, char *s2, int len, int casecare )
 {
 int i;
+
 for( i = 0; i < len; i++ ) {
 	
-	if( s1[i] == '\0' ) return( 1 );  /* added scg 10/22/03 ... abc???? was matching abcde */
+	if( s1[i] == '\0' ) { return( -1 ); }  /* added scg 10/22/03 ... abc???? was matching abcde */
+									   /* was returning 1.. changed scg 3/29/04 */
 
 	if( ! casecare ) {
-		if( tolower(s1[i]) < tolower(s2[i]) && s2[i] != Wildcard1 ) 
-			return( -1 );
-		else if( tolower(s1[i]) > tolower(s2[i]) && s2[i] != Wildcard1 ) 
-			return( 1 );
+		if( tolower(s1[i]) < tolower(s2[i]) && s2[i] != Wildcard1 ) { return( -1 ); }
+		else if( tolower(s1[i]) > tolower(s2[i]) && s2[i] != Wildcard1 ) { return( 1 ); }
 		}
 	else	{
 		if( s1[i] < s2[i] && s2[i] != Wildcard1 ) return( -1 );
@@ -451,6 +586,7 @@ return( 0 );
 }
 
 /* WILDCHAR - set the wildcard symbol to be used instead of '*' */
+int
 GL_wildchar( c, d )
 char c, d;
 {
@@ -460,76 +596,10 @@ return( 0 );
 }
 
 
-/* ============================================= */
-/* EXPAND_TABS Takes a string parameter 'in' and expands tabs into spaces, placing the
-      result into parameter 'out'.  
- */
-GL_expand_tabs( out, in )
-char in[], out[];
-{
-int i, j, k, l, len;
-
-out[0] = '\0';
-k = 0;
-for( i = 0, len = strlen( in ); i < len; i++ ) {
-	if( in[i] == '\t' ) {
-		j =  8 - ( k % 8 ); /* 1 to 8 spaces needed */
-		for( l = 0; l < j; l++ ) out[k++] = ' ';
-		}
-	else out[k++] = in[i];
-	}
-out[k] = '\0';
-}
-
-
-/* ============================================= */
-/* MAKE_UNIQUE_STRING - generate an identifier using date, time, and pid */
-
-GL_make_unique_string( s, i )
-char *s;
-int i;  /* may be sent as an integer.. if 0 getpid() will be used.. */
-{
-int mon, day, yr, hr, min, sec, pid, a, b, c;
-GL_sysdate( &mon, &day, &yr );
-GL_systime( &hr, &min, &sec );
-s[0] = GL_encode( yr % 100 );
-s[1] = GL_encode( mon );
-s[2] = GL_encode( day );
-s[3] = GL_encode( hr );
-s[4] = GL_encode( min );
-s[5] = GL_encode( sec );
-if( i == 0 ) pid = getpid();
-else pid = i;
-s[6] = GL_encode( pid % 62 );
-pid = pid / 62;
-s[7] = GL_encode( pid % 62 );
-s[8] = GL_encode( pid / 62 );
-s[9] = '\0';
-
-return( 0 );
-}
-
-/* encode - derive a character representation of a number (number must be in range 0 - 62) */
-GL_encode( a )
-int a;
-{
-if( a >= 0 && a <= 9 ) return( a + '0' );
-else if( a > 35 ) return( (a-36) + 'A' ); /* A-Z    26 letters + 9 = 35 */
-else if( a > 9 ) return( (a-10) + 'a' ); /* a-z */
-else return( '0' );
-}
-
-GL_decode( a )
-int a;
-{
-if( a >= '0' && a <= '9' ) return( a - '0' );
-else if( a >= 'a' ) return( (a - 'a')+10 ); /* a-z */
-else if( a >= 'A' ) return( (a - 'A')+36 ); /* A-Z    26 letters + 9 = 35 */
-else return( '0' );
-}
 
 /* ============================================= */
 /* ADDMEMBER - append a new member to the end of a comma-delimited list */
+int
 GL_addmember( newmem, list )
 char *newmem;
 char *list;
@@ -545,6 +615,7 @@ return( 0 );
 /* ============================================= */
 /* DELETEMEMBER - remove member(s) from a comma-delimited list.
    Mem may contain wild cards.  Returns number of members removed. */
+int
 GL_deletemember( mem, inlist, resultlist )
 char *mem;
 char *inlist;
@@ -577,6 +648,7 @@ return( found );
      of first occurance in list.  0 if not found at all.
      example: contains( "\"*'", "'hello'" )  -> 1
  */
+int
 GL_contains( clist, s )
 char *clist, *s;
 {
@@ -594,6 +666,7 @@ return( 0 );
    Max length of t is 255.
    Returns 0 if successful, 1 if no occurance of s1 found. */
 
+int
 GL_substitute( s1, s2, t )
 char *s1, *s2, *t;
 {
@@ -627,6 +700,8 @@ else return( 1 );
 /* ============================================= */
 /* CHANGECHARS - go through string s and if any characters in clist found, change
 	the character to newchar */
+
+int
 GL_changechars( clist, s, newchar )
 char *clist, *s, *newchar;
 {
@@ -642,6 +717,8 @@ return( 0 );
 /* ============================================= */
 /* DELETECHARS - go through string s and if any characters in clist found, delete
 	the character. */
+
+int
 GL_deletechars( clist, s )
 char *clist, *s;
 {
@@ -682,6 +759,7 @@ return( 0 );
               substring( result, "02001.fv02", -4, 99 )   -- result would be "fv02"
 */
 
+int
 GL_substring( result, str, fromchar, nchar )
 char *result;
 char *str;
@@ -711,6 +789,8 @@ return( 0 );
      -This routine is not sophisticated about delimiting the symbol;
       e.g. if s contains $NUMBER and varsub() is looking for $NUM it will find it.
 */
+
+int
 GL_varsub( s, symbol, value )
 char *s, *symbol, *value;
 {
@@ -721,8 +801,8 @@ char rtnbuf[256];
 len = strlen( symbol );
 slen = strlen( s );
 found = 0;
-for( i = 0, j = 0; i < slen; i++, j++ ) {
-	if( strncmp( &s[i], symbol, len )==0 ) {
+for( i = 0, j = 0; i < slen; i++, j++ ) { 
+	if( strncmp( &s[i], symbol, len )==0 ) {  /* note- strncmp man page says that it won't go beyond null terminator */
 		strcpy( &rtnbuf[j], value );
 		j = strlen( rtnbuf ) - 1;
 		i+= (len-1);
@@ -749,6 +829,8 @@ return( found );
 
    If val is non-numeric or a whole number then it is left unchanged.
 */
+
+int
 GL_autoround( val, decoffset )
 char *val;
 int decoffset; 
@@ -772,12 +854,13 @@ return( 0 );
 
 /* ============================================= */
 /* AUTOROUNDF - variant of autoround(), takes val as a double, return value is character rep..*/
+
 char *
 GL_autoroundf( val, decoffset )
 double val;
 int decoffset;
 {
-int precision, decplaces, stat;
+int decplaces;
 char roundingfmt[50];
 static char result[50];
 
@@ -825,6 +908,22 @@ return( a - y );
 }
 #endif
 
+/* ========================= */
+/* NUMGROUP - convert val to a nearby multiple of h, taking mode (low, mid, high) into account */
+
+double
+GL_numgroup( val, h, mode )
+double val, h;
+char *mode;
+{
+double fmod(), ofs, modf;
+ofs = 0.0;
+if( mode[0] == 'm' ) ofs = h / 2.0;
+else if( mode[0] == 'h' ) ofs = h;
+modf = fmod( val, h );
+return( (val - modf) + ofs );
+}
+
 
 /* ======================================================================== */
 /* RANGER - take a range specification of integers and return an enumeration of all members.
@@ -836,6 +935,7 @@ return( a - y );
  * 	    There may be no embedded spaces within the dash construct.
  */
 
+int
 GL_ranger( spec, list, n )
 char *spec;
 int *list;  /* array */
@@ -868,6 +968,7 @@ while( 1 ) {
 		for( j = lo; j <= hi; j++ ) {
 			list[i] = j;
 			i++;
+			if( i >= (*n) -1 ) break;  /* truncate */
 			}
 		}
 	}
@@ -880,6 +981,7 @@ return( 0 );
 /* CLOSE_TO - test two floating point numbers to see if
         they are within a small tolerance. */
 
+int
 GL_close_to( a, b, tol )
 double a, b;
 double tol;
@@ -895,6 +997,7 @@ else return( 0 );
 /* COMMONMEMBERS - compare two commalists and return number of members
    that are in common.. */
 
+int
 GL_commonmembers( list1, list2, mode )
 char *list1;
 char *list2;
@@ -925,6 +1028,8 @@ return( count );
 /* ==================================== */
 /* LISTMEMBER - see if s is in list (comma-delimited); 
    if so return 1 and list position (first=1) and string position (first=0) */
+
+int
 GL_listmember( s, list, memnum, pos )
 char *s;
 char *list;
@@ -953,6 +1058,8 @@ return( 0 );
 
 /* ===================================== */
 /* GETCGIARG - get next arg from CGI QUERY_STRING (escape constructs are converted) */
+
+int
 GL_getcgiarg( arg, uri, pos, maxlen )
 char *arg, *uri;
 int *pos; /* current position */
@@ -971,9 +1078,9 @@ for( i = *pos, j = 0; j < maxlen; i++ ) {
 		return( 0 );
 		}
 
-	else if( uri[i] == '%' && isxdigit( uri[i+1] ) && isxdigit( uri[i+2] ) ) {
+	else if( uri[i] == '%' && isxdigit( (int) uri[i+1] ) && isxdigit( (int) uri[i+2] ) ) {  /* urldecode */
 		sprintf( hex, "%c%c", uri[i+1], uri[i+2] );
-        		sscanf( hex, "%x", &val );
+       		sscanf( hex, "%x", &val );
 		arg[j++] = (char) val;
 		i += 2;
 		}
@@ -985,11 +1092,52 @@ for( i = *pos, j = 0; j < maxlen; i++ ) {
 return( 0 );
 }
 
+/* ================================================= */
+/* URLENCODE - perform url encoding (any questionable characters changed to %XX hex equivalent */
+/* added scg 5/29/06 */
+int
+GL_urlencode( in, out )
+char *in, *out;
+{
+int i, j, c;
+for( i = 0, j = 0; in[i] != '\0'; i++ ) {
+	c = in[i];
+	if( GL_member( c, "$-_.+!*'()," ));
+	else if( c <= 47 || c >= 123 || (c >= 58 && c <= 64 ) || ( c >= 91 && c <= 96 ) ) {
+		sprintf( &out[j], "%%%X", c );
+		j += 3;
+		}
+	else out[j++] = in[i];
+	}
+out[j] = '\0'; /* terminate */
+return( 0 );
+}
+/* ================================================= */
+/* URLDECODE - perform url decoding (any %XX constructs changed to char equivalent */
+/* added scg 5/29/06 */
+int GL_urldecode( in, out )
+char *in, *out;
+{
+int i, j, c;
+char tok[10];
+for( i = 0, j = 0; in[i] != '\0'; i++ ) {
+	if( in[i] == '%' && in[i+1] != '\0' && in[i+2] != '\0' ) {
+		tok[0] = in[i+1]; tok[1] = in[i+2]; tok[2] = '\0';
+		sscanf( tok, "%x", &c );
+		out[j++] = c;
+		i += 2;
+		}
+	else out[j++] = in[i];
+	}
+out[j] = '\0'; /* terminate */
+return( 0 );
+}
 
 
 /* ================================================= */
 /* GETCWORD - get next word, as delimited by any sequence of spaces and punct chars - related to 'contains' */
 
+int
 GL_getcword( rtn, line, i )
 char rtn[];
 char line[];
@@ -997,27 +1145,30 @@ int *i;
 {
 int n, j;
 j = *i;
-while( isspace( line[j] ) || ispunct( line[j] ) ) j++; 
+while( isspace( (int) line[j] ) || ispunct( (int) line[j] ) ) j++; 
 n = 0;
 rtn[0] = '\0';
 while( 1 ){
-	if( line[j] != '*' && ( isspace( line[j] ) || ispunct( line[j] ) || line[j] == '\0' )) break;
+	if( line[j] != '*' && ( isspace( (int) line[j] ) || ispunct( (int) line[j] ) || line[j] == '\0' )) break;
 	else rtn[n++] = line[j];
 	j++;
 	}
 *i = j;
 rtn[n] = '\0' ;
+return( 0 );
 }
 
 /* =================================== */
 /* STRIP_WS strip white-space off of front and end of string s */
+
+int
 GL_strip_ws( s )
 char *s;
 {
 int i, j, len;
 
 /* don't do anything if first and last characters are non-space.. */
-if( !isspace( s[0] ) && !isspace( s[ strlen( s ) - 1 ] ) ) return( 0 );
+if( !isspace( (int) s[0] ) && !isspace( (int) s[ strlen( s ) - 1 ] ) ) return( 0 );
  
 /* find last significant char and put a null after it */
 for( j = strlen( s ) -1; j >= 0; j-- )
@@ -1027,4 +1178,12 @@ s[j+1] = '\0';
 for( i = 0, len = strlen( s ); i < len; i++ ) 
 	if( !GL_member( s[i], " \t\n" )) break; 
 strcpy( s, &s[i] );
+return( 0 );
 }
+#endif
+
+/* ======================================================= *
+ * Copyright 1998-2005 Stephen C. Grubb                    *
+ * http://ploticus.sourceforge.net                         *
+ * Covered by GPL; see the file ./Copyright for details.   *
+ * ======================================================= */
