@@ -22,7 +22,7 @@ static unsigned int boundscode();
 
 
 
-Elineclip( x1, y1, x2, y2, rx1, ry1, rx2, ry2 )
+PLG_lineclip( x1, y1, x2, y2, rx1, ry1, rx2, ry2 )
 double *x1, *y1, *x2, *y2, rx1, ry1, rx2, ry2;
 {
 unsigned int c, c1, c2;

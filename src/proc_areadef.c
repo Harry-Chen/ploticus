@@ -6,6 +6,7 @@
 
 #include "pl.h"
 
+/* constants */
 static int nareas = 17;
 static char *areas[17] = {
 "standard     1.2 2.5 7.4 7.0   1.5 1.5 9.0 6.2",
@@ -61,9 +62,11 @@ char linebottom[256];
 char lineside[256];
 double autowf, autowmin, autowmax;
 double autohf, autohmin, autohmax;
-int xcatsgot, ycatsgot;
 char mapurl[MAXPATH];
 double cmadj;
+int docats;
+char maplabel[256];
+int clickmap_on;
 
 TDH_errprog( "pl proc areadef" );
  
@@ -72,7 +75,8 @@ TDH_errprog( "pl proc areadef" );
 strcpy( xscaletype, "linear" );
 strcpy( yscaletype, "linear" );
 strcpy( areaname, "standard" );
-if( Device == 'c' || Device == 'p' ) strcpy( areaname, "standardp" ); /* for sheet of paper */
+gotxrange = gotyrange = 0;
+if( PLS.device == 'c' || PLS.device == 'p' ) strcpy( areaname, "standardp" ); /* for sheet of paper */
 strcpy( title, "" );
 strcpy( title2, "" );
 doframe = 0;
@@ -83,7 +87,7 @@ namedarea = 1;
 /* doxaxis = doyaxis = 1; */
 doxaxis = doyaxis = 0;
 strcpy( areacolor, "" );
-strcpy( Bigbuf, "" );
+strcpy( PL_bigbuf, "" );
 height = 4.0;
 width = 6.0;
 xlo = 1.5;
@@ -96,11 +100,12 @@ strcpy( ymaxstr, "" );
 strcpy( linebottom, "" );
 strcpy( lineside, "" );
 gotarea = 1;
-Catcompmethod = 0;
 autowf = 0.0; autowmin = 0.0; autowmax = 20.0;
 autohf = 0.0; autohmin = 0.0; autohmax = 20.0;
-xcatsgot = 0; ycatsgot = 0;
 strcpy( mapurl, "" );
+strcpy( maplabel, "" );
+docats = 0;
+clickmap_on = 0;
 
 
 
@@ -118,20 +123,21 @@ while( 1 ) {
 		gotarea = 1;
 		}
 	else if( stricmp( attr, "rectangle" )==0 ) {
-		getbox( "rectangle", lineval, &xlo, &ylo, &xhi, &yhi );
+		stat = getbox( "rectangle", lineval, &xlo, &ylo, &xhi, &yhi );
+		if( stat ) { PLS.skipout = 1; return( 1 ); }
 		namedarea = 0;
 		gotarea = 1;
 		}
 	else if( stricmp( attr, "box" )==0 ) {
 		sscanf( lineval, "%lf %lf", &width, &height );
-		if( Using_cm ) { width /= 2.54; height /= 2.54; }
+		if( PLS.usingcm ) { width /= 2.54; height /= 2.54; }
 		namedarea = 0;
 		gotarea = 1;
 		}	
 
 	else if( stricmp( attr, "location" )==0 ) {
 		sscanf( lineval, "%lf %lf", &xlo, &ylo );
-		if( Using_cm ) { xlo /= 2.54; ylo /= 2.54; }
+		if( PLS.usingcm ) { xlo /= 2.54; ylo /= 2.54; }
 		locspec = 1;
 		}	
 
@@ -145,10 +151,11 @@ while( 1 ) {
 
 	else if( stricmp( attr, "xrange" )==0 || stricmp( attr, "xautorange" )==0 ) {
 		if( strnicmp( val, "datafield", 9 )==0 ) strcpy( xminstr, lineval );
+		else if( stricmp( val, "categories" )==0 ) { strcpy( xscaletype, val ); continue; }
 		else	{
 			nt = sscanf( lineval, "%s %s", xminstr, xmaxstr );
 			if( nt != 2 ) {
-				Skipout = 1;
+				PLS.skipout = 1;
 				return( Eerr( 105, "both min and max expected", "xrange" ));
 				}
 			}
@@ -156,10 +163,11 @@ while( 1 ) {
 		}
 	else if( stricmp( attr, "yrange" )==0 || stricmp( attr, "yautorange" )==0 ) {
 		if( strnicmp( val, "datafield", 9 )==0 ) strcpy( yminstr, lineval );
+		else if( stricmp( val, "categories" )==0 ) { strcpy( yscaletype, val ); continue; }
 		else	{
 			nt = sscanf( lineval, "%s %s", yminstr, ymaxstr );
 			if( nt != 2 ) {
-				Skipout = 1;
+				PLS.skipout = 1;
 				return( Eerr( 105, "both min and max expected", "yrange" ));
 				}
 			}
@@ -168,43 +176,6 @@ while( 1 ) {
 
 	else if( stricmp( attr, "xscaletype" )==0 ) strcpy( xscaletype, lineval );
 	else if( stricmp( attr, "yscaletype" )==0 ) strcpy( yscaletype, lineval );
-	else if( stricmp( attr, "xcategories" )==0 ) {
-		strcpy( xscaletype, "categories" );  /* added scg 10/25/99 */
-		/* put category names into array slots now.. */
-		if( strnicmp( val, "datafield", 9 )==0 ) strcpy( Bigbuf, lineval );
-		else getmultiline( "xcategories", lineval, MAXBIGBUF, Bigbuf );
-		setcats( 'x', Bigbuf );
-		strcpy( xminstr, "0" );
-		sprintf( xmaxstr, "%d", Ncats[0]+1 );
-		gotxrange = 1;
-		xcatsgot = 1;
-		}
-	else if( stricmp( attr, "ycategories" )==0 ) {
-		strcpy( yscaletype, "categories" ); /* added scg 10/25/99 */
-		/* put category names into array slots now.. */
-		if( strnicmp( val, "datafield", 9 )==0 ) strcpy( Bigbuf, lineval );
-		else getmultiline( "ycategories", lineval, MAXBIGBUF, Bigbuf );
-		setcats( 'y', Bigbuf );
-		strcpy( yminstr, "0" );
-		sprintf( ymaxstr, "%d", Ncats[1]+1 );
-		gotyrange = 1;
-		ycatsgot = 1;
-		}
-	else if( stricmp( attr, "xextracategory" )==0 ) {
-		if( !xcatsgot ) addcat( 'x', "pre", lineval );
-		else addcat( 'x', "post", lineval );
-		}
-	else if( stricmp( attr, "yextracategory" )==0 ) {
-		if( !ycatsgot ) addcat( 'y', "pre", lineval );
-		else addcat( 'y', "post", lineval );
-		}
-
-	else if( stricmp( attr, "catcompmethod" )==0 ) {
-		if( stricmp( val, "beginswith" )==0 ) Catcompmethod = 0;
-		else if( stricmp( val, "exact" )==0 ) Catcompmethod = -1;
-		else if( strnicmp( val, "length=", 7 )==0 )  Catcompmethod = atoi( &val[7] );
-		else if( strnicmp( val, "fuzzy=", 6 )==0 )  Catcompmethod = -15 + atoi( &val[6] );
-		}
 
 	else if( stricmp( attr, "frame" )==0 ) {
 		if( strnicmp( val, "no", 2 )==0 ) doframe = 0;
@@ -227,24 +198,38 @@ while( 1 ) {
 	else if( stricmp( attr, "lineside" )==0 ) {
 		if( strnicmp( val, "no", 2 )!= 0 ) strcpy( lineside, lineval );
 		}
+
+	else if( stricmp( attr, "clickmapurl" )==0 ) {
+		if( PLS.clickmap ) { strcpy( mapurl, val ); clickmap_on = 1 ; }
+		}
+	else if( stricmp( attr, "clickmaplabel" )==0 ) {
+		if( PLS.clickmap ) { strcpy( maplabel, lineval ); clickmap_on = 1 ; }
+		}
+
 	else if( stricmp( attr, "axes" )==0 ) {
 		if( stricmp( val, "none" )==0 ) { doxaxis = 0; doyaxis = 0; }
 		else if( stricmp( val, "x" )==0 ) doxaxis = 1;
 		else if( stricmp( val, "y" )==0 ) doyaxis = 1;
 		else if( stricmp( val, "both" )==0 ) { doxaxis = 1; doyaxis = 1; }
 		}
-
-	else if( stricmp( attr, "clickmapurl" )==0 ) strcpy( mapurl, val );
-
 	else if( GL_slmember( attr, "?axis.stubs ?axis.selflocatingstubs" )) {
 		if( strnicmp( attr, "xaxis.", 6 )==0 ) doxaxis = 1; 
 		if( strnicmp( attr, "yaxis.", 6 )==0 ) doyaxis = 1; 
 		if( GL_slmember( val, "none inc* file datafield* list categories usecategories" )) ;
-		else getmultiline( "stubtext", lineval, 500, Bigbuf ); /* just to skip past it..*/
+		else getmultiline( "stubtext", lineval, MAXBIGBUF-5, PL_bigbuf ); /* just to skip past it..*/
 		}
 	else if( strnicmp( attr, "xaxis.", 6 )==0 ) { doxaxis = 1; continue; }
 	else if( strnicmp( attr, "yaxis.", 6 )==0 ) { doyaxis = 1; continue; }
 	else if( GL_slmember( attr, "axisline tic* minortic*" )) continue;
+
+	else if( GL_slmember( attr, "?categories ?extracategory catcompmethod" )) {
+		docats = 1;
+		if( GL_slmember( attr, "?categories" ) && strnicmp( val, "datafield", 9 )!=0 ) 
+				getmultiline( "categories", lineval, MAXBIGBUF-5, PL_bigbuf ); /* skip over it.. */
+		if( attr[0] == 'x' ) strcpy( xscaletype, "categories" );
+		if( attr[0] == 'y' ) strcpy( yscaletype, "categories" );
+		}
+
 	else Eerr( 1, "areadef attribute not recognized", attr );
 	}
 
@@ -256,15 +241,30 @@ while( 1 ) {
 resetstacklist();  /* (obscure) - reset the bar graph list that tries to
 			keep track of fields for automatic stacking */
 
-
-if( stricmp( xscaletype, "categories" )==0 && Ncats[0] < 1 ) {
-	Skipout = 1;
-	return( Eerr( 5972, "xscaletype defined as categories but no xcategories given", "" ) );
+/* go set up category sets if needed.. */
+if( docats ) {
+	PLP_categories(); 
+	TDH_errprog( "pl proc areadef" );
 	}
 
-if( stricmp( yscaletype, "categories" )==0 && Ncats[1] < 1 ) {
-	Skipout = 1;
-	return( Eerr( 5973, "yscaletype defined as categories but no ycategories given", "" ) );
+if( stricmp( xscaletype, "categories" )==0 ) {
+	if( PL_ncats('x') < 1 ) { 
+		PLS.skipout = 1; 
+		return( Eerr( 5972, "no x categories exist", "" ) ); 
+		}
+	gotxrange = 1;  /* note- categories could have been filled from a previous data set */
+	strcpy( xminstr, "0" );
+	sprintf( xmaxstr, "%d", PL_ncats('x')+1 );
+	}
+
+if( stricmp( yscaletype, "categories" )==0 ) {
+	if( PL_ncats('y') < 1 ) { 
+		PLS.skipout = 1; 
+		return( Eerr( 5973, "no y categories exist", "" ) ); 
+		}
+	gotyrange = 1; /* note- categories could have been filled from a previous data set */
+	strcpy( yminstr, "0" );
+	sprintf( ymaxstr, "%d", PL_ncats('y')+1 );
 	}
 
 if( locspec ) { /* location and box specified, calculate xhi and yhi.. */
@@ -292,15 +292,15 @@ if( namedarea ) {
 	}
 		
 if( !gotarea && !locspec ) {  /* && !locspec added scg 11/21/00 */
-	Skipout = 1;
+	PLS.skipout = 1;
 	return( Eerr( 130, "No plotting area has been specified", "" ) );
 	}
 if( !gotxrange ) {
-	Skipout = 1;
+	PLS.skipout = 1;
 	return( Eerr( 130, "No xrange has been specified", "" ) );
 	}
 if( !gotyrange ) {
-	Skipout = 1;
+	PLS.skipout = 1;
 	return( Eerr( 130, "No yrange has been specified", "" ) );
 	}
 
@@ -317,8 +317,8 @@ else Esetunits( 'y', yscaletype );
 
 
 /* if autoranging is specified, do it now.. */
-if( strnicmp( xminstr, "datafield", 9 ) == 0 ) autorange( 'x', xminstr, xminstr, xmaxstr );
-if( strnicmp( yminstr, "datafield", 9 ) == 0 ) autorange( 'y', yminstr, yminstr, ymaxstr );
+if( strnicmp( xminstr, "datafield", 9 ) == 0 ) PLP_autorange( 'x', xminstr, xminstr, xmaxstr );
+if( strnicmp( yminstr, "datafield", 9 ) == 0 ) PLP_autorange( 'y', yminstr, yminstr, ymaxstr );
 
 /* if scaletype is log but there are data values = 0.0, go to log+1 scaling.. */
 if( stricmp( xscaletype, "log" )==0 && atof( xminstr ) <= 0.0 ) Escaletype( "log+1", 'x' );
@@ -361,17 +361,18 @@ if( autohf != 0.0 ) {
 stat = Esetscale( 'x', xlo, xhi, xminstr, xmaxstr );
 stat += Esetscale( 'y', ylo, yhi, yminstr, ymaxstr );
 
-if( Debug ) fprintf( Diagfp, "// areadef: lowerleft: %g,%g  upperright: %g,%g\n",
+if( PLS.debug ) fprintf( PLS.diagfp, "areadef: lowerleft: %g,%g  upperright: %g,%g\n",
 		xlo, ylo, xhi, yhi );
-if( Debug ) fprintf( Diagfp, "// areadef:   xrange is %s to %s.   yrange is %s to %s.\n",
+if( PLS.debug ) fprintf( PLS.diagfp, "areadef:   xrange is %s to %s.   yrange is %s to %s.\n",
 		xminstr, xmaxstr, yminstr, ymaxstr );
 
 if( stat != 0 ) return( stat );
 	
 suppress_twin_warn( 0 );
 
+
 /* set variables to hold plot area bounds and scale min/max.. */
-if( Using_cm ) cmadj = 2.54;
+if( PLS.usingcm ) cmadj = 2.54;
 else cmadj = 1.0;
 setfloatvar( "AREATOP", EYhi * cmadj );
 setfloatvar( "AREABOTTOM", EYlo * cmadj );
@@ -384,9 +385,9 @@ setcharvar( "YMAX", ymaxstr );
 
 
 if( areacolor[0] != '\0' ) Ecblock( EXlo, EYlo, EXhi, EYhi, areacolor, 0 );
-if( Clickmap && mapurl[0] != '\0' ) {
-	if( GL_slmember( mapurl, "*@XVAL*" ) || GL_slmember( mapurl, "*@YVAL*" )) tpmapurl( mapurl );
-	else mapentry( 'r', mapurl, 0, EXlo, EYlo, EXhi, EYhi, 0, 0 );
+if( clickmap_on ) {
+	if( GL_slmember( mapurl, "*@XVAL*" ) || GL_slmember( mapurl, "*@YVAL*" )) clickmap_seturlt( mapurl );
+	else clickmap_entry( 'r', mapurl, 0, EXlo, EYlo, EXhi, EYhi, 0, 0, maplabel );
 	}
 
 /* draw a frame of the graphics area */

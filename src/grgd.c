@@ -14,31 +14,36 @@
 	GDFREETYPE (use FreeType font rendering; may be used only when GD18 is in effect)
 */
 
-
-
 #include <stdio.h>
+
+extern double PLG_xsca_inv(), PLG_ysca_inv();
+#define Exsca( h )      PLG_xsca( h )
+#define Eysca( h )      PLG_ysca( h )
+#define Exsca_inv( h )  PLG_xsca_inv( h )
+#define Eysca_inv( h )  PLG_ysca_inv( h )
 #define Eerr(a,b,c)  TDH_err(a,b,c)
+
 #define VERT 1.570796  /* 90 degrees, expressed in radians */
 
-static char Gfmt[20] = "";
+static char g_fmt[20] = "";
 
 /* ================================= */
 /* SETIMFMT - set the image format that we will be creating.. 
    allowable values for fmt are "gif", "png", "jpeg", etc.
  */
-EG_setimfmt( fmt )
+PLGG_setimfmt( fmt )
 char *fmt;
 {
-strcpy( Gfmt, fmt );
+strcpy( g_fmt, fmt );
 return( 0 );
 }
 /* ================================= */
 /* GETIMFMT - allow other modules to find out the image format.
    Format name is copied into fmt. */
-EG_getimfmt( fmt )
+PLGG_getimfmt( fmt )
 char *fmt;
 {
-strcpy( fmt, Gfmt );
+strcpy( fmt, g_fmt );
 return( 0 );
 }
 
@@ -78,20 +83,54 @@ static double Gcurlinewidth = 1.0;
 static double Gcurdashscale = 1.0;
 static gdImagePtr Gbrush[NBRUSH]; /* brush images */
 static int Gdash[10][6]= { {1}, {1,1}, {3,1}, {5,1}, {2,1,1,1}, {4,1,1,1}, {6,1,1,1},
-                          {2,1,1,1,1,1}, {4,1,1,1,1,1}, {6,1,1,1,1,1} };
-static int Gndash[10] = { 1, 2, 2, 2, 4, 4, 4, 6, 6, 6 };
+                          {2,1,1,1,1,1}, {4,1,1,1,1,1}, {6,1,1,1,1,1} };  /* constants */
+static int Gndash[10] = { 1, 2, 2, 2, 4, 4, 4, 6, 6, 6 }; /* constants */
 static int Gdashpat[1000];
 static int Ginitialized = 0;
-static int Gtransparent_color = -1;
-static int Gblack = 0;
+static int Gtransparent_color = -1; 
+static int Gblack = 0;		    
 static char GFTfont[80] = "";
 static int GFTbox[8];
 static double GFTsize;
 
 
+/* ================================= */
+PLGG_initstatic() 
+{
+strcpy( g_fmt, "" );
+strcpy( Gm2filename, "" );
+Gm2xscale = 1.0;
+Gm2yscale = 1.0;
+Goldx = 0.0, Goldy = 0.0;
+Gvertchar = 0;
+Gnpts = 0;
+Gcurlinestyle = 0;
+Gcurlinewidth = 1.0;
+Gcurdashscale = 1.0;
+Ginitialized = 0;
+Gtransparent_color = -1;
+Gblack = 0;
+strcpy( GFTfont, "" );
+
+return( 0 );
+}
+
+
+/* ================================= */
+/* GETIMG - allow API access to the image and its size */
+gdImagePtr
+PLGG_getimg( width, height )
+int *width, *height; /* pixels */
+{
+if( !Ginitialized ) return( NULL );
+*width = Gxmax;
+*height = Gymax;
+return( Gm );
+}
+
 
 /* ================================ */
-EGsetup( name, pixelsinch, ux, uy, upleftx, uplefty )
+PLGG_setup( name, pixelsinch, ux, uy, upleftx, uplefty )
 char *name;
 int pixelsinch;
 double ux, uy; /* size of image in inches x y */
@@ -110,28 +149,22 @@ Gymax = (int)(uy * pixelsinch );
 
 /* Allocate pixels.. */
 Gm = gdImageCreate( Gxmax, Gymax );
-if( Gm == NULL ) {
-	Eerr( 12003, "Cannot create working image", "" );
-	exit(1);
-	}
+if( Gm == NULL ) return( Eerr( 12003, "Cannot create working image", "" ) );
 for( i = 0; i < NBRUSH; i++ ) {
 	Gbrush[i] = gdImageCreate( i+1, i+1 );
-	if( Gbrush[i] == NULL ) {
-		Eerr( 12004, "Cannot create brush image", "" );
-		exit(1);
-		}
+	if( Gbrush[i] == NULL ) return( Eerr( 12004, "Cannot create brush image", "" ) );
 	}
 
 
-EGcolor( "white" );
-EGcolor( "black" );
+PLGG_color( "white" );
+PLGG_color( "black" );
 gdImageSetBrush( Gm, Gbrush[0] );
 
 return( 0 );
 }
 
 /* ================================ */
-EGmoveto( x, y )
+PLGG_moveto( x, y )
 double x, y;
 {
 Goldx = x;
@@ -139,7 +172,7 @@ Goldy = y;
 return( 0 );
 }
 /* ================================ */
-EGlineto( x, y )
+PLGG_lineto( x, y )
 double x, y;
 {
 int a, b, c, d;
@@ -152,7 +185,7 @@ return( 0 );
 }
 
 /* ================================ */
-EGrawline( a, b, c, d )
+PLGG_rawline( a, b, c, d )
 int a, b, c, d;
 {
 gdImageLine( Gm, a, b, c, d, gdStyledBrushed ); 
@@ -160,17 +193,17 @@ return( 0 );
 }
 
 /* ================================ */
-EGlinetype( s, x, y )
+PLGG_linetype( s, x, y )
 char *s;
 double x, y;
 {
 int style;
 style = atoi( s );
-return( EGlinestyle( style, x, y ) );
+return( PLGG_linestyle( style, x, y ) );
 }
 
 /* ================================ */
-EGlinestyle( style, linewidth, dashscale )
+PLGG_linestyle( style, linewidth, dashscale )
 int style;
 double linewidth, dashscale;
 {
@@ -211,7 +244,7 @@ Gcurlinewidth = linewidth;
 return( 0 );
 }
 /* ================================ */
-EGpathto( px, py )
+PLGG_pathto( px, py )
 double px, py;
 {
 if( Gnpts == 0 ) {
@@ -229,7 +262,7 @@ Gnpts++;
 return( 0 );
 }
 /* ================================ */
-EGfill()
+PLGG_fill()
 {
 int i;
 if( Gnpts < 3 ) { 
@@ -245,7 +278,7 @@ return( 0 );
 }
 /* ================================ */
 /* note: caller must restore previous color after this routine returns. */
-EGrect( x1, y1, x2, y2, color )
+PLGG_rect( x1, y1, x2, y2, color )
 double x1, y1, x2, y2;
 char *color;
 {
@@ -254,14 +287,14 @@ a = Exsca( x1 );
 b = Eysca( y1 );
 c = Exsca( x2 );
 d = Eysca( y2 );
-EGcolor( color );
+PLGG_color( color );
 gdImageFilledRectangle( Gm, a, b, c, d, Gcurcolor );
 return( 0 );
 }
 
 /* ================================ */
 /* set a freetype font */
-EGfont( s )
+PLGG_font( s )
 char *s;
 {
 #ifdef GDFREETYPE
@@ -273,7 +306,7 @@ return( 0 );
 }
 
 /* ================================ */
-EGtextsize( p )
+PLGG_textsize( p )
 int p;
 {
 
@@ -288,15 +321,15 @@ if( GFTfont[0] ) {
 
 /* this logic is replicated in Etextsize() */
 if( p <= 6 ) { Gfont = gdFontTiny; Gcharwidth = 0.05; }
-else if( p >= 7 && p <= 9 ) { Gfont = gdFontSmall; Gcharwidth = 0.0615384; }
-else if( p >= 10 && p <= 12 ) { Gfont = gdFontMediumBold; Gcharwidth = 0.0727272; }
+else if( p >= 7 && p <= 9 ) { Gfont = gdFontSmall; Gcharwidth = 0.06; } /* was 0.0615384 */
+else if( p >= 10 && p <= 12 ) { Gfont = gdFontMediumBold; Gcharwidth = 0.070; } /* was 0.0727272 */
 else if( p >= 13 && p <= 15 ) { Gfont = gdFontLarge; Gcharwidth = 0.08; }
-else if( p >= 15 ) { Gfont = gdFontGiant; Gcharwidth = 0.0930232; }
+else if( p >= 15 ) { Gfont = gdFontGiant; Gcharwidth = 0.09; } /* was 0.0930232 */
 Gtextsize = p;
 return( 0 );
 }
 /* ================================ */
-EGchardir( d )
+PLGG_chardir( d )
 int d;
 {
 if( d == 90 ) Gvertchar = 1;
@@ -304,7 +337,7 @@ else Gvertchar = 0;
 return( 0 );
 }
 /* ================================ */
-EGtext( s )
+PLGG_text( s )
 char *s;
 {
 int a, b, c, d;
@@ -355,7 +388,7 @@ Goldy = y;
 return( 0 );
 }
 /* ================================ */
-EGcentext( s )
+PLGG_centext( s )
 char *s;
 {
 double halflen, x, y;
@@ -421,7 +454,7 @@ Goldy = y;
 return( 0 );
 }
 /* ================================ */
-EGrightjust( s )
+PLGG_rightjust( s )
 char *s;
 {
 double len, x, y;
@@ -443,7 +476,8 @@ if( Gvertchar ) {
 			err = gdImageStringFT( NULL, GFTbox, Gcurcolor, GFTfont, GFTsize, 0.0, a, b, s );
 			if( err ) { fprintf( stderr, "%s (%s) (width calc)\n", err, GFTfont ); return( 1 ); }
 			b += (GFTbox[4] - GFTbox[0]);
-			err = gdImageStringFT( Gm, GFTbox, Gcurcolor, GFTfont, GFTsize, 0.0, a, b, s );
+			/* err = gdImageStringFT( Gm, GFTbox, Gcurcolor, GFTfont, GFTsize, 0.0, a, b, s ); */
+			err = gdImageStringFT( Gm, GFTbox, Gcurcolor, GFTfont, GFTsize, VERT, a, b, s );  /* fixed 9/17/02 - Artur Zaprzala */
 			if( err ) { fprintf( stderr, "%s (%s)\n", err, GFTfont ); return( 1 ); }
 			}
 #endif
@@ -486,7 +520,7 @@ return( 0 );
 }
 
 /* ================================ */
-EGcolor( color )
+PLGG_color( color )
 char *color;
 {
 int i, n;
@@ -528,7 +562,7 @@ else if( GL_goodnum( color, &i ) ) {
         r = atof( color );
         g = b = r;
         }
-else Ecolorname_to_rgb( color, &r, &g, &b );
+else PLG_colorname_to_rgb( color, &r, &g, &b );
 
 ir = (int)(r * 255);
 ig = (int)(g * 255);
@@ -540,10 +574,7 @@ if( Gcurcolor < 0 ) {
 	Gcurcolor = gdImageColorAllocate( Gm, ir, ig, ib );
 	if( Gcurcolor < 0 ) {
 		Gcurcolor = gdImageColorClosest( Gm, ir, ig, ib );
-		if( Gcurcolor < 0 ) {
-			Eerr( 12009, "Error on img color allocation", color );
-			exit(1);
-			}
+		if( Gcurcolor < 0 ) return( 1 ); /* Eerr( 12009, "Error on img color allocation", color ); exit(1); */
 		}
 	}
 
@@ -583,7 +614,7 @@ return( 0 );
 }
 
 /* ============================== */
-EGimload( imgname, xscale, yscale )
+PLGG_imload( imgname, xscale, yscale )
 char *imgname;
 double xscale, yscale;
 {
@@ -596,9 +627,9 @@ if( Gm2filename[0] != '\0' ) gdImageDestroy( Gm2 );
 Gm2 = gdImageCreateFromPng( fp );
 #endif
 #ifdef GD18
-if( strcmp( Gfmt, "png" )==0 ) Gm2 = gdImageCreateFromPng( fp );
-else if( strcmp( Gfmt, "jpeg" )==0 ) Gm2 = gdImageCreateFromJpeg( fp );
-else if( strcmp( Gfmt, "wbmp" )==0 ) Gm2 = gdImageCreateFromWBMP( fp );
+if( strcmp( g_fmt, "png" )==0 ) Gm2 = gdImageCreateFromPng( fp );
+else if( strcmp( g_fmt, "jpeg" )==0 ) Gm2 = gdImageCreateFromJpeg( fp );
+else if( strcmp( g_fmt, "wbmp" )==0 ) Gm2 = gdImageCreateFromWBMP( fp );
 #endif
 strcpy( Gm2filename, imgname );
 Gm2xscale = xscale;
@@ -612,13 +643,13 @@ return( 0 );
 	align may be:	 "center" to center image around x, y
 			 "topleft" to put top left corner of image at x, y
 			 "bottomleft" to put bottom left corner of image at x, y */
-EGimplace( x, y, align, xscale, yscale )
+PLGG_implace( x, y, align, xscale, yscale )
 double x, y;
 char *align;
 double xscale, yscale; /* usually specified as 1.0 1.0 but may be used to influence size */
 {
 int gx, gy;
-double Exsca_inv(), Eysca_inv();
+double PLG_xsca_inv(), PLG_ysca_inv();
 int neww, newh;
 
 
@@ -647,8 +678,8 @@ else if( tolower( align[0] ) == 'b' ) {
 gdImageCopyResized( Gm, Gm2, gx, gy, 0, 0, neww, newh, Gm2->sx, Gm2->sy );
 
 /* add to app bounding box */
-Ebb( Exsca_inv( gx ), Eysca_inv( gy ) );
-Ebb( Exsca_inv( gx + neww ), Eysca_inv( gy + newh ) );
+PLG_bb( Exsca_inv( gx ), Eysca_inv( gy ) );
+PLG_bb( Exsca_inv( gx + neww ), Eysca_inv( gy + newh ) );
 
 return( 0 );
 }
@@ -657,7 +688,7 @@ return( 0 );
 /* EOF - crop image to bounding box size, and create output file */
 /* scg 11/23/01 added click map support */
 
-EGeof( filename, x1, y1, x2, y2 )
+PLGG_eof( filename, x1, y1, x2, y2 )
 char *filename;
 double x1, y1, x2, y2;
 {
@@ -672,14 +703,11 @@ if( y1 < 0.0 ) y1 = 0.0;
 if( x2 < 0.0 ) x2 = 0.0;
 if( y2 < 0.0 ) y2 = 0.0;
 
-if( doingmapdebug() ) showmapfile( 'g' ); /* 11/23/01 */
+if( PL_clickmap_getdemomode() ) PL_clickmap_show( 'g' ); /* 11/23/01 */
 
 width = Exsca( x2 ) - Exsca( x1 );
 height = Eysca( y1 ) - Eysca( y2 );
-if( height < 10 || width < 10 ) {
-	Eerr( 12012, "Result image is too small - not created", "" );
-	return( 1 );
-	}
+if( height < 10 || width < 10 ) return( Eerr( 12012, "Result image is too small - not created", "" ) );
 
 ux = Exsca( x1 );
 uy = Eysca( y2 );
@@ -687,10 +715,7 @@ uy = Eysca( y2 );
 
 /* copy to smaller img sized by bounding box.. */
 outim = gdImageCreate( width, height );
-if( outim == NULL ) {
-	Eerr( 12013, "Error on creation of image output", "" );
-	exit(1);
-	}
+if( outim == NULL ) return( Eerr( 12013, "Error on creation of image output", "" ) );
 gdImageCopy( outim, Gm, 0, 0, ux, uy, width, height );
 /* fprintf( stderr, "new im w:%d h:%d   ux:%d uy:%d\n", width, height, ux, uy ); */
 
@@ -704,10 +729,7 @@ if( Gtransparent_color >= 0 ) {
    under MSDOS, harmless under Unix. */
 if( stricmp( filename, "stdout" )==0 ) outfp = stdout;
 else outfp = fopen( filename, "wb");
-if( outfp == NULL ) {
-	Eerr( 12014, "Cannot open for write", filename );
-	return( 1 );
-	}
+if( outfp == NULL ) return( Eerr( 12014, "Cannot open for write", filename ) );
 
 /* Output the image to the disk file. */
 #ifdef GD13
@@ -717,9 +739,9 @@ gdImageGif( outim, outfp );
 gdImagePng( outim, outfp );    
 #endif
 #ifdef GD18
-if( strcmp( Gfmt, "png" )==0 ) gdImagePng( outim, outfp );
-else if( strcmp( Gfmt, "jpeg" )==0 ) gdImageJpeg( outim, outfp, 75 );
-else if( strcmp( Gfmt, "wbmp" )==0 ) gdImageWBMP( outim, Gblack, outfp );
+if( strcmp( g_fmt, "png" )==0 ) gdImagePng( outim, outfp );
+else if( strcmp( g_fmt, "jpeg" )==0 ) gdImageJpeg( outim, outfp, 75 );
+else if( strcmp( g_fmt, "wbmp" )==0 ) gdImageWBMP( outim, Gblack, outfp );
 #endif
 
 if( stricmp( filename, "stdout" )!=0 ) {
@@ -729,11 +751,14 @@ if( stricmp( filename, "stdout" )!=0 ) {
 #endif
 	}
 
-/* free outim memory (other ims freed in EGSetup() for subsequent pages) */
+/* free memory (other ims freed in EGSetup() for subsequent pages) */
+gdImageDestroy( Gm );
+for( i = 0; i < NBRUSH; i++ ) gdImageDestroy( Gbrush[i] );
 gdImageDestroy( outim );
+Ginitialized = 0;
 
 /* write map file */
-if( doingmap() ) writemapfile( ux, uy ); /* 11/23/01 */
+if( PL_clickmap_inprogress() ) PL_clickmap_out( ux, uy ); /* 11/23/01 */
 
 return( 0 );
 }

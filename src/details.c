@@ -8,16 +8,16 @@
 /* TEXTDET - parse a text details setting and execute it */
 /* attributes are: size=N color=COLOR style=B|I|BI|R align=L|C|R adjust=x,y */
 /* ============================= */
-textdet( parmname, spec, align, adjx, adjy, sizehint, stylehint )
+PL_textdet( parmname, spec, align, adjx, adjy, sizehint, stylehint )
 char *parmname, *spec;
 int *align;
 double *adjx, *adjy;
 int sizehint;
 char *stylehint;
 {
-char at[5][80];
+char at[6][80];
 int nt;
-int i;
+int i, j;
 int p;
 char str[80];
 char font[80];
@@ -26,10 +26,21 @@ double tmp;
 
 /* defaults.. */
 strcpy( color, Estandard_color );
-strcpy( font, stylehint );
+strcpy( font, "" );
 
-if (Device == 's') SVGfontname( Estandard_font, font );/* for SVG font support - BT 5/11/01 */
-else  EPSfontname( Estandard_font, font );
+/* style only valid for svg,swf, and postscript environs.. */
+if( GL_member( Edev, "sfp" )) {
+	strcpy( font, stylehint );
+#ifndef NOSVG
+	if ( Edev == 's') PLGS_fontname( Estandard_font, font );/* for SVG font support - BT 5/11/01 */
+#endif
+#ifndef NOSWF
+        if ( Edev == 'f') PLGF_fontname( Estandard_font, font );/* for SWF font support - BT 11/01/03*/
+ #endif
+#ifndef NOPS
+	if( Edev == 'p' ) PLGP_fontname( Estandard_font, font );
+#endif
+	}
 
 p = Estandard_textsize + sizehint;
 *align = '?'; /* align and offset will be sent back to caller.. */
@@ -37,28 +48,44 @@ p = Estandard_textsize + sizehint;
 *adjy = 0.0;
 
 /* parse spec.. */
-nt = sscanf( spec, "%s %s %s %s %s", at[0], at[1], at[2], at[3], at[4] );
+strcpy( at[0], "" ); /* added scg 9/30/03 */
+nt = sscanf( spec, "%s %s %s %s %s %s", at[0], at[1], at[2], at[3], at[4], at[5] );
 
 if( stricmp( at[0], "yes" )==0 || 
 	strnicmp( at[0], "no", 2 )==0 ) nt = 0; /* drop thru.. */
 
 for( i = 0; i < nt; i++ ) {
 	if( strnicmp( at[i], "size=", 5 )==0 ) p = atoi( &at[i][5] );
+
 	else if( strnicmp( at[i], "style=", 6 )==0 ) {
+	    /* style makes sense only for svg, swf and postscript environs.. */
+	    if( GL_member( Edev, "sfp" )) {
 		if( !GL_slmember( &at[i][6], "B I BI R" )) {
 			Eerr( 82, "warning, text style must be B, I, BI, or R", &at[i][6] );
 			strcpy( font, "R" );
 			}
 		else strcpy( font, &at[i][6] );
 
-		if (Device == 's') SVGfontname( Estandard_font, font );/* for SVG font support - BT 5/11/01 */
-		else EPSfontname( Estandard_font, font );
+#ifndef NOSVG
+		if ( Edev == 's') PLGS_fontname( Estandard_font, font );/* for SVG font support - BT 5/11/01 */
+#endif
+#ifndef NOSWF
+                if ( Edev == 'f') PLGF_fontname( Estandard_font, font );/* for SWF font support - BT 11/01/03 */
+#endif
+#ifndef NOPS
+		if( Edev == 'p' ) PLGP_fontname( Estandard_font, font );
+#endif
+		}
+	    }
+
+	else if( strnicmp( at[i], "font=", 5 )==0 ) {
+		strcpy( font, &at[i][5] );
+		for( j = 0; font[j] != '\0'; j++ ) if( font[j] == '!' ) font[j] = ' '; /* embedded spaces represented as '!' */
 		}
 
-	else if( strnicmp( at[i], "font=", 5 )==0 ) strcpy( font, &at[i][5] );
 	else if( strnicmp( at[i], "color=", 6 )==0 ) strcpy( color, &at[i][6] );
 
-	else if( strnicmp( at[i], "align=", 6 )==0 ) *align = at[i][6];
+	else if( strnicmp( at[i], "align=", 6 )==0 ) *align = toupper(at[i][6]);
 	else if( strnicmp( at[i], "adjust=", 7 )==0 ) {
 		if( Eflip ) sscanf( &at[i][7],  "%lf,%lf", adjy, adjx );
 		else sscanf( &at[i][7],  "%lf,%lf", adjx, adjy );
@@ -69,13 +96,13 @@ for( i = 0; i < nt; i++ ) {
 		}
 	}
 if( Estandard_color[0] ) Ecolor( color ); /* 'if' added scg 7/12/01 */
-Efont( font );
+if( font[0] ) Efont( font );
 Etextsize( p ); 
 if( !GL_member( *align, "LCR?" )) {
-	Eerr( 72, "warning, align must be either L, C, or R", parmname );
+	Eerr( 72, "warning, align must be either Left, Center, or Right", parmname );
 	*align = '?';
 	}
-if( Using_cm ) { *adjx /= 2.54; *adjy /= 2.54; }
+if( PLS.usingcm ) { *adjx /= 2.54; *adjy /= 2.54; }
 return( 0 );
 }
 
@@ -83,7 +110,7 @@ return( 0 );
 /* LINEDET - parse a line details setting and execute it */
 /* attributes are: width=W style=N color=COLOR dashscale=S */
 /* ============================= */
-linedet( parmname, spec, defaultwidth )
+PL_linedet( parmname, spec, defaultwidth )
 char *parmname, *spec;
 double defaultwidth;
 {
@@ -104,6 +131,7 @@ ds = 1.0;
 strcpy( color, Estandard_color );
 
 /* parse the spec.. */
+strcpy( at[0], "" ); /* added scg 9/30/03 */
 nt = sscanf( spec, "%s %s %s %s %s", at[0], at[1], at[2], at[3], at[4] );
 
 if( stricmp( at[0], "yes" )==0 || 
@@ -132,7 +160,7 @@ return( 0 );
 /* SYMDET - parse a point symbol detail spec and build a symbol code  */
 /* shape=A style=S radius=R linewidth=W symcode= giffile=F gifscale=sx,sy */
 /* =================== */
-symdet( parmname, spec, symcode, radius )
+PL_symdet( parmname, spec, symcode, radius )
 char *parmname, *spec;
 char *symcode; /* new symbol code copied into here */
 double *radius;
@@ -164,6 +192,7 @@ doing_img = 0;
 sx = 1.0; sy = 1.0;
 
 /* parse the spec.. */
+strcpy( at[0], "" ); /* added scg 9/30/03 */
 nt = sscanf( spec, "%s %s %s %s %s", at[0], at[1], at[2], at[3], at[4] );
 
 if( stricmp( at[0], "yes" )==0 || 
@@ -201,7 +230,7 @@ for( i = 0; i < nt; i++ ) {
 	else if( strnicmp( at[i], "linecolor=", 10 )==0 ) strcpy( linecolor, &at[i][10] );
 	else if( strnicmp( at[i], "radius=", 7 )==0 ) {
 		*radius = atof( &at[i][7] );
-		if( Using_cm ) *radius /= 2.54; 
+		if( PLS.usingcm ) *radius /= 2.54; 
 		}
 	else if( strnicmp( at[i], "sym", 3 ) == 0 ) { /* return a specified sym code as is.. */
 		strcpy( symcode, at[i] );
@@ -233,13 +262,5 @@ if( !symcodedone ) sprintf( symcode, "sym%d%c%s", shape, style, fillcolor );
 Elinetype( 0, linewidth, 1.0 );
 Ecolor( linecolor );
 return( 0 );
-}
-
-
-/* ================= */
-double avg( g, h )
-double g, h;
-{
-return( (g + h) / 2.0 );
 }
 

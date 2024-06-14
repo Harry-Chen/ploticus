@@ -22,6 +22,8 @@ echo "--------- timely..." >> $OUT
 $PL -$MODE $OPTS  timely.htm 2>> $OUT
 echo "Note: some numbers should have appeared above..
 " >> $OUT
+echo "--------- clickmap_mouse... (should produce a server-side image map file..)" >> $OUT
+$PL -$MODE $OPTS -map clickmap_mouse.htm >> $OUT
 echo "--------- kmslide..." >> $OUT
 $PL -$MODE $OPTS  kmslide.htm 2>> $OUT
 echo "--------- propbars1..." >> $OUT
@@ -66,5 +68,15 @@ $PL -$MODE $OPTS  hitcount3.htm 2>> $OUT
 echo "Note: there should be 8 'warning: time is outside of window range' msgs above..
 " >> $OUT
 echo "20 plots done"
+echo "--------- lineplot20..." >> $OUT
+$PL -$MODE $OPTS  lineplot20.htm 2>> $OUT
+echo "--------- colorgrid..." >> $OUT
+$PL -$MODE $OPTS  colorgrid.htm 2>> $OUT
+echo "--------- heatmap3..." >> $OUT
+$PL -$MODE $OPTS  heatmap3.htm 2>> $OUT
+echo "--------- vector1..." >> $OUT
+$PL -$MODE $OPTS  vector1.htm 2>> $OUT
+echo "--------- windbarbs..." >> $OUT
+$PL -$MODE $OPTS  windbarbs.htm 2>> $OUT
 
-echo "Finished."
+echo "24 plots done.. Finished."

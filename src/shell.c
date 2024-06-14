@@ -11,12 +11,26 @@
 
 static FILE *shellfp = NULL;
 static char *fn[MAXITEMS];
-static char namebuf[SCRIPTLINELEN];
+static char namebuf[512]; /* was MAXRECORDLEN but seemed like overkill.. */
 static int nfn = 0;
 static int indelim = NL;
 static int nrows = 0;
+static int exitcode = 0;
+static int fconvertflag = 0;   /* added 4/17/03 scg */
 
 static int parsefields(), checkexit();
+
+
+/* =================================== */
+TDH_shell_initstatic()
+{
+shellfp = NULL;
+nfn = 0;
+indelim = NL;
+nrows = 0;
+exitcode = 0;
+return( 0 );
+}
 
 
 /* =================================== */
@@ -30,7 +44,9 @@ int stat;
 nfn = 0;
 nrows = 0;
 
+#ifndef WIN32
 strcat( command, "\necho \"%-exitcode-% $?\" \n" );
+#endif
 
 shellfp = popen( command, "r" );
 if( shellfp == NULL ) return( 1 );
@@ -91,14 +107,12 @@ checkexit( s, buf )
 char *s; /* return from an fgets */
 char *buf;
 {
-char exitcode[80];
 if( s == NULL ) {
 	pclose( shellfp ); shellfp = NULL;
 	return( 1 );
 	}
 if( strncmp( buf, "%-exitcode-% ", 13 )==0 ) {
-	sscanf( buf, "%*s %s", exitcode );
-	TDH_setvar( "_STATUS", exitcode );
+	sscanf( buf, "%*s %d", &exitcode );
 	pclose( shellfp ); shellfp = NULL;
 	return( 1 );
 	}
@@ -139,15 +153,13 @@ return( 0 );
 /* ========================================== */
 /* SHFUNCTIONS - TDH script access to shell commands */
 
-TDH_shfunctions( hash, name, arg, nargs, result, typ, data, recordid )
+TDH_shfunctions( hash, name, arg, nargs, result, typ )
 int hash;
 char *name;
 char *arg[];
 int nargs;
 char *result;
 int *typ;
-char data[][DATAMAXLEN+1];
-char *recordid;
 {
 char *f[MAXITEMS];
 char fname[50];
@@ -162,23 +174,23 @@ if( hash == 1006 ) { /* $shellrow() - fetch a row of results.
 
 	/* get next result row.. */
 	NEXTROW:
-	if( nargs > 1 ) indelim = WS; /* more than one var given.. guess whitespace delim */
+	if( nargs > 1 && indelim == NL ) indelim = WS; /* more than one var given.. guess whitespace delim */
         stat = TDH_shellresultrow( buf, f, &n, SCRIPTLINELEN );
         if( stat == 0 ) {
 		if( nfn > 0 ) { /* names already defined in a header.. */
-			for( i = 0; i < nfn; i++ ) TDH_setvalue( fn[i], f[i], data, recordid );
+			for( i = 0; i < nfn; i++ ) TDH_setvarcon( fn[i], f[i], fconvertflag );
 			}
 		else if( nargs > 0 && strcmp( arg[0], "#varvaluepair" )==0 ) { /* tag-value pair */
 			strcpy( fname, f[0] );
 			len = strlen( fname );
 			if( len == 0 ) goto NEXTROW; /* blank name.. skip.. */
 			if( fname[ len -1 ] == ':' ) fname[ len-1] = '\0';
-			TDH_setvalue( fname, f[1], data, recordid );
+			TDH_setvarcon( fname, f[1], fconvertflag );
 			} 
 		else if( nargs > 0 ) { /* names given as function arguments */
 			for( i = 0; i < nargs; i++ ) {
-				if( i >= n ) TDH_setvalue( arg[i], "", data, recordid );
-				else TDH_setvalue( arg[i], f[i], data, recordid );
+				if( i >= n ) TDH_setvar( arg[i], "" );
+				else TDH_setvarcon( arg[i], f[i], fconvertflag );
 				}
 			}
 		else 	{    /* error - no name(s) specified */
@@ -186,7 +198,7 @@ if( hash == 1006 ) { /* $shellrow() - fetch a row of results.
 			return( 0 );
 			}
                 }
-        else for( i = 0; i < nfn; i++ ) TDH_setvalue( fn[i], "", data, recordid );
+        else for( i = 0; i < nfn; i++ ) TDH_setvar( fn[i], "" );
 
 	/* check return status.. non-zero indicates no more rows.. */
 	sprintf( result, "%d", stat );
@@ -201,14 +213,15 @@ if( hash == 2569 ) { /* shellrowcount() - return number of rows presented or aff
 if( hash == 3084 ) { /* $shellstripchars( chars, varname1 .. varnamen ) - remove characters that could be dangerous
 		      in shell commands.  Chars arg may be omitted to use a standard set of characters.  */
 
+			/* DEPRECATED - this is now automatically done in value_subst when within #shell/#endshell */
 	int start;
 	if( isalpha( arg[0][0] )) start = 0;
 	else start = 1;
 	for( i = start; i < nargs; i++ ) {
-        	stat = TDH_getvalue( buf, arg[i], data, recordid );
+        	stat = TDH_getvar( buf, arg[i] );
 		if( start == 0 ) GL_deletechars( "\"'`$\\;", buf );
         	else GL_deletechars( arg[0], buf );
-        	stat = TDH_setvalue( arg[i], buf, data, recordid );
+        	stat = TDH_setvar( arg[i], buf );
 		}
 	sprintf( result, "0" );
 	return( 0 );
@@ -229,7 +242,19 @@ if( hash == 2686 ) { /* $shellfielddelim() */
 	return( 0 );
 	}
 
-return( err( 197, "unrecognized function", name )); /* not found */
+if( hash == 3953 ) { /* $shellfieldconvert() - specify conversions to perform on incoming fields */
+	if( strcmp( arg[0], "shsql" )==0 ) fconvertflag = 1;
+	else fconvertflag = 0;
+	sprintf( result, "0" );
+	return( 0 );
+	}
 
+if( hash == 2138 ) { /* $shellexitcode() */
+	sprintf( result, "%d", exitcode );
+	return( 0 );
+	}
+
+
+return( err( 197, "unrecognized function", name )); /* not found */
 
 }

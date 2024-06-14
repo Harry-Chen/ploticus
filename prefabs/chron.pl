@@ -7,23 +7,44 @@
 
 //// load chron-specific parameters
 #setifnotgiven y = ""
+#setifnotgiven y2 = ""
+#setifnotgiven y3 = ""
+#setifnotgiven y4 = ""
+#setifnotgiven color = orange
+#setifnotgiven color2 = blue
+#setifnotgiven color3 = red
+#setifnotgiven color4 = dullyellow
+#setifnotgiven name = "#usefname"
+#setifnotgiven name2 = "#usefname"
+#setifnotgiven name3 = "#usefname"
+#setifnotgiven name4 = "#usefname"
+#setifnotgiven linedet = "color=green"
+#setifnotgiven linedet2 = "color=red"
+#setifnotgiven linedet3 = "color=blue"
+#setifnotgiven linedet4 = "color=orange"
+
 #setifnotgiven datefmt = "mmddyy"
 #setifnotgiven mode = bars
 #setifnotgiven barwidth = ""
-#setifnotgiven color = orange
-#setifnotgiven outline = no
-#setifnotgiven linedet = "color=green"
+#setifnotgiven outline = "no"
+#setifnotgiven crossover = ""
+#setifnotgiven stack = no
 #setifnotgiven step = "no"
 #setifnotgiven tab = ""
 #setifnotgiven tabmode = "mid"
 #setifnotgiven xyears = ""
+#setifnotgiven xmargin = ""
 #setifnotgiven curve = ""
 #setifnotgiven order = "5"
 #setifnotgiven omitweekends = "no"
 #setifnotgiven unittype = date
 #setifnotgiven timefld = ""
-#setifnotgiven fill = ""
-#setifnotgiven gapmissing = ""
+#if @CM_UNITS = 1
+  #setifnotgiven legend = "min+1.2 min-1.2"
+#else
+  #setifnotgiven legend = "min+0.5 min-0.5"
+#endif
+
 #if @timefld != ""
   #set unittype = datetime
 #endif
@@ -34,7 +55,6 @@
   #setifnotgiven nearest = day
   #setifnotgiven stubfmt = "MMMdd"
 #endif
-#setifnotgiven crossover = ""
 
 //// load standard parameters..
 #setifnotgiven xinc = "7"
@@ -46,68 +66,31 @@ omitweekends: @omitweekends
 
 #musthave data
 
-//// read data file..  can't use chunk_read because this does special processing..
-#proc getdata
-file: @data
-#if @data = stdin
-  standardinput: yes
-#endif
-#if @delim != ""
-  delim: @delim
-#endif
-#if @header = yes
-  fieldnameheader: yes
-#endif
-#if @comment != ""
-  commentchar: @comment
-#endif
-select: @select
-#if @tab != ""
-  #if @y != ""
-    filter: ##set DT = $ref(@x)
-    #if @timefld != ""
-	      ##set TM = $ref(@timefld)
-              ##set DT = @DT "." @TM
-    #endif
-	    ##set VAL = $ref(@y)
-	    ##set ADJ = $dategroup( @tab, @tabmode, @@DT )
-	    ##print @@ADJ @@VAL
-
-    #set x = 1
-    #set y = 2
-  #else
-    filter: ##set DT = $ref(@x)
-    #if @timefld != ""
-	      ##set TM = $ref(@timefld)
-              ##set DT = @DT "." @TM
-    #endif
-	    ##set ADJ = $dategroup( @tab, @tabmode, @@DT )
-	    ##print @@ADJ
-
-    #set x = 1
-  #endif
-#endif
-#endproc
+//// read data file..  
+#set context = chron
+#include $chunk_read
 
 
-#musthave x 
-
-#if @NRECORDS = 0
-  #exit
-#endif
-
-#proc print
-label: Got @NRECORDS records, @NFIELDS fields per record.
-
+//// restrictions..
 #if @tab = "" && @y = ""
   #write stderr
     Error: 'y' is required unless 'tab' is being used.
-  #endwrite noclose
+  #endwrite 
   #exit
 #endif
 
+#if @tab != "" && @y2 != ""
+  #write stderr
+    only one curve is supported with tab=yes .. y2 (etc.) cancelled
+  #endwrite
+  #set y2 = ""
+#endif
+
+
 
 #if @tab != ""
+  // count or summate..
+
   #proc processdata
   action: count
   #if @y = ""
@@ -115,7 +98,7 @@ label: Got @NRECORDS records, @NFIELDS fields per record.
   #else 
     fields: @x @y
   #endif
-  //showresults: yes
+  // showresults: yes
   #endproc
 
   #set x = 1
@@ -123,19 +106,34 @@ label: Got @NRECORDS records, @NFIELDS fields per record.
 
 #endif
 
+// map xnearest -> nearest (nearest is historical)
+#if @xnearest = auto
+  #set xnearest = @nearest
+#endif
+
+#if @mode = bars
+  #set xmargin = 1
+#else
+  #set xmargin = 0
+#endif
 
 //// plot area
 #include $chunk_area
 // X range & Y range..
 #if @xrange = ""
-  xautorange: datafield=@x  nearest=@nearest
+  xautorange: datafield=@x  nearest=@xnearest  margin=@xmargin
 #else
   xrange: @xrange
 #endif
+#if @stack = yes
+  #set combomode = stack
+#else
+  #set combomode = normal
+#endif
 #if @yrange = ""
-  yautorange: datafields=@y incmult=2.0 
+  yautorange: datafields=@y,@y2,@y3,@y4 incmult=2.0  nearest=@ynearest  combomode=@combomode
 #elseif @yrange = "0"
-  yautorange: datafields=@y incmult=2.0 lowfix=0
+  yautorange: datafields=@y,@y2,@y3,@y4 incmult=2.0 lowfix=0 nearest=@ynearest  combomode=@combomode
 #else
   yrange: @yrange
 #endif
@@ -147,7 +145,10 @@ label: Got @NRECORDS records, @NFIELDS fields per record.
 
 //// X axis..
 #include $chunk_xaxis
-autoyears: @xyears
+#set autoyears = @xyears
+#ifspec autoyears
+#ifspec automonths
+#ifspec autodays
 
 
 //// title..
@@ -182,13 +183,26 @@ autoyears: @xyears
   outline: @outline
   #if @barwidth = line
     thinbarline: color=@color
-  #elseif @barwidth != ""
-    barwidth: @barwidth
+  #else
+    #ifspec barwidth
   #endif
-  #if @crossover != ""
-    crossover: @crossover
+  #ifspec crossover
+  #ifspec clickmapurl
+  #ifspec clickmaplabel
+  #ifspec ptselect select
+  
+  #set ncluster = 1
+  #if @y4 != ""
+    #set ncluster = 4
+  #elseif @y3 != ""
+    #set ncluster = 3
+  #elseif @y2 != ""
+    #set ncluster = 2
   #endif
-  clickmapurl: @clickmapurl
+  #if @ncluster > 1  && @stack != yes
+    cluster: 1 / @ncluster
+  #endif
+  #saveas B
 
 #elseif @mode = line
   #proc lineplot
@@ -196,13 +210,105 @@ autoyears: @xyears
   yfield: @y
   linedetails: @linedet
   stairstep: @step
-  #if @fill != ""
-    fill: @fill
-  #endif
-  #if @gapmissing != ""
-    gapmissing: @gapmissing
-  #endif
+  #ifspec ptselect select
+  #ifspec fill
+  #ifspec gapmissing
+  #saveas L
 #endif
+legendlabel: @name
+
+
+// optional 2nd curve or set of bars..
+#if @y2 != ""
+  #if @mode = bars
+    #proc bars
+    #clone B
+    lenfield: @y2
+    color: @color2
+    #if @barwidth = line
+      thinbarline: color=@color2
+    #else
+      #ifspec barwidth
+    #endif
+    #if @stack = yes
+      stackfields: *
+    #else
+      cluster: 2 / @ncluster
+    #endif
+    #ifspec ptselect2 select
+  #elseif @mode = line
+    #proc lineplot
+    #clone L
+    yfield: @y2
+    linedetails: @linedet2
+    #ifspec fill2 fill
+    #ifspec ptselect2 select
+  #endif
+  legendlabel: @name2 
+#endif
+    
+
+// optional 3d curve or set of bars..
+#if @y3 != ""
+  #if @mode = bars
+    #proc bars
+    #clone B
+    lenfield: @y3
+    color: @color3
+    #if @barwidth = line
+      thinbarline: color=@color3
+    #else
+      #ifspec barwidth
+    #endif
+    #if @stack = yes
+      stackfields: *
+    #else
+      cluster: 3 / @ncluster
+    #endif
+    #ifspec ptselect3 select
+  #elseif @mode = line
+    #proc lineplot
+    #clone L
+    yfield: @y3
+    linedetails: @linedet3
+    #ifspec fill3 fill
+    #ifspec ptselect3 select
+  #endif
+  legendlabel: @name3 
+#endif
+
+
+// optional 4th curve or set of bars..
+#if @y4 != ""
+  #if @mode = bars
+    #proc bars
+    #clone B
+    lenfield: @y4
+    color: @color4
+    #if @barwidth = line
+      thinbarline: color=@color4
+    #else
+      #ifspec barwidth
+    #endif
+    #if @stack = yes
+      stackfields: *
+    #else
+      cluster: 4 / @ncluster
+    #endif
+    #ifspec ptselect4 select
+
+  #elseif @mode = line
+    #proc lineplot
+    #clone L
+    yfield: @y4
+    linedetails: @linedet4
+    #ifspec fill4 fill
+    #ifspec ptselect4 select
+
+  #endif
+  legendlabel: @name4
+#endif
+
 
 //// crossover line..
 #if @crossover != ""
@@ -212,7 +318,21 @@ autoyears: @xyears
 #endif
 
 
+// do legend
+#if @tab = yes && @header = yes && @name = "#usefname"
+  // field names not valid after tabulate filter..
+  #set header = no
+#endif
+#if @name != "#usefname" || @header = yes
+    #proc legend
+    location: @legend
+    #ifspec legendfmt format
+    #ifspec legendsep sep
+#endif
+
+
 //// user post-plot include
 #if @include2 != ""
   #include @include2
 #endif
+

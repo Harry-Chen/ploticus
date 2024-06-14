@@ -70,7 +70,7 @@ while( 1 ) {
 	}
 
 
-if( printstring[0] != '\0' && Nrecords[Dsel] < 1 ) 
+if( printstring[0] != '\0' && Nrecords < 1 ) 
 	Eerr( 17, "Warning: no data has been read yet w/ proc getdata", "" );
 
 
@@ -81,23 +81,23 @@ if( outfile[0] != '\0' ) {
 	outfp = fopen( outfile, outmode );
 	if( outfp == NULL ) {
 		Eerr( 7259, "cannot open outfile", outfile );
-		outfp = Diagfp;
+		outfp = PLS.diagfp;
 		dontclose = 1;
 		}
 	}
 else 	{
-	outfp = Diagfp;
+	outfp = PLS.diagfp;
 	dontclose = 1;
 	}
 
 if( label[0] != '\0' ) fprintf( outfp, "%s\n", label );
 
 nrecords = 0;
-for( i = 0; i < Nrecords[Dsel]; i++ ) {
+for( i = 0; i < Nrecords; i++ ) {
 	do_select( selectex, i, &result );
 	if( result == 1 ) {
 		if( printstring[0] != '\0' ) {
-			do_subst( buf, printstring, i );
+			do_subst( buf, printstring, i, NORMAL );
 			fprintf( outfp, "%s\n", buf );
 			}
 		nrecords++;

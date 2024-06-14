@@ -16,15 +16,25 @@ extern char *TDH_dat, *TDH_recid;
 /* the following is used by $tmpfilename.. */
 extern char TDH_tmpdir[];
 extern char TDH_scriptdir[];
-#if TDH_DB == 1
-extern char DB_datapath[];
+#if TDH_DB == 2
+extern char SHSQL_projdir[];
 #endif
 
 static int evalflag;
 static char Sep[5] = ","; /* for args that are commalists */
+static int textsaved = 0;
 static int eval_function();
 
 char *GL_getok();
+
+/* =============================================== */
+TDH_functioncall_initstatic()
+{
+strcpy( Sep, "," );
+textsaved = 0;
+return( 0 );
+}
+
 
 /* =============================================== */
 /* FUNCTION_CALL - parse function name, and any arguments, then call
@@ -94,6 +104,7 @@ int i, j;
 char tok[256];
 char *s;
 int hash, externalcall;
+char fmt[40];
 
 /* divert custom functions.. */
 if( name[0] == '$' && name[1] == '$' ) goto CUSTOM;
@@ -105,8 +116,7 @@ for( i = 1; s[i] != '\0'; i++ ) hash += ( i * (s[i] - 80) );
 externalcall = 0;
 
 
-/* use the following to check new custom functions.. */
-/* fprintf( stderr, "function: %s   hash: %d\n", s, hash ); */
+/* use ~/scg/wordhash to check new function names.. */
 
 *typ = ALPHA; /* fallback */
 
@@ -150,12 +160,21 @@ if( hash < 1000 ) {
 		return( 0 );
 		}
 
-	if( hash == 270 ) {  /* $math(what,f) - return math function of f */
-		double fabs(), sqrt(), fmod();
-		if( strcmp( arg[0], "abs" )==0 ) sprintf( result, "%g", fabs( atof( arg[1] ) ) );
-		else if( strcmp( arg[0], "mod" )==0 ) sprintf( result, "%g", fmod( atof( arg[1] ), atof( arg[2] ) ) );
-		/* else if( strcmp( arg[0], "sqrt" )==0 ) sprintf( result, "%g", sqrt( atof( arg[1] ) ) ); */
-		/* others may be added here... */
+	if( hash == 270 ) {  /* $math(what,f,[g],[fmt]) - return math function of f */
+		/* mag and pow added scg 9/30/03 */
+		double fabs(), sqrt(), exp(), log(), fmod(), pow();
+		if( nargs == 4 ) strcpy( fmt, arg[3] );
+		else if( nargs == 3 && arg[3][0] == '%' ) strcpy( fmt, arg[2] );
+		else strcpy( fmt, "%g" );
+		if( strcmp( arg[0], "mag" )==0 ) sprintf( result, fmt, atof( arg[1] ) * pow( 10.0, atof( arg[2] ) ) );
+		else if( strcmp( arg[0], "abs" )==0 ) sprintf( result, fmt, fabs( atof( arg[1] ) ) );
+		else if( strcmp( arg[0], "mod" )==0 ) sprintf( result, fmt, fmod( atof( arg[1] ), atof( arg[2] ) ) );
+		else if( strcmp( arg[0], "div" )==0 ) sprintf( result, "%d", atoi( arg[1] ) / atoi( arg[2] ) );
+		else if( strcmp( arg[0], "sqrt" )==0 ) sprintf( result, fmt, sqrt( atof( arg[1] ) ) );
+		else if( strcmp( arg[0], "exp-1" )==0 ) sprintf( result, fmt, exp( atof( arg[1] ) )-1.0 );
+		else if( strcmp( arg[0], "log+1" )==0 ) sprintf( result, fmt, log( atof( arg[1] ) )+1.0 );
+		else if( strcmp( arg[0], "pow" )==0 ) sprintf( result, fmt, pow( atof( arg[1] ), atof( arg[2] ) ) );
+		/* future: others may be added here... might want a format arg like $arith() uses.. */
 		*typ = NUMBER;
 		return( 0 );
 		}
@@ -168,6 +187,7 @@ if( hash < 1000 ) {
 		accum = 0.0;
 		curop = '+';
 		s = arg[0];
+		strcpy( fmt, arg[1] );
 		s[ strlen( s ) + 1 ] = '\0'; /* add extra null so loop terminates correctly */
 		if( s[0] == '-' ) tok[0] = '-'; /* check for unary minus on first arg */
 		else tok[0] = '+';
@@ -193,7 +213,8 @@ if( hash < 1000 ) {
 			else tok[0] = '+';
 			i++;
 			}
-		sprintf( result, "%g", accum );
+		if( nargs > 1 ) sprintf( result, fmt, accum );
+		else sprintf( result, "%g", accum );
 		*typ = NUMBER;
 		return( 0 );
 		}
@@ -234,6 +255,12 @@ if( hash < 1000 ) {
 
 	if( hash == 492 ) goto EXT_DATE;  /* julian() */
 
+#ifndef WIN32
+	if( hash == 497 ) {  /* $whoami() - return a string containing euid,egid */
+		sprintf( result, "%d,%d", geteuid(), getegid() );
+		return( 0 );
+		}
+#endif
 	}
 
   else if( hash < 600 ) {
@@ -281,6 +308,11 @@ if( hash < 1000 ) {
 	if( hash == 525 ) goto ARITH;   /* $arithl() */
 	if( hash == 537 ) goto LEN;	/* $strlen() - same as $len() */
 	if( hash == 540 ) goto EXT_DATE; /* $dateadd() */
+	if( hash == 552 ) { /* $strcmp(s,t) - return difference of s and t */
+		sprintf( result, "%d", strcmp( arg[0], arg[1] ) );
+		*typ = NUMBER;
+		return( 0 );
+		}
 
 	if( hash == 569 ) { 	/*  $getenv(envvarname) - get the contents of shell environment variable */
 		char *getenv(), *s;
@@ -324,12 +356,32 @@ if( hash < 1000 ) {
 
   else if( hash < 1000 ) {
 
+	if( hash == 827 ) {  /* $stripws(s) - strip off leading and trailing white space */
+		int state;
+		for( i = 0, j = 0, state = 0; arg[0][i] != '\0'; i++ ) {
+			if( state == 0 && isspace( arg[0][i] ) ) continue;
+			else	{
+				result[j++] = arg[0][i];
+				state = 1;
+				}
+			}
+		result[j] = '\0';
+		/* now strip off trailing blanks.. */
+		for( i = j; i >= 0; i-- ) {
+			if( !isspace( result[i] ) && result[i] != '\0' ) {
+				result[i+1] = '\0';
+				break;
+				}
+			}
+		return( 0 );
+		}
+
 	if( hash == 881 ) {  /* $isnumber(s) - result is 1 if argument is a valid number, 0 if not. */
 		if( name[1] == 'y' ) goto EXT_DATE; /* $yearsold() */
+		*typ = NUMBER;
 		if(  arg[0][0] == '\0' ) { sprintf( result, "0" ) ; return( 0 ); }
 		stat = GL_goodnum( arg[0], &i );
 		sprintf( result, "%d", stat );
-		*typ = NUMBER;
 		return( 0 );
 		}
 
@@ -356,6 +408,8 @@ if( hash < 1000 ) {
 		}
 
 	if( hash == 992 ) goto EXT_DATE; /* $datevalid() */
+
+	if( hash == 997 ) goto EXT_SQL; /* $sqlerror() */
 	}
   }
 else {
@@ -389,6 +443,17 @@ else {
 		}
 
 	if( hash == 1053 ) goto EXT_DATE; /* $jultodate() */
+
+	if( hash == 1071 ) {  /* $errormode( mode )   mode may be either "stdout" or "stderr" */
+		TDH_errmode( arg[0] );
+		return( 0 );
+		}
+
+	if( hash == 1085 ) {  /* $textsaved()  */
+		if( textsaved ) strcpy( result, "1" );
+		else strcpy( result, "" );
+		return( 0 );
+		}
 
 	if( hash == 1151 ) { /* $substring(s,from,nchar) - result is a substring, e.g. $substring(abcde,3,99) --> cde */
 		GL_substring( result, arg[0], atoi( arg[1] ), atoi( arg[2] ) );
@@ -430,12 +495,14 @@ else {
 	if( hash == 1348 ) goto EXT_TIME; /* $formattime() */
 	if( hash == 1352 ) goto EXT_DATE; /* $setdatefmt() */
 
+#ifdef CUT
 	if( hash == 1380 ) { /* $fuzzymatch(s,t,tightness) */
 		stat = GL_fuzzymatch( arg[0], arg[1], strlen(arg[1]), atoi( arg[2] ) );
 		sprintf( result, "%d", stat );
 		*typ = NUMBER;
 		return( 0 );
 		}
+#endif
 	
 	if( hash == 1397 ) goto EXT_TIME; /* $settimefmt() */
 
@@ -472,10 +539,12 @@ else {
 		FILE *testfp;
 		if( strcmp( arg[0], "/" )==0 ) sprintf( tok, "%s", arg[1] );
 		else if( strcmp( arg[0], "scriptdir" )==0 ) sprintf( tok, "%s%c%s", TDH_scriptdir, PATH_SLASH, arg[1] );
-#if TDH_DB == 1
-		else if( strcmp( arg[0], "datadir" )==0 ) sprintf( tok, "%s%c%s", DB_datapath, PATH_SLASH, arg[1] );
+#if TDH_DB == 2
+		else if( strcmp( arg[0], "datadir" )==0 ) sprintf( tok, "%s%cdata%c%s", 
+								SHSQL_projdir, PATH_SLASH, PATH_SLASH, arg[1] );
 #endif
 		else if( strcmp( arg[0], "tmpdir" )==0 ) sprintf( tok, "%s%c%s", TDH_tmpdir, PATH_SLASH, arg[1] );
+		else return( err( 7923, "fileexists: unrecognized dir", arg[0] ) );
 		testfp = fopen( tok, "r" );
 		if( testfp == NULL ) strcpy( result, "0" );
 		else	{
@@ -534,12 +603,19 @@ else {
 		return( 0 );
 		}
 
+	if( hash == 1788 ) { /* $deletemember( mem, list ) - delete member(s) matching mem from list.
+							mem may contain wild cards */
+		GL_deletemember( arg[0], arg[1], result );
+		return( 0 );
+		}
+
 	if( hash == 1882 ) goto EXT_SQL;  /* $sqlrowcount() */
 
 	if( hash == 1983 ) goto EXT_DATE; /* $setdateparms() */
 	}
 
   else	{
+	if( hash == 2138 ) goto EXT_SH; /* $shellexitcode() */
 	if( hash == 2155 ) goto EXT_CHKSUM; /* $checksumnext() */
 	if( hash == 2182 ) goto EXT_CHKSUM; /* $checksumvalid() */
 
@@ -559,14 +635,20 @@ else {
 
 	if( hash == 2831 ) goto EXT_SQL;  /* $sqlstripprefix() */
 	if( hash == 3084 ) goto EXT_SH;  /* $shellstripchars() */
+	if( hash == 3953 ) goto EXT_SH;  /* $shellfieldconvert() */
 
 	}
   }
 
 /* if we reach here, we have a custom function.. */
 CUSTOM:
-if( name[1] == '$' ) stat = custom_function( &name[2], arg, nargs, result, typ );
-else stat = custom_function( &name[1], arg, nargs, result, typ );
+#ifdef PLOTICUS
+  if( name[1] == '$' ) stat = PL_custom_function( &name[2], arg, nargs, result, typ );
+  else stat = PL_custom_function( &name[1], arg, nargs, result, typ );
+#else
+  if( name[1] == '$' ) stat = custom_function( &name[2], arg, nargs, result, typ );
+  else stat = custom_function( &name[1], arg, nargs, result, typ );
+#endif
 if( stat != 0 ) err( 1602, "unrecognized function", name );
 
 
@@ -581,15 +663,18 @@ return( DT_timefunctions( hash, name, arg, nargs, result, typ ) );
 
 EXT_SQL:
 #ifdef TDH_DB
-return( TDH_dbfunctions( hash, name, arg, nargs, result, typ, TDH_dat, TDH_recid ) );
+return( TDH_dbfunctions( hash, name, arg, nargs, result, typ ) );
 #endif
 
 EXT_SH:
 return( TDH_shfunctions( hash, name, arg, nargs, result, typ, TDH_dat, TDH_recid ) );
 
 EXT_CHKSUM:
-return( GL_checksum_functions( hash, name, arg, nargs, result, typ ) );
-
+#ifndef PLOTICUS
+  return( GL_checksum_functions( hash, name, arg, nargs, result, typ ) );
+#else
+  return( -1 );
+#endif
 
 }
 
@@ -599,5 +684,14 @@ char sepchar;
 {
 Sep[0] = sepchar;
 Sep[1] = '\0';
+return( 0 );
+}
+
+/* ====================== */
+TDH_function_set( what, val )
+char *what;
+int val;
+{
+if( strcmp( what, "textsaved" )==0 ) textsaved = val;
 return( 0 );
 }

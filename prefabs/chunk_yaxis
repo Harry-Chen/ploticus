@@ -1,8 +1,8 @@
+/// chunk included by prefabs to do standard Y axis...
 #proc yaxis
 stubs: inc @yinc
 stubcull: yes
-label: @ylbl
-labeldetails: @ylbldet
-#if @ygrid != ""
-  grid: @ygrid
-#endif
+#ifspec ylbl label
+#ifspec ystubfmt stubformat
+#ifspec ylbldet labeldetails
+#ifspec ygrid grid

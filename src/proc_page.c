@@ -24,6 +24,7 @@ char titledet[80];
 int dobackground;
 int dopagebox;
 char outfilename[ MAXPATH ];
+char mapfilename[ MAXPATH ];
 int pagesizegiven;
 char devval[20];
 double scalex, scaley;
@@ -32,15 +33,15 @@ double sx, sy;
 TDH_errprog( "pl proc page" );
 
 /* initialize */
-landscapemode = Landscape; /* from command line */
+landscapemode = PLS.landscape; /* from command line */
 strcpy( titledet, "normal" );
 strcpy( outfilename, "" );
-strcpy( Bigbuf, "" );
+strcpy( mapfilename, "" );
+strcpy( PL_bigbuf, "" );
 dobackground = 1;
 dopagebox = 1;
-if( GL_member( Device, "ges" )) 
-	dopagebox = 0; /* we don't want bounding box to include entire page for gif , eps */
-if( Device == 'e' ) dobackground = 0; /* added scg 9/27/99 */
+if( GL_member( PLS.device, "gesf" )) dopagebox = 0; /* bounding box shouldn't include entire page for gif , eps */
+if( PLS.device == 'e' ) dobackground = 0; 
 pagesizegiven = 0;
 strcpy( devval, "" );
 scalex = scaley = 1.0;
@@ -56,16 +57,17 @@ while( 1 ) {
 
 
 	/* if an attribute is given on command line, it overrides anything here.. */
-	if( GL_slmember( attr, Cmdlineparms )) continue;
-	if( stricmp( attr, "landscape" )==0 && GL_slmember( "portrait", Cmdlineparms )) continue;
-	if( stricmp( attr, "outfilename" )==0 && GL_slmember( "o", Cmdlineparms )) continue;
+	if( GL_slmember( attr, PLS.cmdlineparms )) continue;
+	if( stricmp( attr, "landscape" )==0 && GL_slmember( "portrait", PLS.cmdlineparms )) continue;
+	if( stricmp( attr, "outfilename" )==0 && GL_slmember( "o", PLS.cmdlineparms )) continue;
 
 	if( stricmp( attr, "landscape" )==0 ) {
 		if( strnicmp( val, YESANS, 1 )==0 ) landscapemode = 1;
 		else landscapemode = 0;
 		}
-	else if( stricmp( attr, "title" )==0 ) getmultiline( "title", lineval, MAXBIGBUF, Bigbuf );
+	else if( stricmp( attr, "title" )==0 ) getmultiline( "title", lineval, MAXBIGBUF, PL_bigbuf );
 	else if( stricmp( attr, "titledetails" )==0 ) strcpy( titledet, lineval );
+	else if( stricmp( attr, "outlabel" )==0 ) Esetoutlabel( lineval );
 	else if( stricmp( attr, "color" )==0 ) strcpy( Estandard_color, val );
 	else if( stricmp( attr, "scale" )==0 ) {
 		nt = sscanf( val, "%lf %lf", &scalex, &scaley );
@@ -80,7 +82,7 @@ while( 1 ) {
 	else if( stricmp( attr, "textsize" )==0 ) {
 		Estandard_textsize = atoi( val );
 		}
-	else if( stricmp( attr, "font" )==0 ) strcpy( Estandard_font, val );
+	else if( stricmp( attr, "font" )==0 ) strcpy( Estandard_font, lineval );
 	else if( stricmp( attr, "dobackground" )==0 ) {
 		if( strnicmp( val, YESANS, 1 )==0 ) dobackground = 1;
 		else dobackground = 0;
@@ -98,26 +100,21 @@ while( 1 ) {
 		nt = sscanf( lineval, "%lf %lf %lf %lf", &cropx1, &cropy1, &cropx2, &cropy2 );
 		if( nt != 4 ) Eerr( 2707, "usage: crop x1 y1 x2 y2 OR croprel left bottom right top", "" );
 		else {
-			if( Using_cm ) { cropx1 /= 2.54; cropy1 /= 2.54; cropx2 /= 2.54; cropy2 /= 2.54; }
+			if( PLS.usingcm ) { cropx1 /= 2.54; cropy1 /= 2.54; cropx2 /= 2.54; cropy2 /= 2.54; }
 			if( strcmp( attr, "croprel" )==0 ) Especifycrop( 2, cropx1, cropy1, cropx2, cropy2 ); /* relative to tight */
 			else Especifycrop( 1, cropx1, cropy1, cropx2, cropy2 ); /* absolute */
 			}
 		}
 
 	else if( stricmp( attr, "pagesize" )==0 ) {
-		getcoords( "pagesize", lineval, &Winw, &Winh );
+		getcoords( "pagesize", lineval, &(PLS.winw), &(PLS.winh) );
 		pagesizegiven = 1;
 		}
 	else if( stricmp( attr, "outfilename" )==0 ) strcpy( outfilename, val );
-	else if( stricmp( attr, "clickmapdefault" )==0 ) defaultmapurl( val );
-	else if( stricmp( attr, "numbernotation" )==0 ) {
-                if( stricmp( val, "us" )==0 ) Bignumspacer = ',';
-                else if( stricmp( val, "euro" )==0 ) Bignumspacer = '.';
-		else Bignumspacer = '\0';
-		}
+	else if( stricmp( attr, "mapfilename" )==0 ) strcpy( mapfilename, val );
+	else if( stricmp( attr, "clickmapdefault" )==0 ) clickmap_setdefaulturl( val );
 	else Eerr( 1, "page attribute not recognized", attr );
 	}
-
 
 
 
@@ -125,43 +122,49 @@ while( 1 ) {
 /* -------------------------- */
 /* Page break logic.. */
 /* -------------------------- */
-if( Npages == 0 ) {
+if( PLS.npages == 0 ) {
 
 	/* following 3 lines moved here from above - also replicated below.  scg 10/31/00 */
 	if( scalex != 1.0 || scaley != 1.0 ) Esetglobalscale( scalex, scaley );
 	Egetglobalscale( &sx, &sy );
-	if( pagesizegiven ) Esetsize( Winw * sx, Winh * sy, Winx, Winy );
-	else if( landscapemode && !Winsizegiven ) Esetsize( 11.0, 8.5, Winx, Winy ); /* landscape */
+	if( pagesizegiven ) Esetsize( PLS.winw * sx, PLS.winh * sy, PLS.winx, PLS.winy );
+	else if( landscapemode && !PLS.winsizegiven ) Esetsize( 11.0, 8.5, PLS.winx, PLS.winy ); /* landscape */
 
 	/* initialize and give specified output file name .. */
 	if( outfilename[0] != '\0' ) Esetoutfilename( outfilename );
-	Einit( Inputfile, Device );
+	stat = Einit( PLS.device );
+	if( stat ) return( stat );
 
 	/* set paper orientation */
 	if( landscapemode ) Epaper( 1 );
+
+	/* clickmap file */
+	if( mapfilename[0] != '\0' ) strcpy( PLS.mapfile, mapfilename );
 	}
 
 
-else if( Npages > 0 ) {
+else if( PLS.npages > 0 ) {
 
-	if( GL_member( Device, "ges" )) {
+	if( GL_member( PLS.device, "gesf" )) {
 
 		/* finish up current page before moving on to next one.. */
 		Eshow();
-		Eendoffile();
+		stat = Eendoffile();
+		if( stat ) return( stat );
 
 		/* now set file name for next page.. */
 		if( outfilename[0] != '\0' ) Esetoutfilename( outfilename );
 		else	{
-			makeoutfilename( Cmdline_outfile, buf, Device, Npages+1 );
+			makeoutfilename( PLS.outfile, buf, PLS.device, (PLS.npages)+1 );
+			if( PLS.debug ) fprintf( PLS.diagfp, "Setting output file name to %s\n", PLS.outfile );
 			Esetoutfilename( buf );
 			}
 
-		if( Clickmap ) {
+		if( PLS.clickmap ) {
 			/* initialize a new click map file.. */
-			char mapfile[ MAXPATH ];
-			makeoutfilename( Cmdline_outfile, mapfile, 'm', Npages+1);
-			mapfilename( mapfile, 10000, Debug );
+			if( mapfilename[0] != '\0' ) strcpy( PLS.mapfile, mapfilename );
+			else makeoutfilename( PLS.outfile, PLS.mapfile, 'm', (PLS.npages)+1 );
+			PL_clickmap_init();
 			}
 
 
@@ -169,22 +172,23 @@ else if( Npages > 0 ) {
 		/* following 3 lines copied here from above - scg 10/31/00 */
 		if( scalex != 1.0 || scaley != 1.0 ) Esetglobalscale( scalex, scaley );
 		Egetglobalscale( &sx, &sy ); 
-		if( pagesizegiven ) Esetsize( Winw * sx, Winh * sy, Winx, Winy );
-		else if( landscapemode && !Winsizegiven ) Esetsize( 11.0, 8.5, Winx, Winy ); /* landscape */
+		if( pagesizegiven ) Esetsize( PLS.winw * sx, PLS.winh * sy, PLS.winx, PLS.winy );
+		else if( landscapemode && !PLS.winsizegiven ) Esetsize( 11.0, 8.5, PLS.winx, PLS.winy ); /* landscape */
 
 		/* initialize next page.. */
-		Einit( Inputfile, Device );
+		stat = Einit( PLS.device );
+		if( stat ) return( stat );
 		}
 
-	else if ( Device == 'x' ) do_x_button( "More.." );
+	else if ( PLS.device == 'x' ) PL_do_x_button( "More.." );
 
-	else if ( GL_member( Device, "pc" ) ) {
+	else if ( GL_member( PLS.device, "pc" ) ) {
 		Eprint();
 		if( landscapemode ) Epaper( 1 ); /* added scg 2/29/00 */
 		Elinetype( 0, 0.6, 1.0 );   /* added scg 9/20/99 */
 		}
 	}
-Npages++;
+(PLS.npages)++;
 
 
 /* -------------------------- */
@@ -194,31 +198,22 @@ Npages++;
 
 /* do background.. */
 /* if( dopagebox ) Ecblock( 0.0, 0.0, EWinx, EWiny, Ecurbkcolor, 0 ); */ /* does update bb */
-if( dopagebox ) Ecblock( 0.0, 0.0, Winw, Winh, Ecurbkcolor, 0 ); /* does update bb */
+if( dopagebox ) Ecblock( 0.0, 0.0, PLS.winw, PLS.winh, Ecurbkcolor, 0 ); /* does update bb */
 else if( dobackground ) {
 	/* EPS color=transparent - best to do nothing.. */
-        if( Device == 'e' && strcmp( Ecurbkcolor, "transparent" )==0 ) ;
+        if( PLS.device == 'e' && strcmp( Ecurbkcolor, "transparent" )==0 ) ;
 
         else Eclr(); /* doesn't update bb */
 	}
 
-if( Bigbuf[0] != '\0' ) {
+if( PL_bigbuf[0] != '\0' ) {
 	textdet( "titledetails", titledet, &align, &adjx, &adjy, 3, "B" );
 	if( align == '?' ) align = 'C';
-	measuretext( Bigbuf, &nlines, &maxlen );
-	if( align == 'L' ) {
-		/* Emov( 1.0 + adjx, (EWiny-0.8) + adjy ); */ 	/* these changes due to winsize being influenced by -scale */
-		Emov( 1.0 + adjx, (Winh-0.8) + adjy );
-		}
-	else if ( align == 'C' ) {
-        	/* Emov( (EWinx / 2.0 ) + adjx, (EWiny-0.8) + adjy ); */
-        	Emov( (Winw / 2.0 ) + adjx, (Winh-0.8) + adjy );
-		}
-	else if( align == 'R' ) {
-		/* Emov( (EWinx-1.0) + adjx, (EWiny-0.8) + adjy ); */
-		Emov( (Winw-1.0) + adjx, (Winh-0.8) + adjy );
-		}
-	Edotext( Bigbuf, align );
+	measuretext( PL_bigbuf, &nlines, &maxlen );
+	if( align == 'L' ) Emov( 1.0 + adjx, (PLS.winh-0.8) + adjy );
+	else if ( align == 'C' ) Emov( (PLS.winw / 2.0 ) + adjx, (PLS.winh-0.8) + adjy );
+	else if( align == 'R' ) Emov( (PLS.winw-1.0) + adjx, (PLS.winh-0.8) + adjy );
+	Edotext( PL_bigbuf, align );
 	}
 
 return( 0 );

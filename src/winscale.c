@@ -1,13 +1,13 @@
 /* ploticus data display engine.  Software, documentation, and examples.  
  * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
  * Covered by GPL; see the file ./Copyright for details. */
-
+#include <stdio.h>
 
 static double xscale, yscale;
 static int window_height, window_width;
 
 /* ====================== set up user coords */
-Esetwinscale( width, height, x_max, y_max )
+PLG_setwinscale( width, height, x_max, y_max )
 int width, height;
 double x_max, y_max;
 {
@@ -17,7 +17,7 @@ window_height = height;
 window_width = width;
 }
 /* ==================== scale in x to window size */
-Exsca( f )
+PLG_xsca( f )
 double f;
 {
 int iout;
@@ -26,7 +26,8 @@ return( iout );
 }
 
 /* ==================== inverse of xsca */
-double Exsca_inv( i )
+double 
+PLG_xsca_inv( i )
 int i;
 {
 double out;
@@ -35,7 +36,7 @@ return( out );
 }
 
 /* ==================== scale in y to window size */
-Eysca( f )
+PLG_ysca( f )
 double f;
 {
 int iout;
@@ -44,7 +45,8 @@ return( iout );
 }
 
 /* ===================== inverse of ysca */
-double Eysca_inv( i )
+double 
+PLG_ysca_inv( i )
 int i;
 {
 double out;

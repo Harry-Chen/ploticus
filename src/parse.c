@@ -5,10 +5,9 @@
 /* Parse data into fields by assigning char * pointers to beginning
    of each field, and inserting nulls into the data buffer. 
 */
+#include "pl.h"
+/* #define Eerr(a,b,c)  TDH_err(a,b,c) */
 
-#include <stdio.h>
-#include <ctype.h>
-#define Eerr(a,b,c)  TDH_err(a,b,c)
 #define FILLCHAR 3
 #define SPACECHAR 4
 #define SPACE 's'
@@ -16,8 +15,6 @@
 #define TAB 't'
 #define COMMA 'c'
 
-extern FILE *Errfp;
-extern int Debug;
 
 /* Notes:
    spacequoted allows "" to represent null field, and "John Adams" as a field
@@ -28,7 +25,7 @@ extern int Debug;
 
 /* ============================================ */
 
-parsedata( data, delimmethod, comsym, field, maxd, nr, nf, nd )
+PL_parsedata( data, delimmethod, comsym, field, maxd, nr, nf, nd )
 unsigned char *data; 	/* for LOCALE scg 3/15/00 */
 char *delimmethod;	/* one of: space (whitespace w/ quotes), whitespace (no quotes), tab, comma */
 char *comsym;		/* user symbol signifying beginning of comment */
@@ -40,8 +37,9 @@ int *nf; 		/* number of fields per record - returned - but if this is passed as 
 int *nd; 		/* total number of fields */
 {
 
-int i, j, ip, state, start, quotes, qon, firstline, reqnf, nfields, nrows, cslen, nt;
+int i, j, ip, state, start, quotes, qon, firstline, reqnf, nfields, nrows, cslen, nt, lastbreak;
 char delim, sepchar, tok[255];
+int datalen; /* added scg 9/30/03 */
 
 
 *nr = 0;
@@ -61,9 +59,10 @@ else if( delim == COMMA ) { sepchar = ','; quotes = 1; }
 
 cslen = strlen( comsym );
 
+datalen = strlen( data ); /* scg 9/30/03 */
 
 /* do quote conversion if necessary .. */
-if( quotes ) for( i = 0, qon = 0; data[i] != '\0'; i++ ) {
+if( quotes ) for( i = 0, qon = 0; i < datalen; i++ ) {
 	if( data[i] == '\n' ) qon = 0; /* BOL - clean slate */
 	if( data[i] == '"' ) {
 		if( !qon ) qon = 1; 
@@ -82,12 +81,17 @@ if( quotes ) for( i = 0, qon = 0; data[i] != '\0'; i++ ) {
 
 
 /* now go thru data buffer one line at a time..  */
-firstline = 1;  nrows = 0;
-for( i = 0, start = 0; ; i++ ) {
+firstline = 1;  nrows = 0; lastbreak = -1;
 
-	if( data[i] == '\0' ) break;
+/* condition of datalen+1 needed because the 'data' null terminator must be processed - scg 9/30/03 */
+for( i = 0, start = 0; i < (datalen+1); i++ ) {
 
-	if( data[i] == '\n' ) {
+	if( data[i] == '\n' || data[i] == '\0' ) {
+
+		if( i - lastbreak <= 1 ) break; /* don't do anything where we have newline followed immed. by null .. */
+		lastbreak = i;
+
+
 		/* process a line.. current line is from data[start] to null terminator.. */
 
 		data[i] = '\0';
@@ -150,16 +154,6 @@ for( i = 0, start = 0; ; i++ ) {
 *nf = reqnf;
 *nr = nrows;
 *nd = ip;
-
-#ifdef HOLD
-fprintf( stderr, "-------\n" );
-for( i = 0; i < datalen; i++ ) {
-	if( data[i] < 3 ) fprintf( stderr, "[%d]", data[i] );
-	else fprintf( stderr, "%c", data[i] );
-	}
-fprintf( stderr, "-------\n" );
-for( i = 0; i < ip; i++ ) fprintf( stderr, "%d. %s$\n", i, field[i] );
-#endif
 
 return( 0 );
 }

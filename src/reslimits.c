@@ -12,7 +12,7 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 
-reslimits( type, value )
+TDH_reslimits( type, value )
 char *type;
 int value;
 {
@@ -22,7 +22,7 @@ rlp = &rl;
 rlp->rlim_cur = (rlim_t)value;
 rlp->rlim_max = (rlim_t)RLIM_INFINITY;
 if( type[0] == 'c' ) setrlimit( RLIMIT_CPU, rlp );
-else if( type[0] == 'f' ) setrlimit( RLIMIT_FSIZE, rlp );
+/* else if( type[0] == 'f' ) setrlimit( RLIMIT_FSIZE, rlp ); */
 
 return( 0 );
 }

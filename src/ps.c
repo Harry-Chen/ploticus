@@ -15,9 +15,6 @@
 
 			Added trailer generation.
 
-			Added EPstdout to ensure that stdout doesn't get
-			fclosed.
-
 	16 Apr 96 scg, mmn  Incorporated the special characters feature 
 			written by Marvin Newhouse.
 
@@ -25,13 +22,15 @@
 
 	27 Sep 01 scg   Added ISO char set encoding, as contributed by 
 			Johan Hedin <johan@eCare.se>  May be turned off
-			by setting Latin1 = 0.
+			by setting ps_latin1 = 0.
 
 			
 */
+#ifndef NOPS
 
 #include <stdio.h>
 #include "special_chars.h"
+
 #define Eerr(a,b,c)  TDH_err(a,b,c)
 
 #define YES 1
@@ -43,200 +42,209 @@
 #define PAGWIDTH 600;
 #define stricmp(a,b) strcasecmp(a,b)
 
-static int EPdevice;		/* 'p' = monochrome, 'c' = color, 'e' = eps (color) */
-static int EPorient;		/* paper orientation (-1 = not done) */
-static int EPorgx, EPorgy;	/* location of origin on page */
-static int EPtheta;		/* current rotation for page orientation */
-static char EPfont[50];		/* current font name */
-static int EPchdir;	 	/* char direction in degrees */
-static int EPcurpointsz;		/* current char size in points */
-static int EPspecialpointsz;		/* current char size in pts for special chars */
-static int EPstdout;		/* 1 if Epf is stdout */
-static int EPpaginate = 1;
+static int ps_device;		/* 'p' = monochrome, 'c' = color, 'e' = eps (color) */
+static int ps_orient;		/* paper orientation (-1 = not done) */
+static int ps_orgx, ps_orgy;	/* location of origin on page */
+static int ps_theta;		/* current rotation for page orientation */
+static char ps_font[50];		/* current font name */
+static int ps_chdir;	 	/* char direction in degrees */
+static int ps_curpointsz;		/* current char size in points */
+static int ps_specialpointsz;		/* current char size in pts for special chars */
+static int ps_stdout;		/* 1 if Epf is stdout */
+static int ps_paginate = 1;
+static long ps_bbloc;
 double atof();
-static FILE *Epf;
+static FILE *ps_fp;
+static int ps_latin1 = 1;		/* use latin1 character encoding */
 
-static int Latin1 = 1;		/* use latin1 character encoding */
+static int ps_print_special();
+static int ps_set_specialsz();
 
 /* ============================= */
-EPSsetup( name, dev, f )    
+PLGP_initstatic()
+{
+ps_paginate = 1;
+ps_latin1 = 1;
+
+return( 0 );
+}
+
+
+/* ============================= */
+PLGP_setup( name, dev, f )    
 char *name; /* arbitrary name */
 char dev;  /* 'p' = monochrome   'c' = color   'e' = eps */
 char *f;  /* file to put code in */
 {  
 char filename[256]; 
 
-/* set globals */
+/* initialize.. */
 if( dev != 'e' && dev != 'p' && dev != 'c' ) dev = 'p';
-EPdevice = dev;
-EPorient = -1;
-strcpy( EPfont, "/Helvetica" );
-EPtheta = 0;
-EPchdir = 0;
-EPcurpointsz = 10;
-if( dev == 'e' ) EPpaginate = 0;
+ps_device = dev;
+ps_orient = -1;
+strcpy( ps_font, "/Helvetica" );
+ps_theta = 0;
+ps_chdir = 0;
+ps_curpointsz = 10;
+if( dev == 'e' ) ps_paginate = 0;
 
 
-EPstdout = 0;
-if( stricmp( f, "stdout" )==0 ) {
-	Epf = stdout;
-	EPstdout = 1;
-	}
+ps_stdout = 0;
+if( stricmp( f, "stdout" )==0 ) { ps_fp = stdout; ps_stdout = 1; }
 else if(  f[0] == '\0' ) {
-	if( dev == 'e' ) {
-		strcpy( filename, "out.eps" );
-		}
-	else	{
-		Epf = stdout;
-		EPstdout = 1;
-		}
+	if( dev == 'e' ) strcpy( filename, "out.eps" );
+	else	{ ps_fp = stdout; ps_stdout = 1; }
 	}
 else strcpy( filename, f );
 
 
-if( !EPstdout ) {
-	Epf = fopen( filename, "w" ); /* output file */
-	if( Epf == NULL ) {
-		Eerr( 12030, "Cannot open postscript output file", filename );
-		exit(1);
-		}
+if( !ps_stdout ) {
+	ps_fp = fopen( filename, "w" ); /* output file */
+	if( ps_fp == NULL ) return( Eerr( 12030, "Cannot open postscript output file", filename ) );
+#ifdef UNIX
+	fchmod( fileno( ps_fp ), 00644 );
+#endif
 	}
 
 /* print header */
-fprintf( Epf,  "%%!PS-Adobe-3.0 EPSF-3.0\n" );
-fprintf( Epf,  "%%%%Title: %s\n", name );
-fprintf( Epf,  "%%%%Creator: ploticus (ploticus.sourceforge.net)\n" );
-if( EPpaginate ) fprintf( Epf,  "%%%%Pages: (atend)\n" );
-if( EPdevice == 'e' ) fprintf( Epf,  "%%%%BoundingBox: (atend)\n" );
-fprintf( Epf,  "%%%%EndComments\n\n\n" );
-fprintf( Epf,  "%%%%BeginProlog\n" );
+fprintf( ps_fp,  "%%!PS-Adobe-3.0 EPSF-3.0\n" );
+fprintf( ps_fp,  "%%%%Title: %s\n", name );
+fprintf( ps_fp,  "%%%%Creator: ploticus (ploticus.sourceforge.net)\n" );
+if( ps_paginate ) fprintf( ps_fp,  "%%%%Pages: (atend)\n" );
+if( ps_device == 'e' ) {
+	if( !ps_stdout ) ps_bbloc = ftell( ps_fp );
+	fprintf( ps_fp,  "%%%%BoundingBox: (atend)                                                            \n" );
+	}
+	
+fprintf( ps_fp,  "%%%%EndComments\n\n\n" );
+fprintf( ps_fp,  "%%%%BeginProlog\n" );
 
 	
-/* set up macros (mainly to reduce output verbosity) */
-fprintf( Epf,  "userdict begin\n" );
-fprintf( Epf,  "/sset\n" );
-fprintf( Epf,  "{ translate rotate } def \n" );
-fprintf( Epf,  "/sclr\n" );
-fprintf( Epf,  "{ rotate translate } def \n" );
-fprintf( Epf,  "/mv { moveto } def\n" );
-fprintf( Epf,  "/np { newpath } def\n" );
-fprintf( Epf,  "/ln { lineto } def\n" );
-fprintf( Epf,  "/st { stroke } def\n" ); 
-fprintf( Epf,  "/sh { show } def\n" );
-fprintf( Epf,  "/cent { stringwidth pop sub 2 div 0 rmoveto } def\n" );
-fprintf( Epf,  "/rjust { stringwidth pop sub 0 rmoveto } def\n" );
+/* set up macros to reduce output verbosity */
+fprintf( ps_fp,  "userdict begin\n" );
+fprintf( ps_fp,  "/sset\n" );
+fprintf( ps_fp,  "{ translate rotate } def \n" );
+fprintf( ps_fp,  "/sclr\n" );
+fprintf( ps_fp,  "{ rotate translate } def \n" );
+fprintf( ps_fp,  "/mv { moveto } def\n" );
+fprintf( ps_fp,  "/np { newpath } def\n" );
+fprintf( ps_fp,  "/ln { lineto } def\n" );
+fprintf( ps_fp,  "/st { stroke } def\n" ); 
+fprintf( ps_fp,  "/sh { show } def\n" );
+fprintf( ps_fp,  "/cent { stringwidth pop sub 2 div 0 rmoveto } def\n" );
+fprintf( ps_fp,  "/rjust { stringwidth pop sub 0 rmoveto } def\n" );
 
-if( Latin1 ) {
+if( ps_latin1 ) {
   /* Iso latin 1 encoding from gnuplot, as contributed by Johan Hedin <johan@eCare.se>  - added 9/27/01 */
-  fprintf( Epf,  "/reencodeISO {\n");
-  fprintf( Epf,  "dup dup findfont dup length dict begin\n");
-  fprintf( Epf,  "{ 1 index /FID ne { def }{ pop pop } ifelse } forall\n");
-  fprintf( Epf,  "currentdict /CharStrings known {\n");
-  fprintf( Epf,  "        CharStrings /Idieresis known {\n");
-  fprintf( Epf,  "                /Encoding ISOLatin1Encoding def } if\n");
-  fprintf( Epf,  "} if\n");
-  fprintf( Epf,  "currentdict end definefont\n");
-  fprintf( Epf,  "} def\n");
-  fprintf( Epf,  "/ISOLatin1Encoding [\n");
-  fprintf( Epf,  "/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef\n");
-  fprintf( Epf,  "/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef\n");
-  fprintf( Epf,  "/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef\n");
-  fprintf( Epf,  "/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef\n");
-  fprintf( Epf,  "/space/exclam/quotedbl/numbersign/dollar/percent/ampersand/quoteright\n");
-  fprintf( Epf,  "/parenleft/parenright/asterisk/plus/comma/minus/period/slash\n");
-  fprintf( Epf,  "/zero/one/two/three/four/five/six/seven/eight/nine/colon/semicolon\n");
-  fprintf( Epf,  "/less/equal/greater/question/at/A/B/C/D/E/F/G/H/I/J/K/L/M/N\n");
-  fprintf( Epf,  "/O/P/Q/R/S/T/U/V/W/X/Y/Z/bracketleft/backslash/bracketright\n");
-  fprintf( Epf,  "/asciicircum/underscore/quoteleft/a/b/c/d/e/f/g/h/i/j/k/l/m\n");
-  fprintf( Epf,  "/n/o/p/q/r/s/t/u/v/w/x/y/z/braceleft/bar/braceright/asciitilde\n");
-  fprintf( Epf,  "/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef\n");
-  fprintf( Epf,  "/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef\n");
-  fprintf( Epf,  "/.notdef/dotlessi/grave/acute/circumflex/tilde/macron/breve\n");
-  fprintf( Epf,  "/dotaccent/dieresis/.notdef/ring/cedilla/.notdef/hungarumlaut\n");
-  fprintf( Epf,  "/ogonek/caron/space/exclamdown/cent/sterling/currency/yen/brokenbar\n");
-  fprintf( Epf,  "/section/dieresis/copyright/ordfeminine/guillemotleft/logicalnot\n");
-  fprintf( Epf,  "/hyphen/registered/macron/degree/plusminus/twosuperior/threesuperior\n");
-  fprintf( Epf,  "/acute/mu/paragraph/periodcentered/cedilla/onesuperior/ordmasculine\n");
-  fprintf( Epf,  "/guillemotright/onequarter/onehalf/threequarters/questiondown\n");
-  fprintf( Epf,  "/Agrave/Aacute/Acircumflex/Atilde/Adieresis/Aring/AE/Ccedilla\n");
-  fprintf( Epf,  "/Egrave/Eacute/Ecircumflex/Edieresis/Igrave/Iacute/Icircumflex\n");
-  fprintf( Epf,  "/Idieresis/Eth/Ntilde/Ograve/Oacute/Ocircumflex/Otilde/Odieresis\n");
-  fprintf( Epf,  "/multiply/Oslash/Ugrave/Uacute/Ucircumflex/Udieresis/Yacute\n");
-  fprintf( Epf,  "/Thorn/germandbls/agrave/aacute/acircumflex/atilde/adieresis\n");
-  fprintf( Epf,  "/aring/ae/ccedilla/egrave/eacute/ecircumflex/edieresis/igrave\n");
-  fprintf( Epf,  "/iacute/icircumflex/idieresis/eth/ntilde/ograve/oacute/ocircumflex\n");
-  fprintf( Epf,  "/otilde/odieresis/divide/oslash/ugrave/uacute/ucircumflex/udieresis\n");
-  fprintf( Epf,  "/yacute/thorn/ydieresis\n");
-  fprintf( Epf,  "] def\n");
+  fprintf( ps_fp,  "/reencodeISO {\n");
+  fprintf( ps_fp,  "dup dup findfont dup length dict begin\n");
+  fprintf( ps_fp,  "{ 1 index /FID ne { def }{ pop pop } ifelse } forall\n");
+  fprintf( ps_fp,  "currentdict /CharStrings known {\n");
+  fprintf( ps_fp,  "        CharStrings /Idieresis known {\n");
+  fprintf( ps_fp,  "                /Encoding ISOLatin1Encoding def } if\n");
+  fprintf( ps_fp,  "} if\n");
+  fprintf( ps_fp,  "currentdict end definefont\n");
+  fprintf( ps_fp,  "} def\n");
+  fprintf( ps_fp,  "/ISOLatin1Encoding [\n");
+  fprintf( ps_fp,  "/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef\n");
+  fprintf( ps_fp,  "/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef\n");
+  fprintf( ps_fp,  "/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef\n");
+  fprintf( ps_fp,  "/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef\n");
+  fprintf( ps_fp,  "/space/exclam/quotedbl/numbersign/dollar/percent/ampersand/quoteright\n");
+  fprintf( ps_fp,  "/parenleft/parenright/asterisk/plus/comma/minus/period/slash\n");
+  fprintf( ps_fp,  "/zero/one/two/three/four/five/six/seven/eight/nine/colon/semicolon\n");
+  fprintf( ps_fp,  "/less/equal/greater/question/at/A/B/C/D/E/F/G/H/I/J/K/L/M/N\n");
+  fprintf( ps_fp,  "/O/P/Q/R/S/T/U/V/W/X/Y/Z/bracketleft/backslash/bracketright\n");
+  fprintf( ps_fp,  "/asciicircum/underscore/quoteleft/a/b/c/d/e/f/g/h/i/j/k/l/m\n");
+  fprintf( ps_fp,  "/n/o/p/q/r/s/t/u/v/w/x/y/z/braceleft/bar/braceright/asciitilde\n");
+  fprintf( ps_fp,  "/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef\n");
+  fprintf( ps_fp,  "/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef/.notdef\n");
+  fprintf( ps_fp,  "/.notdef/dotlessi/grave/acute/circumflex/tilde/macron/breve\n");
+  fprintf( ps_fp,  "/dotaccent/dieresis/.notdef/ring/cedilla/.notdef/hungarumlaut\n");
+  fprintf( ps_fp,  "/ogonek/caron/space/exclamdown/cent/sterling/currency/yen/brokenbar\n");
+  fprintf( ps_fp,  "/section/dieresis/copyright/ordfeminine/guillemotleft/logicalnot\n");
+  fprintf( ps_fp,  "/hyphen/registered/macron/degree/plusminus/twosuperior/threesuperior\n");
+  fprintf( ps_fp,  "/acute/mu/paragraph/periodcentered/cedilla/onesuperior/ordmasculine\n");
+  fprintf( ps_fp,  "/guillemotright/onequarter/onehalf/threequarters/questiondown\n");
+  fprintf( ps_fp,  "/Agrave/Aacute/Acircumflex/Atilde/Adieresis/Aring/AE/Ccedilla\n");
+  fprintf( ps_fp,  "/Egrave/Eacute/Ecircumflex/Edieresis/Igrave/Iacute/Icircumflex\n");
+  fprintf( ps_fp,  "/Idieresis/Eth/Ntilde/Ograve/Oacute/Ocircumflex/Otilde/Odieresis\n");
+  fprintf( ps_fp,  "/multiply/Oslash/Ugrave/Uacute/Ucircumflex/Udieresis/Yacute\n");
+  fprintf( ps_fp,  "/Thorn/germandbls/agrave/aacute/acircumflex/atilde/adieresis\n");
+  fprintf( ps_fp,  "/aring/ae/ccedilla/egrave/eacute/ecircumflex/edieresis/igrave\n");
+  fprintf( ps_fp,  "/iacute/icircumflex/idieresis/eth/ntilde/ograve/oacute/ocircumflex\n");
+  fprintf( ps_fp,  "/otilde/odieresis/divide/oslash/ugrave/uacute/ucircumflex/udieresis\n");
+  fprintf( ps_fp,  "/yacute/thorn/ydieresis\n");
+  fprintf( ps_fp,  "] def\n");
   }
 
 
 /* load default font */
-if( Latin1 ) fprintf( Epf,  "%s reencodeISO\n", EPfont ); /* scg 9/27/01 */
-else fprintf( Epf,  "%s findfont\n", EPfont );
+if( ps_latin1 ) fprintf( ps_fp,  "%s reencodeISO\n", ps_font ); /* scg 9/27/01 */
+else fprintf( ps_fp,  "%s findfont\n", ps_font );
 
-fprintf( Epf,  "%d scalefont setfont\n", (int) EPcurpointsz );
-fprintf( Epf,  "%%%%EndProlog\n" ); 
-}
+fprintf( ps_fp,  "%d scalefont setfont\n", (int) ps_curpointsz );
+fprintf( ps_fp,  "%%%%EndProlog\n" ); 
 
-/* ============================= */
-EPSclose()
-{
-if( EPstdout ) return( 0 ); /* we don't want to close stdout */
-if( Epf != NULL )fclose( Epf );
+return( 0 );
 }
 
 
 /* ============================= */
-EPSmoveto( x, y )
+PLGP_moveto( x, y )
 double x, y;
 {
 
 /* convert to p.s. units (1/72 inch) */
 x = ( x * 72.0 ) +MARG_X; y = ( y * 72.0 ) + MARG_Y; 
-fprintf( Epf,  "np\n%-5.2f %-5.2f mv\n", x, y ); 
+fprintf( ps_fp,  "np\n%-5.2f %-5.2f mv\n", x, y ); 
+return( 0 );
 }
 
 
 /* ============================= */
-EPSlineto( x, y )
+PLGP_lineto( x, y )
 double x, y;
 {
 /* convert to p.s. units */
 x = ( x * 72 ) +MARG_X; 
 y = ( y * 72 ) +MARG_Y; 
-fprintf( Epf,  "%-5.2f %-5.2f ln\n", x, y );
+fprintf( ps_fp,  "%-5.2f %-5.2f ln\n", x, y );
+return( 0 );
 }
 
 /* ============================== */
-EPSclosepath()
+PLGP_closepath()
 {
-fprintf( Epf, "closepath\n" );
+fprintf( ps_fp, "closepath\n" );
+return( 0 );
 }
 
 /* ============================== */
-EPSstroke( )
+PLGP_stroke( )
 {
-fprintf( Epf, "st\n" );
+fprintf( ps_fp, "st\n" );
+return( 0 );
 }
 
 
 /* ============================= */
-EPSpath( x, y )
+PLGP_path( x, y )
 double x, y;
 {
 /* convert to p.s. units */
 x = ( x * 72 ) +MARG_X; y = ( y * 72 ) + MARG_Y; 
-fprintf( Epf,  "%-5.2f %-5.2f ln\n",  x, y );
+fprintf( ps_fp,  "%-5.2f %-5.2f ln\n",  x, y );
+return( 0 );
 }
 
 /* ============================= */
 /* set current color for text and lines */
-EPScolor( color )
+PLGP_color( color )
 char *color;
 {
 int i, n;
-double r, g, b, Ergb_to_gray();
+double r, g, b, PLG_rgb_to_gray();
 int slen;
 
 /* color parameter can be in any of these forms:
@@ -254,36 +262,36 @@ for( i = 0, slen = strlen( color ); i < slen; i++ ) {
 if( strncmp( color, "rgb", 3 )==0 ) {
 	n = sscanf( color, "%*s %lf %lf %lf", &r, &g, &b );
 	if( n != 3 ) { Eerr( 12031, "Invalid color", color ); return(1); }
-	if( EPdevice == 'p' ) fprintf( Epf, "%g setgray\n", Ergb_to_gray( r, g, b ) );
-	else fprintf( Epf, "%g %g %g setrgbcolor\n", r, g, b );
+	if( ps_device == 'p' ) fprintf( ps_fp, "%g setgray\n", PLG_rgb_to_gray( r, g, b ) );
+	else fprintf( ps_fp, "%g %g %g setrgbcolor\n", r, g, b );
 	}
 else if( strncmp( color, "hsb", 3 )==0 ) {
 	n = sscanf( color, "%*s %lf %lf %lf", &r, &g, &b );
 	if( n != 3 ) { Eerr( 12031, "Invalid color", color ); return(1); }
-	if( EPdevice == 'p' ) fprintf( Epf, "%g setgray\n", Ergb_to_gray( r, g, b ) );
-	else fprintf( Epf, "%g %g %g sethsbcolor\n", r, g, b );
+	if( ps_device == 'p' ) fprintf( ps_fp, "%g setgray\n", PLG_rgb_to_gray( r, g, b ) );
+	else fprintf( ps_fp, "%g %g %g sethsbcolor\n", r, g, b );
 	}
 
 else if( strncmp( color, "cmyk", 4 )==0 ) { /* added scg 10/26/00 */
 	double c, m, y, k;
 	n = sscanf( color, "%*s %lf %lf %lf %lf", &c, &m, &y, &k );
 	if( n != 4 ) { Eerr( 12031, "Invalid color", color ); return(1); }
-	if( EPdevice == 'p' ) fprintf( Epf, "%g setgray\n", Ergb_to_gray( r, g, b ) );
-	else fprintf( Epf, "%g %g %g %g setcmykcolor\n", c, m, y, k );
+	if( ps_device == 'p' ) fprintf( ps_fp, "%g setgray\n", PLG_rgb_to_gray( r, g, b ) );
+	else fprintf( ps_fp, "%g %g %g %g setcmykcolor\n", c, m, y, k );
 	}
 
 else if( strncmp( color, "gray", 4 )==0 || strncmp( color, "grey", 4 )==0 ) {
 	n = sscanf( color, "%*s %lf", &r );
 	if( n != 1 ) { Eerr( 12031, "Invalid color", color ); return(1); }
-	fprintf( Epf, "%g setgray\n", r );
+	fprintf( ps_fp, "%g setgray\n", r );
 	}
 else if( GL_goodnum( color, &i ) ) {
-	fprintf( Epf, "%s setgray\n", color );
+	fprintf( ps_fp, "%s setgray\n", color );
 	}
 else	{	/* color names */
-	Ecolorname_to_rgb( color, &r, &g, &b );
-	if( EPdevice == 'p' ) fprintf( Epf, "%g setgray\n", Ergb_to_gray( r, g, b ) );
-	else fprintf( Epf, "%g %g %g setrgbcolor\n", r, g, b );
+	PLG_colorname_to_rgb( color, &r, &g, &b );
+	if( ps_device == 'p' ) fprintf( ps_fp, "%g setgray\n", PLG_rgb_to_gray( r, g, b ) );
+	else fprintf( ps_fp, "%g %g %g setrgbcolor\n", r, g, b );
 	}
 return( 0 );
 }
@@ -291,34 +299,34 @@ return( 0 );
 
 /* ============================== */
 /* fill current path with current color */
-EPSfill( )
+PLGP_fill( )
 {
-fprintf( Epf,  "closepath\nfill\n" );
-/* fprintf( Epf, "fill\n" ); */
+fprintf( ps_fp,  "closepath\nfill\n" );
+return( 0 );
 }
 
 /* ============================== */
-EPSpaper( i )
+PLGP_paper( i )
 int i;
 {
 
-if( EPdevice == 'e' ) return( 1 ); /* paper orientation has no meaning with EPS */
+if( ps_device == 'e' ) return( 1 ); /* paper orientation has no meaning with EPS */
 
 if( i == 1 ) { /* handle landscape mode-- it's put into portrait mode before beginning each page */
-	EPorgx = PAGWIDTH; 
-	EPorgy = 0; 
-	EPtheta = 90; 
-	fprintf( Epf,  "%d %d %d sset\n", EPtheta, EPorgx, EPorgy );
+	ps_orgx = PAGWIDTH; 
+	ps_orgy = 0; 
+	ps_theta = 90; 
+	fprintf( ps_fp,  "%d %d %d sset\n", ps_theta, ps_orgx, ps_orgy );
 	} 
-EPorient = (int) i;
+ps_orient = (int) i;
 }
 
 
 /* ================================= */
-EPStext( com, x, y, s, w )
+PLGP_text( com, x, y, s, w )
 char com;
 double x, y;
-char s[];
+char *s;
 double w;
 {
 char str[400];
@@ -327,12 +335,12 @@ int i, j, k, slen;
 x = (x*72)+MARG_X;  y = (y*72)+MARG_Y; w *= 72;
 
 /* if text direction is not normal do a rotate then move.. */
-if( EPchdir != 0 ) fprintf( Epf,  "%d %-5.2f %-5.2f sset 0 0 mv\n", EPchdir, x, y ); 
+if( ps_chdir != 0 ) fprintf( ps_fp,  "%d %-5.2f %-5.2f sset 0 0 mv\n", ps_chdir, x, y ); 
 /* normal direction-- do a move.. */
-else fprintf( Epf,  "%-5.2f %-5.2f mv ", x, y );
+else fprintf( ps_fp,  "%-5.2f %-5.2f mv ", x, y );
 
 if( GL_member( com, "CJ" )) {
-	strip_ws( s );
+	GL_strip_ws( s );
 
 	/* escape out parens and substitute special char requests with 'm' for centering */
 	for( i = 0, j = 0, slen = strlen( s ); i < slen; i++ ) {
@@ -345,64 +353,64 @@ if( GL_member( com, "CJ" )) {
 	str[j] = '\0';
 	
 	/* centered text */
-	if( com == 'C' ) fprintf( Epf,  "%-5.2f (%s) cent ", w, str ); 
-	else if( com == 'J' ) fprintf( Epf,  "%-5.2f (%s) rjust ", w, str );
+	if( com == 'C' ) fprintf( ps_fp,  "%-5.2f (%s) cent ", w, str ); 
+	else if( com == 'J' ) fprintf( ps_fp,  "%-5.2f (%s) rjust ", w, str );
 	}
 
-EPspecialpointsz = EPcurpointsz;
+ps_specialpointsz = ps_curpointsz;
 
 /* print the string */
-fprintf( Epf, "\n(" );
+fprintf( ps_fp, "\n(" );
 for( i = 0, slen = strlen( s ); i < slen; i++ ) {
-	if( s[i] == '(' || s[i] == ')' ) { fprintf( Epf, "\\%c", s[i]); }
-	else if( s[i] == '\\' && s[i+1] == 's' ) { EPSset_specialsz( &s[i+2] ); i += 3; }
-	else if( s[i] == '\\' && s[i+1] == '(' ) { EPSprint_special( &s[i+2] ); i += 3; }
-	else if( s[i] == '\\' ) fprintf( Epf, "\\%c", s[i] ); /* scg 1-6-97 */
-	else { fprintf( Epf, "%c", s[i] ); }
+	if( s[i] == '(' || s[i] == ')' ) { fprintf( ps_fp, "\\%c", s[i]); }
+	else if( s[i] == '\\' && s[i+1] == 's' ) { ps_set_specialsz( &s[i+2] ); i += 3; }
+	else if( s[i] == '\\' && s[i+1] == '(' ) { ps_print_special( &s[i+2] ); i += 3; }
+	else if( s[i] == '\\' ) fprintf( ps_fp, "\\%c", s[i] ); /* scg 1-6-97 */
+	else { fprintf( ps_fp, "%c", s[i] ); }
 	}
-fprintf( Epf, ") sh\n" );
+fprintf( ps_fp, ") sh\n" );
 
-if( EPchdir != 0 ) fprintf( Epf,  "%-5.2f %-5.2f %d sclr\n", -x, -y, -EPchdir ); /* restore */
+if( ps_chdir != 0 ) fprintf( ps_fp,  "%-5.2f %-5.2f %d sclr\n", -x, -y, -ps_chdir ); /* restore */
 }
 
 
 /* ================================= */
-EPSpointsize( p )
+PLGP_pointsize( p )
 int p;
 {
-EPcurpointsz = p;
-if( Latin1 ) fprintf( Epf,  "%s reencodeISO\n", EPfont ); /* scg 09/27/01 */
-else fprintf( Epf,  "%s findfont\n", EPfont ); 
+ps_curpointsz = p;
+if( ps_latin1 ) fprintf( ps_fp,  "%s reencodeISO\n", ps_font ); /* scg 09/27/01 */
+else fprintf( ps_fp,  "%s findfont\n", ps_font ); 
 
-fprintf( Epf,  "%d scalefont\nsetfont\n", p );
+fprintf( ps_fp,  "%d scalefont\nsetfont\n", p );
 }
 
 
 /* ================================== */
-EPSfont( f )
-char f[];
+PLGP_font( f )
+char *f;
 {
-if( strcmp( f, EPfont ) != 0 ) {
-	strcpy( EPfont, f );
+if( strcmp( f, ps_font ) != 0 ) {
+	strcpy( ps_font, f );
 
-	if( Latin1 ) fprintf( Epf,  "%s reencodeISO\n", EPfont ); /* scg 9/27/01 */
-	else fprintf( Epf,  "%s findfont\n", EPfont ); 
+	if( ps_latin1 ) fprintf( ps_fp,  "%s reencodeISO\n", ps_font ); /* scg 9/27/01 */
+	else fprintf( ps_fp,  "%s findfont\n", ps_font ); 
 
-	fprintf( Epf,  "%d scalefont setfont\n", EPcurpointsz );
+	fprintf( ps_fp,  "%d scalefont setfont\n", ps_curpointsz );
 	}
 }
 
 /* ================================== */
-EPSchardir( t )
+PLGP_chardir( t )
 int t;
 {
-EPchdir = t;
+ps_chdir = t;
 }
 
 
 /* ================================== */
-EPSlinetype( s, x, y )
-char s[];
+PLGP_linetype( s, x, y )
+char *s;
 double x, y;
 {
 /* X = line width;  Y = dash pattern magnification (0.1 to 10)
@@ -414,8 +422,8 @@ static int dash[10][6]= { {0,0,0,0,0,0}, {1,1}, {3,1}, {5,1}, {2,1,1,1}, {4,1,1,
 			  {2,1,1,1,1,1}, {4,1,1,1,1,1}, {6,1,1,1,1,1} };
 int ltype, i;
 
-fprintf( Epf,  "%3.1f setlinewidth\n", x );
-if(  s[0] == '\0' || strcmp( s, "0" )==0 ) fprintf( Epf,  "[] 0 setdash\n" );
+fprintf( ps_fp,  "%3.1f setlinewidth\n", x );
+if(  s[0] == '\0' || strcmp( s, "0" )==0 ) fprintf( ps_fp,  "[] 0 setdash\n" );
 else 	{
 	if( strlen( s ) > 1 ) { 
 		ltype = 0; 
@@ -423,35 +431,34 @@ else 	{
 			&dash[0][3], &dash[0][4], &dash[0][5] );
 		}
 	else ltype = atoi( s );
-	fprintf( Epf,  "[" );
+	fprintf( ps_fp,  "[" );
 	for( i = 0; i < 6; i++ ) 
-		if( dash[ ltype ][ i ] > 0 ) fprintf( Epf,  "%3.1f ", dash[ ltype ][ i ] * y );
-	fprintf( Epf,  "] 0 setdash\n" );
+		if( dash[ ltype ][ i ] > 0 ) fprintf( ps_fp,  "%3.1f ", dash[ ltype ][ i ] * y );
+	fprintf( ps_fp,  "] 0 setdash\n" );
 	}
 }
 	
 
 /* =================================== */
 
-EPSshow()
+PLGP_show()
 {
-if( EPorient == 1 )fprintf( Epf,  "%d %d %d sclr\n", -EPorgx, -EPorgy, -EPtheta ); /* restore rotation */
-EPorient = -1; 
-fprintf( Epf, "showpage\n" );
+if( ps_orient == 1 )fprintf( ps_fp,  "%d %d %d sclr\n", -ps_orgx, -ps_orgy, -ps_theta ); /* restore rotation */
+ps_orient = -1; 
+if( ps_device != 'e' ) fprintf( ps_fp, "showpage\n" ); /* condition added scg 9/26/03 */
 }
 
 /* =================================== */
 
-EPSnewpage( p )
+PLGP_newpage( p )
 int p;
 {
-if( EPpaginate )fprintf( Epf, "\n\n\n%%%%Page: %d %d\n", p, p );
+if( ps_paginate )fprintf( ps_fp, "\n\n\n%%%%Page: %d %d\n", p, p );
 }
 
 /* =================================== */
 
-/* EPStrailer( int pp, double x1, double y1, double x2, double y2 ) */
-EPStrailer( pp, x1, y1, x2, y2 )
+PLGP_trailer( pp, x1, y1, x2, y2 )
 int pp; 
 double x1, y1, x2, y2;
 {
@@ -461,17 +468,23 @@ double x1, y1, x2, y2;
  * if( y2 < 0.0 ) y2 = 0.0;
  */ /* negative values in bounding box should be ok - scg 1/22/01 */
 
-fprintf( Epf, "end\n" );
-fprintf( Epf, "\n\n\n%%%%Trailer\n" );
-if( EPpaginate )fprintf( Epf, "%%%%Pages: %d\n", pp );
-if( EPdevice == 'e' ) {
-	fprintf( Epf, "%%%%BoundingBox: %5.2f %5.2f %5.2f %5.2f\n",
+fprintf( ps_fp, "end\n" );
+if( ps_paginate ) {
+	fprintf( ps_fp, "\n\n\n%%%%Trailer\n" ); /* condition added scg 9/26/03 */
+	fprintf( ps_fp, "%%%%Pages: %d\n", pp );
+	}
+if( ps_device == 'e' ) {
+	if( !ps_stdout ) {
+		/* fprintf( ps_fp, "%%%%EOF\n" ); */ /* commented out scg 9/26/03 */
+		fseek( ps_fp, ps_bbloc, SEEK_SET ); /* go back to write BoundingBox near top of file.. */
+		}
+	fprintf( ps_fp, "%%%%BoundingBox: %.0f %.0f %.0f %.0f\n", 
   	    ( x1 * 72 ) + MARG_X, ( y1 * 72 ) + MARG_Y, ( x2 * 72 ) + MARG_X, ( y2 * 72 ) + MARG_Y );
 	}
 
-fprintf( Epf, "%%%%EOF\n" );
-if( EPstdout ) return( 0 ); /* we don't want to close stdout */
-if( Epf != NULL )fclose( Epf );
+if( ps_device != 'e' || ps_stdout ) fprintf( ps_fp, "%%%%EOF\n" );
+if( ps_stdout ) return( 0 ); /* we don't want to close stdout */
+if( ps_fp != NULL ) fclose( ps_fp );
 return( 0 );
 }
 
@@ -483,8 +496,9 @@ return( 0 );
 /* ================================= */
 /* ================================= */
 
-EPSset_specialsz( s )
-char s[];
+static int
+ps_set_specialsz( s )
+char *s;
 {
 int i;
 char tmp[5];
@@ -496,8 +510,8 @@ char tmp[5];
 if( GL_member(s[0],"+-0123456789") && GL_member(s[1],"0123456789") )
 	{
 	tmp[0] = s[0]; tmp[1] = s[1]; tmp[2] = '\0';
-	if( GL_member(s[0], "+-") ) EPspecialpointsz = EPcurpointsz + atoi( tmp );
-	else EPspecialpointsz = atoi( tmp );
+	if( GL_member(s[0], "+-") ) ps_specialpointsz = ps_curpointsz + atoi( tmp );
+	else ps_specialpointsz = atoi( tmp );
 	}
 else 	{
 	char sbuf[8];
@@ -515,54 +529,55 @@ else 	{
  *      Input: \(<=	Outputs a less than or equal sign
  * MMN 072292
  */
-EPSprint_special( s )
-char s[];
+static int
+ps_print_special( s )
+char *s;
 {
 int i;
 char sbuf[8];
 
 /* Check for two letter abbreviations which corresppond to a standard font encoding */
-for( i = 0; strcmp( EPspecial_std[i][0],"@@") != 0 ; i++ ) {
-	if( strncmp( EPspecial_std[i][0], s, 2 ) != 0 ) continue;
+for( i = 0; strcmp( ps_special_std[i][0],"@@") != 0 ; i++ ) {
+	if( strncmp( ps_special_std[i][0], s, 2 ) != 0 ) continue;
 
 	/* end the current string and save the current font on the stack */
-	fprintf( Epf, ") sh\ncurrentfont\n");
+	fprintf( ps_fp, ") sh\ncurrentfont\n");
 
 	/* Reset the font to the currentfont at the special point size  */
-	if( Latin1 == 1 ) fprintf( Epf, "%s reencodeISO %d scalefont setfont", EPfont, EPspecialpointsz ); 
-	else /* fprintf( Epf, "%s findfont %d scalefont setfont", EPfont, EPspecialpointsz ); */
+	if( ps_latin1 == 1 ) fprintf( ps_fp, "%s reencodeISO %d scalefont setfont", ps_font, ps_specialpointsz ); 
+	else /* fprintf( ps_fp, "%s findfont %d scalefont setfont", ps_font, ps_specialpointsz ); */
 
 	/* Show the character and reset the font from what's left on the stack */
-	fprintf( Epf, " (\\%s) sh\nsetfont\n(", EPspecial_std[i][1]);
+	fprintf( ps_fp, " (\\%s) sh\nsetfont\n(", ps_special_std[i][1]);
 	return ( 1 );
 	}
 /* If not found ... */
 /* Check for symbols in the symbol font encoding vector */
-for( i = 0; strcmp(EPsymbol[i][0],"@@") != 0 ; i++ ) {
-	if( strncmp(EPsymbol[i][0], s, 2 ) != 0 ) continue;
+for( i = 0; strcmp(ps_symbol[i][0],"@@") != 0 ; i++ ) {
+	if( strncmp(ps_symbol[i][0], s, 2 ) != 0 ) continue;
 
 	/* end the current string and save the current font on the stack */
-	fprintf( Epf, ") sh\ncurrentfont\n");
+	fprintf( ps_fp, ") sh\ncurrentfont\n");
 
 	/* Set the font to Symbol */
-	fprintf( Epf, "/Symbol findfont %d scalefont setfont", EPspecialpointsz ); /* don't reencode Symbol font */
+	fprintf( ps_fp, "/Symbol findfont %d scalefont setfont", ps_specialpointsz ); /* don't reencode Symbol font */
 
 	/* Show the character and reset the font from what's left on the stack */
-	fprintf( Epf, " (\\%s) sh\nsetfont\n(", EPsymbol[i][1]);
+	fprintf( ps_fp, " (\\%s) sh\nsetfont\n(", ps_symbol[i][1]);
 	return ( 1 );
 	}
 /* symbol abbrev. not found */
 sprintf( sbuf, "\\(%c%c", s[0], s[1] );
 Eerr( 12035, "warning: special symbol not found", sbuf );
-fprintf( Epf, "??" );
+fprintf( ps_fp, "??" );
 return( -1 );
 }
 /* ========== */
-/* EPSfontname - given a base name (such as /Helvetica) and a modifier
+/* fontname - given a base name (such as /Helvetica) and a modifier
    such as I (italic) B (bold) or BI (bold italic), build the postscript
    font name and copy it into name. */
 
-EPSfontname( basename, name )
+PLGP_fontname( basename, name )
 char *basename; 
 char *name; /* in: B, I, or BI.  out: full postscript font name */
 {
@@ -603,3 +618,5 @@ if( strcmp( name, "bi" )==0 ) {
 return( 0 );
 }
 
+
+#endif  /* NOPS */

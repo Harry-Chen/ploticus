@@ -9,8 +9,8 @@
  *
  *  Returns SINTERP_MORE  = normal, more results to come
  *	     SINTERP_END  = no more results - eof
- *               0 - 255  = user exit codes
- *              256 & up  = error
+ *		0-19      = user 
+ *              20 & up   = error  (revised 1/30/03)
  *
  *  Notes: 
  *    Any programs that use sinterp need a stub for customtextvect() 
@@ -19,10 +19,12 @@
  */
 #include "tdhkit.h"
 
+#ifndef TDH_DB
+#define TDH_DB 0
+#endif
 
 static FILE *skiptoendloop();
 static char *specialincludedir = "";
-static int leavenulls = 0; /* if 1, dbnull code will not be converted to "" by sinterp */
 
 /* -------------------------------------- */
 
@@ -46,7 +48,6 @@ char conj[40];
 char delimstr[5];
 int typ;
 char linechar;
-
 
 TDH_dat = (char *)data;
 TDH_recid = recordid;
@@ -74,11 +75,10 @@ while( 1 ) {
 		/* stream output.. do delimitation processing */
 		for( i = 0, j = 0; i < nshfields; i++ ) {
 			if( delim == 'h' ) { strcpy( &line[j], "<td>" ); j+=4; }
-			if( strcmp( shfields[i], TDH_dbnull )!=0 || leavenulls ) {
-				strcpy( &line[j], shfields[i] ); 
-				j+= strlen( shfields[i] ); 
-				} 
-			else if( delim == 'h' ) { strcpy( &line[j], "&nbsp;" ); j+= 6; }
+
+			strcpy( &line[j], shfields[i] ); 
+			j+= strlen( shfields[i] ); 
+
 			if( delim == 'h' )  { strcpy( &line[j], "</td>" ); j+=5; }
 			else if( delim == 't' ) { strcpy( &line[j], "\t" ); j+=1; }
 			}
@@ -99,11 +99,20 @@ while( 1 ) {
 
 			stat = TDH_sqlrow( ss->dbc, sqlfields, &nsqlfields );
 			if( stat == 0 ) for( i = 0; i < nsqlfields; i++ ) {
-				if( strcmp( sqlfields[i], TDH_dbnull )==0 && !leavenulls ) 
-					TDH_setvalue( sqlnames[i], "", data, recordid );
-				else TDH_setvalue( sqlnames[i], sqlfields[i], data, recordid );
+				if( stricmp( sqlfields[i], TDH_dbnull )==0 && ss->nullrep ) {
+					if( ss->nullrep == 1 ) TDH_setvar( sqlnames[i], "" );
+					else if( ss->nullrep == 2 ) TDH_setvar( sqlnames[i], DBNULL );
+					else if( ss->nullrep == 3 ) TDH_setvar( sqlnames[i], "&nbsp;" );
+					}
+				else TDH_setvar( sqlnames[i], sqlfields[i] );
 				}
-			else for( i = 0; i < nsqlfields; i++ ) TDH_setvalue( sqlnames[i], "", data, recordid );
+			else 	{
+				for( i = 0; i < nsqlfields; i++ ) TDH_setvar( sqlnames[i], "" );
+				if( stat > 20 ) {
+					ss->doingsqlresult = 0;
+					return( err( stat, "error on sql load", "" ) );
+					}
+				}
 
 			ss->doingsqlresult = 0;
 			continue;
@@ -113,6 +122,7 @@ while( 1 ) {
 		stat = TDH_sqlrow( ss->dbc, sqlfields, &nsqlfields );
 		if( stat != 0 ) {
 			ss->doingsqlresult = 0;
+			if( stat > 20 ) return( err( stat, "error on sql row", "" ));
 			continue;
 			}
 	
@@ -122,11 +132,12 @@ while( 1 ) {
 		/* stream output.. do delimitation processing */
 		for( i = 0, j = 0; i < nsqlfields; i++ ) {
 			if( delim == 'h' ) { strcpy( &line[j], "<td>" ); j+=4; }
-			if( strcmp( sqlfields[i], TDH_dbnull )!=0 || leavenulls ) {
-				strcpy( &line[j], sqlfields[i] ); 
-				j+= strlen( sqlfields[i] ); 
-				} 
-			else if( delim == 'h' ) { strcpy( &line[j], "&nbsp;" ); j+= 6; }
+			if( stricmp( sqlfields[i], TDH_dbnull )==0 && ss->nullrep ) {
+				if( ss->nullrep == 2 ) { strcpy( &line[j], DBNULL ); j+=4; }
+				else if( ss->nullrep == 3 ) { strcpy( &line[j], "&nbsp;" ); j+= 6; }
+				}
+			else 	{ strcpy( &line[j], sqlfields[i] ); j+= strlen( sqlfields[i] ); }
+
 			if( delim == 'h' )  { strcpy( &line[j], "</td>" ); j+=5; }
 			else if( delim == 't' ) { strcpy( &line[j], "\t" ); j+=1; }
 			}
@@ -136,23 +147,16 @@ while( 1 ) {
 		}
 
 #ifndef TDH_NOREC
-	/* if a #dataout is currently in progress, handle results.. */
-	if( ss->doingdataout > 0 ) {
-		dodataout( line, ss, data ); /* static */
+	/* if a #sqlbuild is currently in progress, handle results.. */
+	if( ss->sqlbuildi > 0 ) {
+		stat = sqlbuild1( line, ss );
+		if( stat != 0 ) {
+			ss->sqlbuildi = 0;
+			return( err( stat, "error in sqlbuild", "" ));
+			}
 		return( SINTERP_MORE );
 		}
 #endif
-
-	/* if a #showtext is currently in progress, handle results.. */
-	if( ss->doingtext > 0 ) {
-		stat = customtextvect( line, "", &(ss->doingtext) );
-		if( stat ) {
-			ss->doingtext = 0;
-			continue;
-			}
-		if( line[ strlen(line) -1 ] != '\n' ) strcat( line, "\n" ); 
-		return( SINTERP_MORE );
-		}
 
 
 	/* --------------------------------------------- */
@@ -180,7 +184,6 @@ while( 1 ) {
 		}
 	
 
-
  	/* get first token.. */
 	ix = 0;
 	strcpy( tok, GL_getok( line, &ix ) );
@@ -188,13 +191,16 @@ while( 1 ) {
         if( strncmp( tok, "//", 2 )==0 ) continue; /* comment */
 
 	/* remove trailing newline.. */
-        line[ strlen( line ) -1 ] = '\0'; 
+        /* line[ strlen( line ) -1 ] = '\0';  */
+ 	len = strlen( line );
+        line[ len-1 ] = '\0';  len--;
+        if( line[ len-1 ] == 13 ) { line[ len-1 ] = '\0';  len--; } /* DOS LF */
 
 
 	/* for conditional expressions and assignments, convert quoted strings.
 	   for all other lines, evaluate items. */
 	if( ss->evalvars ) {
-		if( GL_smember( tok, "#if #elseif #set #call #setifnotgiven #dataout" )) 
+		if( GL_smember( tok, "#if #elseif #set #call #setifnotgiven" ))  /* did include #sqlbuild */
 			TDH_dequote( buf, line, "SL" ); 
 		else TDH_value_subst( buf, line, data, recordid, NORMAL, 0 );  
 		strcpy( line, buf );
@@ -210,7 +216,7 @@ while( 1 ) {
 		/* add trailing newline unless \c  */
 		len = strlen( line );
 
-		if( line[ len-2 ] == '\\' && line[ len-1 ] == 'c' ) {
+		if( len >= 2 && line[ len-2 ] == '\\' && line[ len-1 ] == 'c' ) {
 		 	line[ len-2 ] = '\0';
 		 	return( SINTERP_MORE );
 		 	}
@@ -380,9 +386,13 @@ while( 1 ) {
 			}
 
 		if( conj[0] == 'a' ) {  /* "across" */
+#ifndef PLOTICUS
 			stat = customforvect( str, list, 1 );  /* up to the application */
 			if( stat == 1 ) strcpy( list, "" ); /* no results */
 			else if( stat > 1 ) return( stat );
+#else
+			return( err( 12230, "for .. across not supported", "" ));
+#endif
 			}
 
 		if( list[0] == '\0' ) {    /* empty list.. skip directly to matching #endloop.. */
@@ -407,9 +417,7 @@ while( 1 ) {
 		}
 
 	if( strcmp( tok, "#while" )==0 ) {
-		if( (ss->loopnest)+1 >= LOOPNESTMAX ) {
-			return( err( 1224, "loop nest level exceeded", "" ) ); 
-			}
+		if( (ss->loopnest)+1 >= LOOPNESTMAX ) return( err( 1224, "loop nest level exceeded", "" ) ); 
 		stat = TDH_condex( &line[ix], 1 );
 		if( stat == 0 ) {   /* condition is false on first try.. skip to #endloop.. */
 			ss->sfp[ ss->incnest ] = skiptoendloop( line, ss->sfp[ ss->incnest ] );
@@ -423,9 +431,7 @@ while( 1 ) {
 		}
 
 	if( strcmp( tok, "#loop" )==0 ) {  /* basic loop */
-		if( (ss->loopnest)+1 >= LOOPNESTMAX ) {
-			return( err( 1224, "loop nest level exceeded", "" ) ); 
-			}
+		if( (ss->loopnest)+1 >= LOOPNESTMAX ) return( err( 1224, "loop nest level exceeded", "" ) ); 
 		(ss->loopnest)++;
 		ss->forloc[ ss->loopnest ] = linebegin;
 		ss->forcount[ ss->loopnest ] = 0;
@@ -463,7 +469,11 @@ while( 1 ) {
 		sscanf( buf, "%*s %s %s %s", varname, conj, list );
 		ss->forcount[ ss->loopnest ] ++;
 
-		if( conj[0] == 'a' ) stat = customforvect( str, list, ss->forcount[ ss->loopnest ]  ); 
+		if( conj[0] == 'a' ) {
+#ifndef PLOTICUS
+			stat = customforvect( str, list, ss->forcount[ ss->loopnest ]  ); 
+#endif
+			}
 		else 	{
 			sprintf( delimstr, "%c", ss->listdelim );
 			stat = GL_getseg( str, list, &(ss->forlistpos[ss->loopnest]), delimstr );
@@ -497,6 +507,7 @@ while( 1 ) {
 		continue;
 		}
 
+
 	if( strcmp( tok, "#continue" )==0 ) {
 		if( ss->forloc[ ss->loopnest ] < 0 ) return( err( 1261, "#continue not within loop", "" ) );
 		ss->ifnest = ss->loopifnest[ ss->loopnest ]; /* restore */
@@ -528,110 +539,36 @@ while( 1 ) {
 		continue;
 		}
 
-
 #ifndef TDH_NOREC
-	if( strcmp( tok, "#dataprep" )== 0 ) {   /* #dataprep record [autoquote]
-						    #dataprep quote|noquote var1 .. varN
-						  prepare fields for output to database..
-						  change "" to dbnull and optionally add quoting */
-		char datatypes[MAXITEMS][DTMAXLEN+1];
-		char mode[80], autoquote[80], dbquote_s[8], dbquote_e[8];
-		int j;
 
-		if( TDH_htmlqh ) {
-			sprintf( dbquote_s, "\"" );
-			sprintf( dbquote_e, "'" );
-			}
-		else	{
-			sprintf( dbquote_s, "%c", TDH_dbquote );
-			sprintf( dbquote_e, "%c%c", TDH_dbquoteesc, TDH_dbquote );
-			}
-
-		strcpy( mode, GL_getok( buf, &ix )); /* record, quotes, or noquotes */
-		if( mode[0] == 'r' && recordid[0] != '\0' ) {
-			strcpy( autoquote, GL_getok( buf, &ix )); /* autoquote or nothing */
-			ss->nitems = TDH_readfdf( recordid, NULL, datatypes, NULL );
-			if( ss->nitems < 0 ) return( err( 1204, "#dataprep cannot access record", recordid ) ); 
-			for( i = 0; i < ss->nitems; i++ ) {
-				GL_substitute( dbquote_s, dbquote_e, data[i] ); /* embedded dbquote- added 5/9/01*/
-				/* convert zero length fields to database null symbol. */
-				if( data[i][0] == '\0' ) strcpy( data[i], TDH_dbnull );
-				else if( autoquote[0] == 'a' && strncmp( datatypes[i], "num", 3 ) != 0 ) {
-					sprintf( tok, "%s%s%s", dbquote_s, data[i], dbquote_s );
-					strcpy( data[i], tok );
-					}
-				}
-			}
-		else if( mode[0] == 'q' || mode[0] == 'n' ) {
-			for( i = 0, len = strlen( buf ); i < len; i++ ) if( buf[i] == ',' ) buf[i] = ' ';
-			while( 1 ) { /* for each variable listed.. */
-				strcpy( varname, GL_getok( buf, &ix ) );
-				if( varname[0] == '\0' ) break;
-				stat = TDH_getvar( varname, tok );
-				if( stat != 0 ) continue;
-				GL_substitute( dbquote_s, dbquote_e, tok ); /* embedded dbquote- added 5/9/01 */
-				if( tok[0] == '\0' ) TDH_setvar( varname, TDH_dbnull );
-				else if( mode[0] == 'q' ) {  /* do quoting */
-					sprintf( str, "%s%s%s", dbquote_s, tok, dbquote_s );
-					TDH_setvar( varname, str );
-					}
-				else if( mode[0] == 'n' ) TDH_setvar( varname, tok );
-				}
-			}
+	if( strcmp( tok, "#sqlbuild" )==0 ) {	/* #sqlbuild insert|update table quote|noquote exceptionfield1 .. N  */
+		sqlbuild0( buf, ss );
 		continue;
 		}
 
-	if( strcmp( tok, "#dataout" )==0 ) {   /*  #dataout [commas] format=format omit=fieldnamelist */
-		char format[100], omitfields[255];
-		int docomma, j;
-		docomma = 1;
-		strcpy( omitfields, "" );
-		strcpy( format, "%s = %s" );
-		while( 1 ) {
-			strcpy( tok, GL_getok( buf, &ix )); 
-			if( tok[0] == '\0' ) break;
-			if( strncmp( tok, "nocomma", 7 ) == 0 ) docomma = 0;
-			else if( strncmp( tok, "omit=", 5 ) == 0 ) strcpy( omitfields, &tok[5] );
-			else if( strncmp( tok, "format=", 7 ) == 0 ) strcpy( format, &tok[7] );
-			}
-		if( format[0] == '@' && format[1] != '@' ) TDH_getvar( &format[1], format );
-		stat = startdataout( ss, recordid, format, docomma, omitfields ); /* static */
-		if( stat != 0 ) return( stat );
+
+	if( strcmp( tok, "#sqlblankrow" )==0 ) {
+		char table[MAXPATH], *fnames[MAXITEMS];
+		/* FILE *dbfp; */
+		int nitems;
+        	strcpy( table, GL_getok( buf, &ix ) );           /* 1st arg is tablename */
+		TDH_altfmap( 1 );
+/* dbfp = fopen( "/tmp/scg001", "w" );
+ * fprintf( dbfp, "[before]", nitems ); fflush( dbfp );
+ */
+        	stat = TDH_sqltabdef( table, fnames, &nitems );	 /* caution - fnames points to info with limited lifespan */
+		TDH_altfmap( 0 );
+        	if( stat != 0 ) return( err( stat, "sqlblankrow: no such table", table ));
+        	for( i = 0; i < nitems; i++ ) {
+               		stat = TDH_getvar( fnames[i], tok );
+                	if( stat == 0 ) continue;
+                	stat = TDH_setvar( fnames[i], "" );
+                	}
 		continue;
-		}
+        	}
 #endif
 
-	if( strcmp( tok, "#textvar" )==0 ) {
-		strcpy( varname, "" );
-		sscanf( buf, "%*s %s", varname );
-		ss->doingtext = 0;
-		stat = customtextvect( line, varname, &(ss->doingtext) );
-		if( stat ) {
-			ss->doingtext = 0;
-			continue;
-			}
-		if( line[ strlen(line) -1 ] != '\n' ) strcat( line, "\n" ); 
-		return( SINTERP_MORE );
-		}
 
-#ifndef TDH_NOREC
-	if( strcmp( tok, "#record" )==0 ) {
-		char *valp, *nam, *TDH_getvarp(), *TDH_fieldn();
-		sscanf( buf, "%*s %s", recordid );
-		/* ss->nitems = TDH_readfdf( recordid, NULL, NULL, NULL ); */
-		ss->nitems = TDH_fieldmap( recordid, "" );
-		if( ss->nitems < 1 ) return( err( 1206, "#record cannot access fdf", recordid ) ); 
-		
-		/* set data array fields to "", or, if a var by same name already exists, use that value.. */
-		for( i = 0; i < ss->nitems; i++ ) {
-			nam = TDH_fieldn( i );
-			valp = TDH_getvarp( TDH_fieldn( i ) );
-			if( valp != NULL ) strcpy( data[i], valp );
-			else data[i][0] = '\0';
-			}
-		continue;
-		}
-#endif
 
 	if( strcmp( tok, "#write" )==0 ) {  /* #write outfile [outmode]  ... #endwrite */
 					    /* note: calling app must actually fprintf to writefp */
@@ -650,8 +587,9 @@ while( 1 ) {
 	if( strcmp( tok, "#endwrite" )==0 ) {  
 		strcpy( tok, "" );
 		sscanf( buf, "%*s %s", tok );
-		if( ss->writefp != NULL ) { 
-			if( stricmp( tok, "noclose" )!= 0 ) fclose( ss->writefp ); 
+		if( ss->writefp != NULL ) {
+			if( stricmp( tok, "noclose" )!= 0 && ss->writefp != stdout && ss->writefp != stderr ) 
+				{ fclose( ss->writefp ); }
 			ss->writefp = NULL; 
 			}
 		continue;
@@ -671,7 +609,7 @@ while( 1 ) {
 		continue;
 		}
 
-	if( strcmp( tok, "#control" )==0 ) {
+	if( strcmp( tok, "#mode" )==0 || strcmp( tok, "#control" )== 0 ) {
 		char what[40];
 		sscanf( line, "%*s %s %s", what, tok );
 		if( strcmp( tok, "comma" )==0 ) strcpy( tok, "," );
@@ -687,15 +625,20 @@ while( 1 ) {
 			if( tok[0] == 'n' ) ss->evalvars = 0;
 			else ss->evalvars = 1;
 			}
-		else if( strcmp( what, "htmlqhmode" ) == 0 ) {
-			if( tok[0] == 'y' ) TDH_htmlqh = 1;
-			else TDH_htmlqh = 0;
+#if TDH_DB != 0
+		else if( strcmp( what, "nullrep" ) == 0 ) {
+			if( strcmp( tok, "noconvert" )==0 ) ss->nullrep = 0;  
+			else if( strcmp( tok, "blank" )==0 ) ss->nullrep = 1;
+			else if( strcmp( tok, "null" )==0 ) ss->nullrep = 2;
+			else if( strcmp( tok, "nbsp" )==0 ) ss->nullrep = 3;
+			TDH_sqlrow_nullrep( ss->nullrep ); /* make it available to $functions */
 			}
-		else if( strcmp( what, "leavenulls" ) == 0 ) {
-			if( tok[0] == 'y' ) leavenulls = 1;
-			else leavenulls = 0;
-			}
-		else if( strcmp( what, "dbquote" ) == 0 ) TDH_dbquote = tok[0];
+#endif
+
+		else if( strcmp( what, "errormode" )==0 ) TDH_errmode( tok );
+
+		else if( strcmp( what, "shellmetachars" )==0 ) strcpy( TDH_shellmetachars, tok );
+			
 		else if( GL_smember( what, "allowinlinecodes suppressdll shieldquotedvars dot_in_varnames" )) {
 			if( tok[0] == 'y' ) TDH_valuesubst_settings( what, 1 );
 			else TDH_valuesubst_settings( what, 0 );
@@ -755,10 +698,10 @@ ss->nitems = 0;
 ss->evalvars = 1;
 ss->doingshellresult = 0;
 ss->doingsqlresult = 0;
-ss->doingdataout = 0;
-ss->doingtext = 0;
+ss->sqlbuildi = 0;
 ss->writefp = NULL;
 ss->forloc[0] = -1;
+ss->nullrep = 1;
 return( 0 );
 }
 /* ============================== */
@@ -785,6 +728,7 @@ int nestcount;
 char tok[ DATAMAXLEN+1];
 nestcount = 1;
 while( fgets( buf, SCRIPTLINELEN-1, fp ) != NULL ) {
+	tok[0] = '\0'; /* scg 5/1/03 */
 	sscanf( buf, "%s", tok );
 	if( GL_smember( tok, "#for #while #loop" )) nestcount++;
 	if( GL_smember( tok, "#endloop" )) nestcount--;

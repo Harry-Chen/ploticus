@@ -3,19 +3,30 @@
  * Covered by GPL; see the file ./Copyright for details. */
 
 
+#include "tdhkit.h" /* for MAXITEMS */
 #include "pl.h"
-#define MAXNAMES 80
+#define MAXNAMES MAXITEMS
 
 static char fname[MAXNAMES][40];
 static int nfname = 0;
 static int errflag = 0;
 static int showerr = 1;
 
+
+/* ============================ */
+PL_fieldnames_initstatic()
+{
+nfname = 0;
+errflag = 0;
+showerr = 1;
+return( 0 );
+}
+
 /* ============================ */
 /* DEFINEFIELDNAMES - define field names from a list 
    (space or comma-delimited).  Returns # of field names. */
 
-definefieldnames( list )
+PL_definefieldnames( list )
 char *list;
 {
 int i, slen;
@@ -24,24 +35,24 @@ int i, slen;
 nfname = 0;
 
 for( i = 0, slen = strlen( list ); i < slen; i++ ) {
-	if( list[i] == ',' || list[i] == '\n' ) list[i] = ' ';
+	if( list[i] == ',' || list[i] == '\n' || list[i] == '"' ) list[i] = ' ';
 	}
 
 i = 0;
-if( Debug ) fprintf( Diagfp, "Data field names are: " );
+if( PLS.debug ) fprintf( PLS.diagfp, "Data field names are: " );
 while( 1 ) {
 	strcpy( fname[ nfname ], GL_getok( list, &i ) );
 	if( fname[ nfname ][0] == '\0' ) break;
-	if( Debug ) fprintf( Diagfp, "%s ", fname[nfname] ); 
+	if( PLS.debug ) fprintf( PLS.diagfp, "%s ", fname[nfname] ); 
 	nfname++;
 	}
-if( Debug ) fprintf( Diagfp, "\n" );
+if( PLS.debug ) fprintf( PLS.diagfp, "\n" );
 return( nfname );
 }
 
 /* ============================ */
 /* FREF - given a field name or number, return the field number (1st = 1) */
-fref( name )
+PL_fref( name )
 char *name;
 {
 int i, fld, prec, stat;
@@ -74,7 +85,7 @@ else if( nfname > 0 ) {
 		}
 	}
 
-if( fld < 1 ) {  /* || fld > Nfields[Dsel] -- don't do this because Nfields might not be set yet
+if( fld < 1 ) {  /* || fld > Nfields -- don't do this because Nfields might not be set yet
 			if coming in from getdata select  -scg 10/7/00 */
 	if( showerr ) Eerr( 2479, "No such data field", name );
 	errflag = 1;
@@ -86,26 +97,26 @@ return( fld );
 /* ============================ */
 /* GETFNAME - given a field number, return the field name assigned to
 	that field (first is 1).
-	Return 'noname' if none has been assigned. */
+	Result will be "" if no field name has been assigned to field N. */
 
-getfname( n, result )
+PL_getfname( n, result )
 int n;
 char *result;
 {
-if( n > nfname || n < 1 ) strcpy( result, "noname" );
+if( n > nfname || n < 1 ) strcpy( result, "" );
 else strcpy( result, fname[ n-1 ] );
 return( 0 );
 }
 
 /* ============================= */
 /* FREF_ERROR - get fref error flag */
-fref_error()
+PL_fref_error()
 {
 return( errflag );
 }
 /* ============================= */
 /* FREF_SHOWERR - turn off/on "No such data field" message */
-fref_showerr( mode )
+PL_fref_showerr( mode )
 {
 showerr = mode;
 return( 0 );

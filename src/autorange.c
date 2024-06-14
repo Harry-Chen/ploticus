@@ -3,16 +3,16 @@
  * Covered by GPL; see the file ./Copyright for details. */
 
 #include "pl.h"
-#define MAXDF 50
+#define MAXFIELDS 50
 
-autorange( axis, specline, minval, maxval )
+PLP_autorange( axis, specline, minval, maxval )
 char axis;
 char *specline; /* spec line from proc areadef.. */
 char *minval;   /* determined plot minima.. */
 char *maxval;   /* determined plot maxima.. */
 {
 int i, j;
-int df[MAXDF];
+int df[MAXFIELDS];
 int ndf;
 char nearest[80];
 char buf[256];
@@ -50,7 +50,8 @@ strcpy( dfield, "" );
 ix = 0;
 strcpy( lowfix, "" );
 strcpy( hifix, "" );
-strcpy( floatformat, "%f" );
+/* strcpy( floatformat, "%f" ); */
+strcpy( floatformat, "%g" );  /* changed scg 10/1/03 .. scientific formats (e+ and e-) should be ok now */
 incmult = 1.0;
 strcpy( selex, "" ); /* added */
 combomode = 0;
@@ -84,15 +85,15 @@ ndf = 0; ix = 0;
 while( 1 ) {
 	GL_getseg( tok, dfield, &ix, "," );
 	if( tok[0] == '\0' ) break;
-	if( ndf >= (MAXDF-1) ) break;
+	if( ndf >= (MAXFIELDS-1) ) break;
 	df[ndf] = fref( tok ) - 1;
-	if( df[ndf] < 0 || df[ndf] >= Nfields[Dsel] ) continue;
+	if( df[ndf] < 0 || df[ndf] >= Nfields ) continue;
 	ndf++;
 	}
 
 /* df = fref( dfield ) - 1; */
 
-if( Nrecords[Dsel] < 1 ) return( Eerr( 17, "autorange: no data set has been read/specified w/ proc getdata", "" ) );
+if( Nrecords < 1 ) return( Eerr( 17, "autorange: no data set has been read/specified w/ proc getdata", "" ) );
 if( axis == '\0' ) return( Eerr( 7194, "autorange: axis attribute must be specified", "" ) );
 if( ndf == 0 ) return( Eerr( 7194, "autorange: datafield omitted or invalid ", dfield ) );
 
@@ -107,7 +108,7 @@ if( stricmp( nearest, "day" )==0 && stricmp( unittyp, "date" )==0 ) strcpy( near
 /* find data min and max.. */
 min = PLHUGE;
 max = NEGHUGE;
-for( i = 0; i < Nrecords[Dsel]; i++ ) {
+for( i = 0; i < Nrecords; i++ ) {
 
         if( selex[0] != '\0' ) { /* added scg 8/1/01 */
                 stat = do_select( selex, i, &selresult );
@@ -217,7 +218,7 @@ else if( strnicmp( nearest, "month", 5 )== 0 || strnicmp( nearest, "quarter", 8 
 	DT_makedate( yr, mon, 1, "", datepart );
 	if( strcmp( unittyp, "datetime" )==0 ) {
 		DT_maketime( 0, 0, 0.0, timepart );
-		sprintf( minval, "%s.%s", datepart, timepart );
+		DT_build_dt( datepart, timepart, minval );
 		}
 	else strcpy( minval, datepart );
 
@@ -239,7 +240,7 @@ else if( strnicmp( nearest, "month", 5 )== 0 || strnicmp( nearest, "quarter", 8 
 	DT_makedate( yr, mon, 1, "", datepart );
 	if( strcmp( unittyp, "datetime" )==0 ) {
 		DT_maketime( 0, 0, 0.0, timepart );
-		sprintf( maxval, "%s.%s", datepart, timepart );
+		DT_build_dt( datepart, timepart, maxval );
 		}
 	else strcpy( maxval, datepart );
 	}
@@ -257,7 +258,7 @@ else if( strnicmp( nearest, "year", 4 )== 0 ) { /* nearest year boundary.. */
 	DT_makedate( yr, 1, 1, "", datepart );
 	if( strcmp( unittyp, "datetime" )==0 ) {
 		DT_maketime( 0, 0, 0.0, timepart );
-		sprintf( minval, "%s.%s", datepart, timepart );
+		DT_build_dt( datepart, timepart, minval );
 		}
 	else strcpy( minval, datepart );
 		
@@ -267,7 +268,7 @@ else if( strnicmp( nearest, "year", 4 )== 0 ) { /* nearest year boundary.. */
 	DT_makedate( yr+1, 1, 1, "", datepart );
 	if( strcmp( unittyp, "datetime" )==0 ) {
 		DT_maketime( 0, 0, 0.0, timepart );
-		sprintf( maxval, "%s.%s", datepart, timepart );
+		DT_build_dt( datepart, timepart, maxval );
 		}
 	else strcpy( maxval, datepart );
 	}
@@ -282,7 +283,8 @@ else if( strnicmp( nearest, "day", 3 )== 0 ) { /* nearest day boundary.. */
         DT_getmdy( &mon, &day, &yr );
 	DT_makedate( yr, mon, day, "", datepart );
 	DT_maketime( 0, 0, 0.0, timepart );
-	sprintf( minval, "%s.%s", datepart, timepart );
+	DT_build_dt( datepart, timepart, minval );
+
 	/* max */
 	DT_datetime2days( smax, &days );
 	DT_days2datetime( days+1.0, smax ); 
@@ -290,7 +292,7 @@ else if( strnicmp( nearest, "day", 3 )== 0 ) { /* nearest day boundary.. */
         DT_getmdy( &mon, &day, &yr );
 	DT_makedate( yr, mon, day, "", datepart );
 	DT_maketime( 0, 0, 0.0, timepart );
-	sprintf( maxval, "%s.%s", datepart, timepart );
+	DT_build_dt( datepart, timepart, maxval );
 	}
 
 else if( strnicmp( nearest, "hour", 4 )== 0 ) { /* nearest hour boundary.. */
@@ -322,7 +324,7 @@ else if( strnicmp( nearest, "hour", 4 )== 0 ) { /* nearest hour boundary.. */
 		/* date part */
         	DT_getmdy( &mon, &day, &yr );
 		DT_makedate( yr, mon, day, "", datepart );
-		sprintf( minval, "%s.%s", datepart, timepart );
+		DT_build_dt( datepart, timepart, minval );
 
 		/* max */
 		DT_datetime2days( smax, &days );
@@ -337,14 +339,14 @@ else if( strnicmp( nearest, "hour", 4 )== 0 ) { /* nearest hour boundary.. */
 		/* date part */
         	DT_getmdy( &mon, &day, &yr );
 		DT_makedate( yr, mon, day, "", datepart );
-		sprintf( maxval, "%s.%s", datepart, timepart );
+		DT_build_dt( datepart, timepart, maxval );
 		}
 	}
 
 else 	{  /* if( strcmp( nearest, "auto" )==0 ) {  */  /* this section added scg 7/5/00 */
 	double inc, h, fmod(), a, b;
 
-	if( strcmp( nearest, "auto" )==0 ) defaultinc( min, max, &inc );
+	if( strcmp( nearest, "auto" )==0 ) PL_defaultinc( min, max, &inc );
 	else inc = atof( nearest );
 
 	h = fmod( min, inc );
@@ -371,8 +373,8 @@ else 	{  /* if( strcmp( nearest, "auto" )==0 ) {  */  /* this section added scg 
 if( lowfix[0] != '\0' ) strcpy( minval, lowfix );
 if( hifix[0] != '\0' ) strcpy( maxval, hifix );
 
-if( Debug )
-  fprintf( Diagfp, "Autorange on %c: min=%s to max=%s\n", axis, minval, maxval);
+if( PLS.debug )
+  fprintf( PLS.diagfp, "Autorange on %c: min=%s to max=%s\n", axis, minval, maxval);
 
 suppress_twin_warn( 1 ); /* suppress complaints about datetime outside of window 
 				until after areadef */

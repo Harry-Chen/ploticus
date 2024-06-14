@@ -3,14 +3,16 @@
  * Covered by GPL; see the file ./Copyright for details. */
 
 
-#include "graphcore.h"
+/* routines related to interactivity, generally X11 */
+
+#include "plg.h"
 
 /* event modes */
 #define STRING 2	/* getting a \n terminated string */
 #define EVENTS 3	/* getting any mouse-button or keyboard event */
 
 
-/* info re: most recent event.. */
+/* info concerning the most recent event.. */
 static double Eevx, Eevy;
 static int Eeid;
 static double savex = 0.0, savey = 0.0;
@@ -18,16 +20,26 @@ static int savec = 0;
 static char semfile[128] = "";
 
 
+/* ==================================== */
+/* PLG_interactive_initstatic() - doesn't seem to be needed..  */
+/* {
+ * savex = 0.0; savey = 0.0;
+ * savec = 0;
+ * strcpy( semfile, "" );
+ * return( 0 );
+ * }
+ */
+
 
 /* ==================================== */
-/* get mouse position (x, y) and event code.. */
+/* GETKEY - get mouse position (x, y) and event code.. */
 /* when using postscript, this will do a showpage, endoffile, and exit. */
 
-Egetkey( x, y, e )
+PLG_getkey( x, y, e )
 double *x, *y;
 int *e;
 {
-int i;
+int i, stat;
 FILE *fp;
 
 if( Edev == 'p' ) { /* postscript-- eject page and return.. */
@@ -35,13 +47,10 @@ if( Edev == 'p' ) { /* postscript-- eject page and return.. */
 	return( 0 );
 	}
 if( Edev == 'g' ) { /* gif, finish up and return */
-	Eendoffile(); 
-	return( 0 );
+	stat = Eendoffile(); 
+	return( stat );
 	}  
 
-/* Esit();  */
-
-/* Esit replaced by the following code.. */
 Eeid = 0;
 i = 0;
 
@@ -64,7 +73,7 @@ while( 1 ) {
 	i++;
 
 	/* loop delay */
-	Eusleep( 20000 ); /* 50 cycles per second */
+	usleep( 20000 ); /* 50 cycles per second */
 	}
 /*  */
 
@@ -73,32 +82,32 @@ return( 0 );
   
 
 /* =================================== */
-/* wait until a key or button is hit.. */
+/* GETCLICK wait until a key or button is hit.. */
 /* when using postscript, this will do a showpage and return. */
 
-Egetclick()
+PLG_getclick()
 {
 double x, y;
-int e;
+int e, stat;
 if( Edev == 'p' ) { /* postscript-- eject page and return.. */
 	Eshow(); 
 	return(0);
 	}
 else if( Edev == 'g' ) {
-	Eendoffile();
-	exit(0);
+	stat = Eendoffile();
+	return( stat );
 	}
 
-Egetkey( &x, &y, &e );
+return( Egetkey( &x, &y, &e ) );
 }
 
 /* ================================ */
-/* EHE This gets called by the X11 driver when we are waiting for an event 
+/* HE This gets called by the X11 driver when we are waiting for an event 
    and then a key, mouse, expose, or resize event happens. Never called 
    directly by applications.  
 */
 
-Ehe( x, y, e )
+PLG_he( x, y, e )
 double x, y;
 int e;
 {
@@ -122,9 +131,13 @@ if( e >= 1010 ) Ehandle_events( x, y, e );
 Eevx = x; Eevy = y; Eeid = e;
 return( 1 );
 }
+
+
+#ifdef SUSPENDED
+
 /* ==================== */
 /* the following routines provide a place to save/retrieve an event */
-Esavekey( lx, ly, c )
+PLG_savekey( lx, ly, c )
 double lx, ly;
 int c;
 {
@@ -134,7 +147,7 @@ savec = c;
 return( 0 );
 }
 
-Eretrievekey( lx, ly, c )
+PLG_retrievekey( lx, ly, c )
 double *lx, *ly;
 int *c;
 {
@@ -150,7 +163,7 @@ return( 0 );
    s is the full path name of the semiphore file. 
 */
    
-Esetsemfile( s )
+PLG_setsemfile( s )
 char *s;
 {
 strcpy( semfile, s );
@@ -159,10 +172,11 @@ return( 0 );
 
 /* ==================================== */
 /* Execute the semfile */
-Esemfile()
+PLG_semfile()
 {
 FILE *fp;
 if( Edev == 'p' ) return(0); /* postscript-- just return.. */
 /* if( semfile[0] != '\0' ) Eprocess_drawfile( semfile ); */
 return( 0 );
 }
+#endif

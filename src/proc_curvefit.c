@@ -11,8 +11,14 @@
 #define MAXORDER 21	/* max bspline order value (no limit for movingavg order) */
 #define MAXBSP_IN 100  /* max # input points for bspline curve */
 
+#define MOVINGAVG	'm'
+#define REGRESSION	'r'
+#define BSPLINE		'b'
+#define SIMPLEAVG	'a'
+#define INTERPOLATED	'i'
+
 static double in[MAXPTS][2];
-/* the Dat array is used for curve points */
+/* the PLV vector is used for curve points */
 static int bspline(), mavg(), plainavg(), lregress();
 static int dblcompare(double *f, double *g);
 
@@ -50,6 +56,7 @@ int linerangegiven;
 int statsonly;
 char selectex[256];
 int selectresult;
+char numstr[100];
 
 TDH_errprog( "pl proc curvefit" );
 
@@ -68,6 +75,7 @@ linerangegiven = 0;
 strcpy( curvetype, "movingavg" );
 statsonly = 0;
 strcpy( selectex, "" );
+strcpy( legendlabel, "" ); /* added scg 7/28/03 */
 
 
 /* get attributes.. */
@@ -110,15 +118,16 @@ while( 1 ) {
 
 
 /* overrides and degenerate cases */
-if( Nrecords[Dsel] < 1 ) 
+if( Nrecords < 1 ) 
  	return( Eerr( 17, "No data has been read yet w/ proc getdata", "" ) );
 
-if( yfield < 0 || yfield >= Nfields[Dsel] ) return( Eerr( 601, "yfield out of range", "" ) );
-if( xfield < 0 || xfield >= Nfields[Dsel] ) return( Eerr( 601, "xfield out of range", "" ) );
+if( yfield < 0 || yfield >= Nfields ) return( Eerr( 601, "yfield not specified or out of range", "" ) );
+if( xfield < 0 || xfield >= Nfields ) return( Eerr( 601, "xfield not specified or out of range", "" ) );
 
 if( !scalebeenset() )
          return( Eerr( 51, "No scaled plotting area has been defined yet w/ proc areadef", "" ) );
  
+if( strnicmp( legendlabel, "#usefname", 9 )==0 ) getfname( yfield+1, legendlabel );
 
 
 /* now do the computation work.. */
@@ -126,7 +135,7 @@ if( !scalebeenset() )
 
 /* process input data.. */
 npts = 0;
-for( irow = 0; irow < Nrecords[Dsel]; irow++ ) {
+for( irow = 0; irow < Nrecords; irow++ ) {
 
 	if( selectex[0] != '\0' ) { /* process against selection condition if any.. */
                 stat = do_select( selectex, irow, &selectresult );
@@ -149,7 +158,7 @@ for( irow = 0; irow < Nrecords[Dsel]; irow++ ) {
 		else if( in[npts][0] > calcstop ) break;
 		}
 
-	if( strnicmp( curvetype, "b", 1 ) ==0 && npts >= MAXBSP_IN ) {
+	if( curvetype[0] == BSPLINE && npts >= MAXBSP_IN ) {
 		Eerr( 2599, "max of 100 input points allowed for bspline exceeded; curve truncated", "" );
 		break;
 		}
@@ -161,16 +170,17 @@ for( irow = 0; irow < Nrecords[Dsel]; irow++ ) {
 	}
 
 /* sort points on x - added scg 11/2000 */
-qsort( in, npts, sizeof(double)*2, dblcompare );
+if( curvetype[0] != INTERPOLATED ) 
+	qsort( in, npts, sizeof(double)*2, dblcompare );
 
 
-if( strnicmp( curvetype, "m", 1 )==0 ) { /* moving average curve */
-	mavg( in, npts, Dat, order );
+if( curvetype[0] == MOVINGAVG ) { 
+	mavg( in, npts, PLV, order );
 	nresultpoints = npts;
 	}
 
 
-else if( strnicmp( curvetype, "r", 1 )==0 ) { /* linear regression */
+else if( curvetype[0] == REGRESSION ) { 
 	double rlinestart, rlinestop;
 
 	if( linerangegiven ) {
@@ -181,7 +191,7 @@ else if( strnicmp( curvetype, "r", 1 )==0 ) { /* linear regression */
 		rlinestart = in[0][0];
 		rlinestop = in[npts-1][0];
 		}
-	lregress( in, npts, Dat, rlinestart, rlinestop );
+	lregress( in, npts, PLV, rlinestart, rlinestop );
 	nresultpoints = 2;
 
 	/* vertical line (degenerate case) suppress.. */
@@ -192,9 +202,10 @@ else if( strnicmp( curvetype, "r", 1 )==0 ) { /* linear regression */
 	if( stat != 0 ) nresultpoints = 0;
 	}
 
-else if( strnicmp( curvetype, "b", 1 )==0 ) { /* bspline curve */
+else if( curvetype[0] == BSPLINE ) {  
 	nresultpoints = npts * resolution;
-	if( nresultpoints >= HALFMAXDAT ) nresultpoints = HALFMAXDAT-1;
+	if( nresultpoints >= PLVhalfsize ) nresultpoints = PLVhalfsize-1;
+
 	if( order >= MAXORDER ) {
 		Eerr( 2158, "Using max bspline order of 20", "" );
 		order = 20;
@@ -203,11 +214,15 @@ else if( strnicmp( curvetype, "b", 1 )==0 ) { /* bspline curve */
 		return( Eerr( 4892, "Must have at least 'order' data points", "" ) );
 
 	/* do the computation.. */
-	bspline( in, npts, Dat, nresultpoints, order );
+	bspline( in, npts, PLV, nresultpoints, order );
+	}
+
+else if( curvetype[0] == INTERPOLATED ) { 
+	stat = PL_smoothfit( in, npts, PLV, &nresultpoints );
 	}
 
 else 	{ 	/* average curve (basic) */
-	plainavg( in, npts, Dat, order );
+	plainavg( in, npts, PLV, order );
 	nresultpoints = npts;
 	}
 
@@ -216,8 +231,7 @@ else 	{ 	/* average curve (basic) */
 /* draw the line.. */
 linedet( "linedetails", linedetails, 1.0 );
 Emovu( dat2d(0,0), dat2d(0,1) );
-if( showresults ) 
-	fprintf( Diagfp, "// generated curve points follow:\n%g %g\n", dat2d(0,0), dat2d(0,1) );
+if( showresults ) fprintf( PLS.diagfp, "// generated curve points follow:\n%g %g\n", dat2d(0,0), dat2d(0,1) );
 
 
 for( i = 1; i < nresultpoints; i++ ) {
@@ -232,8 +246,19 @@ for( i = 1; i < nresultpoints; i++ ) {
 	else if( dat2d(i,0) > linestop ) break;
 
 	if( !statsonly ) Elinu( dat2d(i,0), dat2d(i,1) );  
-	if( showresults ) fprintf( Diagfp, "%g %g\n", dat2d(i,0), dat2d(i,1) );
+	if( showresults ) fprintf( PLS.diagfp, "%g %g\n", dat2d(i,0), dat2d(i,1) );
 	}
+
+
+/* set YFINAL and Xfinal */
+i--;
+Euprint( numstr, X, dat2d(i,0), "" );
+setcharvar( "XFINAL", numstr );
+Euprint( numstr, Y, dat2d(i,1), "" );
+setcharvar( "YFINAL", numstr );
+
+
+
 
 if( legendlabel[0] != '\0' ) add_legent( LEGEND_LINE, legendlabel, "", linedetails, "", "" );
 

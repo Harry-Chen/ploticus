@@ -1,4 +1,4 @@
-/* ploticus data display engine.  Software, documentation, and examples.  
+/*
  * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
  * Covered by GPL; see the file ./Copyright for details. */
 
@@ -6,30 +6,31 @@
 /* PL - ploticus main module */
 
 #include "pl.h"
-
-#ifdef LOCALE
-#include <locale.h>
+#ifdef WIN32
+#include "fcntl.h"  /* for _O_BINARY */
 #endif
 
-vermessage()
+
+version_msg( longmsg )
+int longmsg;
 {
 char outputformats[80];
-devstring( outputformats );
+PL_devstring( outputformats );
 
-fprintf( Diagfp, "\n\
+fprintf( PLS.diagfp, "\n\
 Usage: pl -prefab prefabname [parameters]     ..or.. pl scriptfile [options] \n\
 %s\n\n", outputformats );
 
-fprintf( Diagfp, "ploticus 2.03 " );
-#ifdef UNIX
-fprintf( Diagfp, "(unix)" );
-#endif
 #ifdef WIN32
-fprintf( Diagfp, "(win32)" );
+fprintf( PLS.diagfp, "ploticus %s (win32) ", PLVERSION );
+#else
+fprintf( PLS.diagfp, "ploticus %s (unix) ", PLVERSION );
 #endif
-fprintf( Diagfp, " data display software (c) 1998-2002 Stephen C. Grubb\n\
-Home page is ploticus.sourceforge.net   Please see the Copyright file for\n\
-additional credits and information.\n\
+fprintf( PLS.diagfp, " Copyright 1998-2003 Steve Grubb, http://ploticus.sourceforge.net\n" );
+
+
+if( longmsg ) fprintf( PLS.diagfp, "\n\
+Please see the Copyright file or web site for additional credits and information.\n\
 \n\
 This program is free software; you can redistribute it and/or modify it\n\
 under the terms of the GNU General Public License as published by the\n\
@@ -47,254 +48,242 @@ main( argc, argv )
 int argc;
 char **argv;
 {
-int i, j;
+int i, j, argi, use_stdin, vardec, stat, found, valused, stoparg, ci, cii;
 char buf[256];
-int use_stdin;
-int vardec;
-int nt;
-FILE *fp;
-int stat;
-int found;
-int valused;
-int stoparg;
-int ci, cii;
+char scriptfile[MAXPATH];
+char prefabname[80];
 char *arg, *nextarg, *getenv();
+char *outnamebase;
 
 
-#ifdef LOCALE
- setlocale(LC_CTYPE, "" );
- setlocale(LC_COLLATE, "" );
-#endif
 
 
-/* set pre-profile defaults.. */
-TDH_errprog( "pl" );
-Winx = 100; Winy = 0;
-Winw = 8.0; Winh = 8.0;
-Debug = 0;
-Winsizegiven = 0;
-Bkcolorgiven = 0;
+
+/* check to see if we are operating as a direct CGI program.. */
+PLS.cgiargs = NULL;
+if( argc == 1 ) {
+	PLS.cgiargs = getenv( "QUERY_STRING" );
+	if( getenv( "SCRIPT_FILENAME" )==NULL ) {  /* some web servers don't set SCRIPT_FILENAME.. scg 8/27/02 */
+		sprintf( buf, "SCRIPT_FILENAME=%s", argv[0] );
+		putenv( buf );
+		}
+	}
+
+
+/* set hard defaults and process config file if any.. */
+stat = PL_do_preliminaries();
+if( stat ) exit( 1 );
 use_stdin = 0;
-strcpy( Inputfile, "" );
-strcpy( Cmdline_outfile, "" );
-strcpy( Cmdlineparms, "" );
-strcpy( Flags, "" );
-strcpy( Prefab_name, "" );
-#ifndef NORLIMIT
-reslimits( "cpu", CPULIMIT );
-reslimits( "filesize", FILESIZELIMIT );
-#endif
 
 
-/* default device.. */
-#ifdef NOX11
-Device = 'e';
-#else
-Device = 'x';    
-#endif
-strcpy( Viewer, "" );
-
-if( argc == 1 ) CGIargs = getenv( "REQUEST_URI" );
-else CGIargs = NULL;
-
-
-/* read and process profile if any.. */
-strcpy( Cmdlineparms, "" );
-do_preliminaries();
-
-
-/* cgi mode.. */
-if( CGIargs != NULL ) {
-	/* begin parsing REQUEST_URI.. */
+/* if in direct cgi mode, initialize and set some useful defaults.. */
+if( PLS.cgiargs != NULL ) {
+	/* begin parsing QUERY_STRING.. */
 	stoparg = 80; 
 	ci = 0;
-	GL_getcgiarg( Bigbuf, CGIargs, &ci, 252 ); /* skip over first part.. */
-	/* set some useful defaults.. */
-	strcpy( Cmdline_outfile, "stdout" );
-	Device = 's';
+	
+	strcpy( PLS.outfile, "stdout" );
+#ifdef WIN32
+        /* must set stdin and stdout to binary mode */
+        _setmode( _fileno( stdin ), _O_BINARY );
+        _setmode( _fileno( stdout ), _O_BINARY );
+#endif /* WIN32 */
+
+	PLS.device = 's';
 #ifndef NOGD
-	Device = 'g';
+	PLS.device = 'g';
 	/* try to be smart about picking default output format.. */
-	if( devavail( "gif" )) EG_setimfmt( "gif" );
-	else if( devavail( "jpeg" )) EG_setimfmt( "jpeg" );
-	else if( devavail( "png" )) EG_setimfmt( "png" );
+	if( devavail( "gif" )) PLGG_setimfmt( "gif" );
+	else if( devavail( "jpeg" )) PLGG_setimfmt( "jpeg" );
+	else if( devavail( "png" )) PLGG_setimfmt( "png" );
 #endif
 	}
+
 else stoparg = argc;
 
+strcpy( scriptfile, "" );
+strcpy( prefabname, "" );
 
-/* process command line arguments.. */
-for( i = 1; i < stoparg; i++ ) {
+/* process command line arguments.. (if direct CGI, arguments are parsed from URL).. */
+for( argi = 1; argi < stoparg; argi++ ) {
 
-	if( CGIargs != NULL ) {
-		/* parse next 2 args from REQUEST_URI.. */
-		GL_getcgiarg( Bigbuf, CGIargs, &ci, 252 );
-		if( Bigbuf[0] == '\0' ) break;
-		arg = Bigbuf;
+	if( PLS.cgiargs != NULL ) {
+		/* parse next 2 args from QUERY_STRING.. */
+		GL_getcgiarg( PL_bigbuf, PLS.cgiargs, &ci, 252 );
+		if( PL_bigbuf[0] == '\0' ) break;
+		arg = PL_bigbuf;
 		cii = ci;
-		GL_getcgiarg( Databuf, CGIargs, &cii, 252 );
-		nextarg = Databuf;
+		GL_getcgiarg( &PL_bigbuf[500], PLS.cgiargs, &cii, 252 ); /* share PL_bigbuf */
+		nextarg = &PL_bigbuf[500];
 		}
 	else	{
-		arg = argv[i];
-		if( i+1 < argc ) nextarg = argv[i+1];
+		arg = argv[ argi ];
+		if( argi+1 < argc ) nextarg = argv[argi+1];
 		else nextarg = "";
 		}
 
-	if( strcmp( arg, "-stdin" )==0 && CGIargs == NULL ) use_stdin = 1;
+	if( strcmp( arg, "-stdin" )==0 && PLS.cgiargs == NULL ) use_stdin = 1;
 
-	else if( strcmp( arg, "-png" )==0 && !devavail( "png" ) && CGIargs == NULL ) { 
+
+	else if( strcmp( arg, "-png" )==0 && !devavail( "png" ) && PLS.cgiargs == NULL ) { 
 		char *p[100];
 		if( strlen( argv[0] ) >= 5 ) {
 			if( strcmp( &argv[0][strlen(argv[0])-5], "plpng" )==0 ) {
 				Eerr( 5279, "png not available in plpng", "" );
-				vermessage(); exit(1);
+				version_msg( 0 ); exit(1);
 				}
 			}
 		p[0] = "plpng";
 		for( i = 1; i < argc; i++ ) p[i] = argv[i];
 		p[argc] = NULL;
 		execvp( "plpng", argv );
-		fprintf( Errfp, "PNG not supported in this build (plpng not found).\n" );
-                vermessage(); exit(1);
+		fprintf( PLS.errfp, "PNG not supported in this build (plpng not found).\n" );
+                version_msg( 0 ); exit(1);
 		}
+
+	else if( strcmp( arg, "-f" )==0 ) {
+		if( strlen( nextarg ) > MAXPATH-10 ) { /* allow extra for output file suffix add */
+			fprintf( PLS.errfp, "pl: script file name too long" );
+			version_msg( 0 ); exit( 1 );
+			}
+		strcpy( scriptfile, nextarg );
+		argi++;
+		}
+
+	else if( strcmp( arg, "-prefab" )==0 || strcmp( arg, "-quickplot" )==0 ) {
+		if( PLS.prefabsdir == NULL ) {
+			Eerr( 4899, "PLOTICUS_PREFABS environment var not found (pathname of dir where prefab files reside)", "" );
+			version_msg( 0 ); exit( 1 );
+			}
+		sprintf( prefabname, "%s.pl", nextarg );
+		sprintf( scriptfile, "%s%c%s", PLS.prefabsdir, PATH_SLASH, prefabname );
+		if( PLS.debug ) fprintf( PLS.diagfp, "Prefabs dir is: %s\nScript file is %s\n", PLS.prefabsdir, scriptfile );
+		argi++;
+		}
+
+	else if( GL_smember( arg, "-? -help -ver -version" ) ) { version_msg( 1 ); exit(0); }
 
 	else 	{
-		process_arg( arg, nextarg, &valused, &found );
-		if( !found && arg[0] == '-' ) 
-			Eerr( 4892, "warning, unrecognized argument", arg );
-		else if( !found ) {
+		stat = PL_process_arg( arg, nextarg, &valused, &found );
+		if( stat != 0 ) exit( 1 );
+		if( !found && arg[0] == '-' ) Eerr( 4892, "warning, unrecognized argument", arg );
+		else if( !found && scriptfile[0] == '\0' ) {
 			if( strlen( arg ) > MAXPATH-10 ) { /* allow extra for output file suffix add */
-				fprintf( Errfp, "pl: script file name too long" );
-				vermessage(); exit( 1 );
+				fprintf( PLS.errfp, "pl: script file name too long" );
+				version_msg( 0 ); exit( 1 );
 				}
-			strcpy( Inputfile, arg  );  
+			strcpy( scriptfile, arg  );  
 			}
-		i += valused;
-		if( CGIargs != NULL && valused ) ci = cii; /* jump ahead */
+		argi += valused;
+		if( PLS.cgiargs != NULL && valused ) ci = cii; /* jump ahead */
 		}
 	}
 
-if( Debug ) {
-	fprintf( Diagfp, "pl debug mode\n" );
-	Epcodedebug( 1, Diagfp );
-	}
 
 
-if( CGIargs != NULL ) {
+/* CGI header stuff.. */
+if( PLS.cgiargs != NULL ) {
 	char dd, imagetype[20];
-	strcpy( Cmdline_outfile, "stdout" );
+	strcpy( PLS.outfile, "stdout" );
 	/* check for loopy script file names.. */
-	if( Inputfile[0] == '/' && Prefab_name[0] == '\0' ) {   /* changed scg 2/6/02 */
-		Eerr( 2740, "cgi mode: script file name may not begin with '/'", Inputfile );
-		vermessage(); exit(1);
+	if( scriptfile[0] == '/' && prefabname[0] == '\0' ) {   /* changed scg 2/6/02 */
+		Eerr( 2740, "cgi mode: script file name may not begin with '/'", scriptfile );
+		version_msg( 0 ); exit(1);
 		}
-	if( GL_slmember( Inputfile, "*..* .*" ) ) {
-		Eerr( 2740, "cgi mode: script file name may not begin with '.' or contain '..'", Inputfile );
-		vermessage(); exit(1);
+	if( GL_slmember( scriptfile, "*..* .*" ) ) {
+		Eerr( 2740, "cgi mode: script file name may not begin with '.' or contain '..'", scriptfile );
+		version_msg( 0 ); exit(1);
 		}
 	/* output the HTTP content-type header.. */
-	devnamemap( &Device, imagetype, 2 );
-	if( Device == 's' ) printf( "Content-type: image/%s-xml\n\n", imagetype );
+	devnamemap( &(PLS.device), imagetype, 2 );
+	if( PLS.device == 's' ) printf( "Content-type: image/%s-xml\n\n", imagetype );
 	else printf( "Content-type: image/%s\n\n", imagetype );
 	}
 
 
 
-/* copy stdin to a tmp file.. */
+/* if script coming from stdin, copy stdin to a tmp file.. */
 if( use_stdin ) {
-	sprintf( Inputfile, "%s_I", Tmpname );
-	fp = fopen( Inputfile, "w" ); /* temp file, unlinked below */
-	if( fp == NULL ) {
-		Eerr( 102, "Cannot open tmp file for stdin script\n", Inputfile );
-		vermessage(); exit(1);
-		}
-	while( fgets( buf, 255, stdin ) != NULL ) fprintf( fp, "%s", buf );
-	fclose( fp );
+	FILE *tfp;
+	sprintf( scriptfile, "%s_I", PLS.tmpname );
+	tfp = fopen( scriptfile, "w" ); /* temp file, unlinked below */
+	if( tfp == NULL ) { Eerr( 102, "Cannot open tmp file for stdin script\n", scriptfile ); version_msg( 0 ); exit(1); }
+	while( fgets( PL_bigbuf, MAXBIGBUF-1, stdin ) != NULL ) fprintf( tfp, "%s", PL_bigbuf ); /* was 255 scg 5/20/03 */
+	fclose( tfp );
 	}
 	
-if( Inputfile[0] == '\0' ) {
+
+if( scriptfile[0] == '\0' ) {
 	Eerr( 20, "No -prefab or scriptfile specified on command line", "" );
-	vermessage( );
+	version_msg( 0 );
 	}
 
 
-/* set up.. */
-Esetsize( Winw, Winh, Winx, Winy );
 
 /* DEVICE variable.. */
+
 if( TDH_getvar( "DEVICE", buf ) != 0 ) { /* DEVICE not given on command line, set DEVICE */
-	devnamemap( &Device, buf, 2 );
+	stat = devnamemap( &(PLS.device), buf, 2 );
+	if( stat != 0 ) { version_msg( 0 ); exit( 1 ); }
 	TDH_setvar( "DEVICE", buf );
 	}
-else	{ /* DEVICE given on command line, set Device from DEVICE */
+else	{ /* DEVICE given on command line, set PLS.device from DEVICE */
 	TDH_getvar( "DEVICE", buf );
-	devnamemap( &Device, buf, 1 );
+	stat = devnamemap( &(PLS.device), buf, 1 );
+	if( stat != 0 ) { version_msg( 0 ); exit( 1 ); }
 	}
-if( Debug ) fprintf( Diagfp, "Device code is %c\n", Device );
+if( PLS.debug ) fprintf( PLS.diagfp, "Device code is %c\n", PLS.device );
 
-/* set default output file names for gif and eps.. and svg.. */
-if( Cmdline_outfile[0] == '\0' ) {
-    	if( GL_member( Device, "egs" ) ) {
-		if( Prefab_name[0] != '\0' ) makeoutfilename( Prefab_name, Cmdline_outfile, Device, 1);
-		else makeoutfilename( Inputfile, Cmdline_outfile, Device, 1 );
-		}
-	}
 
-/* set clickmap name */
-if( Clickmap ) {
-	char mapfile[ MAXPATH ];
-	if( Cmdline_outfile[0] != '\0' ) makeoutfilename( Cmdline_outfile, mapfile, 'm', 1);
-	else if( Prefab_name[0] != '\0' ) makeoutfilename( Prefab_name, mapfile, 'm', 1);
-	else makeoutfilename( Inputfile, mapfile, 'm', 1 );
-	mapfilename( mapfile, 10000, Debug );
-	}
+
+/* build output file names.. */
+
+if( prefabname[0] != '\0' ) outnamebase = prefabname;
+else outnamebase = scriptfile;
+
+if( PLS.outfile[0] == '\0' && GL_member( PLS.device, "egsf" ) ) makeoutfilename( outnamebase, PLS.outfile, PLS.device, 1);
+
 
 /* if a viewcommand is specified and an outfile has not been and the device 
    is paginated postscript, we need to set the output file to out.ps */
-if( Viewer[0] != '\0' && Cmdline_outfile[0] == '\0' ) {
-    	if( Device == 'c' || Device == 'p' ) strcpy( Cmdline_outfile, "out.ps" );
+if( PLS.viewer[0] != '\0' && PLS.outfile[0] == '\0' && GL_member( PLS.device, "cp")) strcpy( PLS.outfile, "out.ps" );
+
+if( PLS.outfile[0] != '\0' && 
+    strcmp( PLS.outfile, "-" )!= 0 ) {
+	if( PLS.debug ) fprintf( PLS.diagfp, "Setting output file name to %s\n", PLS.outfile );
+	Esetoutfilename( PLS.outfile );
 	}
 
 
-if( Cmdline_outfile[0] != '\0' && 
-    strcmp( Cmdline_outfile, "-" )!= 0 ) 
-	Esetoutfilename( Cmdline_outfile );
+PL_begin(); /* various other initializations that must be done after config & args processing.. */
 
 
-/* pl initializations.. */
-EDXlo = 0.0; EDXhi = 0.0; EDYlo = 0.0; EDYhi = 0.0;
-Initialized = 0;
 
-
-/* EXECUTE THE SCRIPT FILE to produce the plot.. */
-
-if( Debug ) fprintf( Diagfp, "Script: %s\n", Inputfile );
-stat = exec_plfile( Inputfile );
-if( stat != 0 ) { vermessage(); exit( stat ); }
+/* execute the script file to produce the plot.. */
+if( PLS.debug ) fprintf( PLS.diagfp, "Script file is: %s\n", scriptfile );
+stat = PL_exec_scriptfile( scriptfile );
+if( stat != 0 ) { version_msg( 0 ); exit( 1 ); }
 
 
 /* finish up (x11: button, etc.) */
-if( Initialized && Device == 'x' ) do_x_button( "End." );
+if( PLS.eready && PLS.device == 'x' ) PL_do_x_button( "End." );
 
+if( PLS.eready ) Eendoffile();
+if( use_stdin ) unlink( scriptfile );
 
-if( Initialized ) {
-	Eendoffile();
-	}
-
-if( use_stdin ) unlink( Inputfile );
-
-if( Viewer[0] != '\0' && Device != 'x' && CGIargs == NULL ) {
-	Egetoutfilename( buf );
-	if( stricmp( buf, "stdout" )==0 ) fprintf( Diagfp, "Cannot use -o stdout with -viewer\n" );
-	else if( buf[0] != '\0' ) {
-		strcat( Viewer, " " );
-		strcat( Viewer, buf );
-		fprintf( Diagfp, "Executing '%s' to view results..\n", Viewer );
-		system( Viewer );
+if( PLS.viewer[0] != '\0' && PLS.device != 'x' && PLS.cgiargs == NULL ) {
+	int len;
+	strcpy( buf, PLS.viewer );
+	len = strlen( buf );
+	strcpy( &buf[len++], " " );
+	Egetoutfilename( &buf[ len ] );
+	if( strnicmp( &buf[ len ], "stdout", 6 )==0 ) fprintf( PLS.diagfp, "Cannot use -o stdout with -viewer\n" );
+	else 	{ 
+		fprintf( PLS.diagfp, "Executing '%s' to view results..\n", buf ); 
+		system( buf ); 
 		}
 	}
 
+PL_free();
 exit( 0 );
 }
-

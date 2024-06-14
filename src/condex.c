@@ -11,6 +11,7 @@
 */
 #include <stdio.h>
 #define stricmp( s, t ) 	strcasecmp( s, t )
+#define strnicmp( s, t, u ) 	strncasecmp( s, t, u )
 #define err(a,b,c) 		TDH_err(a,b,c)
 
 #define MAXPARMLEN 1024
@@ -18,20 +19,33 @@
 #define NUMBER 0
 #define ALPHA 1
 
-#define NCLAUSE 12
+#define NCLAUSE 30
 #define NTOKS 30
 #define MAXTOK 256
 
+
 static int evalclause(), evalstmt(), yield();
 static char listsep = ',';
-char *GL_getok();
+extern char *GL_getok();
 static int evalflag = 0;
+static int nofunc = 0;
+static int Matchscore, Matchscore_used;
 
 /* the following is necessary only for var evaluation */
 extern char *TDH_dat, *TDH_recid;
 
-/* ================================== */
 
+/* ================================== */
+TDH_condex_initstatics()
+{
+listsep = ',';	/* persist-from-midriff (matters?) */
+evalflag = 0;
+nofunc = 0;
+return( 0 );
+}
+
+
+/* ================================== */
 TDH_condex( cond, eval )
 char cond[];
 int eval;  /* 1 = cond contains vars that need to be evaluated  0 = not */
@@ -49,6 +63,8 @@ evalflag = eval;
 
 condlen = strlen( cond );
 
+Matchscore = 0; Matchscore_used = 0; 
+
 
 /* break cond into tokens */
 ix = 0;
@@ -62,8 +78,9 @@ else 	{
 
 for( i = 1; ; i++ ) {
 	strcpy( args[ i ], GL_getok( cond, &ix ) );
+
 	/* function may be multiple args - concatenate..*/
-	if( args[i][0] == '$' ) {
+	if( !nofunc  && args[i][0] == '$' && ( isalpha( args[i][1] ) || args[i][1] == '$' ) ) {
 		while( args[i][ strlen( args[i]) - 1 ] != ')' ) {
 			if( ix >= condlen ) break;
 			strcat( args[i], GL_getok( cond, &ix ));
@@ -81,16 +98,18 @@ argc = i;
 
 
 
+
+
 /* do "clauses" */
 for( i = 0; i < NCLAUSE; i++ ) s[i] = 0;
 i = 0;
 j = k = 1;
 while( 1 ) {
-	if( j==argc && GL_smember( args[j], "or ||" )) { 
+	if( j==argc && GL_smemberi( args[j], "or ||" )) { 
 		err( 1001, "expression error", cond );
 		return( -1 ); 
 		}
-	if( j == argc || GL_smember( args[j], "or ||" )) {
+	if( j == argc || GL_smemberi( args[j], "or ||" )) {
 		s[ i ] = evalclause( args, k, j-1 );
 		if( s[ i ] == -1 ) {
 			err( 1002, "expression error", cond );
@@ -103,6 +122,7 @@ while( 1 ) {
 	if( j > argc ) break;
 	}
 rtn = ( s[0] || s[1] || s[2] || s[3] || s[4] || s[5] || s[6] || s[7] || s[8] || s[9] || s[10] || s[11] );
+
 if( negate ) return( ! rtn );
 else return( rtn );
 }
@@ -120,9 +140,9 @@ for( i = 0; i < NCLAUSE; i++ ) s[i] = 1;
 i = 0;
 j = k = start;
 while( 1 ) {
-	if( j==stop && GL_smember( args[j], "and &&" )) {  return( -1 ); }
+	if( j==stop && GL_smemberi( args[j], "and &&" )) {  return( -1 ); }
 
-	if( j==stop || GL_smember( args[j], "and &&" )) {
+	if( j==stop || GL_smemberi( args[j], "and &&" )) {
 		s[ i ] = evalstmt( args, k );
 		if( s[ i ] == -1 ) return( -1 );
 		k = j+1;
@@ -147,12 +167,14 @@ int i, t1, t2, i1, i2;
 double diff;
 double atof(), a2f();
 int slen;
+int stat;
 
-
-strcpy( r1, args[start] ); 
+if( strcmp( args[start], "@_matchscore" )==0 ) sprintf( r1, "%d", Matchscore ); /* allow capture from a leftward 'contains' */
+else strcpy( r1, args[start] ); 
 strcpy( op, args[start+1] );
 strcpy( r2, args[start+2] );
-if( GL_smember( r2, "and && or ||" ) || r2[0] == '\0' ) { return( -1 ); } /* got off track */
+
+if( GL_smemberi( r2, "and && or ||" ) || r2[0] == '\0' ) { return( -1 ); } /* got off track */
 
 
 /* assign data type for value-- types are alpha, number, date */
@@ -160,45 +182,91 @@ i1 = yield( r1, &t1 );
 i2 = yield( r2, &t2 );
 if( i1 < 0 || i2 < 0 ) return( -1 );
 
-if( t1 == NUMBER && t2 == NUMBER ) diff = atof( r1 ) - atof( r2 );
-else diff = (double) strcmp( r1, r2 );
+
+/* handle these ops: =  >   >=  <  <=   ... */
+if( op[0] == '=' || op[0] == '>' || op[0] == '<' || stricmp( op, "is" )==0 ) {
+
+	if( t1 != t2 ) return( 0 ); /* type mismatch always false for these ops */
+
+	/* compute diff */
+	if( t1 == NUMBER && t2 == NUMBER ) diff = atof( r1 ) - atof( r2 );
+	else diff = (double) strcmp( r1, r2 );
+
+	/* determine return code 1 or 0 */
+	if( op[0] == '=' ) { if( diff == 0 ) return( 1 ); else return( 0 ); }
+	else if( op[0] == '>' ) { 
+		if( diff > 0 ) return( 1 ); 
+		else if( op[1] == '=' && diff == 0 ) return( 1 ); 
+		else return( 0 ); 
+		}
+	else if( op[0] == '<' ) {
+		if( diff < 0 ) return( 1 );
+		else if( op[1] == '=' && diff == 0 ) return( 1 ); 
+		else return( 0 );
+		}
+	else if( stricmp( op, "is" )==0 ) { if( diff == 0 ) return( 1 ); else return( 0 ); }
+	}
+
+/* 'like' ... */
+else if( tolower( op[0] ) == 'l' ) return( ! GL_wildcmp( r1, r2, strlen( r2 ), 0 ) );
+
+/* 'contains' */
+#ifndef PLOTICUS
+else if( strnicmp( op, "contains", 8 )==0 ) {
+	stat = GL_containswords( r2, r1 ); /* delimit words on any space/punct */
+	if( stat < 0 ) stat = 20; 	/* to keep summation on track.. also so that initial check for 'contains' works */
+	if( !Matchscore_used ) Matchscore = stat;
+	else Matchscore += stat;	/* if more than one term, accumulate scores */
+	Matchscore_used = 1;
+	return( (stat < 20 ) );
+	}
+#endif
+
+/* '!=' ... */
+else if( GL_smember( op, "!= <> isnot" )) {
+	if( t1 != t2 ) return( 1 ); /* type mismatch always true for != */
+
+	if( t1 == NUMBER && t2 == NUMBER ) diff = atof( r1 ) - atof( r2 );
+	else diff = (double) strcmp( r1, r2 );
 	
-/* number compared against alpha always unequal */
-if(( GL_smember( op, "ne !=" )) &&  ((t1 == NUMBER && t2 == ALPHA) || (t1 == ALPHA && t2 == NUMBER )) ) 
-	return( 1 );
-
-else if( GL_smember( op, "in" )) {
-	for( i = 0, slen = strlen( r2 ); i < slen; i++ ) if( r2[i] == listsep ) r2[i] = ' ' ;
-	return( GL_smember( r1, r2 ) );
-	}
-else if( GL_smember( op, "!in notin" )) {
-	for( i = 0, slen = strlen( r2 ); i < slen; i++ ) if( r2[i] == listsep ) r2[i] = ' ' ;
-	return( ! GL_smember( r1, r2 ) );
-	}
-
-else if( GL_smember( op, "like" )) return( ! GL_wildcmp( r1, r2, strlen( r2 ), 0 ) );
-else if( GL_smember( op, "!like notlike" )) return( ! GL_slmember( r1, r2 ) );  /* scg 11/27/00 */
-
-else if( GL_smember( op, "inlike" )) {
-	for( i = 0, slen = strlen( r2 ); i < slen; i++ ) if( r2[i] == listsep ) r2[i] = ' ' ;
-	return( GL_slmember( r1, r2 ) );
-	}
-else if( GL_smember( op, "!inlike notinlike" )) {
-	for( i = 0, slen = strlen( r2 ); i < slen; i++ ) if( r2[i] == listsep ) r2[i] = ' ' ;
-	return( ! GL_slmember( r1, r2 ) );
+	if( diff != 0 ) return( 1 ); 
+	else return( 0 ); 
 	}
 
 
-/* for the rest of the relational operators, operands must be of same type for comparison .. */
-else if( (t1 == NUMBER && t2 == ALPHA) || (t1 == ALPHA && t2 == NUMBER ) ) return( 0 );
+/* 'inrange' and 'outrange' ... */
+else if( strnicmp( op, "inra", 4 )==0 || strnicmp( op, "outr", 4 )==0 ) {
+	/* always false if any operands are non-numeric */
+	char valtok[80];
+	double ff, gg, hh;
+	int prec;
+	if( t1 != NUMBER ) return( 0 );
+	hh = atof( r1 );
+	i = 0;
+	GL_getseg( valtok, r2, &i, "," );
+	if( !GL_goodnum( valtok, &prec ) ) return( 0 );
+	ff = atof( valtok );
+	GL_getseg( valtok, r2, &i, "," );
+	if( !GL_goodnum( valtok, &prec ) ) return( 0 );
+	gg = atof( valtok );
+	if( tolower( op[0] ) == 'i' && hh >= ff && hh <= gg ) return( 1 );
+	else if( tolower( op[0] ) == 'o' && ( hh < ff || hh > gg )) return( 1 );
+	else return( 0 );
+	}
 
-else if( GL_smember( op, "eq is = ==" )) { if( diff == 0 ) return( 1 ); else return( 0 ); }
-else if( GL_smember( op, "ne isnot != <>" )) { if( diff != 0 ) return( 1 ); else return( 0 ); }
-else if( GL_smember( op, "gt >" )) { if( diff > 0 ) return( 1 ); else return( 0 ); }
-else if( GL_smember( op, "ge >=" )) { if( diff >= 0 ) return( 1 ); else return( 0 ); }
-else if( GL_smember( op, "lt <" )) { if( diff < 0 ) return( 1 ); else return( 0 ); }
-else if( GL_smember( op, "le <=" )) { if( diff <= 0 ) return( 1 ); else return( 0 ); }
+/* '!like' ... */
+else if( GL_smemberi( op, "!like notlike" )) /* return( ! GL_slmember( r1, r2 ) ); */
+	 return( abs( GL_wildcmp( r1, r2, strlen( r2 ), 0 )));
 
+/* other list ops... */
+for( i = 0, slen = strlen( r2 ); i < slen; i++ ) { if( r2[i] == listsep ) r2[i] = ' ' ; } /* change every comma to a space */
+
+if( stricmp( op, "in" ) == 0 ) return( GL_smemberi( r1, r2 ) );
+else if( GL_smemberi( op, "!in notin" )) return( ! GL_smemberi( r1, r2 ) );
+else if( GL_smemberi( op, "inlike" )) return( GL_slmember( r1, r2 ) );
+else if( GL_smember( op, "!inlike notinlike" )) return( ! GL_slmember( r1, r2 ) );
+
+fprintf( stderr, "[%s?]", op );
 return( -1 );
 }
 
@@ -223,11 +291,18 @@ char tok[256];
 *t = -1;
 
 /* if v is a $function call, evaluate it .. */
-if( v[0] == '$' && (isalpha( v[1] ) || v[1] == '$' ) ) {
-#ifdef PSQLONLY
-	status = 1;
-#else
+if( !nofunc && v[0] == '$' && (isalpha( v[1] ) || v[1] == '$' ) ) {
+
+	/* shsql always operates in nofunc mode.  This #ifdef avoids function-related
+	   references in shsql-only applications.  Midriff, which uses condex for both
+	   shsql and script processing, and needs the functions code, must be linked such
+	   that tdhkit.a has precidence over libshsql.a
+	*/
+
+#ifndef SHSQL
 	status = TDH_function_call( v, t, evalflag ); /* v will be modified here */
+#else
+	status = 1;
 #endif
 	if( status != 0 ) { 
 		err( 1003, "function error in condex", v ); 
@@ -236,7 +311,7 @@ if( v[0] == '$' && (isalpha( v[1] ) || v[1] == '$' ) ) {
 	}
 
 /* variable.. evaluate it.. */
-else if( v[0] == '@' && v[1] != '@' && evalflag ) {
+else if( evalflag && v[0] == '@' && v[1] != '@' ) {
 	status = TDH_getvalue( tok, &v[1], TDH_dat, TDH_recid );
 	if( status == 0 ) strcpy( v, tok );
 	/* else @var appears verbatim */
@@ -253,10 +328,30 @@ return( 1 );
 
 
 /* ============================== */
+/* ============================== */
+
 /* CONDEX_LISTSEP - allow setting of list delimiter character in case comma is unacceptable */
 TDH_condex_listsep( c )
 char c;
 {
 listsep = c;
 return( 0 );
+}
+
+/* ============================== */
+/* CONDEX_NOFUNC - don't take special action on tokens beginning with dollar signs */
+TDH_condex_nofunc( mode )
+int mode;
+{
+nofunc = mode;
+return( 0 );
+}
+
+
+/* =============================== */
+/* CONDEX_MATCHSCORE - return most recent match score (-1 indicates not used) */
+TDH_condex_matchscore()
+{
+if( !Matchscore_used ) return( -1 );
+else return( Matchscore );
 }

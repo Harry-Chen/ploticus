@@ -6,13 +6,12 @@
 
 //// DIST - frequency distribution
 
-//// load dist-specific parameters..
+//// initialize key dist-specific parameters..
 #setifnotgiven binsize = ""
 #setifnotgiven color = "pink"
-#setifnotgiven barwidth = ""
-#setifnotgiven savetbl = ""
 #setifnotgiven cats = ""
 #setifnotgiven order = "natural"
+#setifnotgiven fld = ""
 
 //// load standard parameters..
 #include $chunk_setstd
@@ -21,10 +20,10 @@
 //// read data...
 #include $chunk_read
 
-#musthave fld
-
-//// do title..
-#include $chunk_title
+#if @fld != ""
+  #set x = @fld
+#endif
+#musthave x
 
 
 //// user pre-plot include
@@ -38,11 +37,15 @@
 #if @cats = yes
   xrange: 0 100
 #elseif @xrange = ""
-  xautorange: datafield=@fld
+  xautorange: datafield=@x nearest=@xnearest 
 #else
   xrange: @xrange
 #endif
 yrange: 0 100   // to be revised after we run the distribution..
+
+
+//// do title..
+#include $chunk_title
 
 
 // for categories, stubs must be done AFTER the distribution is run below..
@@ -60,7 +63,7 @@ yrange: 0 100   // to be revised after we run the distribution..
 
 //// tabulate the distribution of values, e.g. how many strains fell into each bin
 #proc tabulate
-datafield1: @fld
+datafield1: @x
 #if @cats != yes
   doranges1: yes
   rangespec1: @XMIN @binsize
@@ -68,22 +71,22 @@ datafield1: @fld
 #else
   order1: @order
 #endif
-#if @savetbl != ""
-  savetable: @savetbl
-#endif
+#ifspec savetbl savetable
 
 //// now that we have the distribution, recompute the plotting area with a auto Y range
 #include $chunk_area
 #if @yrange = ""
-  yautorange: datafield=2
+  yautorange: datafield=2 nearest=@ynearest 
 #elseif @yrange = 0
-  yautorange: datafield=2 lowfix=0
+  yautorange: datafield=2 lowfix=0 nearest=@ynearest 
 #else
   yrange: @yrange
 #endif
 #if @cats = yes
   xscaletype: categories
   xcategories: datafield=1
+  // following added 9/2/02 scg
+  catcompmethod: exact
 #else
   xrange: @XMIN @XMAX
 #endif
@@ -94,9 +97,7 @@ datafield1: @fld
   #proc xaxis
   stubs: usecategories
   stubdetails: size=8
-  #if @stubvert = yes
-    stubvert: yes
-  #endif
+  #ifspec stubvert
 #endif
 
 
@@ -117,12 +118,11 @@ datafield1: @fld
 locfield: 1
 lenfield: 2
 color: @color
-#if @barwidth != ""
-  barwidth: @barwidth
-#endif
+#ifspec barwidth
 outline: no
 hidezerobars: yes
-clickmapurl: @clickmapurl
+#ifspec clickmapurl
+#ifspec clickmaplabel
 
 //// user post-plot include
 #if @include2 != ""

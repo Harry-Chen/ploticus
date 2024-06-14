@@ -10,12 +10,13 @@
 #define MAXCOLORS 34
 #define stricmp( s, t )              strcasecmp( s, t )
 
-struct colorlist {
+struct PLG_colorlist {
 	char *name;
 	double r, g, b;
 	};
 
-static struct colorlist C[MAXCOLORS] = {
+/* these are constants.. */
+static struct PLG_colorlist colorname[MAXCOLORS] = {
 	{ "white", 1, 1, 1 },
 	{ "black", 0, 0, 0 },
 	{ "transparent", 1, 1, 1 },
@@ -58,16 +59,16 @@ static struct colorlist C[MAXCOLORS] = {
 	{ "lightorange", 1, .80, .60 } };
 
 /* =============================== */
-Ecolorname_to_rgb( color, r, g, b )
+PLG_colorname_to_rgb( color, r, g, b )
 char *color;
 double *r, *g, *b;
 {
 int i;
 for( i = 0; i < MAXCOLORS; i++ ) {
-	if( stricmp( color, C[i].name )==0 ) {
-		*r = C[i].r;
-		*g = C[i].g;
-		*b = C[i].b;
+	if( stricmp( color, colorname[i].name )==0 ) {
+		*r = colorname[i].r;
+		*g = colorname[i].g;
+		*b = colorname[i].b;
 		return( 0 );
 		}
 	}
@@ -79,7 +80,7 @@ return( 1 );
 /* =============================== */
 /* map r, g, b to a shade of gray */
 double
-Ergb_to_gray( r, g, b )
+PLG_rgb_to_gray( r, g, b )
 double r, g, b;
 {
 double gray;
@@ -94,7 +95,7 @@ return( gray );
 
 /* =============================== */
 /* for i values 0 - 19 assign a usable color */
-Eicolor( i, color )
+PLG_icolor( i, color )
 int i;
 char *color;
 {

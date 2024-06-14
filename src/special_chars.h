@@ -1,4 +1,4 @@
-static char *EPspecial_std[][2] = {
+static char *ps_special_std[][2] = {
 "AE","341", /* AE */
 "PL","350", /* Lslash */
 "OE","352", /* OE */
@@ -60,7 +60,7 @@ static char *EPspecial_std[][2] = {
 "yi","245", /* yen */
 "@@","-1" /* THE END */
 };
-static char *EPsymbol[][2] = {
+static char *ps_symbol[][2] = {
 "*d","144", /* delta */
 "*e","145", /* epsilon */
 "*f","146", /* phi */

@@ -3,36 +3,37 @@
  * Covered by GPL; see the file ./Copyright for details. */
 
 
-#include "graphcore.h"
+#include "plg.h"
 #include <ctype.h>
 /* Low level elib drawing stubs.. */
 /* These issue driver requests only when a parameter actually changes */
 
 /* ======================================== */
-Eclr()
+/* CLR - clear the display */
+PLG_clr()
 {
 double atof();
 Epcode( 'z', 0.0, 0.0, Ecurbkcolor );
 }
 /* ======================================== */
-/* move to x, y absolute */
-Emov( x , y )
+/* MOV - move to x, y absolute */
+PLG_mov( x , y )
 double x, y;
 {
 if( Eflip ) Epcode( 'M', (double)y , (double)x, "" );
 else Epcode( 'M', (double)x , (double)y, "" );
 }
 /* ======================================== */
-/* line to x, y absolute */
-Elin( x , y )
+/* LIN - line to x, y absolute */
+PLG_lin( x , y )
 double x, y;
 {
 if( Eflip ) Epcode( 'L', (double)y , (double)x, "" );
 else Epcode( 'L', (double)x , (double)y, "" );
 }
 /* ======================================== */
-/* path to x, y absolute (form a polygon to be shaded later) */
-Epath( x, y )
+/* PATH - path to x, y absolute (form a polygon to be shaded later) */
+PLG_path( x, y )
 double x, y;
 {
 if( Eflip ) Epcode( 'P', (double)y , (double)x, "" );
@@ -40,30 +41,9 @@ else Epcode( 'P', (double)x , (double)y, "" );
 }
  
 
-#ifdef CUT
 /* ======================================== */
-/* move to x, y data */
-Emovu( x , y )
-double x, y;
-{
-if( Eflip ) Epcode( 'M', Eax((double) y ) , Eay((double) x ), "" );
-else Epcode( 'M', Eax((double) x ) , Eay((double) y ), "" );
-}
-/* ======================================== */
-/* line to x, y data */
-Elinu( x , y ) 
-double x, y;
-{
-if( Eflip ) Epcode( 'L', Eax((double) y ) , Eay((double) x ), "" );
-else Epcode( 'L', Eax((double) x ) , Eay((double) y ), "" );
-}
-/* path to x, y data (form a polygon to be shaded later) */
-#define Epathu( x , y )         Epcode( 'P', Eax((double) x ) , Eay((double) y ), "" )
-#endif
-
-/* ======================================== */
-/* handle multi-line text. */
-Edotext( s, op )
+/* DOTEXT -  handle multi-line text. */
+PLG_dotext( s, op )
 char *s;
 char op;
 {
@@ -89,8 +69,8 @@ for( i = 0; ;  ) {
 }
 
 /* ======================================== */
-/* EFONT - Set font to s.  If s is "" use standard font. */
-Efont( s )      
+/* FONT - Set font to s.  If s is "" use standard font. */
+PLG_font( s )      
 char s[];
 { 
 if( strlen( s ) < 1 ) {
@@ -103,9 +83,9 @@ else if( strcmp( s, Ecurfont )!= 0 ) {
 	} 
 }
 /* ======================================== */
-/* ETEXTSIZE - Set textsize to x.  If x is 0 use standard textsize.
+/* TEXTSIZE - Set textsize to x.  If x is 0 use standard textsize.
    In any case, the size is scaled by the standard text scaling factor. */
-Etextsize( x )          
+PLG_textsize( x )          
 int x;
 { 
 double p;
@@ -124,12 +104,12 @@ if( (int)p != Ecurtextsize ) {
 		/* get exact dimensions of one of the 5 gif text sizes available .. */
 		if( p <= 6 ) { Ecurtextwidth = 0.05; Ecurtextheight = 9 / 72.0; } /* 7 */
 		else if( p >= 7 && p <= 9 ) 
-			{ Ecurtextwidth = 0.0615384; Ecurtextheight = 12 / 72.0; } /* 10 */
+			{ Ecurtextwidth = 0.06; Ecurtextheight = 12 / 72.0; } /* 10 */
 		else if( p >= 10 && p <= 12 ) 
-			{ Ecurtextwidth = 0.0727272; Ecurtextheight = 14 / 72.0; } /* 12 */
+			{ Ecurtextwidth = 0.07; Ecurtextheight = 14 / 72.0; } /* 12 */
 		else if( p >= 13 && p <= 15 ) 
 			{ Ecurtextwidth = 0.08; Ecurtextheight = 17 / 72.0; } /* 15 */
-		else if( p >= 15 ) { Ecurtextwidth = 0.0930232; Ecurtextheight = 20 / 72.0; }
+		else if( p >= 15 ) { Ecurtextwidth = 0.09; Ecurtextheight = 20 / 72.0; }
 		}
 	else if( Edev != 'x' ) Ecurtextwidth = Ecurtextheight * 0.4; 
 			/* note: x11 driver supplies Ecurtextwidth in 
@@ -137,7 +117,7 @@ if( (int)p != Ecurtextsize ) {
 	}
 }
 /* ======================================== */
-Etextdir( x )
+PLG_textdir( x )
 int x;
 { 
 if( x != Ecurtextdirection ) {
@@ -146,18 +126,16 @@ if( x != Ecurtextdirection ) {
 	}
 }
 /* ======================================== */
-Epaper( x )
+PLG_paper( x )
 int x;
 {
-/* if( Ecurpaper != x ) { deleted scg 2/29/00 trying to get multi-page landscape to work...*/
-	Epcode( 'O', (double)x , 0.0, "" ); 
-	Ecurpaper = x; 
-/* 	} */
+Epcode( 'O', (double)x , 0.0, "" ); 
+Ecurpaper = x; 
 }
 /* ======================================== */
-/* ELINETYPE - Set line parameters.  If linewidth is 0 use standard linescale.
+/* LINETYPE - Set line parameters.  If linewidth is 0 use standard linescale.
    If pattern density is 0 use standard linescale. */
-Elinetype( pattern, linewidth, pat_dens )    
+PLG_linetype( pattern, linewidth, pat_dens )    
 int pattern;
 double linewidth, pat_dens;
 { 
@@ -182,7 +160,7 @@ if( linewidth != Ecurlinewidth ||
 }
 
 /* ======================================== */
-Enormline()             
+PLG_normline()             
 { 
 Epcode( 'Y', Estandard_lwscale, 1.0, "0" ); 
 Ecurlinewidth = Estandard_lwscale;
@@ -193,19 +171,13 @@ Ecurpatternfactor = 1;
 /* ======================================== */
 /* set current color for lines and text to s.  If s is "", use
    standard color.  */
-Ecolor( s )
+PLG_color( s )
 char *s;
 {
 /* char color[40], fillpat[40]; */
 /* strip off fillpat spec and set flag? */
 
 if( s[0] == '\0' ) strcpy( Ecurcolor, Estandard_color );
-/* else if( strcmp( Ecurcolor, s )==0 ) return( 0 ); */  /* tried but screws up w/gif driver */
-
-/* else	{
- *	sscanf( s, "%s %s", 
- */
-
 else strcpy( Ecurcolor, s );
 	
 Epcode( 'r', 0.0, 0.0, Ecurcolor );
@@ -214,7 +186,7 @@ Epcode( 'r', 0.0, 0.0, Ecurcolor );
 /* ======================================== */
 /* set background color.
    If background color is "" use standard background color. */
-Ebackcolor( color )
+PLG_backcolor( color )
 char *color;
 {
 if( color[0] != '\0' )strcpy( Ecurbkcolor, color );
@@ -223,7 +195,7 @@ else strcpy( Ecurbkcolor, Estandard_bkcolor );
 
 /* ======================================== */
 /* fill currently defined rectangle/polygon with color c */
-Ecolorfill( c )
+PLG_colorfill( c )
 char *c;
 {
 char oldcolor[30];
@@ -235,7 +207,7 @@ Ecolor( oldcolor ); /* go back to color as it existed before.. */
 }
 /* ======================================== */
 /* (Old) do shading, within the previously defined polygon path.. the shade can be 0 to 1 */
-Eshade( s )
+PLG_shade( s )
 double s;
 {
 char str[20];

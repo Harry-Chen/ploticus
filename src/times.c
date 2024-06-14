@@ -24,7 +24,7 @@
    component can be controlled by using a printf double format spec instead
    of 'ss'.  For example: hh:mm:%02.2f 
 
-   To get current time in seconds past midnight, use tomin( "now", &sec );
+   To get current time in minutes past midnight, use tomin( "now", &sec );
    To get current time in current format use frommin( -1.0, result );
 */
 #ifndef NO_DT
@@ -43,7 +43,20 @@ static int Hr = 0, Min = 0;
 static double Sec = 0.0;
 static char Dispfmt[30] = "%d:%02d";
 static char Curfmt[30] = "hh:mm";
+static int Nodaylimit = 0;
 #endif
+
+double atof();
+
+/* ============================= */
+DT_time_initstatic()
+{
+Hr = 0; Min = 0; Sec = 0.0;
+strcpy( Dispfmt, "%d:%02d" );
+strcpy( Curfmt, "hh:mm" );
+return( 0 );
+}
+
 
 /* ============================= */
 /* SETTIMEFMT - set the "current time format" */
@@ -54,6 +67,12 @@ char *fmt;
   return( err( 7950, "date/time support not included in this build", "" ));
   }
 #else
+
+/* hhh = hours not limited to one day, eg. 32:00 or 122:44 would be valid  - scg 6/18/03 */
+if( strncmp( fmt, "hhh", 3 )==0 ) {
+	Nodaylimit = 1;
+	strcpy( fmt, &fmt[1] );
+	}
 
 if( stricmp( fmt, "hh:mm" )==0 ) {
 	strcpy( Dispfmt, "%d:%02d" );
@@ -105,7 +124,8 @@ if( format == HHMM || format == HHMMSS ) {
 	if( nt == 2 ) *result = (Hr * 60.0) + Min;
 	else if( nt == 3 ) *result = (Hr * 60.0) + Min + (Sec/60.0);
 	else { *result = 0.0; return( 3 ); } /* error */
-	if( Hr > 24 || Hr < 0 || Min > 59 || Min < 0 || Sec >= 60.0 || Sec < 0.0 ) return( 5 );
+	if( Hr < 0 || Min > 59 || Min < 0 || Sec >= 60.0 || Sec < 0.0 ) return( 5 ); /* scg 6/18/03 */
+	if( !Nodaylimit && ( Hr > 24 || ( Hr == 24 && Min != 0  ))) return( 5 ); /* scg 6/18/03 */ 
 	return( 0 );
 	}
 else if( format == MMSS ) {
@@ -119,7 +139,7 @@ return( 0 );
 }
 
 /* ============================ */
-/* FROMMIN - take # seconds since 00:00:00 and return time string in current format */
+/* FROMMIN - take # minutes since 00:00:00 and return time string in current format */
 DT_frommin( s, result )
 double s; /* sec may be < 0 for "now" */
 char *result;
@@ -136,6 +156,9 @@ else	{
 	Sec = (s - (double)((Hr*60) + (Min))) * 60.0; 
 	if( Sec < 0.0000001 ) Sec = 0.0; /* adjust for rounding error */
 	}
+
+if( !Nodaylimit && Hr == 24 && Min == 0 && Sec == 0 ) Hr = 0; /* scg 9/29/03 */
+	
 DT_maketime( Hr, Min, Sec, result );
 return( 0 );
 }
@@ -216,7 +239,7 @@ else	{
 	}
 
 if( ampm[0] != '\0' ) {
-	if( result[0] == '0' ) sprintf( result, "%s%s", &result[1], ampm );
+	if( result[0] == '0' && result[1] != ':' ) sprintf( result, "%s%s", &result[1], ampm );
 	else strcat( result, ampm );
 	}
 return( 0 );

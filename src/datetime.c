@@ -8,7 +8,18 @@
 
 static double Dtwinbegin = 0.0, Dtwinend = 1440.0, Dtwinsize = 1440.0; /* default: 24 hours */
 static int Suppress_twin_warn = 0;
+static char Dtsep[4] = "."; /* added scg 9/26/03 */
 
+/* ================================== */
+DT_datetime_initstatic()
+{
+Dtwinbegin = 0.0;
+Dtwinend = 1440.0;
+Dtwinsize = 1440.0;
+Suppress_twin_warn = 0;
+strcpy( Dtsep, "." );
+return( 0 );
+}
 
 /* ================================== */
 /* SETDATETIMEFMT - set the format for the date and time 
@@ -23,11 +34,13 @@ char datepart[20], timepart[20];
 char beginpart[20], endpart[20];
 int i;
 
-i = 0;
-GL_getchunk( datepart, fmt, &i, "." );
-GL_getchunk( timepart, fmt, &i, "." );
-DT_setdatefmt( datepart );
-DT_settimefmt( timepart );
+if( fmt[0] != '\0' ) {  /* condition added scg 9/29/03 */
+	i = 0;
+	GL_getchunk( datepart, fmt, &i, Dtsep );
+	GL_getchunk( timepart, fmt, &i, Dtsep );
+	DT_setdatefmt( datepart );
+	DT_settimefmt( timepart );
+	}
 
 if( window[0] != '\0' ) { /* parse 'window' specification */
 	i = 0;
@@ -50,8 +63,8 @@ return( 0 );
 /* ================================== */
 /* DATETIME2DAYS - convert a datetime to julian date with 
 	decimal portion representing the time component.
+   	Returns 0 if ok, 1 on error */
 
-   Returns 0 if ok, 1 on error */
 DT_datetime2days( dt, days )
 char *dt;
 double *days;
@@ -62,13 +75,16 @@ int i, stat;
 double mins;
 
 i = 0;
-GL_getchunk( datepart, dt, &i, "." );
-GL_getchunk( timepart, dt, &i, "." );
+GL_getchunk( datepart, dt, &i, Dtsep );
+GL_getchunk( timepart, dt, &i, Dtsep );
 stat = DT_jdate( datepart, &jul );
 if( stat != 0 ) return( 1 );
 
-stat = DT_tomin( timepart, &mins );
-if( stat != 0 ) return( 1 );
+if( strcmp( timepart, "" )==0 ) mins = Dtwinbegin; /* added scg 9/26/03 */
+else 	{
+	stat = DT_tomin( timepart, &mins );
+	if( stat != 0 ) return( 1 );
+	}
 
 if( mins < Dtwinbegin || mins > Dtwinend ) {
 	if( !Suppress_twin_warn ) 
@@ -99,7 +115,8 @@ timepart = floor( timepart + 0.5 ); /* remove any rounding error introduced by a
 DT_fromjul( (long)datepart, s );
 DT_frommin( timepart, t );
 
-sprintf( dt, "%s.%s", s, t );
+
+sprintf( dt, "%s%s%s", s, Dtsep, t );
 return( 0 );
 }
 /* ================================== */
@@ -114,23 +131,24 @@ char datepart[20], timepart[20];
 char datefmt[20], timefmt[20];
 char s[30], t[30];
 int i;
+double tmin;
 
 i = 0;
 strcpy( datefmt, "" );
 strcpy( timefmt, "" );
-if( format[0] != '.' && tolower(format[0]) != 'h' ) GL_getchunk( datefmt, format, &i, "." );
-GL_getchunk( timefmt, format, &i, "." );
+if( format[0] != Dtsep[0] && tolower(format[0]) != 'h' ) GL_getchunk( datefmt, format, &i, Dtsep );
+GL_getchunk( timefmt, format, &i, Dtsep );
 
 i = 0;
-GL_getchunk( datepart, dt, &i, "." );
-GL_getchunk( timepart, dt, &i, "." );
+GL_getchunk( datepart, dt, &i, Dtsep );
+GL_getchunk( timepart, dt, &i, Dtsep );
 
 if( datefmt[0] != '\0' ) {
 	DT_formatdate( datepart, datefmt, s );
 	}
 else strcpy( s, "" );
 if( timefmt[0] != '\0' ) {
-	if( datefmt[0] != '\0' )strcpy( t, "." );	
+	if( datefmt[0] != '\0' )strcpy( t, Dtsep );	
 	else strcpy( t, "" );
 	DT_formattime( timepart, timefmt, &t[strlen(t)] );
 	}
@@ -148,6 +166,42 @@ suppress_twin_warn( mode )
 int mode;
 {
 Suppress_twin_warn = mode;
+return( 0 );
+}
+
+/* ================================== */
+/* GETWIN - return the date window size in hours */
+
+DT_getwin( winsize  )
+double *winsize;
+{
+*winsize = Dtwinsize / 60.0;
+return( 0 );
+}
+
+/* =================================== */
+/* BUILD_DT - build a datetime string from a date part and a time part */
+DT_build_dt( datepart, timepart, result )
+char *datepart, *timepart, *result;
+{
+sprintf( result, "%s%s%s", datepart, Dtsep, timepart );
+return( 0 );
+}
+
+/* =================================== */
+/* SETDTSEP - set the datetime separator character */
+DT_setdtsep( c )
+char c;
+{
+sprintf( Dtsep, "%c", c );
+return( 0 );
+}
+/* =================================== */
+/* GETDTSEP - set the datetime separator character */
+DT_getdtsep( sep )
+char *sep;
+{
+strcpy( sep, Dtsep );
 return( 0 );
 }
 

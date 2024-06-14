@@ -88,10 +88,10 @@ if( j < 0 ) {
 	stat = TDH_getvar( itemname, value );
 #ifdef PLOTICUS 
 	if( stat != 0 ) {  /* try data field name.. */
-		fref_showerr( 0 );
-		j = fref( itemname ) - 1; 
-		fref_showerr( 1 );
-		if( fref_error() ) return( 1308 );
+		PL_fref_showerr( 0 );
+		j = PL_fref( itemname ) - 1; 
+		PL_fref_showerr( 1 );
+		if( PL_fref_error() ) return( 1308 );
 			/* return( err( 1308, "unrecognized variable or data field name", itemname )); */
 		strcpy( value, data[ j ] );
 		return( 0 );

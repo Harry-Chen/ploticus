@@ -15,36 +15,20 @@
 
 #define NUMBER 0
 #define ALPHA 1
+#define REFYEAR 1977
 
 #define NTYPES 28
 
-static char Dmonths[12][10] = { "jan", "feb", "mar", "apr", "may", "jun", 
-				"jul", "aug", "sep", "oct", "nov", "dec" };
-				  /* should be 3 chars each, lower-case */
-
-static char Fullmonth[12][12] = { 
-			"January", "February", "March", "April", "May", "June",
-				"July", "August", "September", "October", 
-				"November", "December" };
-
-static char Abbrevmonth[12][10] = {
-			"Jan", "Feb", "Mar", "Apr", "May", "June",
-				"July", "Aug", "Sept", "Oct", 
-				"Nov", "Dec" };
-
-static char Dwdays[8][10] = { "", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
-				  /* should be 3 chars each, capitalized as shown */
-
+/* constants */
 static int Dmdays[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
-static char Fmtstring[20] = "mmddyy"; /* the current format */
-static char Defaultfmt[20] = "mmddyy"; /* date format the user has chosen as "default" */
-
+/* constants */
 static char *Df[16] = { "%d-%d-%d", "%d/%d/%d", "%2d%2d%d", "%d.%d.%d",
 		"%3s-%d-%d", "%3s_%d_%d", "%3s/%d/%d",
 		"%d-%3s-%d", "%d_%3s_%d", "%d/%3s/%d", "%d%3s%d",
 		"%4d%2d%2d" };
 
+/* constants */
 static char *Dtag[NTYPES] = { "mm-dd-yy", "mm/dd/yy", "mmddyy", "mm.dd.yy",
 		 /*4*/      "dd-mm-yy", "dd/mm/yy", "ddmmyy", "dd.mm.yy",
 			    "", "", 
@@ -55,10 +39,24 @@ static char *Dtag[NTYPES] = { "mm-dd-yy", "mm/dd/yy", "mmddyy", "mm.dd.yy",
 		 /* 20 */   "yy-mm-dd", "yy/mm/dd", "yymmdd", "yy.mm.dd",
 		 /* 24 */   "yyyy-mm-dd", "yyyy/mm/dd", "yyyymmdd", "yyyy.mm.dd" };
 
-				
 
-static int Pivotyear = 77;  /* year >= this will be considered 1900's.
-			year <  this will be considered 2000's. */
+static char Dmonths[12][10] = { "jan", "feb", "mar", "apr", "may", "jun", 
+				"jul", "aug", "sep", "oct", "nov", "dec" };
+				  /* should be 3 chars each, lower-case */
+
+static char Fullmonth[12][16] = { "January", "February", "March", "April", "May", "June",
+				"July", "August", "September", "October", "November", "December" };
+
+static char Abbrevmonth[12][10] = { "Jan", "Feb", "Mar", "Apr", "May", "June", 
+				"July", "Aug", "Sept", "Oct", "Nov", "Dec" };
+
+static char Dwdays[8][10] = { "", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
+				  /* should be 3 chars each, capitalized as shown */
+
+static char Fmtstring[20] = "mmddyy"; /* the current format */
+static char Defaultfmt[20] = "mmddyy"; /* date format the user has chosen as "default" */
+
+static int Pivotyear = 77;  /* a year >= pivotyear is considered 1900's.  a year < pivotyear is considered 2000's. */
 
 /* the following are maintained internally.. */
 static int Dispfmt = 2;
@@ -77,6 +75,41 @@ static int Noweekendmode = 0;
 static int checklengths = 1;
  
 static int jul();
+
+
+/* ========================= */
+DT_initstatic()
+{
+strcpy( Dmonths[0], "jan" ); strcpy( Dmonths[1], "feb" ); strcpy( Dmonths[2], "mar" );
+strcpy( Dmonths[3], "apr" ); strcpy( Dmonths[4], "may" ); strcpy( Dmonths[5], "jun" );
+strcpy( Dmonths[6], "jul" ); strcpy( Dmonths[7], "aug" ); strcpy( Dmonths[8], "sep" );
+strcpy( Dmonths[9], "oct" ); strcpy( Dmonths[10], "nov" ); strcpy( Dmonths[11], "dec" );
+
+strcpy( Fullmonth[0], "January" ); strcpy( Fullmonth[1], "February" ); strcpy( Fullmonth[2], "March" );
+strcpy( Fullmonth[3], "April" ); strcpy( Fullmonth[4], "May" ); strcpy( Fullmonth[5], "June" );
+strcpy( Fullmonth[6], "July" ); strcpy( Fullmonth[7], "August" ); strcpy( Fullmonth[8], "September" );
+strcpy( Fullmonth[9], "October" ); strcpy( Fullmonth[10], "November" ); strcpy( Fullmonth[11], "December" );
+
+strcpy( Abbrevmonth[0], "Jan" ); strcpy( Abbrevmonth[1], "Feb" ); strcpy( Abbrevmonth[2], "Mar" );
+strcpy( Abbrevmonth[3], "Apr" ); strcpy( Abbrevmonth[4], "May" ); strcpy( Abbrevmonth[5], "Jun" );
+strcpy( Abbrevmonth[6], "Jul" ); strcpy( Abbrevmonth[7], "Aug" ); strcpy( Abbrevmonth[8], "Sep" );
+strcpy( Abbrevmonth[9], "Oct" ); strcpy( Abbrevmonth[10], "Nov" ); strcpy( Abbrevmonth[11], "Dec" );
+
+strcpy( Dwdays[0], "" ); strcpy( Dwdays[1], "Sun" ); strcpy( Dwdays[1], "Mon" ); strcpy( Dwdays[2], "Tue" ); 
+strcpy( Dwdays[3], "Wed" ); strcpy( Dwdays[4], "Thu" ); strcpy( Dwdays[5], "Fri" ); strcpy( Dwdays[6], "Sat" );
+
+strcpy( Fmtstring, "mmddyy" ); /* the current format */
+strcpy( Defaultfmt, "mmddyy" ); /* date format the user has chosen as "default" */
+
+Pivotyear = 77;
+Dispfmt = 2;
+Longyr = 0;
+strcpy( Moncase, "Aaa" );
+Noweekendmode = 0;
+checklengths = 1;
+
+return( 0 );
+}
 
 #endif
 
@@ -304,11 +337,11 @@ else if( d < 1 || d > Dmdays[ m ] ) return( -1 ); /* bad day */
 Day = d;
 
 /* calculate julian date (reference date 1/1/1977 = 0 */
-*jul = ( y - 1977 ) * 365 + ( ( y - 1977 ) / 4 );
+*jul = ( y - REFYEAR ) * 365 + ( ( y - REFYEAR ) / 4 );
 for( i = 0; i < m; i++ ) *jul += Dmdays[i];
 if( m > 1 ) *jul += leap; /* only after feb */
 *jul += (d -1); 
-if( y < 1977 ) (*jul)--; /* correct for zero crossing */
+if( y < REFYEAR ) (*jul)--; /* correct for zero crossing */
 
 if( Noweekendmode ) {    /* added scg 5/22/00 */
 	int nweekends;
@@ -342,7 +375,7 @@ if( jul < 0 ) { /* convert to 0 = 1 JAN 1800 */  /* added scg 10/25/01 */
 	jul += 64648;
 	baseyear = 1800;
 	}
-else baseyear = 1977;
+else baseyear = REFYEAR;
 
 if( jul < 0 ) return( 1 );  /* error */
 

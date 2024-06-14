@@ -6,6 +6,13 @@
 
 #include "pl.h"
 
+static double ahx, ahy, atx, aty, ahsize;
+static double ah2x, ah2y, at2x, at2y;
+static double boxw, boxh, ulx, uly;
+static int arrowh, arrowt, arrow2h, arrow2t;
+static int do_arrows();
+static char arrowdet[256];
+
 PLP_annotate()
 {
 int i;
@@ -21,12 +28,7 @@ double x, y;
 char textdetails[256];
 char fromfile[256];
 int fromfilemode;
-int arrowh, arrowt, arrow2h, arrow2t;
-double ahx, ahy, atx, aty, ahsize;
-double ah2x, ah2y, at2x, at2y;
-char arrowdet[256];
 int nlines, maxlen;
-double boxw, boxh, ulx, uly;
 char box[256];
 char backcolor[40];
 int verttext;
@@ -35,12 +37,18 @@ char mapurl[MAXPATH];
 double bevelsize, shadowsize;
 char lowbevelcolor[40], hibevelcolor[40], shadowcolor[40];
 int ioutline;
+char maplabel[256];
+int clickmap_on;
+int do_ellipse;
+double bd_1, bd_2, bd_3, bd_4;
+int backdim;
+double cx, cy;
 
 
 TDH_errprog( "pl proc annotate" );
 
 /* initialize */
-strcpy( Bigbuf, "" );
+strcpy( PL_bigbuf, "" );
 strcpy( textdetails, "" );
 strcpy( fromfile, "" );
 fromfilemode = 0;
@@ -60,6 +68,10 @@ shadowsize = 0.0;
 strcpy( lowbevelcolor, "0.6" );
 strcpy( hibevelcolor, "0.8" );
 strcpy( shadowcolor, "black" );
+strcpy( maplabel, "" );
+clickmap_on = 0;
+do_ellipse = 0;
+backdim = 0;
 
 
 
@@ -77,7 +89,7 @@ while( 1 ) {
 		getcoords( "location", lineval, &x, &y );
 		}
 	else if( stricmp( attr, "text" )==0 ) 
-		getmultiline( "text", lineval, MAXBIGBUF, Bigbuf );
+		getmultiline( "text", lineval, MAXBIGBUF, PL_bigbuf );
 
 	else if( stricmp( attr, "textdetails" )==0 ) strcpy( textdetails, lineval );
 	else if( stricmp( attr, "fromfile" )==0 ) {
@@ -108,14 +120,23 @@ while( 1 ) {
 	else if( stricmp( attr, "arrowdetails" )==0 ) strcpy( arrowdet, lineval );
 	else if( stricmp( attr, "arrowheadsize" )==0 ) {
 		ahsize = atof( val );
-		if( ahsize <= 0.0 ) ahsize = 0.001; /* same as none */
-		if( Using_cm ) ahsize /= 2.54;
+		if( ahsize <= 0.0 ) ahsize = 0.0; /* no arrow */
+		if( PLS.usingcm ) ahsize /= 2.54;
 		}
-	else if( stricmp( attr, "box" )==0 ) strcpy( box, lineval );
-	else if( stricmp( attr, "clickmapurl" )==0 ) strcpy( mapurl, val );
+	else if( stricmp( attr, "box" )==0 || stricmp( attr, "outline" )==0 ) strcpy( box, lineval );
+	else if( stricmp( attr, "ellipse" )==0 ) {
+		if( strnicmp( val, YESANS, 1 )==0 ) do_ellipse = 1;
+		else do_ellipse = 0;
+		}
+	else if( stricmp( attr, "clickmapurl" )==0 ) {
+		if( PLS.clickmap ) { strcpy( mapurl, val ); clickmap_on = 1; }
+		}
+	else if( stricmp( attr, "clickmaplabel" )==0 ) {
+		if( PLS.clickmap ) { strcpy( maplabel, lineval ); clickmap_on = 1; }
+		}
 	else if( stricmp( attr, "boxmargin" )==0 ) {
 		bm = atof( val );
-		if( Using_cm ) bm /= 2.54;
+		if( PLS.usingcm ) bm /= 2.54;
 		}
 	else if( stricmp( attr, "verttext" )==0 ) {
 		if( strnicmp( val, YESANS, 1 )==0 ) verttext = 1;
@@ -127,19 +148,23 @@ while( 1 ) {
         else if( stricmp( attr, "lowbevelcolor" )==0 ) strcpy( lowbevelcolor, val );
         else if( stricmp( attr, "hibevelcolor" )==0 ) strcpy( hibevelcolor, val );
         else if( stricmp( attr, "shadowcolor" )==0 ) strcpy( shadowcolor, val );
+	else if( stricmp( attr, "backdim" )==0 ) {
+		PL_getbox( "backdim", lineval, &bd_1, &bd_2, &bd_3, &bd_4 );
+		backdim = 1;
+		}
 
 	else Eerr( 1, "attribute not recognized", attr );
 	}
 
 
 
-if( fromfilemode > 0 ) file_to_buf( fromfile, fromfilemode, Bigbuf, MAXBIGBUF );
+if( fromfilemode > 0 ) file_to_buf( fromfile, fromfilemode, PL_bigbuf, MAXBIGBUF );
 
 textdet( "textdetails", textdetails, &align, &adjx, &adjy, 0, "R" );
 if( align == '?' ) align = 'C';
 
 /* figure backing box */
-measuretext( Bigbuf, &nlines, &maxlen );
+measuretext( PL_bigbuf, &nlines, &maxlen );
 boxw = (maxlen+2) * Ecurtextwidth;
 boxh = (nlines*1.2) * Ecurtextheight;
 uly = y + Ecurtextheight;
@@ -154,43 +179,68 @@ if( bm != 0.0 ) {
 	boxh += (bm*2);
 	}
 
-if( strlen( backcolor ) > 0 || (strlen( box ) > 0 && strnicmp( box, "no", 2 )!= 0 ) ) {
-	if( strlen( box ) > 0 && strnicmp( box, "no", 2 )!= 0 ) {
+if( backcolor[0] != '\0' || ( box[0] != '\0' && strnicmp( box, "no", 2 )!= 0 ) ) {
+	if( box[0] != '\0' && strnicmp( box, "no", 2 )!= 0 ) {
 		ioutline = 1;
 		linedet( "box", box, 0.5 );
 		}
 	else ioutline = 0;
-	Ecblock( ulx, (uly-boxh), ulx+boxw, uly, backcolor, ioutline );
-	if( bevelsize > 0.0 || shadowsize > 0.0 ) 
-		Ecblockdress( ulx, (uly-boxh), ulx+boxw, uly, 
-       			bevelsize, lowbevelcolor, hibevelcolor, shadowsize, shadowcolor);
+	if( do_ellipse ) {
+		cx = ulx+(boxw/2.0);
+		cy = uly-(boxh/2.0);
+		if( backdim ) { cx = bd_1; cy = bd_2; boxw = bd_3; boxh = bd_4; }
+		do_arrows(); /* do this before ellipse to get abutting edge */
+		PLG_ellipse( cx, cy, ((boxw/2.0)*1.3), ((boxh/2.0)*1.3), backcolor, ioutline );
+		}
+	else	{
+		if( backdim ) { ulx = bd_1; uly = bd_2; boxw = bd_3; boxh = bd_4; }
+		do_arrows(); /* do this before fill to get abutting edge */
+		Ecblock( ulx, (uly-boxh), ulx+boxw, uly, backcolor, ioutline );
+		if( bevelsize > 0.0 || shadowsize > 0.0 ) 
+			Ecblockdress( ulx, (uly-boxh), ulx+boxw, uly, bevelsize, lowbevelcolor, hibevelcolor, shadowsize, shadowcolor);
+		}
 	}
+else do_arrows();
 
-if( Clickmap && mapurl[0] != '\0' ) mapentry( 'r', mapurl, 0, ulx, (uly-boxh), ulx+boxw, uly, 1, 0 );
+if( clickmap_on ) {
+	if( backdim && do_ellipse ) {
+		/* need to solve back to ulx,uly in this case.. */
+		ulx = (((boxw/2.0)-cx)*-1.0); 
+		uly = (((boxw/2.0)-cy)*-1.0) + boxh; 
+		}
+	clickmap_entry( 'r', mapurl, 0, ulx, (uly-boxh), ulx+boxw, uly, 1, 0, maplabel );
+	}
 
 /* now render the text.. */
 textdet( "textdetails", textdetails, &align, &adjx, &adjy, 0, "R" ); /* need to do again */
 if( align == '?' ) align = 'C';
 Emov( x + adjx, y + adjy );
 if( verttext ) Etextdir( 90 );
-Edotext( Bigbuf, align );
+Edotext( PL_bigbuf, align );
 if( verttext ) Etextdir( 0 );
 
-/* now render the arrow.. use same color as text..
-	if tail location not given, try to be smart about arrow placement.. */
+return( 0 );
+}
+
+/* ==================== */
+/* do arrows */
+static int do_arrows()
+{
+
+/* if tail location not given, try to be smart about arrow placement.. */
+
 if( arrowh ) {
 	linedet( "arrowdetails", arrowdet, 0.7 );
 	if( !arrowt ) calc_arrow( ulx, uly, boxw, boxh, ahx, ahy, &atx, &aty );
-	Earrow( atx, aty, ahx, ahy, ahsize, Ecurcolor );
+	Earrow( atx, aty, ahx, ahy, ahsize, 0.4, "" );
 	}
 
 /* and render 2nd arrow.. */
 if( arrow2h ) {
 	if( !arrow2t ) calc_arrow( ulx, uly, boxw, boxh, ah2x, ah2y, &at2x, &at2y );
-	Earrow( at2x, at2y, ah2x, ah2y, ahsize, Ecurcolor );
+	Earrow( at2x, at2y, ah2x, ah2y, ahsize, 0.4, "" );
 	}
 
-return( 0 );
 }
 
 /* ================== */

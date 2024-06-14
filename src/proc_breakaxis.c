@@ -55,10 +55,10 @@ while( 1 ) {
 	lineval = &line[lvp];
 
 	if( stricmp( attr, "axis" )==0 ) axis = val[0];
-	else if( stricmp( attr, "location" )==0 ) strcpy( loc, val );
+	else if( stricmp( attr, "location" )==0 ) strcpy( loc, lineval );
 	else if( stricmp( attr, "linelength" )==0 ) {
 		len = atof( val );
-		if( Using_cm ) len /= 2.54;
+		if( PLS.usingcm ) len /= 2.54;
 		}
 	else if( stricmp( attr, "breakpoint" )==0 ) strcpy( breakpt, val );
 	else if( stricmp( attr, "fillcolor" )==0 ) strcpy( fillcolor, val );
@@ -66,7 +66,7 @@ while( 1 ) {
 	else if( stricmp( attr, "style" )==0 ) strcpy( style, val );
 	else if( stricmp( attr, "gapsize" )==0 ) {
 		gapsize = atof( val );
-		if( Using_cm ) gapsize /= 2.54;
+		if( PLS.usingcm ) gapsize /= 2.54;
 		}
 
 	else Eerr( 1, "attribute not recognized", attr );

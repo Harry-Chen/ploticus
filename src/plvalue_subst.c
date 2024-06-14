@@ -6,24 +6,18 @@
 #include "tdhkit.h"
 
 /* This is similar to TDH_value_subst, but is stripped down and  accepts a data array that 
-   is an array of pointers rather than a 2d array */
+ * is an array of pointers rather than a 2d array.  It also knows about ploticus field 
+ * names PL_fref()
+ */
 
-/* VALUE_SUBST - take a text line and substitute values for variables.
-		Variables may be: 
-			Field numbers like @1, @2, @3, etc. (@1 is first field)
-			Data item names like @age
+/* VALUE_SUBST - take a text line and substitute values for variables.  */
 
-		Returns 1 if one or more substitutions were done, 0 if there were no 
-		substitutions necessary, or an error code > 0.
-*/
-
-
-plvalue_subst( out, in, data, mode )
+PL_value_subst( out, in, data, mode )
 char *out; /* result buffer */
 char *in;  /* input buffer */
 char *data[ MAXITEMS ];
-int mode;  /* either FOR_CONDEX, indicating that the line will be passed to condex(),
-		   (minor hooks related to this) or NORMAL */
+int mode;  /* either FOR_CONDEX (1), indicating that the line will be passed to condex(),
+		   (minor hooks related to this) or NORMAL (0) */
 {
 int i, k, f;
 char itemname[512];
@@ -77,7 +71,7 @@ for( i = 0; i < inlen; i++ ) {
 
 		/* @fieldname .. */
 		else	{
-			ifld = fref( itemname );
+			ifld = PL_fref( itemname );
 			strcpy( value, data[ ifld -1 ] );
 			}
 
@@ -98,7 +92,7 @@ for( i = 0; i < inlen; i++ ) {
 		/* strcpy( &out[outlen], value );  */
 		vallen = strlen( value );
 		for( k = 0; k < vallen; k++ ) {
-			if( value[k] == ' ' ) out[ outlen + k ] = '_';
+			if( value[k] == ' ' && mode == FOR_CONDEX ) out[ outlen + k ] = '_';
 			else out[ outlen + k ] = value[k];
 			}
 		out[ outlen + k ] = '\0';
