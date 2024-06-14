@@ -236,7 +236,7 @@ ploticus (2.20-3) unstable; urgency=low
   * Remove recommends of libming-fonts-openoffice. The package has been
     removed from debian.                         closes: Bug#240560
 
- -- James W. Penny <jpenny@debian.org>  Wed,  4 Apr 2004 22:12:00 -0500
+ -- James W. Penny <jpenny@debian.org>  Sun, 04 Apr 2004 22:12:00 -0500
 
 ploticus (2.20-2) unstable; urgency=low
 
@@ -256,13 +256,13 @@ ploticus (2.0.4-4) unstable; urgency=low
   * Switch build-depends to libpng12-dev.     closes: Bug #164994
   * Switch to libgd-noxpm.  Build fails with libgd-xpm.
 
- -- James W. Penny <jpenny@debian.org>  Tue, 25 Oct 2002 22:49:31 -0400
+ -- James W. Penny <jpenny@debian.org>  Fri, 25 Oct 2002 22:49:31 -0400
 
 ploticus (2.0.4-3) unstable; urgency=low
 
   * Rebuild due to problem with shlibs.  Switch to libgd2-dev.
 
- -- James W. Penny <jpenny@debian.org>  Tue, 25 Oct 2002 22:49:31 -0400
+ -- James W. Penny <jpenny@debian.org>  Fri, 25 Oct 2002 22:49:31 -0400
 
 ploticus (2.0.4-2) unstable; urgency=low
 
@@ -299,7 +299,7 @@ ploticus (2.0.2-2) unstable; urgency=low
   *  First, missing : in http:                close: Bug#137577
   *  Second, should be Architecture: any.     close: Bug#141657
 
- -- James W. Penny <jpenny@debian.org>  Mon,  4 Apr 2002 23:45:15 -0500
+ -- James W. Penny <jpenny@debian.org>  Thu, 04 Apr 2002 23:45:15 -0500
 
 ploticus (2.0.2-1) unstable; urgency=low
 
