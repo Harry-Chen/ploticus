@@ -50,7 +50,7 @@ while( 1 ) {
 /* -------------------------- */
 /* now do the plotting work.. */
 /* -------------------------- */
-if( commands != "" ) {
+if( commands[0] != '\0' ) {
 	sprintf( buf, "%s_Z", PLS.tmpname );
 	fp = fopen( buf, "w" ); /* temp file, unlinked below */
 	if( fp == NULL ) return( Eerr( 522, "Cannot open draw commands file", buf ));
@@ -60,9 +60,9 @@ if( commands != "" ) {
 	unlink( buf );
 	}
 
-else if( dcfile != "" ) do_drawcommands( dcfile );
+else if( dcfile[0] != '\0' ) do_drawcommands( dcfile );
 
-else if( dumpfile != "" ) {
+else if( dumpfile[0] != '\0' ) {
 	fp = fopen( dumpfile, "r" );
 	if( fp == NULL ) return( Eerr( 523, "Cannot open dump file", dumpfile ) );
 	while( fgets( buf, 1023, fp ) != NULL ) {

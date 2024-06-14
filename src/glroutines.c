@@ -788,12 +788,12 @@ return( 0 );
 /* ===================================================================== */
 /* VARSUB - given string s, find every occurance 
    of symbol (case-sensitive) and change it to value.  
-    -Copies result into s.  
-     -Returns number of times a substitution was made, 0 if none.
-     -This routine is not sophisticated about delimiting the symbol;
+    Copies result back into s... s must be able to accomodate.
+    Returns number of times a substitution was made, 0 if none.
+    This routine is not sophisticated about delimiting the symbol;
       e.g. if s contains $NUMBER and varsub() is looking for $NUM it will find it.
 
-     -scg 11/5/07 - now silently truncates result to fit within rtnbuf[1024]
+    -scg 11/5/07 - now silently truncates result to fit within rtnbuf[1024]
 */
 
 int
@@ -929,8 +929,14 @@ double fmod(), ofs, modf;
 ofs = 0.0;
 if( mode[0] == 'm' ) ofs = h / 2.0;
 else if( mode[0] == 'h' ) ofs = h;
-modf = fmod( val, h );
-return( (val - modf) + ofs );
+/* the following bug fix contributed by  Phil Carmody <thefatphil@yahoo.co.uk> */
+modf = h*(int)(val/h+0.5);
+return(modf+ofs);
+/* was:
+ * modf = fmod( val, h );
+ * return( (val - modf) + ofs );
+ */
+
 }
 
 
@@ -1119,16 +1125,8 @@ for( i = 0, j = 0; in[i] != '\0'; i++ ) {
 	else if( c >= 65 && c <= 90 ) out[j++] = c;  /* A-Z */
 	else if( c >= 97 && c <= 122 ) out[j++] = c;  /* a-z */
 	else if( GL_member( c, ".-~_" )) out[j++] = c; 
-	else if( c == ' ' ) out[j++] = '+';
+	/* else if( c == ' ' ) out[j++] = '+'; */  /* encode spaces as %20 ... scg 3/9/09 */
 	else { sprintf( &out[j], "%%%X", c ); j += 3; } /* encode as %FF */
-
-	/* if( GL_member( c, "$-_.+!*'()," )) out[j++] = in[i];  */ /* changed, bug fix scg 9/8/06 */
-	/* else if( c <= 47 || c >= 123 || (c >= 58 && c <= 64 ) || ( c >= 91 && c <= 96 ) ) {
-	 *	sprintf( &out[j], "%%%X", c );
-	 *	j += 3;
-	 *	}
-	 * else out[j++] = in[i];
-	 */
 	}
 out[j] = '\0'; /* terminate */
 return( 0 );

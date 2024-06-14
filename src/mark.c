@@ -47,7 +47,7 @@ char code[];	/* pre-set symbol name */
 double r; 	/* radius of dot in absolute units */
 {
 int i;
-double g, theta;
+double g, theta, gsx, gsy;
 char pixpt_code[30];
 
 
@@ -62,8 +62,9 @@ if( strcmp( code, "img" )==0 ) {
 
 /* pix* or oix* - do a pixpt - added scg 5/25/06 */
 if( (code[0] == 'p' || code[0] == 'o' ) && code[1] == 'i' && code[2] == 'x' ) {  
-	/* note: radius was embedded in code by symdetails() */
-	sprintf( pixpt_code, "%s%g", code, r );
+	PLG_getglobalscale( &gsx, &gsy );
+	/* note: radius was embedded in code by symdetails() (??) */
+	sprintf( pixpt_code, "%s%g", code, r*gsx );  /* size influenced by global scaling..  scg 3/9/09 */
 	Epixpt( x, y, pixpt_code );
 	return( 0 );
 	}

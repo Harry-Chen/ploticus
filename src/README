@@ -6,8 +6,8 @@ Covered under GPL; see the file ./Copyright for details.
 
 For overview & complete documentation: http://ploticus.sourceforge.net
 
-To build pl executable or libploticus, configure the 3 settings in the Makefile,
-then type:  
+If you have the source code distribution and wish to build pl executable or libploticus, 
+configure the 3 settings in the Makefile, then type:  
 
 make clean
 make

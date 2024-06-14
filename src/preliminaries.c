@@ -12,6 +12,11 @@
 #define CONFIGFILE ""
 #endif
 
+#ifndef PREFABS_DIR
+#define PREFABS_DIR ""
+#endif
+
+
 #ifdef LOCALE
 #include <locale.h>
 #endif
@@ -242,6 +247,14 @@ if( PLS.cgiargs != NULL && !projectrootfound ) {
 /* get prefabs directory name if available.. */
 /* this must come after config file is read, because in cgi mode PLOTICUS_PREFABS is set via config file. */
 PLS.prefabsdir = getenv( "PLOTICUS_PREFABS" );
+
+/* maybe PREFABS_DIR was set in the Makefile... */
+#ifdef UNIX
+  if( PLS.prefabsdir == NULL ) PLS.prefabsdir = PREFABS_DIR ;
+  else if( PLS.prefabsdir[0] == '\0' ) PLS.prefabsdir = PREFABS_DIR ;
+  if( PLS.prefabsdir[0] == '\0' ) PLS.prefabsdir = NULL;
+#endif
+
 if( PLS.prefabsdir != NULL ) {
 	TDH_setspecialincdir( PLS.prefabsdir ); /* set special include directory (#include $foo) */
         /* note: prefabsdir must reference static storage, either via getenv() or constant */

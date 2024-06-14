@@ -1,4 +1,4 @@
-######## PLOTICUS version 2.40    Copyright 1998-2008 Stephen C. Grubb  http://ploticus.sourceforge.net
+######## PLOTICUS version 2.41    Copyright 1998-2009 Stephen C. Grubb  http://ploticus.sourceforge.net
 ########
 ######## Use this Makefile to build  pl executable  or  libploticus.  Root permission is not required.
 ######## Configure the 3 settings below then do:  make clean; make
@@ -25,18 +25,18 @@ EXE = pl
 
 
 ############ Option 1: build the pl executable (unix), no X11 ....
-# NOX11 = -DNOX11
+NOX11 = -DNOX11
 
 
 
 ############ Option 2: build the pl executable (unix), with X11 enabled .... 
-NOX11 = 
-XOBJ = x11.o interact.o
+# NOX11 = 
+# XOBJ = x11.o interact.o
 
 ############ ...AND... activate the lines below for your platform... (X11 libs & header files)
 #### linux
-XLIBS = -L/usr/X11R6/lib -lX11
-XINCLUDEDIR = -I/usr/X11R6/include
+# XLIBS = -L/usr/X11R6/lib -lX11
+# XINCLUDEDIR = -I/usr/X11R6/include
 #### alt linux
 # XLIBS = -lX11
 # XINCLUDEDIR = -I/usr/include/X11
@@ -46,7 +46,7 @@ XINCLUDEDIR = -I/usr/X11R6/include
 # XLIBS = -L/usr/openwin/lib -lX11
 # XINCLUDEDIR = -I/usr/openwin/include
 #### mac osx
-# CC = cc
+# CC = cc -arch ppc -arch i386
 # XLIBS = -L/usr/X11R6/lib -lX11
 # XINCLUDEDIR = -I/usr/X11R6/include
 #### cygwin 
@@ -88,14 +88,14 @@ XINCLUDEDIR = -I/usr/X11R6/include
 ############################################################################
 
 
-########### Option 1: use bundled GD13 (pseudoGIF only). No additional lib dependencies.
-# exetarget: pl 
-
-########### Option 2: use bundled GD16 (PNG only).  Requires libpng and zlib.
+########### Option 1: use bundled GD16 (PNG only).  Requires libpng and zlib.
 exetarget: plpng 
 GD16LIBS = -lpng -lz
 GD16H = 
 ZFLAG = -DWZ
+
+########### Option 2: use bundled GD13 (pseudoGIF only). No additional lib dependencies.
+# exetarget: pl 
 
 ########### Option 3: use your own GD resource.  Requires GD 1.84+, libpng, zlib, libjpeg
 # exetarget: plgd18 
@@ -128,6 +128,12 @@ ZFLAG = -DWZ
 #### Note, successful with ming 0.2a but not with later ming versions..
 # MING = -lming
 #optional for non-standard location:  MINGH = -I/home/scg/lib
+
+
+#### To set a hard-coded directory for prefabs files, uncomment & edit the following..
+#### If done, users won't be required to have PLOTICUS_PREFABS environment variable defined.
+#### This option not available for win32
+# PREFABS_DIR = "/usr/lib/ploticus/prefabs"
 
 
 #### If you do a "make install", where do you want the executable(s) to be moved to?
@@ -187,11 +193,11 @@ CFLAGS = $(FPIC) $(WALL) -DPLOTICUS -D$(PLATFORM) -DTDH_NOREC $(ZFLAG) $(LOCALE_
 OBJ = proc_annotate.o proc_areadef.o proc_axis.o proc_bars.o proc_rect.o proc_breakaxis.o \
   proc_categories.o proc_curvefit.o proc_settings.o proc_drawcommands.o \
   proc_getdata.o proc_image.o proc_legend.o proc_legendentry.o proc_line.o proc_lineplot.o \
-  proc_page.o proc_pie.o proc_print.o proc_boxplot.o proc_rangesweep.o proc_usedata.o \
+  proc_page.o proc_pie.o proc_print.o proc_boxplot.o proc_rangesweep.o proc_usedata.o proc_pvalue.o \
   proc_scatterplot.o proc_vector.o proc_symbol.o proc_processdata.o proc_tabulate.o proc_venndisk.o clickmap.o proc_tree.o proc_catlines.o \
   plhead.o execscriptfile.o execline.o lib.o details.o parse.o units.o preliminaries.o \
   process_arg.o plvalue_subst.o cats.o fieldnames.o autorange.o nearest.o select.o datasets.o \
-  color.o plg.o init.o arrow.o mark.o block.o pcode.o ps.o svg.o swf.o stub.o winscale.o lineclip.o smoothfit.o \
+  color.o plg.o init.o arrow.o mark.o block.o pcode.o ps.o svg.o swf.o stub.o winscale.o lineclip.o smoothfit.o ttest.o \
   condex.o dates.o dbinterface.o err.o functions.o glroutines.o reslimits.o secondaryops.o  \
   shell.o sinterp.o tdhkit.o times.o value.o value_subst.o variable.o custom.o \
   $(LOCALEOBJ)
@@ -264,5 +270,5 @@ distclean:  clean
 
 
 ########
-######## PLOTICUS     Copyright 1998-2008 Stephen C. Grubb  http://ploticus.sourceforge.net
+######## PLOTICUS     Copyright 1998-2009 Stephen C. Grubb  http://ploticus.sourceforge.net
 ########

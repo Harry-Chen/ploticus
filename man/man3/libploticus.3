@@ -24,7 +24,7 @@
   <td align=right>
   <small>
   <a href="../doc/welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
-  Version 2.40 Jan'08
+  Version 2.41 Mar2009
   <td></tr></table>
 </td></tr>
 <td>
@@ -32,7 +32,7 @@
 <br>
 .>>
 
-.TH libploticus_API PL "15-JAN-2008   PL ploticus.sourceforge.net"
+.TH libploticus_API PL "11-MAR-2009   PL ploticus.sourceforge.net"
 
 .LP
 This simple C language API 
@@ -40,22 +40,15 @@ has all of the funcionality of the
 .ig >>
 <a href="pl.1.html">
 .>>
-\0pl program
+\0pl(1) executable
 .ig >>
 </a>
 .>>
 and is similarly covered by the General Public License.
-.LP
-\fBlibploticus\fR is built using \fCMakefile_api\fR.
-.LP
-.nf
- \0 make clean
- \0 make -f Makefile_api
-.fi
+Build libploticus by making certain settings in the src/Makefile.
 .LP
 Applications linking to \fBlibploticus\fR may need additional libraries
-such as \fCzlib\fR, but this depends on exactly how \fBlibploticus\fR was built.  
-The specifics are noted in \fCMakefile_api\fR.
+such as \fCzlib\fR, but this depends on exactly how \fBlibploticus\fR was built (see the Makefile).
 The externally visible symbols in \fBlibploticus\fR begin with these prefixes: \fCploticus\fR,
 \fCPL\fR, \fCTDH\fR, \fCDT\fR, and \fCGL\fR.
 .LP
@@ -319,7 +312,13 @@ when ploticus was initialized with one of the GD image devices
 </table>
 <br>
 <center>
-Ploticus is hosted at http://ploticus.sourceforge.net <br>
-<img src="http://sourceforge.net/sflogo.php?group_id=38453" width="88" height="31" border="0" alt="SourceForge Logo">
+<table><tr><td>
+Ploticus is hosted at http://ploticus.sourceforge.net</td><td> &nbsp; </td><td>
+<a href="http://sourceforge.net/projects/ploticus"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=38453&type=12" 
+width="120" height="30" border="0" 
+alt="Get ploticus data display engine at SourceForge.net. Fast, secure and Free Open Source software downloads" /></a>
+</td></tr></table>
+
+
 </center>
 .>>

@@ -97,7 +97,9 @@ if( ( strncmp( tok, "#sql", 4 )==0 && (tok[4] == '\0' || isdigit( (int) tok[4] )
 
 		if( opmode == SHELL ) {
 			/* don't allow single-line construct - so we can treat vars during scan for cgi security */
-			return( err( 2488, "#shell: single line construct not allowed", "" ));
+			/* return( err( 2488, "#shell: single line construct not allowed", "" )); */
+			err( 2488, "#shell: single line construct not allowed", "" ); 
+			return( SINTERP_END );
 			}
 
 		else if( opmode == SQL ) {
@@ -107,12 +109,18 @@ if( ( strncmp( tok, "#sql", 4 )==0 && (tok[4] == '\0' || isdigit( (int) tok[4] )
 			stat = TDH_sqlcommand( ss->dbc, bigbuf ); 
 			if( stat != 0 ) {
 				ss->doingsqlresult = 0;
-				return( err( stat, "error on sql submit", "" ));
+				/* return( err( stat, "error on sql submit", "" )); */
+				err( stat, "error on sql submit", "" );
+				return( SINTERP_END );
 				}
 			}
 
 		return( SINTERP_END ); /* no more calls to sec needed this time.. */
 		}
+
+	/* Note: all error returns before this point should return SINTERP_END, to avoid race condition
+	 *		(after this point a new line is read by TDH_sinterp)  scg 1/25/08
+	 */
 		
 	bblen = 0;
 	while( 1 ) {
@@ -124,7 +132,6 @@ if( ( strncmp( tok, "#sql", 4 )==0 && (tok[4] == '\0' || isdigit( (int) tok[4] )
 
 		if( strcmp( tok, "#endsql" )==0 ) {
 
-			/* printf( "submitting sql:\n%s\n\n", bigbuf ); */
 			ss->doingsqlresult = capmode;  /* set ss->doingsqlresult to the capture mode (load, processrows, etc);
 							  then this comes into play in sinterp.c */
 

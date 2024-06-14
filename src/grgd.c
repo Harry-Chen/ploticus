@@ -143,6 +143,7 @@ Gblack = 0;
 strcpy( GFTfont, "" );
 strcpy( Gcurcolorname, "" );
 Greqwidth = 0, Greqheight = 0;
+if( Gptlist != NULL ) { free( Gptlist ); Gptlist = NULL; }  /* added scg 2/17/09 , joel reported Gptlist as a memory leak */
 
 return( 0 );
 }

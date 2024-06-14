@@ -21,14 +21,15 @@ PLP_lineplot()
 char attr[NAMEMAXLEN], *line, *lineval;
 int lvp, first;
 
-char buf[256], numstr[40], symcode[80];
+char buf[256], numstr[100], symcode[80];
 int i, j, k, stat, align, accum;
 int npoints, result, nalt, altlist[MAXALT+2], anyvalid, realrow, sortopt;
 int yfield, xfield, ptlabelfield;
 int stairstep, donumbers, dopoints, instancemode, gapmissing, ingap, clipping, firstpt, groupmode, relax_xrange, fillmode;
 
-char *linedetails, *label, *labeldetails, *shownums, *numstrfmt, *pointsym, *ptlabeldetails, *fillcolor;
-char *legendlabel, *selectex, *forcelastx, *legsamptyp, *altsym, *altwhen;
+char *linedetails, *labeldetails, *shownums, *numstrfmt, *pointsym, *ptlabeldetails, *fillcolor;
+char *selectex, *forcelastx, *legsamptyp, *altsym, *altwhen;
+char linelabel[256], legendlabel[256];
 
 double adjx, adjy, linestart, linestop, x, y, lastseglen, lastx, lasty, radius, ptlblstart, ptlblstop, sob, linxstart;
 double f, sum, cr, firstx, firsty, typical_interval;
@@ -41,8 +42,10 @@ yfield = -1; xfield = -1;
 ptlabelfield = 0;
 accum = 0; stairstep = 0; fillmode = 0; instancemode = 0; groupmode = 0; 
 gapmissing = 0; clipping = 0; firstpt = 0; sortopt = 0; relax_xrange = 0;
-label = ""; labeldetails = ""; shownums = ""; ptlabeldetails = ""; linedetails = ""; pointsym = "";
-legendlabel = ""; selectex = ""; forcelastx = ""; altsym = ""; altwhen = "";
+labeldetails = ""; shownums = ""; ptlabeldetails = ""; linedetails = ""; pointsym = "";
+selectex = ""; forcelastx = ""; altsym = ""; altwhen = "";
+strcpy( linelabel, "" );
+strcpy( legendlabel, "" );
 numstrfmt = "%g";
 fillcolor = "gray(0.8)";
 legsamptyp = "symbol";
@@ -68,9 +71,12 @@ while( 1 ) {
 	else if( strcmp( attr, "xfield" )==0 ) xfield = fref( lineval ) - 1;
 	else if( strcmp( attr, "ptlabelfield" )==0 ) ptlabelfield = fref( lineval ) - 1; 
 	else if( strcmp( attr, "linedetails" )==0 ) linedetails = lineval;
-	else if( strcmp( attr, "label" )==0 ) { label = lineval; convertnl( label ); }
+	else if( strcmp( attr, "label" )==0 ) { 
+		tokncpy( linelabel, lineval, 256 ); 
+		convertnl( linelabel );   /* linelabel[256] */
+		}
 	else if( strcmp( attr, "labeldetails" )==0 ) labeldetails = lineval;
-	else if( strcmp( attr, "legendlabel" )==0 ) legendlabel = lineval;
+	else if( strcmp( attr, "legendlabel" )==0 ) tokncpy( legendlabel, lineval, 256 );
 	else if( strcmp( attr, "linerange" )==0 ) getrange( lineval, &linestart, &linestop, 'x', EDXlo, EDXhi );
 	else if( strcmp( attr, "xstart" )==0 ) { linxstart = Econv( X, lineval ); if( Econv_error() ) linxstart = EDXlo; }
 	else if( strcmp( attr, "firstpoint" )==0 ) {
@@ -144,8 +150,8 @@ if( groupmode && ptlabelfield ) {
 	}
 	
 if( strncmp( legendlabel, "#usefname", 9 )==0 ) {
-	if( instancemode ) getfname( xfield+1, legendlabel );
-	else getfname( yfield+1, legendlabel );
+	if( instancemode ) getfname( xfield+1, legendlabel );  /* legendlabel[256] */
+	else getfname( yfield+1, legendlabel );  /* legendlabel[256] */
 	}
 
 
@@ -397,9 +403,9 @@ if( forcelastx[0] != '\0' ) {
 
 
 /* set YFINAL and XFINAL */
-Euprint( numstr, Y, y, numstrfmt );
+Euprint( numstr, Y, y, numstrfmt ); /* numstr[100] */
 setcharvar( "YFINAL", numstr );
-Euprint( numstr, X, lastx, numstrfmt );
+Euprint( numstr, X, Edx(lastx), "" ); /* numstr[100] */
 setcharvar( "XFINAL", numstr );
 	
 
@@ -461,9 +467,9 @@ for( i = 0; i < npoints; i++ ) {
 	}
 
 
-if( label[0] != '\0' ) {
-        GL_varsub( label, "@YFINAL", numstr );
-	PL_do_subst( buf, label, realrow, 0 );  /* also allow substitution of any @field on the last-plotted data row.. added scg 1/29/07 */
+if( linelabel[0] != '\0' ) {
+        GL_varsub( linelabel, "@YFINAL", numstr );  /* linelabel[256] */
+	PL_do_subst( buf, linelabel, realrow, 0 );  /* also allow substitution of any @field on the last-plotted data row.. added scg 1/29/07 */
         textdet( "labeldetails", labeldetails, &align, &adjx, &adjy, -2, "R", 1.0 );
         if( align == '?' ) align = 'L';
         Emov( lastx+0.05+adjx, (Eay( lasty )-(Ecurtextheight*.35))+adjy );
@@ -493,7 +499,7 @@ char *shownums;
 double x1, x2, y;
 char *numstrfmt, *linedetails;
 {
-char numstr[20];
+char numstr[100];
 int align;
 double adjx, adjy;
 
@@ -502,7 +508,7 @@ textdet( "numbers", shownums, &align, &adjx, &adjy, -4, "R", 1.0 );
 if( align == '?' ) align = 'C';
 Emov( Eax( (x1+x2)/2.0 ) + adjx, Eay(y)+0.02+adjy );
 /* sprintf( numstr, numstrfmt, y ); */
-Euprint( numstr, 'y', y, numstrfmt );
+Euprint( numstr, 'y', y, numstrfmt ); /* numstr[100] */
 Edotext( numstr, align );
 linedet( "linedetails", linedetails, 1.0 );
 Emovu( x1, y ); /* restore old position for drawing the curve.. */

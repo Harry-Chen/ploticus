@@ -174,8 +174,8 @@ if( strcmp( unittyp, "linear" )==0 ) { /* avoid using Euprint()- trouble w/ v. b
 	sprintf( smax, floatformat, max );
 	}
 else	{
-	Euprint( smin, axis, min, "" );
-	Euprint( smax, axis, max, "" );
+	Euprint( smin, axis, min, "" ); /* smin[80] */
+	Euprint( smax, axis, max, "" ); /* smax[80] */
 	}
 
 /* save data min/max.. */
@@ -209,14 +209,14 @@ if( strcmp( unittyp, "linear" )==0 ) { /* avoid using Euprint()- trouble w/ v. b
 	sprintf( smax, floatformat, max );
 	}
 else	{
-	Euprint( smin, axis, min, "" );
-	Euprint( smax, axis, max, "" );
+	Euprint( smin, axis, min, "" ); /* smin[80] */
+	Euprint( smax, axis, max, "" ); /* smax[80] */
 	}
 
 
 /******* handle nearest=  ***********/
 
-if( GL_slmember( nearest, "dat*matic" ) ) {
+if( strcmp( nearest, "datematic" )==0 ) {
 	char foo1[40], foo2[40], foo3[40], foo4[40], foo5[40], foo6[40];
 	double dfoo1, dfoo2;
 	/* get an automatic reasonable "nearest" value.. */

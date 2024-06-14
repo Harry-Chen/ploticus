@@ -26,7 +26,7 @@ char *color, *leglabel, *outline, *lbldet;
 double cenx, ceny, area, radius, densfact, ofs, areascale, yloc, y, adjx, adjy;
 int datadriven, xfld, areafld, clrfld, botflag, irow, solidfill, lblfld, align;
 
-TDH_errprog( "pl proc venn" );
+TDH_errprog( "pl proc venndisk" );
 
 cenx = ceny = area = -1.0;
 densfact = 1.0;

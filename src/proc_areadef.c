@@ -148,7 +148,7 @@ while( 1 ) {
 		if( strncmp( attr, "xaxis.", 6 )==0 ) doxaxis = 1; 
 		if( strncmp( attr, "yaxis.", 6 )==0 ) doyaxis = 1; 
 		tokncpy( tok, lineval, 80 );
-		if( GL_slmember( tok, "none inc* dat*matic file datafield* list categories usecategories" )) ;
+		if( GL_slmember( tok, "none inc* datematic file datafield* list categories usecategories" )) ;
 		else getmultiline( lineval, "skip" ); /* just to skip past it..*/
 		}
 	else if( strncmp( attr, "xaxis.", 6 )==0 ) { doxaxis = 1; continue; }
@@ -304,6 +304,7 @@ if( autohf != 0.0 ) {
 stat = Esetscale( 'x', xlo, xhi, xminstr, xmaxstr );
 stat += Esetscale( 'y', ylo, yhi, yminstr, ymaxstr );
 
+
 if( PLS.debug ) fprintf( PLS.diagfp, "areadef: lowerleft: %g,%g  upperright: %g,%g\n",
 		xlo, ylo, xhi, yhi );
 if( PLS.debug ) fprintf( PLS.diagfp, "areadef:   xrange is %s to %s.   yrange is %s to %s.\n",
@@ -328,7 +329,7 @@ setcharvar( "YMAX", ymaxstr );
 
 
 if( areacolor[0] != '\0' ) Ecblock( EXlo, EYlo, EXhi, EYhi, areacolor, 0 );
-if( PLS.clickmap && ( mapurl != "" || maplabel != "" )) {  
+if( PLS.clickmap && ( mapurl[0] != '\0' || maplabel[0] != '\0' )) {  
 	PL_clickmap_adjust( clickmap_adjx, clickmap_adjy ); /* set adjustment, if any.  added scg 10/24/06 */
 	if( GL_slmember( mapurl, "*@XVAL*" ) || GL_slmember( mapurl, "*@YVAL*" )) clickmap_seturlt( mapurl );
 	else clickmap_entry( 'r', mapurl, 0, EXlo, EYlo, EXhi, EYhi, 0, 0, maplabel );

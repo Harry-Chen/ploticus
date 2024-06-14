@@ -170,10 +170,9 @@ for( j = 0; j < ndim; j++ ) { /* for all dimensions (1 or 2).. */
 				}
 			else 	{
 				hiv[i] = Econv( axis[j], hival );
-				/* Euprint( lowval, axis[j], lowv[i], "" ); */
-				Euprint( lowval, axis[j], lowv[i], numfmt );
+				Euprint( lowval, axis[j], lowv[i], numfmt );  /* lowval[80] */
 				if( showrange[0] == 'l' ) strcpy( list[j][i], lowval );
-				else if( showrange[0] == 'a' ) Euprint( list[j][i], axis[j], (lowv[i]+hiv[i])/2.0, numfmt );
+				else if( showrange[0] == 'a' ) Euprint( list[j][i], axis[j], (lowv[i]+hiv[i])/2.0, numfmt ); /* [40] */
 
 				else sprintf( list[j][i], "%s%s%s", lowval, rangesepchar, hival );
 				}
@@ -204,10 +203,10 @@ for( j = 0; j < ndim; j++ ) { /* for all dimensions (1 or 2).. */
 			lowv[i] = rw;
 			rw += binsiz;
 			hiv[i] = rw;
-			Euprint( lowval, axis[j], lowv[i], "" );
-			Euprint( hival, axis[j], hiv[i], "" );
+			Euprint( lowval, axis[j], lowv[i], "" ); /* lowval[80] */
+			Euprint( hival, axis[j], hiv[i], "" ); /* hival[80] */
 			if( showrange[0] == 'l' ) strcpy( list[j][i], lowval );
-			else if( showrange[0] == 'a' ) Euprint( list[j][i], axis[j], (lowv[i]+hiv[i])/2.0, numfmt ); 
+			else if( showrange[0] == 'a' ) Euprint( list[j][i], axis[j], (lowv[i]+hiv[i])/2.0, numfmt );  /* [40] */
 			else sprintf( list[j][i], "%s%s%s", lowval, rangesepchar, hival );
 			nlist[j]++;
 			if( rw > hilimit ) break;
@@ -385,7 +384,7 @@ if( ndim == 1 ) {
 
 	/* do output lines.. */
         for( i = 0; i < nlist[0]; i++ ) {
-		if( !doranges[0] && axisset[0] ) Euprint( tag, axis[0], atof(list[0][order[0][i]]), "" );
+		if( !doranges[0] && axisset[0] ) Euprint( tag, axis[0], atof(list[0][order[0][i]]), "" ); /* tag[80] */
 		else strcpy( tag, list[0][order[0][i]] );
 
 
@@ -417,7 +416,7 @@ else if( ndim == 2 ) {
 	 
 	/* do output lines.. */
         for( j = 0; j < nlist[0]; j++ ) {
-		if( !doranges[0] && axisset[0] ) Euprint( tag, axis[0], atof(list[0][order[0][j]]), "" );
+		if( !doranges[0] && axisset[0] ) Euprint( tag, axis[0], atof(list[0][order[0][j]]), "" ); /* tag[80] */
 		else strcpy( tag, list[0][order[0][j]] );
 
 		PL_startdatarow();

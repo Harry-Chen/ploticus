@@ -1,3 +1,6 @@
+## this is a version steve uses, to build libploticus.a
+
+
 ######## PLOTICUS version 2.40    Copyright 1998-2008 Stephen C. Grubb  http://ploticus.sourceforge.net
 ########
 ######## Use this Makefile to build pl executable or libploticus.  Root permission not required.

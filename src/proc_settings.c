@@ -7,7 +7,7 @@
 /* PROC SETTINGS - date, unit, notation settings */
 
 #include "pl.h"
-extern int PLGP_settings(), PLGS_setxmlparms();
+extern int PLGP_settings(), PLGS_setxmlparms(), PL_clickmap_urlenc1();
 extern int setuid(), setgid();
 
 int
@@ -78,13 +78,13 @@ else if( strcmp( attr, "numberspacerthreshold" )==0 ) PLS.bignumthres = atoi( va
 else if( strcmp( attr, "font" )==0 ) strcpy( Estandard_font, lineval ); 
 
 else if( strcmp( attr, "encodenames" )==0 ) {					      /* added scg 8/4/04 */
-        if( strncmp( val, YESANS, 1 )==0 ) PL_encode_fnames( 1 ); 
+        if( strncmp( val, "y", 1 )==0 ) PL_encode_fnames( 1 ); 
         else PL_encode_fnames( 0 );
 	}
 
 #ifndef NOPS
 else if( strcmp( attr, "ps_latin1_encoding" )==0 ) {
-        if( strncmp( val, YESANS, 1 )==0 ) PLGP_settings( "ps_latin1_encoding", "1" ); /* added 7/28/04 */
+        if( strncmp( val, "y", 1 )==0 ) PLGP_settings( "ps_latin1_encoding", "1" ); /* added 7/28/04 */
         else PLGP_settings( "ps_latin1_encoding", "0" ); /* added 7/28/04 */
 	}
 #endif
@@ -92,7 +92,7 @@ else if( strcmp( attr, "ps_latin1_encoding" )==0 ) {
 #ifndef NOSVG
 else if( strcmp( attr, "xml_encoding" )==0 ) PLGS_setxmlparms( "encoding", val );
 else if( strcmp( attr, "xml_declaration" )==0 ) {
-	if( strncmp( val, YESANS, 1 )==0 ) PLGS_setxmlparms( "xmldecl", "1" );
+	if( strncmp( val, "y", 1 )==0 ) PLGS_setxmlparms( "xmldecl", "1" );
 	else PLGS_setxmlparms( "xmldecl", "0" );
 	}
 else if( strcmp( attr, "svg_tagparms" )==0 ) PLGS_setxmlparms( "svgparms", lineval );
@@ -103,7 +103,7 @@ else if( strcmp( attr, "svg_mouseover_js" )==0 ) PLGS_setxmlparms( "mouseover_js
 else if( strcmp( attr, "dtsep" )==0 ) DT_setdtsep( val[0] );
 else if( strcmp( attr, "errmsgpre" )==0 ) TDH_errprogsticky( lineval ); /* added 3/25/04 scg */
 else if( strcmp( attr, "enable_suscripts" )==0 ) {
-	if( strncmp( val, YESANS, 1 )==0 ) PLG_textsupmode( 1 );
+	if( strncmp( val, "y", 1 )==0 ) PLG_textsupmode( 1 );
 	else PLG_textsupmode( 0 );
 	}
 #ifdef HOLD

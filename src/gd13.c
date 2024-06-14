@@ -2722,6 +2722,7 @@ void gdImageInterlace(gdImagePtr im, int interlaceArg)
 	im->interlace = interlaceArg;
 }
 
+static  /* added scg 1/18/08 */
 int cost[] = {
   1024,
   1023,
@@ -3085,6 +3086,7 @@ int cost[] = {
   1023
 };
 
+static  /* added scg 1/18/08 */
 int sint[] = {
   0,
   17,

@@ -94,7 +94,7 @@ if( datafield_given ) {
 	sprintf( buf, "datafield=%s %s%s", catspec, (selectex[0]=='\0')?"":"selectrows=", selectex );  /* combine with selectex */
 	catspec = buf;  /* make catspec point to the whole thing.. */
 	}
-if( catspec != "" ) PL_setcats( axis, catspec );
+if( catspec[0] != '\0' ) PL_setcats( axis, catspec );
 
 /* things to be done after filling list.. */
 for( i = 0; i < nextra; i++ ) if( ecattype[i] == '>' ) PL_addcat( axis, "post", ecat[i] );  /* post- extras */

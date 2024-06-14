@@ -46,9 +46,10 @@ PLP_bars( )
 char attr[NAMEMAXLEN], *line, *lineval;
 int lvp, first;
 
-char *barcolor, *outline, *labeldetails, *backbox, *crossover, *selectex, *legendlabel, *thinbarline;
+char *barcolor, *outline, *labeldetails, *backbox, *crossover, *selectex, *thinbarline;
 char *colorlist, *mapurl, *maplabel, *labelselectex, *constantlen, *constantloc;
 char *lblpos, *numstrfmt, *labelword, *expandedurl, *expandedlabel;
+char legendlabel[256], labelstr[256];
 int i, j, ix, ixx, nt, stat, align, lenfield, locfield, do_outline, showvals;
 double adjx, adjy, halfw, x, y, y0, xleft, xright, barwidth, fval, cr, laby, taillen;
 int stackf[MAXSTACKFIELDS];
@@ -57,8 +58,9 @@ int errbars, errlofld, errhifld, reflecterr; int result; int reverseorder, rever
 double rlo, rhi, clustsep, ticlen, ytic, errbarmult, minlabel;
 int trunc, y_endin, y0_endin, label0val, leftticfld, rightticfld, midticfld, lwl_mustfit;
 int ncolorlp, taillengiven, barwidthfield, hidezerobars, ibar, colorfield, irow, segmentflag, exactcolorfield;
-char buf[256], tok[80], *colorlp[MAXCLP], axis, baseax;
-char rangelo[40], rangehi[40], dcolor[COLORLEN], labelstr[128], colorbuf[COLORLEN+1];
+char buf[256], *colorlp[MAXCLP], axis, baseax;
+char rangelo[40], rangehi[40], dcolor[COLORLEN], colorbuf[COLORLEN], acolor[COLORLEN];
+char thinbuf[80];
 
 TDH_errprog( "pl proc bars" );
 
@@ -75,7 +77,8 @@ outline = "yes";
 
 labeldetails = ""; crossover = ""; backbox = ""; labelword = ""; selectex = "";
 labelselectex = ""; thinbarline = ""; colorlist = ""; lblpos = ""; 
-mapurl = ""; constantlen = ""; constantloc = ""; maplabel = ""; legendlabel = "";
+mapurl = ""; constantlen = ""; constantloc = ""; maplabel = ""; 
+strcpy( legendlabel, "" );
 
 strcpy( rangelo, "" ); strcpy( rangehi, "" );
 
@@ -110,7 +113,7 @@ while( 1 ) {
 	else if( strcmp( attr, "locfield" )==0 ) locfield = fref( lineval ) -1; 
 	else if( strcmp( attr, "axis" )==0 ) axis = lineval[0];
 	else if( strcmp( attr, "horizontalbars" )==0 ) axis = 'x';
-	else if( strcmp( attr, "color" )==0 ) barcolor = lineval;
+	else if( strcmp( attr, "color" )==0 || strcmp( attr, "barcolor" )==0 ) barcolor = lineval;
 	else if( strcmp( attr, "outline" )==0 ) outline = lineval;
 	else if( strcmp( attr, "barwidth" )==0 ) { barwidth = ftokncpy( lineval ); if( PLS.usingcm ) barwidth /= 2.54; }
 	else if( strncmp( attr, "stackfield", 10 )==0 ) {
@@ -187,7 +190,7 @@ while( 1 ) {
 	else if( strncmp( attr, "labelrot", 8 )==0 ) labelrot = itokncpy( lineval );
 	else if( strcmp( attr, "select" )==0 ) selectex = lineval;
 	else if( strcmp( attr, "labelselect" )==0 ) labelselectex = lineval;
-	else if( strcmp( attr, "legendlabel" )==0 ) legendlabel = lineval;
+	else if( strcmp( attr, "legendlabel" )==0 ) tokncpy( legendlabel, lineval, 256 );
 	else if( strcmp( attr, "labelpos" )==0 ) lblpos = lineval;
 	else if( strcmp( attr, "barwidthfield" )==0 ) barwidthfield = fref( lineval ) -1;
 	else if( strcmp( attr, "clickmapurl" )==0 ) mapurl = lineval; 
@@ -226,9 +229,14 @@ for( i = 0; i < nstackf; i++ ) {
 
 if( axis == 'x' && !reversespecified ) reverseorder = 1;
 
-if( strncmp( legendlabel, "#usefname", 9 )==0 ) getfname( lenfield+1, legendlabel );
+if( strncmp( legendlabel, "#usefname", 9 )==0 ) getfname( lenfield+1, legendlabel ); /* legendlabel[256] */
 
 if( segmentflag ) lwl = 1;  /* when doing floating segment bars, default to use labels that are centered within the bar - scg 5/8/06 */
+
+/* if doing error bars, and 'color' given but 'thinbarline' not given, use 'color' to build a thinbarline spec ... added scg 3/10/09 */
+if( errbars && thinbarline[0] == '\0' ) { sprintf( thinbuf, "color=%s", barcolor ); thinbarline = thinbuf; }  
+
+if( thinbarline[0] != '\0' && barwidth != 0.0 ) Eerr( 2487, "Warning, 'barwidth' not useful in this context, control bar attributes using 'thinbarline'", "" );
 
 
 /* -------------------------- */
@@ -253,11 +261,14 @@ strcat( stacklist, buf );
 
 if( barwidth > 0.0 ) halfw = barwidth * 0.5;
 else	{
+	/* automatic bar width determination... do this even with thinbarline for positioning purposes below.. */
 	if( ncluster <= 1 ) halfw = ( Ea( X, 1.0 ) - Ea( X, 0.0 ) ) * 0.4;
 	else if( ncluster > 1 ) halfw = (( Ea( X, 1.0 ) - Ea( X, 0.0 ) ) * 0.4)/ (double)ncluster;
 	if( halfw > 0.5 ) halfw = 0.1; /* sanity  - to prevent huge bars */
 	}
 
+/* if bar width turns out to be very thin, go to line-based bars for better results....  added scg 3/10/09 */
+if( halfw < 0.012 && thinbarline[0] == '\0' ) { sprintf( thinbuf, "color=%s", barcolor ); thinbarline = thinbuf; }   
 
 if( outline[0] == '\0' || strncmp( outline, "no", 2 )==0 ) do_outline = 0;
 else do_outline = 1;
@@ -277,10 +288,10 @@ if( colorlist[0] != '\0' ) {
 	ix = 0; ixx = 0;
 	i = 0;
 	while( 1 ) {
-		strcpy( tok, GL_getok( colorlist, &ix ) ); 
-		if( tok[0] == '\0' ) break;
-		if( atoi( tok ) > 0 && atoi( tok ) < MAXCLP ) {
-			colorlp[ atoi(tok) - 1 ] = &colorlist[ix];
+		strcpy( acolor, GL_getok( colorlist, &ix ) ); 
+		if( acolor[0] == '\0' ) break;
+		if( atoi( acolor ) > 0 && atoi( acolor ) < MAXCLP ) {
+			colorlp[ atoi(acolor) - 1 ] = &colorlist[ix];
 			GL_getok( colorlist, &ix );
 			}
 		else if( i < MAXCLP ) {
@@ -294,7 +305,10 @@ if( colorlist[0] != '\0' ) {
 linedet( "outline", outline, 0.5 );
 PLG_forcecolorchg();
 
+
 if( thinbarline[0] != '\0' && strncmp( thinbarline, "no", 2 ) != 0 ) linedet( "thinbarline", thinbarline, 0.3 );
+
+
 
 if( errbars && !taillengiven ) taillen = 0.2; /* set a default taillen for errorbars */
 
@@ -353,8 +367,6 @@ for( irow = 0; irow < Nrecords; irow++ ) {
 
 	if( nstackf > 0 ) /* stacking */
 		for( j = 0; j < nstackf; j++ ) {
-			/* BDB: here is where scott barrett's bug seems to occur.. */
-			/* Digital UNIX 4.0g on a Compaq ES-40 Server.  debugger indicates abend in proc_bars.c */
 			fval = fda( irow, stackf[j]-1, axis );
 			if( segmentflag ) fval -= cr; /* normalize? */
 			y0 += fval;
@@ -438,7 +450,7 @@ for( irow = 0; irow < Nrecords; irow++ ) {
 	/* now do the bar.. */
 
 	/* allow @field substitutions into url */
-	if( PLS.clickmap && ( mapurl != "" || maplabel != "" )) {
+	if( PLS.clickmap && ( mapurl[0] != '\0' || maplabel[0] != '\0' )) {
 		expandedurl = PL_bigbuf;
 		expandedlabel = &PL_bigbuf[2000];
 		do_subst( expandedurl, mapurl, irow, URL_ENCODED );
@@ -465,7 +477,7 @@ for( irow = 0; irow < Nrecords; irow++ ) {
 			if( y0_endin ) Elin( xleft, Ea( Y, y0 ) );
 			}
 
-		if( PLS.clickmap && (mapurl != "" || maplabel != "" )) {
+		if( PLS.clickmap && (mapurl[0] != '\0' || maplabel[0] != '\0' )) {
 			if( Eflip ) clickmap_entry( 'r', expandedurl, 0, Ea( Y, y0 ), xleft, Ea( Y, y ), xright, 0, 0, expandedlabel );
 			else clickmap_entry( 'r', expandedurl, 0, xleft, Ea( Y, y0 ), xright, Ea( Y, y ), 0, 0, expandedlabel );
 			}
@@ -560,10 +572,10 @@ if( showvals || labelfld >= 0 ) {
 		if( labelfld >= 0 ) strcpy( labelstr, da( i, labelfld ) );
 		else 	{
 			if( segmentflag ) y = fda( i, stopfld-1, axis ); /* get y now.. scg 9/27/04 */
-			strcpy( labelstr, labelword );
+			strcpy( labelstr, labelword );  /* labelstr[256] */
 			}
 		stat = Euprint( buf, axis, y, numstrfmt );
-		GL_varsub( labelstr, "@N", buf );
+		GL_varsub( labelstr, "@N", buf ); /* labelstr[256] */
 
 
 		/* check / truncate length.. */

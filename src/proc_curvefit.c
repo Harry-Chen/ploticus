@@ -30,8 +30,9 @@ PLP_curvefit()
 char attr[NAMEMAXLEN], *line, *lineval;
 int lvp, first;
 
-char *linedetails, *curvetype, *legendlabel, *selectex;
+char *linedetails, *curvetype, *selectex;
 char numstr[100];
+char legendlabel[256];
 int i, stat, order, xfield, yfield, npts, nresultpoints, irow, showresults, calcrangegiven;
 int linerangegiven, statsonly, selectresult, xsort, maxinpoints, doclip;
 double resolution, linestart, linestop, calcstart, calcstop, *inpoints, *inp, drawx, drawy, prevdrawx, prevdrawy, curveshift;
@@ -50,7 +51,7 @@ linestop = EDXhi;
 showresults = 0; calcrangegiven = 0; linerangegiven = 0; xsort = 0; doclip = 0; statsonly = 0;
 curvetype = "movingavg";
 selectex = "";
-legendlabel = ""; /* added scg 7/28/03 */
+strcpy( legendlabel, "" ); 
 maxinpoints = MAXPTS;
 curveshift = 0.0;
 
@@ -69,7 +70,7 @@ while( 1 ) {
 	else if( strcmp( attr, "resolution" )==0 ) resolution = ftokncpy( lineval );
 	else if( strcmp( attr, "xsort" )==0 ) xsort = getyn( lineval );
 	else if( strcmp( attr, "linedetails" )==0 ) linedetails = lineval;
-	else if( strcmp( attr, "legendlabel" )==0 ) legendlabel = lineval;
+	else if( strcmp( attr, "legendlabel" )==0 ) tokncpy( legendlabel, lineval, 256 );
 	else if( strcmp( attr, "select" )==0 ) selectex = lineval;
 	else if( strcmp( attr, "linerange" )==0 ) {
 		if( lineval[0] != '\0' ) linerangegiven = 1;
@@ -102,7 +103,7 @@ if( yfield < 0 || yfield >= Nfields ) return( Eerr( 601, "yfield not specified o
 if( !scalebeenset() )
          return( Eerr( 51, "No scaled plotting area has been defined yet w/ proc areadef", "" ) );
  
-if( strncmp( legendlabel, "#usefname", 9 )==0 ) getfname( yfield+1, legendlabel );
+if( strncmp( legendlabel, "#usefname", 9 )==0 ) getfname( yfield+1, legendlabel ); /* legendlabel[256] */
 
 
 /* now do the computation work.. */
@@ -252,10 +253,10 @@ for( i = 1; i < nresultpoints; i++ ) {
 
 /* set YFINAL and Xfinal */
 i--;
-Euprint( numstr, X, dat2d(i,0), "" );
-setcharvar( "XFINAL", numstr );
-Euprint( numstr, Y, dat2d(i,1), "" );
+Euprint( numstr, Y, dat2d(i,1), "" ); /* numstr[100] */
 setcharvar( "YFINAL", numstr );
+Euprint( numstr, X, dat2d(i,0), "" ); /* numstr[100] */
+setcharvar( "XFINAL", numstr );
 
 
 

@@ -18,7 +18,7 @@ pl  -prefab scat  data=data1  x=2  y=3  id=1 xlbl="Total Ch"  ylbl="White Blood 
 
 echo scat3..
 pl  -prefab scat  data=data3  x=2  y=6  err=3  xerr=7  corr=yes "select=@2 < 0.6" \
-	ptshape=triangle ptsize=0.08  ptcolor=red  "errcolor=gray(0.8)" \
+	ptshape=triangle ptsize=0.08  ptcolor=red  "errcolor=gray(0.8)"  autow=yes \
 	-$DEV -o ${OUTDIR}scat3.$DEV $ARGS
 
 echo scat4..

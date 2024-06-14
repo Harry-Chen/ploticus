@@ -369,14 +369,14 @@ else if( datasource == 'c' ) pclose( dfp );
 READ_DONE:
 
 PL_finishdataset( nrecords, nfields );
-if( nscriptrows > 0 && pfnames != "" ) definefieldnames( pfnames ); /* assign any post-filter field names.. */
+if( nscriptrows > 0 && pfnames[0] != '\0' ) definefieldnames( pfnames ); /* assign any post-filter field names.. */
 
 if( showdata ) {
-        getfname( 1, buf );
+        getfname( 1, buf ); /* buf[256] */
 	fprintf( PLS.diagfp, "// proc getdata has read & parsed these data:\n" );
         if( buf[0] != '\0' ) { 
                 fprintf( PLS.diagfp, "// field names are: " );
-                for( j = 0; j < Nfields; j++ ) { getfname( j+1, buf ); fprintf( PLS.diagfp, "%s|", buf ); }
+                for( j = 0; j < Nfields; j++ ) { getfname( j+1, buf ); fprintf( PLS.diagfp, "%s|", buf ); }  /* buf[256] */
                 fprintf( PLS.diagfp, "\n" );
                 }
         else fprintf( PLS.diagfp, "// (no field names defined)\n" );

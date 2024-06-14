@@ -30,7 +30,7 @@ int
 PL_getyn( val )
 char *val;
 {
-if( strnicmp( val, YESANS, 1 )==0 ) return( 1 );
+if( strnicmp( val, "y", 1 )==0 ) return( 1 );
 else return( 0 );
 }
 
