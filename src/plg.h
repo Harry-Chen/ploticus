@@ -33,6 +33,12 @@
  #define strnicmp( s, t, n )     strncasecmp( s, t, n )
 #endif
 
+/* output devices (Edev) */
+#define X11 'x'
+#define GD  'g'
+#define SVG 's'
+#define POSTSCRIPT 'p'
+#define SWF 'f'
 
 
 struct plgc {
@@ -164,14 +170,14 @@ extern struct plgc PLG;
 #define Especifycrop( mode, x1, y1, x2, y2 )		PLG_specifycrop( mode, x1, y1, x2, y2 )
 #define Egifrect( xlo, yhi, xhi, ylo, color )		PLG_gifrect( xlo, yhi, xhi, ylo, color )
 #define Eimload( filename, scalex, scaley )		PLG_imload( filename, scalex, scaley )
-#define Eimplace( x, y, imalign, xscale, yscale )	PLG_implace( x, y, imalign, xscale, yscale )
+#define Eimplace( x, y, filename, imalign, xscale, yscale )	PLG_implace( x, y, filename, imalign, xscale, yscale )
 #define Esetglobalscale( sx, sy )			PLG_setglobalscale( sx, sy )
 #define Egetglobalscale( sx, sy )			PLG_getglobalscale( sx, sy )
 #define Esetposterofs( x, y )				PLG_setposterofs( x, y )
 #define Epcodedebug( mode, fp )				PLG_pcodedebug( mode, fp )
 #define Ecolorname_to_rgb( color, r, g, b )		PLG_colorname_to_rgb( color, r, g, b )
 #define Ergb_to_gray( r, g, b )				PLG_rgb_to_gray( r, g, b )
-#define Eicolor( i, color )				PLG_icolor( i, color )
+#define Eicolor( i )					PLG_icolor( i )
 #define Eclr()						PLG_clr()
 #define Emov( x, y )					PLG_mov( x , y )
 #define Elin( x, y )					PLG_lin( x , y )
@@ -278,6 +284,7 @@ double atof(), sqrt(), log();
 extern double PLG_a(), PLG_ax(), PLG_ay(), PLG_dx(), PLG_dy(), PLG_limit(), PLG_conv(), PLG_u();
 extern double  PLG_xsca_inv(), PLG_ysca_inv();
 extern char *GL_getok(), *GL_autoround(), *GL_autoroundf();
+extern char *PLG_icolor();
 
 
 /* ========== int function declares =================== */
@@ -323,7 +330,6 @@ extern int PLG_setposterofs();
 extern int PLG_pcodedebug();
 extern int PLG_colorname_to_rgb();
 extern int PLG_rgb_to_gray();
-extern int PLG_icolor();
 extern int PLG_clr();
 extern int PLG_mov();
 extern int PLG_lin();

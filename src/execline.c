@@ -1,5 +1,5 @@
 /* ======================================================= *
- * Copyright 1998-2005 Stephen C. Grubb                    *
+ * Copyright 1998-2008 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */
@@ -7,8 +7,12 @@
 #include "pl.h"
 #include "tdhkit.h"
 
-#define NONDRAWINGPROCS "page print originaldata usedata tabulate getdata defineunits\
- rangebar catslide processdata settings endproc"
+#define NONDRAWINGPROCS "page print originaldata usedata tabulate getdata boxplot catslide processdata settings endproc"
+
+#define MAXMALLOCATTRS 30   /* max # of multiline attributes per proc including clones */
+
+#define GETTING 0
+#define SCANNING 1
 
 
 static int execline_init = 0;
@@ -21,8 +25,13 @@ static int nlhold;
 static char clonelist[200];
 static int holdmemflag = 0;
 static int prevlineblank = 0;	/* prevent -echo from spitting out lots of adjacent blank lines */
+static char *mem; 
+static int nfl = 0;
+static char *malloclist[MAXMALLOCATTRS]; /* list of malloced multiline items */
+static int procstop; 		/* communicates end of proc w/ getmultiline  */
 
-static int proc_call();
+
+static int proc_call(), initproc();
 
 /* ================================================================= */
 int
@@ -31,6 +40,7 @@ PL_execline_initstatic()
 execline_init = 0;
 holdmemflag = 0;
 prevlineblank = 0;
+/* don't reset nfl here.. let new job free the list */
 return( 0 );
 }
 
@@ -41,10 +51,10 @@ return( 0 );
 
 int
 PL_execline( line )
-char *line;	/* line of script file.. */   /* if const, new trailing newline and no #ifspec! (these modify line) */
+char *line;	/* line of script file.. */   /* if const, no trailing newline and no #ifspec! (these modify line) */
 {
 int i, ix, stat;
-char buf2[256];
+char firsttok[50], buf2[50];
 int buflen, endproc, procstat;
 
 
@@ -66,18 +76,27 @@ if( !execline_init ) {
 if( PLS.skipout ) return( 1 ); /* a major error has occured;  don't process any more lines.. just return */
 
 buflen = strlen( line );
-if( line[ buflen-1 ] == '\n' ) { line[ buflen-1 ] = '\0'; buflen--; } /* don't keep trailing newline.. */
-if( line[ buflen-1 ] == 13 ) { line[ buflen-1] = '\0'; buflen--; } /* DOS LF */
 
+
+/* remove newlines cr/lf and trailing whitespace from every line... added scg 11/9/07 */
+for( i = buflen-1; i >= 0; i-- ) if ( !isspace( (int) line[i] )) break;   
+line[i+1] = '\0';
+buflen = i+1;
+/* was... */
+/* if( line[ buflen-1 ] == '\n' ) { line[ buflen-1 ] = '\0'; buflen--; } */ /* don't keep trailing newline.. */
+/* if( line[ buflen-1 ] == 13 ) { line[ buflen-1] = '\0'; buflen--; } */ /* DOS LF */
 
 ix = 0; 
-strcpy( buf2, GL_getok( line, &ix ) );
 
-if( PLS.echolines && stricmp( buf2, "#ifspec" )!= 0 ) {
-	if( prevlineblank && buf2[0] == '\0' ); /* multiple blank lines.. don't output */
-	else if( PLS.echolines == 1 ) printf( "%s\n", line );
-        else if( PLS.echolines == 2 ) fprintf( PLS.diagfp, "%s\n", line );
-	if( buf2[0] == '\0' ) prevlineblank = 1;
+/* get first token in line.. changed to handle potentially long lines having no whitespace eg. long CSV data lines .. scg 10/25/07 */
+strncpy( buf2, line, 40 ); buf2[40] = '\0'; 
+strcpy( firsttok, GL_getok( buf2, &ix ) );
+
+if( PLS.echolines && strcmp( firsttok, "#ifspec" )!= 0 ) {
+	if( prevlineblank && firsttok[0] == '\0' ); /* multiple blank lines.. don't output */
+	else if( PLS.echolines == 1 ) { printf( "%s\n", line ); fflush( stdout ); }
+        else if( PLS.echolines == 2 ) { fprintf( PLS.diagfp, "%s\n", line ); fflush( PLS.diagfp ); }
+	if( firsttok[0] == '\0' ) prevlineblank = 1;
 	else prevlineblank = 0;
 	}
 
@@ -85,8 +104,8 @@ if( PLS.echolines && stricmp( buf2, "#ifspec" )!= 0 ) {
 
 /* intercept #endproc.. */
 endproc = 0;
-if( stricmp( buf2, "#endproc" )==0 ) { 
-	strcpy( buf2, "#proc" ); 
+if( strcmp( firsttok, "#endproc" )==0 ) { 
+	strcpy( firsttok, "#proc" ); 
 	endproc = 1; 
 
 	/* and add an additional blank line to terminate any last multline item.. */
@@ -100,7 +119,7 @@ if( stricmp( buf2, "#endproc" )==0 ) {
 
 
 /*** #proc(def): get ready to capture next proc, and execute the proc that has just been read... */
-if( strnicmp( buf2, "#proc", 5 )==0 && !lastbs ) {  /* #proc or #procdef break */
+if( strncmp( firsttok, "#proc", 5 )==0 && !lastbs ) {  /* #proc or #procdef break */
 
 	procstat = 0;
 
@@ -111,10 +130,10 @@ if( strnicmp( buf2, "#proc", 5 )==0 && !lastbs ) {  /* #proc or #procdef break *
 	PLL.objlen[ PLL.nobj ] = PLL.nlines - nlhold;
 
 	/* if not first time around, and #proc was used (as opposed to #procdef), execute proc.. */
-	if( stricmp( last_proctok, "#proc" )==0 ) {  
+	if( strcmp( last_proctok, "#proc" )==0 ) {  
 
 		/* proc page can do the Einit, or we can do it here.. */
-		if( stricmp( procname, "page" )==0 ) PLS.eready = 1;
+		if( strcmp( procname, "page" )==0 ) PLS.eready = 1;
 		if( !PLS.eready && !GL_slmember( procname, NONDRAWINGPROCS )) {
 			stat = Einit( PLS.device );
 			if( stat ) { PLS.skipout = 1; return( stat ); }
@@ -122,7 +141,7 @@ if( strnicmp( buf2, "#proc", 5 )==0 && !lastbs ) {  /* #proc or #procdef break *
 			PLS.eready = 1;
 
 			/* we are ready to draw.. safe to say page 1.. scg 11/28/00 */
-			if( stricmp( procname, "page" )!=0 ) PLS.npages = 1;
+			if( strcmp( procname, "page" )!=0 ) PLS.npages = 1;
 			if( PLS.bkcolorgiven ) {
 				/* EPS color=transparent - best to do nothing.. scg 1/10/00*/
 				if( PLS.device == 'e' && strcmp( Ecurbkcolor, "transparent" )==0 ) ;
@@ -144,6 +163,7 @@ if( strnicmp( buf2, "#proc", 5 )==0 && !lastbs ) {  /* #proc or #procdef break *
 		}
 		
 
+
 	/* if we're not told to hold on to the memory (used by getdata), and if
 	   there were no #saveas.., then free the proc lines now..*/
 	if( !holdmemflag && saveas_name[0] == '\0' ) {
@@ -159,7 +179,7 @@ if( strnicmp( buf2, "#proc", 5 )==0 && !lastbs ) {  /* #proc or #procdef break *
 		}
 	holdmemflag = 0;
 
-	strcpy( last_proctok, buf2 );
+	strcpy( last_proctok, firsttok );
 
 	if( procname[ strlen( procname ) - 1 ] == ':' ) procname[ strlen( procname ) - 1 ] = '\0';
 
@@ -179,13 +199,19 @@ if( strnicmp( buf2, "#proc", 5 )==0 && !lastbs ) {  /* #proc or #procdef break *
  ****** special cases such as #clone and #saveas..  */
 
 else 	{
-	if( procname[0] == '\0' ) return( 0 ); /* ? */
 
+	if( firsttok[0] == '#' && firsttok[1] != '#' ) {
+		if( strncmp( firsttok, "#clone", 6 ) != 0 && 
+		    strncmp( firsttok, "#saveas", 7 ) != 0 && 
+		    strncmp( firsttok, "#ifspec", 7 ) != 0 ) Eerr( 57468, "unrecognized operator", firsttok );
+		}
+
+	if( procname[0] == '\0' ) return( 0 ); /* ? */
 	else 	{
 		/* add lines to proc line list.. */
 		/* also look for exceptions such as "#clone" */
 
-		if( !lastbs && strnicmp( buf2, "#clone", 6 )==0 ) {
+		if( !lastbs && strncmp( firsttok, "#clone", 6 )==0 ) {
 			strcpy( clone_name, "" );
 			sscanf( line, "%*s %s", clone_name );
 			if( clone_name[0] == '\0' ) {
@@ -196,18 +222,13 @@ else 	{
 			strcat( clonelist, " " );
 			}
 
-		else if( !lastbs && strnicmp( buf2, "#saveas", 7 )==0 ) sscanf( line, "%*s %s", saveas_name );
+		else if( !lastbs && strncmp( firsttok, "#saveas", 7 )==0 ) sscanf( line, "%*s %s", saveas_name );
 
 
 		else 	{
-			/* buflen = strlen( line ); 
-			 * if( line[ buflen-1 ] == '\n' ) buflen--; // don't keep trailing newline.. //
-			 *** moved to top scg 5/20/03...
-			 */
-
 
 			/* #ifspec   scg 10/16/03 */
-			if( !lastbs && strnicmp( buf2, "#ifspec", 7 )==0 ) {  /* #ifspec varname [attrname] */
+			if( !lastbs && strncmp( firsttok, "#ifspec", 7 )==0 ) {  /* #ifspec varname [attrname] */
 				int nt;
 				char varname[50], attrname[50], val[DATAMAXLEN+1];
 				nt = sscanf( line, "%*s %s %s", varname, attrname );
@@ -260,66 +281,70 @@ char *procname;
 {
 int stat;
 int n;
-char attr[NAMEMAXLEN], val[256];
-char *line;
-int nt, lvp;
-int first;
 
 stat = 0;
 
+initproc(); /* initialize attribute malloc stuff for this proc  (see below) */
+
 if( PLS.debug ) { 
 	if( strcmp( procname, "endproc" )==0 ) { fprintf( PLS.diagfp, "(endproc)\n" ); fflush( PLS.diagfp ); }
-	else { fprintf( PLS.diagfp, "Executing %s\n", procname ); fflush( PLS.diagfp ); }
-	}
-first = 1;
-while( 1 ) {
-	line = getnextattr( first, attr, val, &lvp, &nt );
-	if( line == NULL ) break;
-	first = 0;
+	else fprintf( PLS.diagfp, "Executing %s\n", procname ); fflush( PLS.diagfp ); 
 	}
 
-if( stricmp( procname, "areadef" )==0 ) {
+if( strcmp( procname, "areadef" )==0 ) {
 	stat = PLP_areadef();
 	if( stat != 0 ) {
 		PLS.skipout = 1;
 		return( Eerr( 10, "cannot set up plotting area .. likely culprits: bad xrange or yrange, or bad area rectangle", "" ));
 		}
 	}
-else if( stricmp( procname, "page" )==0 ) {
+else if( strcmp( procname, "page" )==0 ) {
 	stat = PLP_page();
 	if( stat ) { PLS.skipout = 1; return( stat ); }
 	}
-else if( stricmp( procname, "xaxis" )==0 ) stat = PLP_axis( 'x', 0 );
-else if( stricmp( procname, "yaxis" )==0 ) stat = PLP_axis( 'y', 0 );
-else if( stricmp( procname, "getdata" )==0 ) stat = PLP_getdata();
-else if( stricmp( procname, "lineplot" )==0 ) stat = PLP_lineplot();
-else if( stricmp( procname, "bars" )==0 ) stat = PLP_bars();
-else if( stricmp( procname, "rangebar" )==0 ) stat = PLP_rangebar();
-else if( stricmp( procname, "scatterplot" )==0 ) stat = PLP_scatterplot();
-else if( stricmp( procname, "vector" )==0 ) stat = PLP_vector();
-else if( stricmp( procname, "venndisk" )==0 ) stat = PLP_venndisk();
-else if( stricmp( procname, "annotate" )==0 ) stat = PLP_annotate();
-else if( stricmp( procname, "legend" )==0 ) stat = PLP_legend();
-else if( stricmp( procname, "curvefit" )==0 ) stat = PLP_curvefit();
-else if( stricmp( procname, "rangesweep" )==0 ) stat = PLP_rangesweep();
-else if( stricmp( procname, "pie" )==0 ) stat = PLP_pie();
-else if( stricmp( procname, "drawcommands" )==0 ) stat = PLP_drawcommands();
-else if( stricmp( procname, "line" )==0 ) stat = PLP_line();
-else if( stricmp( procname, "rect" )==0 || stricmp( procname, "bevelrect" )==0 ) stat = PLP_rect();
-else if( stricmp( procname, "tabulate" )==0 ) stat = PLP_tabulate();
-else if( stricmp( procname, "transform" )==0 || stricmp( procname, "processdata" )==0 ) stat = PLP_processdata();
-else if( stricmp( procname, "print" )==0 ) stat = PLP_print(); /* deprecated */
-else if( stricmp( procname, "legendentry" )==0 ) stat = PLP_legendentry();
-else if( stricmp( procname, "defineunits" )==0 ) stat = PLP_defineunits();
-else if( stricmp( procname, "categories" )==0 ) stat = PLP_categories();
-else if( stricmp( procname, "catslide" )==0 ) stat = PLP_categories(); /* PLP_catslide(); */
-else if( stricmp( procname, "settings" )==0 || stricmp( procname, "datesettings" )==0 ) stat = PLP_settings();
-else if( stricmp( procname, "originaldata" )==0 || stricmp( procname, "usedata" )==0 ) stat = PLP_usedata();
-else if( stricmp( procname, "symbol" )==0 ) stat = PLP_symbol();
-else if( stricmp( procname, "breakaxis" )==0 ) stat = PLP_breakaxis();
-else if( stricmp( procname, "import" )==0 ) stat = PLP_import();
-else if( stricmp( procname, "trailer" )==0 ) ; /* do nothing */
-else if( stricmp( procname, "endproc" )==0 ) ; /* do nothing */
+else if( strcmp( procname, "xaxis" )==0 ) stat = PLP_axis( 'x', 0 );
+else if( strcmp( procname, "yaxis" )==0 ) stat = PLP_axis( 'y', 0 );
+else if( strcmp( procname, "getdata" )==0 ) stat = PLP_getdata();
+else if( strcmp( procname, "categories" )==0 ) stat = PLP_categories( 0 );
+else if( strcmp( procname, "legend" )==0 ) stat = PLP_legend();
+else if( strcmp( procname, "bars" )==0 ) stat = PLP_bars();
+else if( strcmp( procname, "scatterplot" )==0 ) stat = PLP_scatterplot();
+else if( strcmp( procname, "pie" )==0 ) stat = PLP_pie();
+else if( strcmp( procname, "lineplot" )==0 ) stat = PLP_lineplot();
+else if( strcmp( procname, "rangesweep" )==0 ) stat = PLP_rangesweep();
+else if( strcmp( procname, "boxplot" )==0 ) stat = PLP_boxplot();
+else if( strcmp( procname, "annotate" )==0 ) stat = PLP_annotate();
+else if( strcmp( procname, "processdata" )==0 ) stat = PLP_processdata();
+else if( strcmp( procname, "catlines" )==0 ) stat = PLP_catlines();
+else if( strcmp( procname, "curvefit" )==0 ) stat = PLP_curvefit();
+else if( strcmp( procname, "vector" )==0 ) stat = PLP_vector();
+else if( strcmp( procname, "usedata" )==0 ) stat = PLP_usedata(); 
+else if( strcmp( procname, "legendentry" )==0 ) stat = PLP_legendentry();
+else if( strcmp( procname, "line" )==0 ) stat = PLP_line();
+else if( strcmp( procname, "rect" )==0 ) stat = PLP_rect();
+else if( strcmp( procname, "tree" )==0 ) stat = PLP_tree();
+else if( strcmp( procname, "venndisk" )==0 ) stat = PLP_venndisk();
+else if( strcmp( procname, "settings" )==0 ) stat = PLP_settings();
+else if( strcmp( procname, "breakaxis" )==0 ) stat = PLP_breakaxis();
+else if( strcmp( procname, "image" )==0 ) stat = PLP_image();
+else if( strcmp( procname, "drawcommands" )==0 ) stat = PLP_drawcommands();
+else if( strcmp( procname, "tabulate" )==0 ) stat = PLP_tabulate();
+else if( strcmp( procname, "symbol" )==0 ) stat = PLP_symbol();
+else if( strcmp( procname, "print" )==0 ) stat = PLP_print(); 
+
+else if( strcmp( procname, "trailer" )==0 ) ; /* do nothing */
+else if( strcmp( procname, "endproc" )==0 ) ; /* do nothing */
+
+else if( strcmp( procname, "catslide" )==0 ) stat = PLP_categories( 0 ); /* maps to: proc categories */
+else if( strcmp( procname, "transform" )==0 ) stat = PLP_processdata(); /* maps to: proc processdata */
+else if( strcmp( procname, "originaldata" )==0 ) stat = PLP_usedata();  /* maps to: proc usedata */
+else if( strcmp( procname, "bevelrect" )==0 ) stat = PLP_rect();        /* maps to: proc rect */
+else if( strcmp( procname, "import" )==0 ) stat = PLP_image(); 	/* maps to: proc image */
+else if( strcmp( procname, "datesettings" )==0 ) stat = PLP_settings(); /* maps to: proc settings */
+
+else if( strcmp( procname, "rangebar" )==0 ) return( Eerr( 27925, "proc rangebar has been replaced with proc boxplot", "" ) );
+else if( strcmp( procname, "defineunits" )==0 ) return( Eerr( 27926, "proc defineunits discontinued; use proc areadef", "xnewunits and ynewunits" ));
+
 else return( Eerr( 101, "procedure name unrecognized", procname ) );
 
 TDH_errprog( "pl" );
@@ -335,24 +360,22 @@ return( stat );
 
 /* ================================================================= */
 /* GETNEXTATTR - serve up the next proc line, or NULL if no more */
+/* This function returns a pointer to the proc line, and returns some values in the parameters. */
 
 char *
-PL_getnextattr( flag, attr, val, linevalpos, nt )
-int flag; /* 1 = first call for proc;  2 = getting multiline (don't get toks); any other value = nothing */
-char *attr, *val;
-int *linevalpos, *nt;
+PL_getnextattr( firsttime, attr, valpos )
+int firsttime;	/* 1 = first call for proc */
+char *attr;	/* returned: attribute name */
+int *valpos;    /* returned: char position in the string returned by this function, where value content begins */
 {
-static int cloneix, stop, state;
+static int cloneix, state;
 static char *line;
-int i, j, ix, alen;
+int j, ix, alen;
 char clone_name[NAMEMAXLEN];
 
 /* states:  0 = init   1 = getting clone  2 = getting proc  3 = done */
 
-if( flag == 1 ) {
-	state = 0;
-	cloneix = 0;
-	}
+if( firsttime ) { state = 0; cloneix = 0; }
 
 if( state == 3 ) {
 	line = NULL;
@@ -370,12 +393,12 @@ if( state == 0 ) {
 			goto RETRY;
 			}
 		PLL.curline = PLL.objstart[j];
-		stop = PLL.objstart[j] + PLL.objlen[j];
+		procstop = PLL.objstart[j] + PLL.objlen[j];
 		state = 1;
 		}
 	else 	{
 		PLL.curline = PLL.objstart[ PLL.nobj ];
-		stop = PLL.nlines;
+		procstop = PLL.nlines;
 		state = 2;
 		}
 	}
@@ -383,128 +406,177 @@ if( state == 0 ) {
 if( state == 1 || state == 2 ) {
 	RETRY2:
 	if( PLL.curline >= PLL.nlines ) return( NULL );
-	if( flag == 2 ) { /* multirow */
-		for( i = 0; PLL.procline[ PLL.curline ][ i ] != '\0'; i++ ) 
-			if( !isspace( (int) PLL.procline[ PLL.curline ][ i ] ) ) break;
-		line = &(PLL.procline[ PLL.curline ][ i ]);
+	line = PLL.procline[ PLL.curline ];
+	ix = 0;
+
+	strncpy( attr, GL_getok( line, &ix ), 38 );   /* get 1st token (truncate at 38 chars) */
+	attr[38] = '\0'; 
+
+	if( attr[0] == '\0' ) {   /* blank line.. skip */
+		(PLL.curline)++;
+		if( PLL.curline >= procstop && state == 1 ) { state = 0; goto RETRY; }
+		else if( PLL.curline >= procstop && state == 2 ) { state = 3; return( NULL ); }
+		else goto RETRY2;
 		}
-	else	{  /* single row attr: val */
-		line = PLL.procline[ PLL.curline ];
-		ix = 0;
-		strncpy( attr, GL_getok( line, &ix ), 38 ); /* it is possible for 1st token in line to be longer than
-								38 chars (eg comma-delimited data) scg 6/26/02 */
-		attr[38] = '\0';
-		if( attr[0] == '\0' ) {   /* blank line.. skip */
-			(PLL.curline)++;
-			if( PLL.curline >= stop && state == 1 ) { 
-				state = 0; 
-				goto RETRY; 
-				}
-			else if( PLL.curline >= stop && state == 2 ) {
-				state = 3; 
-				return( NULL ); 
-				}
-			else goto RETRY2;
-			}
-		alen = strlen( attr );
-		if( attr[ alen-1 ] == ':' ) attr[ alen-1 ] = '\0';
-		if( attr[0] != '\0' ) while( line[ix] == ' ' || line[ix] == '\t' ) ix++; /* skip over ws */
-		*linevalpos = ix;
-		strcpy( val, GL_getok( line, &ix ) );
-		if( val[0] != '\0' ) while( line[ix] == ' ' || line[ix] == '\t' ) ix++; /* skip over ws */
-		if( attr[0] == '\0' ) *nt = 0;
-		else if( val[0] == '\0' ) *nt = 1;
-		else *nt = 2;
-		}
+	alen = strlen( attr );
+	if( attr[ alen-1 ] == ':' ) attr[ alen-1 ] = '\0';
+	if( attr[0] != '\0' ) while( isspace( (int) line[ix] )) ix++; /* skip over ws */
+	*valpos = ix;
 
 	PLL.curline++;
-	if( PLL.curline >= stop ) {
+	if( PLL.curline >= procstop ) {
 		if( state == 1 ) state = 0;
 		else state = 3;
 		}
+
 	return( line );
 	}
 return( NULL );
 }
 
 /* ================================================================= */
-/* GETMULTILINE - get a multi-line text item from script file.
-   End is marked by an empty line.  Leading white space is removed from all lines.
-   Normally, the multi-line text item is copied into 'result', which should be a buffer 
-   of adequate size.  The result buffer size should be passed as 'maxlen'.  
-
-   However, if 'maxlen' is passed as 0, this routine simply advances to the end of the
-   item without doing any copying, (this is done in proc_getdata.c).
-
-   Example of a multiline item:
-	title:  Number of days difference 
-	 	\
-	        Subgroup: 1B
-
-	frame: yes
+/* GETMULTILINE - get a multi-line text item from script file.  Terminates when first empty line is encountered.
+	If mode == "get", sufficient memory is malloc'ed, the text is copied into it, and function returns pointer to text.
+	If mode == "skip", we simply advance to the end of the multiline text (see proc_getdata)
 */
    
-int
-PL_getmultiline( parmname, firstline, maxlen, result )
-char *parmname, *firstline;
-int maxlen;
-char *result;
+char *
+PL_getmultiline( firstline, mode )
+char *firstline; /* first row of data, without attribute name */ 
+char *mode;  /* either "get" or "skip" */
 {
-char *line, buf[256];
-int nt, i, len, foo, rlen, lonebs;
+char *line;
+int i, iline;
+int txtlen, txtstartline, txtstopline, memlen, emptyline;
 
-rlen = 0;
+txtstartline = PLL.curline;
 
-/* strip leading white space from first line.. */
-if( maxlen > 0 ) {
-	for( i = 0, len = strlen( firstline ); i < len; i++ )
-		if( firstline[i] != ' ' && firstline[i] != '\t' ) break;
+/* first, scan thru all rows to get count of total # chars... */
+txtlen = strlen( firstline );
 
-	if( i < len ) {
-		sprintf( result, "%s\n", &firstline[i] );
-		rlen = ( len - i ) + 1;
-		}
+/* go until we hit an empty line, or reach end of proc.. */
+for( iline = txtstartline; iline <= procstop ; iline++ ) {
+	line = PLL.procline[ iline ];
+	for( i = 0, emptyline = 1; line[i] != '\0'; i++ ) if( !isspace( (int) line[i] )) { emptyline = 0; break; }
+	if( emptyline ) break;
+	if( mode[0] == 'g' ) txtlen += (strlen( &line[i] ) + 2);  /* mode = "get", accumulate length sans leading ws */
+	}
+
+/* remember where we stopped.. */
+txtstopline = iline;  
+PLL.curline = iline;  /* so scanner can resume at the right place.. */
+
+if( mode[0] == 's' ) return( 0 );  /* mode = "skip" */
+
+mem = malloc( txtlen+2 * sizeof( char *) );
+if( mem == (char *)NULL ) { PLS.skipout = 1; Eerr( 27509, "multiline malloc failed", "" ); return( "" ); }
+malloclist[nfl++] = mem;
+
+memlen = 0;
+
+/* copy first line content.. */
+for( i = 0; firstline[i] != '\0'; i++ ) if( !isspace( (int) firstline[i] )) break; /* skip leading ws */
+if( firstline[i] != '\0' ) {
+	sprintf( mem, "%s\n", &firstline[i] );
+	memlen = strlen( &firstline[i] ) + 1;
 	}
 
 
-/* now get remaining lines.. */
-while( 1 ) {
-	line = getnextattr( 2, NULL, NULL, &foo, &foo );
-
-	if( line == NULL ) break;
-	if( line[0] == '\0' ) break;  /* first blank line terminates */
-
-	if( maxlen == 0 ) continue; /* when just advancing.. */
-
-	len = strlen( line );
-	if( rlen + len > maxlen ) return( Eerr( 60, "Warning, multiline text truncated", parmname ) );
+/* now fill mem.. */
+for( iline = txtstartline; iline < txtstopline && iline <= procstop; iline++ ) {
+	line = PLL.procline[ iline ];
 	
-	/* detect lines having just a backslash.. */
-	lonebs = 0;
-	if( line[0] == '\\' ) {
-		nt = sscanf( &line[1], "%s", buf );
-		if( nt < 1 ) lonebs = 1;
-		}
+	/* skip over leading whitespace as well as any leading backslash.. */
+	for( i = 0; line[i] != '\0'; i++ ) if( !isspace( (int) line[i] )) break;
+	if( line[i] == '\\' ) i++;
 
-	if( lonebs ) {
-		strcpy( &result[ rlen ], "\n" ); rlen += 1;
-		}
-	else	{
-		/* allow backslash to represent start of text, so that leading blanks can be displayed  4/19/02 */
-		for( i = 0; i < len; i++ ) {
-			if( line[i] == '\\' && isspace( (int) line[i+1] ) ) continue; /* skip the backslash */
-			else result[ rlen++ ] = line[i];
-			}
-		result[ rlen++ ] = '\n';
-		result[ rlen ] = '\0';
-		}
+	strcpy( &mem[memlen], &line[i] );
+	memlen += strlen( &line[i] );
+	mem[ memlen++ ] = '\n';
+	mem[ memlen ] = '\0';
 	}
+return( mem );
+}
+
+
+
+/* ========================================= */
+/* TOKNCPY - copy 1st token of lineval into val, up to maxlen (maxlen should be same as var declaration size) */
+int
+PL_tokncpy( val, lineval, maxlen )
+char *val, *lineval;
+int maxlen;
+{
+int i;
+for( i = 0; i < maxlen-1; i++ ) {
+	if( isspace( (int)lineval[i] )) break;
+	val[i] = lineval[i];
+	}
+val[i] = '\0';
+if( i == (maxlen-1) ) return( 1 );
+else return( 0 );
+}
+
+/* ======================================== */
+/* ITOKNCOPY - do tokncpy and convert to integer using atoi() */
+int
+PL_itokncpy( lineval )
+char *lineval;
+{
+char val[80];
+tokncpy( val, lineval, 80 );
+return( atoi( val ) );
+}
+
+/* ======================================== */
+/* FTOKNCOPY - do tokncpy and convert to float using atof() */
+double 
+PL_ftokncpy( lineval )
+char *lineval;
+{
+char val[80];
+tokncpy( val, lineval, 80 );
+return( atof( val ) );
+}
+
+
+
+#ifdef HOLD
+/* ========================================= */
+/* NEWATTR - malloc some memory for an attribute value, and copy the attribute value into it. */
+char *
+PL_newattr( lineval, len )
+char *lineval;
+int len;
+{
+if( nfl >= MAXMALLOCATTRS-1 ) { PLS.skipout = 1; Eerr( 29, "too many malloced attributes in this proc", "" ); return( "" ); }
+if( len < 1 ) len = strlen( lineval );
+mem = malloc( len+2 * sizeof( char *) );
+if( mem == (char *)NULL ) { PLS.skipout = 1; Eerr( 27508, "newattr malloc failed", "" ); return( "" ); }
+malloclist[nfl++] = mem;
+strncpy( mem, lineval, len );
+mem[len] = '\0';
+return( mem );
+} 
+#endif
+
+
+/* =========================================== */
+/* INITPROC - free all currently malloc'ed attr memory (if any) and initialize for next proc  */
+static int
+initproc()
+{
+int i;
+for( i = 0; i < nfl; i++ ) free( malloclist[i] );
+nfl = 0;
 return( 0 );
 }
 
 
+
+
 /* ======================================================= *
- * Copyright 1998-2005 Stephen C. Grubb                    *
+ * Copyright 1998-2008 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */

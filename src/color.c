@@ -12,7 +12,6 @@
 extern int TDH_err();
 
 #define MAXCOLORS 35
-#define stricmp( s, t )              strcasecmp( s, t )
 
 struct PLG_colorlist {
 	char *name;
@@ -72,7 +71,7 @@ double *r, *g, *b;
 int i;
 if( color[0] == '\0' ) { *r = *g = *b = 0.0; return( 0 ); }
 for( i = 0; i < MAXCOLORS; i++ ) {
-	if( stricmp( color, colorname[i].name )==0 ) {
+	if( strcmp( color, colorname[i].name )==0 ) {
 		*r = colorname[i].r;
 		*g = colorname[i].g;
 		*b = colorname[i].b;
@@ -102,10 +101,9 @@ return( gray );
 
 /* =============================== */
 /* for i values 0 - 19 assign a usable color */
-int
-PLG_icolor( i, color )
+char *
+PLG_icolor( i )
 int i;
-char *color;
 {
 char *c;
 	switch( i % 20 ) {
@@ -130,8 +128,8 @@ char *c;
 		case 18: c = "redorange"; break;
 		case 19: c = "tan1"; break; 
 		}
-strcpy( color, c );
-return( 0 );
+/* strcpy( color, c ); */
+return( c );
 }
 
 /* =============================== */

@@ -94,6 +94,9 @@ static int esc_txt_svg();
 static int svg_set_style();
 static int svg_print_style();
 
+static int svg_imgsetwidth = 0, svg_imgsetheight = 0;
+static char svg_imgpathname[256] = "";
+
 /* ============================= */
 int
 PLGS_initstatic()
@@ -115,6 +118,8 @@ svg_clickmap = 0;
 svg_debug = 0;
 strcpy( svg_tagparms, "" );
 strcpy( svg_cur_color, "#000000" );
+svg_imgsetwidth = 0; svg_imgsetheight = 0;
+strcpy( svg_imgpathname, "" );
 return( 0 );
 }
 
@@ -211,7 +216,7 @@ svg_tmpfile_used = 0;
 
 /* determine if we need to write to tmp file, and open appropriate file for write.. */
 svg_stdout = 0;
-if( stricmp( outfile, "stdout" )==0 || outfile[0] == '\0' ) svg_stdout = 1;
+if( strcmp( outfile, "stdout" )==0 || outfile[0] == '\0' ) svg_stdout = 1;
 else strcpy( svg_filename, outfile );
 
 if( svg_stdout || svg_compress ) {
@@ -446,6 +451,14 @@ else if( strncmp( color, "xrgb", 4 )==0 ) {
 	red = (int)r; green = (int)g; blue = (int)b;
 	sprintf( svg_cur_color, "#%02x%02x%02x", red, green, blue);
 	}
+else if( color[0] == 'x' ) {  /* added scg 11/5/07 */
+        /* if (PLG_xrgb_to_rgb( &color[1], &r, &g, &b)) return(1);
+	 * r *= 255; g *= 255; b *= 255; 
+	 * red = (int)r; green = (int)g; blue = (int)b;
+	 * sprintf( svg_cur_color, "#%02x%02x%02x", red, green, blue);
+	 */
+	sprintf( svg_cur_color, "#%s", &color[1] );  /* handles 6 char hex representations only? (not 12 char?) */
+        }
 else if( GL_goodnum( color, &i ) ) {
 	float no;
 	int gray;
@@ -613,7 +626,46 @@ else 	{
 	}
 return( 0 );
 }
-	
+
+/* ================================ */
+/* place secondary PNG/GIF/JPEG image within main image at absolute x, y */
+int
+PLGS_showimg( imgurl, x, y, align, width, height )
+char *imgurl;
+double x, y;
+char *align;
+int width, height; /* image dimemsions in SVG units */
+{
+x = ( x * svg_pixs_inch ) + MARG_X;
+y = svg_y_size - (( y * svg_pixs_inch ) + MARG_Y);
+
+if( strcmp( imgurl, "" )==0 ) imgurl = svg_imgpathname; /* as may have been set earlier */
+if( strcmp( imgurl, "" )==0 ) imgurl = "NO_IMAGE_SPECIFIED";
+
+if( width < 1 ) width = svg_imgsetwidth;    /* as may have been set earlier in setimgsize() */
+if( width < 1 ) width = 20;		    /* last resort fallback */
+
+if( height < 1 ) height = svg_imgsetheight;    /* as may have been set earlier in setimgsize() */
+if( height < 1 ) height = 20;		    /* last resort fallback */
+
+if( strncmp( align, "center", 6 )==0 ) { x -= width/2; y -= height/2; }
+
+fprintf( svg_fp, "<image x=\"%f\" y=\"%f\" xlink:href=\"%s\" width=\"%dpx\" height=\"%dpx\" />\n", x, y, imgurl, width, height );
+return( 0 );
+}
+
+/* =================================== */
+/* set image size */
+int
+PLGS_setimg( pathname, width, height )
+char *pathname;
+int width, height;
+{
+strncpy( svg_imgpathname, pathname, 255 ); svg_imgpathname[255] = '\0'; 
+svg_imgsetwidth = width;
+svg_imgsetheight = height;
+return( 0 );
+}
 
 /* =================================== */
 /* TRAILER do end of file stuff */
@@ -853,20 +905,20 @@ char *parm, *value;
 {
 
 /* set the character encoding method to be indicated at the beginning of the SVG file */
-if( stricmp( parm, "encoding" )==0 ) strcpy( svg_encoding, value );
+if( strcmp( parm, "encoding" )==0 ) strcpy( svg_encoding, value );
 
 /* tell svg driver whether or not to print the <?xml ... ?> declaration line as 1st line in output */
-else if( stricmp( parm, "xmldecl" )==0 ) svg_xmldecl = value[0] - '0';
+else if( strcmp( parm, "xmldecl" )==0 ) svg_xmldecl = value[0] - '0';
 
 /* set misc parms to be present in the <svg> tag.. */
-else if( stricmp( parm, "svgparms" )==0 ) strcpy( svg_tagparms, value );
+else if( strcmp( parm, "svgparms" )==0 ) strcpy( svg_tagparms, value );
 
 /* set misc parms to be present in the <a> tag.. */
-/* else if( stricmp( parm, "linkparms" )==0 ) strcpy( svg_linkparms, value ); */  /* discontinued - use the new [target=new] syntax in clickmapurl instead */
+/* else if( strcmp( parm, "linkparms" )==0 ) strcpy( svg_linkparms, value ); */  /* discontinued - use the new [target=new] syntax in clickmapurl instead */
 
 /* indicate that we should use generic mouseover javascript */
-else if( stricmp( parm, "mouseover_js" )==0 ) {
-	if( stricmp( value, "generic" )==0 ) svg_generic_js = 1;
+else if( strcmp( parm, "mouseover_js" )==0 ) {
+	if( strcmp( value, "generic" )==0 ) svg_generic_js = 1;
 	else svg_generic_js = 0;
 	}
 

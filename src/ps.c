@@ -47,7 +47,6 @@ extern int atoi(), fchmod(); /* sure thing or return value not used */
 #define MARG_X 14 
 #define MARG_Y 8 
 #define PAGWIDTH 600;
-#define stricmp(a,b) strcasecmp(a,b)
 
 static int ps_device;		/* 'p' = monochrome, 'c' = color, 'e' = eps (color) */
 static int ps_orient;		/* paper orientation (-1 = not done) */
@@ -105,7 +104,7 @@ if( dev == 'e' ) ps_paginate = 0;
 
 
 ps_stdout = 0;
-if( stricmp( f, "stdout" )==0 ) { ps_fp = stdout; ps_stdout = 1; }
+if( strcmp( f, "stdout" )==0 ) { ps_fp = stdout; ps_stdout = 1; }
 else if(  f[0] == '\0' ) {
 	if( dev == 'e' ) strcpy( filename, "out.eps" );
 	else	{ ps_fp = stdout; ps_stdout = 1; }
@@ -292,6 +291,11 @@ else if( strncmp( color, "xrgb", 4 )==0 ) {
 	if( ps_device == 'p' ) fprintf( ps_fp, "%g setgray\n", PLG_rgb_to_gray( r, g, b )*ps_darken );
 	else fprintf( ps_fp, "%g %g %g setrgbcolor\n", r*ps_darken, g*ps_darken, b*ps_darken );
 	}
+else if( color[0] == 'x' ) {  /* added scg 11/5/07 */
+        if (PLG_xrgb_to_rgb( &color[1], &r, &g, &b)) return(1);
+	if( ps_device == 'p' ) fprintf( ps_fp, "%g setgray\n", PLG_rgb_to_gray( r, g, b )*ps_darken );
+	else fprintf( ps_fp, "%g %g %g setrgbcolor\n", r*ps_darken, g*ps_darken, b*ps_darken );
+        }
 
 else if( strncmp( color, "hsb", 3 )==0 ) {
 	n = sscanf( color, "%*s %lf %lf %lf", &r, &g, &b );

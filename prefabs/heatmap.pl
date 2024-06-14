@@ -85,13 +85,25 @@ xbinsize is @xbinsize .. ybinsize is @ybinsize
   #include $chunk_read
 #endif
 
+#if @xcats = yes
+  #proc categories
+  axis: x
+  datafield: @x
+#endif
+
+#if @ycats = yes
+  #proc categories
+  axis: y
+  datafield: @y
+#endif
+  
 
 #include $chunk_area
 areacolor: @zerocolor
 #if @xcats = yes
   xscaletype: categories
-  xcategories: datafield=@x
-  catcompmethod: exact
+  // xcategories: datafield=@x
+  // catcompmethod: exact
   #if @xaxis != "none"
     xaxis.stubs: usecategories
     #ifspec xlbl xaxis.label
@@ -112,8 +124,8 @@ areacolor: @zerocolor
 
 #if @ycats = yes
   yscaletype: categories
-  ycategories: datafield=@y
-  catcompmethod: exact
+  // ycategories: datafield=@y
+  // catcompmethod: exact
   #if @yaxis != none
     yaxis.stubs: usecategories
     #ifspec ylbl yaxis.label

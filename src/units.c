@@ -71,9 +71,9 @@ strcpy( tok2, "" );
 nt = sscanf( s, "%s %s", tok, tok2 );
 
 
-if( stricmp( tok, "linear" )==0 ) unittyp[i] = LINEAR;
+if( strcmp( tok, "linear" )==0 ) unittyp[i] = LINEAR;
 
-else if( stricmp( tok, "date" )==0 ) {
+else if( strcmp( tok, "date" )==0 ) {
 	unittyp[i] = DATE;
 	dashindate = 0; dashindateaxis = '0';
 	if( nt == 2 ) {
@@ -89,7 +89,7 @@ else if( stricmp( tok, "date" )==0 ) {
 		}
 	}
 
-else if( stricmp( tok, "time" )==0 ) {
+else if( strcmp( tok, "time" )==0 ) {
 	unittyp[i] = TIME;
 	if( nt == 2 ) {
 		stat = DT_settimefmt( tok2 );
@@ -97,7 +97,7 @@ else if( stricmp( tok, "time" )==0 ) {
 		}
 	}
 
-else if( strnicmp( tok, "datetime", 8 )==0 ) {
+else if( strncmp( tok, "datetime", 8 )==0 ) {
 	unittyp[i] = DATETIME;
 	dashindate = 0; dashindateaxis = '0';
 	/* if( nt == 2 ) { */ /* condition removed scg 9/29/03 */
@@ -110,7 +110,7 @@ else if( strnicmp( tok, "datetime", 8 )==0 ) {
 		if( tok2[j] == '-' ) { dashindate = 1; dashindateaxis = axis; break; }
 		}
 	}
-else if( stricmp( tok, "categories" )==0 ) {
+else if( strcmp( tok, "categories" )==0 ) {
 	unittyp[i] = CATEGORIES;
 	catslide[0] = 0.0; catslide[1] = 0.0;
 	}
@@ -249,7 +249,8 @@ else if( unittyp[i] == CATEGORIES ) {
 	if( catj < 0 ) { conv_errflag = 1; return( 0.0 ); }
 
 	if( axis == 'x' ) f = (double)( catj + 1 ) + catslide[0]; /* +1 because we will never want origin */
-	else f = EDYhi-((double)( catj + 1 ) + catslide[1]);  /* cats always top down in Y */
+	else f = EDYhi-((double)( catj + 1 ) + catslide[1]);   /* cats always top down in Y */  /* 9/28/07- it seems like it should be: -catslide */
+											       /* but changing this now could break lots of things*/
 	return( f );
 	}
 
@@ -288,7 +289,7 @@ if( unittyp[i] == LINEAR ) {
 	/* if( f < 0.0000000000001 && f > -0.0000000000001 ) f = 0.0; */  /* moved this to proc_axis() scg 10/1/03 */
 
 	if( format[0] == '\0' ) sprintf( result, "%g", f );
-	else if( strnicmp( format, "autoround", 9 )==0 ) {
+	else if( strncmp( format, "autoround", 9 )==0 ) {
 		if( format[9] == '\0' ) strcpy( result, GL_autoroundf( f, 0 ));
 		else strcpy( result, GL_autoroundf( f, atoi( &format[9] ) ));
 		}
@@ -439,8 +440,8 @@ int len;
 char modifier[12];
 
 /* check for min and max.. */
-if( strnicmp( val, "min", 3 )==0 ) { *result = Elimit( axis, 'l', 'a' ); return( 0 ); }
-else if( strnicmp( val, "max", 3 )==0 ) { *result = Elimit( axis, 'h', 'a' ); return( 0 ); }
+if( strncmp( val, "min", 3 )==0 ) { *result = Elimit( axis, 'l', 'a' ); return( 0 ); }
+else if( strncmp( val, "max", 3 )==0 ) { *result = Elimit( axis, 'h', 'a' ); return( 0 ); }
 
 
 strcpy( buf, val );
@@ -460,7 +461,7 @@ if( nt < 1 ) strcpy( modifier, "(s)" ); /* assume scaled */
 else *result = f;
 
 /* scaled units */
-if( stricmp( modifier, "(s)" )==0 ) {
+if( strcmp( modifier, "(s)" )==0 ) {
 	if( !scalebeenset() )
 		return( Eerr( 51, "scaled units specified but y scaling not set", val ) );
 	if( mode == 1 ) {
@@ -475,7 +476,7 @@ if( stricmp( modifier, "(s)" )==0 ) {
 	}
 
 /* convert absolute centimeter specs to inches */
-if( PLS.usingcm && (  modifier[0] == '\0' || stricmp( modifier, "(a)" )==0 ) ) {
+if( PLS.usingcm && (  modifier[0] == '\0' || strcmp( modifier, "(a)" )==0 ) ) {
 	*result = *result/ 2.54;
 	}
 
@@ -542,8 +543,8 @@ static int
 setdatesub( tok, desc )
 char *tok, *desc;
 {
-if( stricmp( tok, "yymm" )==0 ) { strcpy( desc, "yymm" ); sprintf( tok, "yymmdd" ); }
-else if( stricmp( tok, "yymmm" )==0 ) { strcpy( desc, "yymmm" ); sprintf( tok, "ddmmmyy" ); }
+if( strcmp( tok, "yymm" )==0 ) { strcpy( desc, "yymm" ); sprintf( tok, "yymmdd" ); }
+else if( strcmp( tok, "yymmm" )==0 ) { strcpy( desc, "yymmm" ); sprintf( tok, "ddmmmyy" ); }
 else if( GL_slmember( tok, "yy?mm" )) { strcpy( desc, "yy/mm" ); sprintf( tok, "yy/mm/dd" ); }
 else if( GL_slmember( tok, "yyyy?mm" )) { strcpy( desc, "yyyy/mm" ); sprintf( tok, "yyyy/mm/dd" ); }
 else if( GL_slmember( tok, "yy" )) { strcpy( desc, "yy" ); sprintf( tok, "yymmdd" ); }

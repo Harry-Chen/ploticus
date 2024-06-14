@@ -1,12 +1,10 @@
 /* ======================================================= *
- * Copyright 1998-2005 Stephen C. Grubb                    *
+ * Copyright 1998-2008 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */
 
 /* PROC LINEPLOT - draw a lineplot */
-
-/* Jan 15 01 - went from dat2d to dat3d so that original data row is preserved */
 
 #include "pl.h"
 #define MAXALT 200
@@ -14,218 +12,115 @@
 #define LINE 1
 #define PATH 2
 
-
 static int dblcompare( const void *a, const void *b );
-/* static int dblcompare( double *f, double *g ); */
 static int placenum();
 
 int
 PLP_lineplot()
 {
-int i;
-char attr[NAMEMAXLEN], val[256];
-char *line, *lineval;
-int nt, lvp;
-int first;
+char attr[NAMEMAXLEN], *line, *lineval;
+int lvp, first;
 
-char buf[256];
-int stat;
-int align;
-double adjx, adjy;
+char buf[256], numstr[40], symcode[80];
+int i, j, k, stat, align, accum;
+int npoints, result, nalt, altlist[MAXALT+2], anyvalid, realrow, sortopt;
+int yfield, xfield, ptlabelfield;
+int stairstep, donumbers, dopoints, instancemode, gapmissing, ingap, clipping, firstpt, groupmode, relax_xrange, fillmode;
 
-int yfield;
-int xfield;
-char linedetails[256];
-double linestart, linestop; 
-int j, k;
-int accum;
-double x, y;
-int stairstep;
-double lastseglen;
-char label[200];
-char labeldetails[256];
-double lastx, lasty;
-char numstr[40];
-char shownums[80];
-char numstrfmt[20];
-int donumbers;
-char pointsym[256];
-int dopoints;
-char symcode[80];
-double radius;
-int ptlabelfield;
-char ptlabeldetails[256];
-double ptlblstart, ptlblstop;
-double sob;
-double linxstart;
-char fillcolor[COLORLEN];
-char legendlabel[256]; /* raised (can contain urls for clickmap) scg 4/22/04 */
-int npoints;
-double f, sum, cr;
-int instancemode;
-int groupmode;
-char selectex[256];
-int result;
-char forcelastx[50];
-char legsamptyp[20];
-char altsym[120];
-char altwhen[256];
-int nalt;
-int altlist[MAXALT+2];
-int anyvalid;
-int realrow;
-int gapmissing, ingap;
-int clipping;
-int firstpt;
-double firstx, firsty;
-int sortopt;
-int relax_xrange;
-int fillmode;
-/* char oldcolor[COLORLEN]; */
-double typical_interval;
+char *linedetails, *label, *labeldetails, *shownums, *numstrfmt, *pointsym, *ptlabeldetails, *fillcolor;
+char *legendlabel, *selectex, *forcelastx, *legsamptyp, *altsym, *altwhen;
+
+double adjx, adjy, linestart, linestop, x, y, lastseglen, lastx, lasty, radius, ptlblstart, ptlblstop, sob, linxstart;
+double f, sum, cr, firstx, firsty, typical_interval;
+double fillbleed;
 
 TDH_errprog( "pl proc lineplot" );
 
 /* initialize */
-yfield = -1;
-xfield = -1;
+yfield = -1; xfield = -1;
+ptlabelfield = 0;
+accum = 0; stairstep = 0; fillmode = 0; instancemode = 0; groupmode = 0; 
+gapmissing = 0; clipping = 0; firstpt = 0; sortopt = 0; relax_xrange = 0;
+label = ""; labeldetails = ""; shownums = ""; ptlabeldetails = ""; linedetails = ""; pointsym = "";
+legendlabel = ""; selectex = ""; forcelastx = ""; altsym = ""; altwhen = "";
+numstrfmt = "%g";
+fillcolor = "gray(0.8)";
+legsamptyp = "symbol";
 linestart = EDXlo; linestop = EDXhi;
 ptlblstart = EDXlo; ptlblstop = EDXhi;
-accum = 0;
-stairstep = 0;
-lastseglen = 0.0;
-strcpy( label, "" );
-strcpy( labeldetails, "" );
-strcpy( shownums, "" );
-strcpy( numstrfmt, "%g" );
-strcpy( pointsym, "" );
-ptlabelfield = 0;
-strcpy( ptlabeldetails, "" );
-strcpy( linedetails, "" );
-sob = 0.0;
 linxstart = EDXlo;
-fillmode = 0;
-strcpy( fillcolor, "gray(0.8)" );
-strcpy( legendlabel, "" );
-instancemode = 0;
-groupmode = 0; /* 1? */
-strcpy( selectex, "" );
-strcpy( forcelastx, "" );
-strcpy( legsamptyp, "symbol" );
-strcpy( altsym, "" );
-strcpy( altwhen, "" );
-gapmissing = 0;
-clipping = 0;
-firstpt = 0;
-sortopt = 0;
-relax_xrange = 0;
+sob = 0.0;
+lastseglen = 0.0;
 typical_interval = -99.0;
+fillbleed = 0.0;
+
 
 
 /* get attributes.. */
 first = 1;
 while( 1 ) {
-	line = getnextattr( first, attr, val, &lvp, &nt );
+	line = getnextattr( first, attr, &lvp );
 	if( line == NULL ) break;
 	first = 0;
 	lineval = &line[lvp];
 
-	if( stricmp( attr, "yfield" )==0 ) yfield = fref( val ) - 1;
-	else if( stricmp( attr, "xfield" )==0 ) xfield = fref( val ) - 1;
-	else if( stricmp( attr, "linedetails" )==0 ) {
-		strcpy( linedetails, lineval );
-		}
-	else if( stricmp( attr, "label" )==0 ) {
-		strcpy( label, lineval );
-		convertnl( label );
-		}
-	else if( stricmp( attr, "labeldetails" )==0 ) strcpy( labeldetails, lineval );
-	else if( stricmp( attr, "legendlabel" )==0 ) strcpy( legendlabel, lineval );
-	else if( stricmp( attr, "linerange" )==0 ) {
-		getrange( lineval, &linestart, &linestop, 'x', EDXlo, EDXhi );
-		}
-	else if( stricmp( attr, "xstart" )==0 ) {
-		linxstart = Econv( X, val );
-		if( Econv_error() ) linxstart = EDXlo;
-		}
-	else if( stricmp( attr, "firstpoint" )==0 ) {
-		int ix;
-		ix = 0;
+	if( strcmp( attr, "yfield" )==0 ) yfield = fref( lineval ) - 1;
+	else if( strcmp( attr, "xfield" )==0 ) xfield = fref( lineval ) - 1;
+	else if( strcmp( attr, "ptlabelfield" )==0 ) ptlabelfield = fref( lineval ) - 1; 
+	else if( strcmp( attr, "linedetails" )==0 ) linedetails = lineval;
+	else if( strcmp( attr, "label" )==0 ) { label = lineval; convertnl( label ); }
+	else if( strcmp( attr, "labeldetails" )==0 ) labeldetails = lineval;
+	else if( strcmp( attr, "legendlabel" )==0 ) legendlabel = lineval;
+	else if( strcmp( attr, "linerange" )==0 ) getrange( lineval, &linestart, &linestop, 'x', EDXlo, EDXhi );
+	else if( strcmp( attr, "xstart" )==0 ) { linxstart = Econv( X, lineval ); if( Econv_error() ) linxstart = EDXlo; }
+	else if( strcmp( attr, "firstpoint" )==0 ) {
+		char xstr[80], ystr[80];
+		sscanf( lineval, "%s %s", xstr, ystr );
 		firstpt = 1;
-		strcpy( buf, GL_getok( lineval, &ix ));
-		firstx = Econv( X, buf );
-		if( Econv_error() ) firstpt = 0;
-		strcpy( buf, GL_getok( lineval, &ix ));
-		firsty = Econv( X, buf );
-		if( Econv_error() ) firstpt = 0;
+		firstx = Econv( X, xstr); if( Econv_error() ) firstpt = 0;
+		firsty = Econv( X, ystr ); if( Econv_error() ) firstpt = 0;
 		}
-	else if( stricmp( attr, "accum" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 ) accum = 1;
-		else accum = 0;
-		}
-	else if( stricmp( attr, "stairstep" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 ) stairstep = 1;
-		else stairstep = 0;
-		}
-	else if( stricmp( attr, "instancemode" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 ) instancemode = 1;
-		else instancemode = 0;
-		}
-	else if( stricmp( attr, "groupmode" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 ) groupmode = 1;
-		else groupmode = 0;
-		}
-	else if( stricmp( attr, "gapmissing" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 ) gapmissing = 1;
-		else if( stricmp( val, "small" )==0 ) gapmissing = 2;
-		else if( stricmp( val, "auto" )==0 ) gapmissing = 3;
-		else if( stricmp( val, "autosmall" )==0 ) gapmissing = 4;
-		else if( stricmp( val, "autozero" )==0 ) gapmissing = 5;
+	else if( strcmp( attr, "accum" )==0 ) accum = getyn( lineval );
+	else if( strcmp( attr, "stairstep" )==0 ) stairstep = getyn( lineval );
+	else if( strcmp( attr, "instancemode" )==0 ) instancemode = getyn( lineval );
+	else if( strcmp( attr, "groupmode" )==0 ) groupmode = getyn( lineval );
+	else if( strcmp( attr, "gapmissing" )==0 ) {
+		if( strncmp( lineval, "y", 1 )==0 ) gapmissing = 1;
+		else if( strcmp( lineval, "small" )==0 ) gapmissing = 2;
+		else if( strcmp( lineval, "auto" )==0 ) gapmissing = 3;
+		else if( strcmp( lineval, "autosmall" )==0 ) gapmissing = 4;
+		else if( strcmp( lineval, "autozero" )==0 ) gapmissing = 5;
 		else gapmissing = 0;
 		}
-	else if( stricmp( attr, "clip" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 ) clipping = 1;
-		else clipping = 0;
+	else if( strcmp( attr, "clip" )==0 ) clipping = getyn( lineval );
+	else if( strcmp( attr, "sort" )==0 ) sortopt = getyn( lineval );
+	else if( strcmp( attr, "relax_xrange" ) == 0 ) relax_xrange = getyn( lineval );
+	else if( strcmp( attr, "lastseglen" )==0 ) Elenex( lineval, X, &lastseglen );
+	else if( strcmp( attr, "numbers" )==0 ) shownums = lineval;
+	else if( strcmp( attr, "numbersformat" )==0 ) numstrfmt = lineval;
+	else if( strcmp( attr, "select" )==0 ) selectex = lineval;
+	else if( strcmp( attr, "altsymbol" )==0 ) altsym = lineval;
+	else if( strcmp( attr, "altwhen" )==0 ) altwhen = lineval;
+	else if( strcmp( attr, "lastx" )==0 ) forcelastx = lineval;
+	else if( strcmp( attr, "pointsymbol" )==0 ) pointsym = lineval;
+	else if( strcmp( attr, "ptlabeldetails" )==0 ) ptlabeldetails = lineval;
+	else if( strcmp( attr, "ptlabelrange" )==0 ) {
+		if( strcmp( lineval, "last" )==0 ) ptlblstart = EDXhi-0.1;
+		else if( strcmp( lineval, "first" )==0 ) { ptlblstart = EDXlo; ptlblstop = EDXhi-0.000001; }
+		else getrange( lineval, &ptlblstart, &ptlblstop, 'x', EDXlo, EDXhi );
 		}
-	else if( stricmp( attr, "sort" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 ) sortopt = 1;
-		else sortopt = 0;
-		}
-	else if( stricmp( attr, "relax_xrange" ) == 0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 ) relax_xrange = 1;
-		else relax_xrange = 0;
-		}
-
-	else if( stricmp( attr, "lastseglen" )==0 ) Elenex( val, X, &lastseglen );
-
-	else if( stricmp( attr, "numbers" )==0 ) strcpy( shownums, lineval );
-	else if( stricmp( attr, "numbersformat" )==0 ) strcpy( numstrfmt, val );
-	else if( stricmp( attr, "select" )==0 ) strcpy( selectex, lineval );
-	else if( stricmp( attr, "altsymbol" )==0 ) strcpy( altsym, lineval );
-	else if( stricmp( attr, "altwhen" )==0 ) strcpy( altwhen, lineval );
-	else if( stricmp( attr, "lastx" )==0 ) strcpy( forcelastx, val );
-	else if( stricmp( attr, "pointsymbol" )==0 ) strcpy( pointsym, lineval );
-	/* else if( stricmp( attr, "ptlabelfield" )==0 ) ptlabelfield = atoi( val ) - 1; */
-	else if( stricmp( attr, "ptlabelfield" )==0 ) ptlabelfield = fref( val ) - 1; 
-	else if( stricmp( attr, "ptlabeldetails" )==0 ) strcpy( ptlabeldetails, lineval );
-	else if( stricmp( attr, "ptlabelrange" )==0 ) {
-		getrange( lineval, &ptlblstart, &ptlblstop, 'x', EDXlo, EDXhi );
-		}
-	else if( stricmp( attr, "stairoverbars" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 ) {
-			sob = 0.5;
-			stairstep = 1; /* implied */
-			}
+	else if( strcmp( attr, "stairoverbars" )==0 ) {
+		if( strncmp( lineval, "y", 1 )==0 ) { sob = 0.5; stairstep = 1; /* implied */ }
 		else sob = 0.0;
 		}
-	else if( stricmp( attr, "fill" )==0 ) { 
-		strcpy( fillcolor, val );
+	else if( strcmp( attr, "fill" )==0 ) { 
+		fillcolor = lineval;
 		if( fillcolor[0] != '\0' ) fillmode = 1;
 		else fillmode = 0;
 		}
-	else if( stricmp( attr, "legendsampletype" )==0 ) strcpy( legsamptyp, val );
-
-	else Eerr( 1, "lineplot attribute not recognized", attr );
+	else if( strcmp( attr, "fillbleed" )==0 ) fillbleed = ftokncpy( lineval );
+	else if( strcmp( attr, "legendsampletype" )==0 ) legsamptyp = lineval;
+	else Eerr( 1, "attribute not recognized", attr );
 	}
 
 
@@ -248,7 +143,7 @@ if( groupmode && ptlabelfield ) {
 	ptlabelfield = 0;
 	}
 	
-if( strnicmp( legendlabel, "#usefname", 9 )==0 ) {
+if( strncmp( legendlabel, "#usefname", 9 )==0 ) {
 	if( instancemode ) getfname( xfield+1, legendlabel );
 	else getfname( yfield+1, legendlabel );
 	}
@@ -314,6 +209,7 @@ for( i = 0; i < Nrecords; i++ ) {
 			/* continue; removed scg 5/19/99 */
 			}
 		}
+
 	j++;
 
 	PLV[j] = (double)i;
@@ -334,9 +230,7 @@ if( sortopt ) {
         qsort( PLV, npoints, sizeof(double)*3, dblcompare );
         }
 
-/* fprintf( stderr, "after sort\n" );
- * for( i = 0; i < npoints; i++ ) fprintf( stderr, "%g %g %g\n", dat3d(i,0), dat3d(i,1), dat3d(i,2 ) );
- */
+
 
 /* process for groupmode.. */
 if( groupmode && xfield >= 0 ) for( i = 0; i < npoints; i++ ) {
@@ -359,6 +253,7 @@ if( groupmode && xfield >= 0 ) for( i = 0; i < npoints; i++ ) {
  * for( i = 0; i < npoints; i++ ) fprintf( stderr, "%g %g %g\n", dat3d(i,0), dat3d(i,1), dat3d(i,2 ) );
  */
 
+
 /* process for accum.. */
 if( accum ) {
 	sum = 0.0;
@@ -376,6 +271,7 @@ if( accum ) {
  */
 
 
+
 /* draw the curve.. */
 /* ---------------- */
 
@@ -383,7 +279,6 @@ if( accum ) {
 linedet( "linedetails", linedetails, 1.0 );
 
 if( fillmode ) {
-	/* strcpy( oldcolor, Ecurcolor ); */
 	Ecolor( fillcolor ); /* scg 6/18/04 */
 	}
 	
@@ -420,7 +315,8 @@ for( i = 0; i < npoints; i++ ) {
 	if( !first && ( gapmissing == 3 || gapmissing == 4 || gapmissing == 5 )) {
 		if( typical_interval < 0.0 ) typical_interval = (x - lastx)*1.01;
 		else if( x - lastx > typical_interval ) {
-			if( gapmissing == 5 ) { Elinu( lastx+typical_interval, 0.0 ); Elinu( x-typical_interval, 0.0 ); }
+			/* if( gapmissing == 5 ) { Elinu( lastx+typical_interval, 0.0 ); Elinu( x-typical_interval, 0.0 ); } */
+			if( gapmissing == 5 ) { Elinu( lastx, 0.0 ); Elinu( x, 0.0 ); Elinu( x, y ); }  /* changed, scg 11/20/07 */
 			else ingap = 1;
 			}
 		}
@@ -430,21 +326,22 @@ for( i = 0; i < npoints; i++ ) {
 	anyvalid = 1;
 	if( first ) {
 		Emovu( x, y );
-		setfloatvar( "XSTART", x );
-		setfloatvar( "YSTART", y );
+		setfloatvar( "XSTART", x, "%g" );
+		setfloatvar( "YSTART", y, "%g" );
 		first = 0;
 		ingap = 0;
 		continue;
 		}
 	if( !first && fillmode && !ingap ) {
-		Emovu( x, cr ); Epathu( lastx, cr ); 
-		/* if( stairstep ) Epathu( lastx, y ); 
-		 * else Epathu( lastx, lasty ); 
-		 */
-		Epathu( lastx, lasty );
+		Emovu( x, cr ); 
+		Epath( Eax( lastx )-fillbleed, Eay( cr ) );  /* -0.005 added to remove tiny gap artifact seen on EPS ... scg 1/9/08 */
+		Epath( Eax( lastx )-fillbleed, Eay( lasty ) );
+		/* was: Epathu( lastx, cr );  */
+		/*      Epathu( lastx, lasty );  */ 
+
 		if( stairstep ) Epathu( x, lasty );
 		else Epathu( x, y );
-		/* Ecolorfill( fillcolor ); */ /* using Efill .. scg 6/18/04 */
+		Ecolor( fillcolor ); /* added scg 11/2/07 - color bug related to gapmissing=2 and fill=1 */
 		Efill();
 		}
 	if( ( gapmissing == 2 || gapmissing ==4 ) && ingap ) {        /* do a quarter-length nib at previous location */
@@ -499,12 +396,11 @@ if( forcelastx[0] != '\0' ) {
 	}
 
 
-/* set YFINAL and Xfinal */
-/* sprintf( numstr, numstrfmt, y ); */
+/* set YFINAL and XFINAL */
 Euprint( numstr, Y, y, numstrfmt );
 setcharvar( "YFINAL", numstr );
-Euprint( buf, X, Edx(lastx), "" );
-setcharvar( "XFINAL", buf );
+Euprint( numstr, X, lastx, numstrfmt );
+setcharvar( "XFINAL", numstr );
 	
 
 
@@ -516,7 +412,6 @@ setcharvar( "XFINAL", buf );
 for( i = 0; i < npoints; i++ ) {
 	x = dat3d(i,0);
 	y = dat3d(i,1);
-	realrow = (int) dat3d(i,2);
 
 
 	if( x < (NEGHUGE+1) || y < (NEGHUGE+1) ) continue; /* skip bad values */
@@ -556,6 +451,7 @@ for( i = 0; i < npoints; i++ ) {
 		else symdet( "pointsymbol", pointsym, symcode, &radius );
 		Emark( Eax(x), Eay(y), symcode, radius );
 		}
+	realrow = (int) dat3d(i,2);
 	if( ptlabelfield && x >= ptlblstart && x <= ptlblstop ) {
 		textdet( "ptlabeldetails", ptlabeldetails, &align, &adjx, &adjy, -4, "R", 1.0 );
 		if( align == '?' ) align = 'C';
@@ -567,16 +463,17 @@ for( i = 0; i < npoints; i++ ) {
 
 if( label[0] != '\0' ) {
         GL_varsub( label, "@YFINAL", numstr );
+	PL_do_subst( buf, label, realrow, 0 );  /* also allow substitution of any @field on the last-plotted data row.. added scg 1/29/07 */
         textdet( "labeldetails", labeldetails, &align, &adjx, &adjy, -2, "R", 1.0 );
         if( align == '?' ) align = 'L';
         Emov( lastx+0.05+adjx, (Eay( lasty )-(Ecurtextheight*.35))+adjy );
-        Edotext( label, align );
+        Edotext( buf, align );
         }
  
 if( legendlabel[0] != '\0' ) {
 	if( fillmode ) PL_add_legent( LEGEND_COLOR, legendlabel, "", fillcolor, "", "" );
-	else if( pointsym[0] != '\0' && stricmp( pointsym, "none" )!= 0 ) {
-		if( tolower(legsamptyp[0]) == 's' && strlen( legsamptyp ) <= 6 )
+	else if( pointsym[0] != '\0' && strcmp( pointsym, "none" )!= 0 ) {
+		if( legsamptyp[0] == 's' && strlen( legsamptyp ) <= 6 )
 			PL_add_legent( LEGEND_SYMBOL, legendlabel, "", pointsym, "", "" );
 		else
 			PL_add_legent( LEGEND_LINE+LEGEND_SYMBOL, legendlabel, "", linedetails, pointsym, "" );
@@ -616,11 +513,6 @@ return( 0 );
 static int
 dblcompare( a, b )
 const void *a, *b;
-
-/* dblcompare( f, g )
- * double *f, *g;
- */  /* changed to eliminate gcc warnings  scg 5/18/06 */
-
 {
 double *f, *g;
 f = (double *)a;

@@ -70,15 +70,22 @@
 //// required vars..
 #musthave x y
 
+#if @cats = yes
+  #proc categories
+   axis: x
+   datafield: @x
+#endif
+   
+
 //// set up plotting area..
 #include $chunk_area
 #if @xrange != ""
   xrange: @xrange
 #elseif @cats = yes
   xscaletype: categories
-  xcategories: @x
+  // xcategories: @x
   // following added 9/2/02 scg
-  catcompmethod: exact
+  // catcompmethod: exact
 
 #else
   xautorange: datafields=@x,@x2,@x3,@x4 incmult=2.0 nearest=@xnearest 

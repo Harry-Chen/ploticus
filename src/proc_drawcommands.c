@@ -1,5 +1,5 @@
 /* ======================================================= *
- * Copyright 1998-2005 Stephen C. Grubb                    *
+ * Copyright 1998-2008 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */
@@ -15,45 +15,34 @@ static int do_drawcommands();
 int
 PLP_drawcommands()
 {
-char attr[NAMEMAXLEN], val[256];
-char *line, *lineval;
-int nt, lvp;
-int first;
+char attr[NAMEMAXLEN], *line, *lineval;
+int lvp, first;
 
-char dcfile[ MAXPATH ];
-char dumpfile[ MAXPATH ];
+char buf[1024], op[80];
+char *dcfile, *dumpfile, *commands;
 int ix, len;
-char op[20];
 double x, y;
 FILE *fp;
-char filename[MAXPATH];
-double atof();
-char *GL_getok();
-
 
 TDH_errprog( "pl proc drawcommands" );
 
 /* initialize */
-strcpy( dcfile, "" );
-strcpy( dumpfile, "" );
-strcpy( PL_bigbuf, "" );
+dcfile = "";
+dumpfile = "";
+commands = "";
 
 /* get attributes.. */
 first = 1;
 while( 1 ) {
-	line = getnextattr( first, attr, val, &lvp, &nt );
+	line = getnextattr( first, attr, &lvp );
 	if( line == NULL ) break;
 	first = 0;
 	lineval = &line[lvp];
 
-	if( stricmp( attr, "file" )==0 ) strcpy( dcfile, val );
-	else if( stricmp( attr, "dumpfile" )==0 ) strcpy( dumpfile, val );
-
-	else if( stricmp( attr, "commands" )==0 ) {
-		getmultiline( "commands", lineval, MAXBIGBUF, PL_bigbuf );
-		}
-
-	else Eerr( 1, "drawcommands attribute not recognized", attr );
+	if( strcmp( attr, "file" )==0 ) dcfile = lineval;
+	else if( strcmp( attr, "dumpfile" )==0 ) dumpfile = lineval;
+	else if( strcmp( attr, "commands" )==0 ) commands = getmultiline( lineval, "get" );
+	else Eerr( 1, "attribute not recognized", attr );
 	}
 
 
@@ -61,28 +50,31 @@ while( 1 ) {
 /* -------------------------- */
 /* now do the plotting work.. */
 /* -------------------------- */
-if( PL_bigbuf[0] != '\0' ) {
-	sprintf( filename, "%s_Z", PLS.tmpname );
-	fp = fopen( filename, "w" ); /* temp file, unlinked below */
-	if( fp == NULL ) return( Eerr( 522, "Cannot open draw commands file", filename ));
-	fprintf( fp, "%s\n", PL_bigbuf );
+if( commands != "" ) {
+	sprintf( buf, "%s_Z", PLS.tmpname );
+	fp = fopen( buf, "w" ); /* temp file, unlinked below */
+	if( fp == NULL ) return( Eerr( 522, "Cannot open draw commands file", buf ));
+	fprintf( fp, "%s\n", commands );
 	fclose( fp );
-	do_drawcommands( filename );
-	unlink( filename );
+	do_drawcommands( buf );
+	unlink( buf );
 	}
-else if( dcfile[0] != '\0' ) do_drawcommands( dcfile );
-else if( dumpfile[0] != '\0' ) {
+
+else if( dcfile != "" ) do_drawcommands( dcfile );
+
+else if( dumpfile != "" ) {
 	fp = fopen( dumpfile, "r" );
 	if( fp == NULL ) return( Eerr( 523, "Cannot open dump file", dumpfile ) );
-	while( fgets( PL_bigbuf, MAXBIGBUF-1, fp ) != NULL ) {
-		len = strlen( PL_bigbuf );
-		PL_bigbuf[ len-1 ] = '\0';
+	while( fgets( buf, 1023, fp ) != NULL ) {
+		len = strlen( buf );
+		buf[ len-1 ] = '\0';
 		ix = 0;
-		strcpy( op, GL_getok( PL_bigbuf, &ix ));
-		x = atof( GL_getok( PL_bigbuf, &ix ));
-		y = atof( GL_getok( PL_bigbuf, &ix ));
-		if( PL_bigbuf[ix] == ' ' ) ix++;
-		PLG_pcode( op[0], x, y, &PL_bigbuf[ix] );
+		strcpy( op, GL_getok( buf, &ix ));
+		if( op[0] == 'A' ) { PLG_setdefaults(); continue; }  /* added scg 5/24/07 */
+		x = atof( GL_getok( buf, &ix ));
+		y = atof( GL_getok( buf, &ix ));
+		if( buf[ix] == ' ' ) ix++;
+		PLG_pcode( op[0], x, y, &buf[ix] );
 		}
 	fclose( fp );
 	}
@@ -209,7 +201,7 @@ return( 0 );
 }
 
 /* ======================================================= *
- * Copyright 1998-2005 Stephen C. Grubb                    *
+ * Copyright 1998-2008 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */

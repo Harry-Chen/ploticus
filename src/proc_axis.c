@@ -1,5 +1,5 @@
 /* ======================================================= *
- * Copyright 1998-2005 Stephen C. Grubb                    *
+ * Copyright 1998-2008 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */
@@ -17,102 +17,36 @@
 #define FROMCATS 5
 #define MONTHS 100
 
+
 int
 PLP_axis( xory, astart )
 char xory; /* either 'x' or 'y' */
 int astart;
 {
-int i;
-char attr[NAMEMAXLEN], val[256];
+int lvp, first;
+char attr[NAMEMAXLEN];
 char *line, *lineval;
-int nt, lvp;
-int first;
 
-int stat;
-int align;
-double adjx, adjy;
-
-char buf[256];
-int j;
-char opax;
-double y;
-double f;
-double pos; /* distance of axis in absolute units from scale-0 */
-double stubstart, stubstop; /* start and stop of stubs and tics in data units */
-double inc;
-char tics[256]; /* details of tic lines */
-double ticin, ticout; /* length of tic into plot area and outward */
-char mtics[256]; /* details of minor tic lines */
-double minorticinc;	/* inc for minor tics */
-double mticin, mticout; /* length of minor tic into plot area and outward */
-char axisline[256]; /* axis line details */
-char stubdetails[256];    /* stub text details and on/off */
-char txt[256]; /* general */
-char stubformat[80];	
-int isrc;
-FILE *stubfp;
-double axlinestart, axlinestop;
-double max, min;
-char axislabel[300];
-char axislabeldet[256];
-double axislabelofs;
-int stubreverse;
-char grid[256];
-int vertstub;
-int irow;
-double ofsx, ofsy;
-char stubomit[256];
-int mon, day, yr;
-
-int stubdf1, stubdf2, nstubdf;
-int selfloc;
-char filename[256];
-double incamount, ticincamount;
-char incunits[50], ticincunits[50], minorticunits[50];
-int ibb;
-double overrun;
-int bigbuflen;
-int doingtics;
-int stubrangegiven;
-int stubreverse_given;
-int specialunits;
-int doinggrid;
-double stubslide;
-char scaleunits[30];
-char gridskip[20];
-char scalesubtype[20];
-char autoyears[20];
-int firsttime;
-double ticslide;
-int revsign;
-char glemins[40], glemaxs[40];
-double glemin, glemax;
+char *tics, *mtics, *axisline, *stubdetails, *axislabeldet, *griddet, *labelurl, *labelinfo;
+char *axislabel, *stubomit, *filename, *stubs, *stubround;
+char *gridskip, *firststub, *laststub, *stubsubpat, *stubsubnew, *cmvalfmt;
+char opax, clickmap;
+char buf[256], txt[256], tok[80];
+char stubformat[82], incunits[50], ticincunits[50], minorticunits[50];
+char scaleunits[30], scalesubtype[20]; 
+char autoyears[20], autodays[40], automonths[40], nearest[30];
+char glemins[40], glemaxs[40], cmemins[40], cmemaxs[40];
 char gbcolor1[COLORLEN], gbcolor2[COLORLEN];
-double gbylast;
-int gbstate;
-double stubcull, prevstub;
-int stubevery;
-int forlen;
-char clickmap;
-double cmylast, cmemin, cmemax;
-char cmemins[40], cmemaxs[40];
-char cmvalfmt[80], cmtxt[100];
-int logx, logy, stubexp;
-int stublen;
-char autodays[40], automonths[40];
-char labelurl[256], labelinfo[MAXTT];
-double stubmult;
-double stubmininc;
-char firststub[80], laststub[80];
-char stubsubpat[80], stubsubnew[80];
-int sanecount, stubhide;
-int curyr, curday, curmon;
-int circuit_breaker_disable;
-int axis_arrow;
-double arrowheadsize;
-char nearest[30];
-char stubround[30];
-int prec;
+char cmtxt[100]; 
+int i, j, ix, stat, nt, align, stubreverse, stubvert, irow, mon, day, yr, stubdf1, stubdf2, nstubdf, selfloc, isrc;
+int ibb, doingtics, stubrangegiven, stubreverse_given, specialunits, doinggrid, txtlen;
+int firsttime, revsign, gbstate, stubevery, forlen, logx, logy, stubexp, stublen, sanecount, stubhide, curyr, curday, curmon;
+int circuit_breaker_disable, axis_arrow, prec;
+double adjx, adjy, y, f, pos, stubstart, stubstop, inc, ticin, ticout, minorticinc, mticin, mticout, axlinestart, axlinestop, max, min;
+double axislabelofs, ofsx, ofsy, incamount, ticincamount, overrun, stubslide, ticslide, glemin, glemax, gbylast, stubcull, prevstub;
+double cmylast, cmemin, cmemax, stubmult, stubmininc, arrowheadsize;
+FILE *stubfp;
+
 
 TDH_errprog( "pl proc axis" );
 
@@ -128,347 +62,202 @@ max = Elimit( xory, 'h', 's' );
 pos = Elimit( opax, 'l', 'a' ); /* location will be at minima of other axis */
 stubstart = axlinestart = min; 
 stubstop = axlinestop = max; 
-ticin = 0;
+axisline = ""; tics = ""; stubdetails = ""; axislabel = ""; axislabeldet = ""; 
+mtics = "none"; griddet = "none"; stubs = ""; stubround = ""; stubomit = "";
+gridskip = ""; firststub = ""; laststub = ""; stubsubpat = ""; stubsubnew = ""; cmvalfmt = "";
 ticout = 0.07;
-strcpy( axisline, "" );
-strcpy( tics, "" );
-strcpy( mtics, "none" );
 minorticinc = 0.0;
-mticin = 0;
 mticout = 0.03;
-strcpy( stubformat, "" );
-strcpy( PL_bigbuf, "" );
-strcpy( stubdetails, "" );
-strcpy( axislabel, "" );
-strcpy( axislabeldet, "" );
 axislabelofs = 0.4;
-stubreverse = 0;
-strcpy( grid, "none" );
-/* isrc = INCREMENTAL; */
-isrc = 0;
 incamount = 0.0;
 ticincamount = 0.0;
-vertstub = 0;
-nstubdf = 0;
-strcpy( stubomit, "" );
-doingtics = 1;
-selfloc = 0;
-stubrangegiven = 0;
-stubreverse_given = 0;
-doinggrid = 0;
 stubslide = 0.0;
 ticslide = 0.0;
-strcpy( gridskip, "" );
-strcpy( autoyears, "" );
-revsign = 0;
-strcpy( glemins, "min" ); strcpy( glemaxs, "max" );
-strcpy( gbcolor1, "" );
-strcpy( gbcolor2, "white" );
 stubcull = 0.0;
 stubevery = 1;
-clickmap = 0;
+ticin = mticin = isrc = stubvert = nstubdf = txtlen = 0;
+doingtics = 1;
+selfloc = stubrangegiven = stubreverse = stubreverse_given = doinggrid = 0;
+revsign = clickmap = stubhide = 0;
+strcpy( autoyears, "" ); strcpy( autodays, "" ); strcpy( automonths, "" ); strcpy( nearest, "" );
+strcpy( stubformat, "" );
+strcpy( glemins, "min" ); strcpy( glemaxs, "max" );
 strcpy( cmemins, "min" ); strcpy( cmemaxs, "max" );
-strcpy( cmvalfmt, "" );
-stubexp = 0; stublen = 0;
-strcpy( autodays, "" ); strcpy( automonths, "" );
-strcpy( labelurl, "" ); strcpy( labelinfo, "" );
+strcpy( gbcolor1, "" ); strcpy( gbcolor2, "" );
+stubexp = stublen = axis_arrow = 0;
 stubmult = 1.0; stubmininc = 0.0;
-strcpy( firststub, "" ); strcpy( laststub, "" );
-strcpy( stubsubpat, "" ); strcpy( stubsubnew, "" );
-stubhide = 0;
 curyr = curmon = curday = 0;
 circuit_breaker_disable = 0;
-axis_arrow = 0;
 arrowheadsize = 0.15;
-strcpy( nearest, "" );
-strcpy( stubround, "" );
+sanecount = 0;
+labelurl = ""; labelinfo = "";
 
 Egetunits( xory, scaleunits );  /* moved from below - scg 1/27/05 */
 
 /* get attributes.. */
 first = 1;
 while( 1 ) {
-	line = getnextattr( first, attr, val, &lvp, &nt );
+        line = getnextattr( first, attr, &lvp );
 	if( line == NULL ) break;
 	first = 0;
 	lineval = &line[lvp];
 
-	 /* screen out areadef attributes for the other axis.. */
+
+	/* screen out areadef attributes for the other axis.. */
 	if( GL_slmember( attr, "axisline tic* minortic*" )) ;
-	else if( astart > 0 && strnicmp( &attr[1], "axis.", 5 )!=0 ) continue;
-	else if( astart > 0 && tolower(attr[0]) != xory ) continue; 
+	else if( astart > 0 && strncmp( &attr[1], "axis.", 5 )!=0 ) continue;
+	else if( astart > 0 && attr[0] != xory ) continue; 
 
-	if( stricmp( &attr[astart], "label" )==0 ) {
-		strcpy( axislabel, lineval );
-		convertnl( axislabel );
-		}
-	else if( stricmp( &attr[astart], "labelurl" )==0 ) strcpy( labelurl, val );
-	else if( stricmp( &attr[astart], "labelinfo" )==0 ) strcpy( labelinfo, lineval );
-        else if( stricmp( attr, "labelinfotext" )==0 ) {
-                if( PLS.clickmap ) { getmultiline( "labelinfotext", lineval, MAXTT, labelinfo ); }
-                }
+	if( strcmp( &attr[astart], "label" )==0 ) { axislabel = lineval; convertnl( axislabel ); }
 
+	else if( strcmp( &attr[astart], "stubs" )==0 || strcmp( &attr[astart], "selflocatingstubs" )==0 ) {
 
-	else if( stricmp( &attr[astart], "stubs" )==0 || stricmp( &attr[astart], "selflocatingstubs" )==0 ) {
-
-		if( stricmp( &attr[astart], "selflocatingstubs" )==0 ) selfloc = 1;	
+		if( strcmp( &attr[astart], "selflocatingstubs" )==0 ) selfloc = 1;	
 		else selfloc = 0;
 
-		if( strnicmp( val, "inc", 3 )==0 || GL_slmember( val, "dat*matic" )) {
+		tokncpy( tok, lineval, 80 );
+		if( strncmp( tok, "inc", 3 )==0 || GL_slmember( tok, "dat*matic" )) {
 			isrc = INCREMENTAL;
 			strcpy( incunits, "" );
 			nt = sscanf( lineval, "%*s %lf %s", &incamount, incunits );
 			if( nt < 1 || incamount == 0.0 ) {
 				if( strncmp( scaleunits, "date", 4 )== 0 || strcmp( scaleunits, "time" )==0 ) {
-					DT_reasonable( scaleunits, min, max, &incamount, incunits, stubformat, automonths, 
-						autoyears, autodays, &minorticinc, minorticunits, nearest );
+					DT_reasonable( scaleunits, min, max, &incamount, incunits, stubformat, 
+						automonths, autoyears, autodays, &minorticinc, minorticunits, nearest );
 					}
 				else incamount = 0.0;
 				}
 			}
-		else if( stricmp( val, "minmaxonly" )==0 ) {
-			isrc = INCREMENTAL;
-			incamount = max - min;
-			}
-		else if( stricmp( val, "minonly" )==0 ) {
-			isrc = INCREMENTAL;
-			incamount = (max - min) * 2.0;
-			}
-		else if( stricmp( val, "maxonly" )==0 ) {
-			isrc = INCREMENTAL;
-			stubstart = max;
-			incamount = (max - min) * 2.0;
-			}
-		else if( stricmp( val, "file" )==0 ) {
+		else if( strcmp( tok, "minmaxonly" )==0 ) { isrc = INCREMENTAL; incamount = max - min; }
+		else if( strcmp( tok, "minonly" )==0 ) { isrc = INCREMENTAL; incamount = (max - min) * 2.0; }
+		else if( strcmp( tok, "maxonly" )==0 ) { isrc = INCREMENTAL; stubstart = max; incamount = (max - min) * 2.0; }
+		else if( strcmp( tok, "file" )==0 ) {
+			ix = 0; 
+			GL_getok( lineval, &ix );
+			for( ; lineval[ix] != '\0'; ix++ ) if( !isspace( (int)lineval[ix] ) ) break;
+			filename = &lineval[ix]; 
 			isrc = FROMFILE;
-			strcpy( filename, "" );
-			nt = sscanf( lineval, "%*s %s", filename );
-			if( nt < 1 ) {
-				Eerr( 2796, "usage:   stub: file filename", "" );
-				isrc = INCREMENTAL;
-				}
 			}
-		else if( strnicmp( val, "datafield", 9 ) ==0 )  {
+		else if( strncmp( tok, "datafield", 9 ) ==0 )  {
 			char fnames[2][50];
-			isrc = FROMDATA;
 			for( j = 0, forlen = strlen( lineval ); j < forlen; j++ ) /* allow = and , */
 				if( GL_member( lineval[j], "=," )) lineval[j] = ' ';
 			nstubdf = sscanf( lineval, "%*s %s %s", fnames[0], fnames[1] );
-			if( nstubdf < 1 ) { 
-				Eerr( 2795, "usage:   stub: datafields=a,[b] where a and b are dfields", "" );
-				isrc = INCREMENTAL;
-				}
 			if( nstubdf > 0 ) stubdf1 = fref( fnames[0] );
 			if( nstubdf == 2 ) stubdf2 = fref( fnames[1] );
+			isrc = FROMDATA;
 			}
-
-		else if( stricmp( val, "categories" )==0 || stricmp( val, "usecategories" )==0 ) isrc = FROMCATS;
-			
-		else if( stricmp( val, "list" )==0 ) {
-			isrc = HERE;
-			i = 0;
-			GL_getchunk( buf, lineval, &i, " \t" );
-			while( GL_member( lineval[i], " \t" ) ) i++;
-			strcpy( PL_bigbuf, &lineval[i] );
-			convertnl( PL_bigbuf );
-			}
-		else if( stricmp( val, "none" )==0 ) isrc = 0;
-		else 	{
-			isrc = HERE;
-			if( stricmp( val, "text" ) == 0 ) {
-				getmultiline( "stubs", "", MAXBIGBUF, PL_bigbuf );
-				}
-			else 	{
-				fprintf( PLS.errfp, 
-				  "warning: proc axis assuming multiline stub text even though 'text' keyword not given\n" );
-				getmultiline( "stubs", lineval, MAXBIGBUF, PL_bigbuf );
-				}
-			}
+		else if( strcmp( tok, "categories" )==0 || strcmp( tok, "usecategories" )==0 ) isrc = FROMCATS;
+		else if( strcmp( tok, "list" )==0 ) { isrc = HERE; stubs = lineval; convertnl( stubs ); }
+		else if( strcmp( tok, "none" )==0 ) isrc = 0;
+		else 	{ isrc = HERE; stubs = getmultiline( lineval, "get" ); }
 		}
 			
-
-	else if( stricmp( &attr[astart], "stubformat" )==0 ) strcpy( stubformat, lineval );
-
-	else if( stricmp( &attr[astart], "stubdetails" )==0 ) strcpy( stubdetails, lineval );
-
-	else if( stricmp( &attr[astart], "stubrange" )==0 ) {
-		getrange( lineval, &stubstart, &stubstop, xory, min, max );
-		stubrangegiven = 1;
+	else if( strcmp( &attr[astart], "stubformat" )==0 ) { strncpy( stubformat, lineval, 80 ); stubformat[80] = '\0'; }
+	else if( strcmp( &attr[astart], "stubdetails" )==0 ) stubdetails = lineval;
+	else if( strcmp( &attr[astart], "stubrange" )==0 ) { getrange( lineval, &stubstart, &stubstop, xory, min, max ); stubrangegiven = 1; }
+	else if( strcmp( &attr[astart], "stubround" )==0 ) stubround = lineval;
+	else if( strcmp( &attr[astart], "stubreverse" )==0 ) { stubreverse = getyn( lineval ); stubreverse_given =1; }
+	else if( strcmp( &attr[astart], "stubvert" )==0 ) { 
+		if( atoi( lineval ) != 0 ) stubvert = atoi( lineval );
+		else if( strncmp( lineval, "y", 1 )==0 ) stubvert = 90; 
+		else stubvert = 0;
+		if( stubvert != 0 && Edev == 'x' ) stubvert = 90; /* should also do same thing here if we know we're rendering to non-freetype gd */
 		}
-	else if( stricmp( &attr[astart], "stubround" )==0 ) strcpy( stubround, val );  /* added 5/29/06 scg */
-
-	else if( stricmp( &attr[astart], "stubreverse" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 )stubreverse = 1;
-		else stubreverse = 0;
-		stubreverse_given = 1;
-		}
-
-	else if( stricmp( &attr[astart], "stubvert" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 ) vertstub = 1;
-		else vertstub = 0;
-		}
-
-	else if( stricmp( &attr[astart], "stubomit" )==0 ) strcpy( stubomit, lineval );
-
-	else if( stricmp( &attr[astart], "stubslide" )==0 ) Elenex( val, xory, &stubslide );
-
-	else if( stricmp( &attr[astart], "stubexp" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 ) stubexp = 1;
-		else if( stricmp( val, "exp-1" )==0 ) stubexp = 2;
-                else stubexp = 0;
-		}
-
-	else if( stricmp( &attr[astart], "stublen" )==0 ) stublen = atoi( val );
-
-	else if( stricmp( &attr[astart], "stubmult" )==0 ) stubmult = atof( val );
-
-	else if( stricmp( &attr[astart], "stubmininc" )==0 ) stubmininc = atof( val );
-
-	else if( stricmp( &attr[astart], "stubhide" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 ) stubhide = 1;
-		else stubhide = 0;
-		}
-
-	else if( stricmp( &attr[astart], "ticslide" )==0 )  Elenex( val, xory, &ticslide );
-
-	else if( stricmp( &attr[astart], "labeldetails" )==0 ) strcpy( axislabeldet, lineval );
-
-	else if( stricmp( &attr[astart], "labeldistance" )==0 ) {
-		axislabelofs = atof( val );
-		if( PLS.usingcm ) axislabelofs /= 2.54;
-		}
-
-	else if( stricmp( &attr[astart], "location" )==0 ) {
-		Eposex( val, opax, &f );
-		pos = f;
-		}
-
-
-	else if( stricmp( &attr[astart], "axisline" )==0  ) {
-		if( strnicmp( val, "no", 2 )==0 ) strcpy( axisline, "none" );
-		else strcpy( axisline, lineval );
-		}
-
-	else if( stricmp( &attr[astart], "axislinerange" )==0 ) {
-		getrange( lineval, &axlinestart, &axlinestop, xory, min, max );
-		}
-
-	else if( stricmp( &attr[astart], "tics" )==0  ) {
-		strcpy( tics, lineval );
-		if( strnicmp( tics, "no", 2 ) != 0 ) doingtics = 1;
+	else if( strcmp( &attr[astart], "stubomit" )==0 ) stubomit = lineval;
+	else if( strcmp( &attr[astart], "stubslide" )==0 ) Elenex( lineval, xory, &stubslide );
+	else if( strcmp( &attr[astart], "stubexp" )==0 ) { if( strcmp( lineval, "exp-1")==0 ) stubexp = 2; else stubexp = getyn( lineval ); }
+	else if( strcmp( &attr[astart], "stublen" )==0 ) stublen = itokncpy( lineval );
+	else if( strcmp( &attr[astart], "stubmult" )==0 ) stubmult = ftokncpy( lineval );
+	else if( strcmp( &attr[astart], "stubmininc" )==0 ) stubmininc = ftokncpy( lineval );
+	else if( strcmp( &attr[astart], "stubhide" )==0 ) stubhide = getyn( lineval );
+	else if( strcmp( &attr[astart], "ticslide" )==0 )  Elenex( lineval, xory, &ticslide );
+	else if( strcmp( &attr[astart], "labeldetails" )==0 ) axislabeldet = lineval;
+	else if( strcmp( &attr[astart], "labeldistance" )==0 ) { axislabelofs = ftokncpy( lineval ); if( PLS.usingcm ) axislabelofs /= 2.54; }
+	else if( strcmp( &attr[astart], "location" )==0 ) { Eposex( lineval, opax, &f ); pos = f; }
+	else if( strcmp( &attr[astart], "axisline" )==0  ) axisline = lineval;
+	else if( strcmp( &attr[astart], "axislinerange" )==0 ) getrange( lineval, &axlinestart, &axlinestop, xory, min, max );
+	else if( strcmp( &attr[astart], "tics" )==0  ) {
+		tics = lineval;
+		if( strncmp( tics, "no", 2 ) != 0 ) doingtics = 1;
 		else doingtics = 0;
 		}
-
-	else if( stricmp( &attr[astart], "ticincrement" )==0  ) {
-		strcpy( ticincunits, "" );
+	else if( strcmp( &attr[astart], "ticincrement" )==0  ) { 
+		strcpy( ticincunits, "" ); 
 		sscanf( lineval, "%lf %s", &ticincamount, ticincunits );
 		}
-
-	else if( stricmp( &attr[astart], "ticlen" )==0  ) {
+	else if( strcmp( &attr[astart], "ticlen" )==0  ) {
 		sscanf( lineval, "%lf %lf", &ticout, &ticin );
 		if( PLS.usingcm ) { ticout /= 2.54; ticin /= 2.54; }
 		}
-
-	else if( stricmp( &attr[astart], "minortics" )==0 ) {
-		if( strnicmp( val, "no", 2 )==0 ) { strcpy( mtics, "none" ); minorticinc = 0.0; }   /* set ticinc = 0 scg 1/28/05 */
-		else strcpy( mtics, lineval );
+	else if( strcmp( &attr[astart], "minortics" )==0 ) {
+		if( strncmp( lineval, "no", 2 )==0 ) { mtics = "none"; minorticinc = 0.0; }   
+		else mtics = lineval;
 		}
-	else if( stricmp( &attr[astart], "minorticinc" )==0 ) {
+	else if( strcmp( &attr[astart], "minorticinc" )==0 ) {
 		strcpy( minorticunits, "" );
 		nt = sscanf( lineval, "%lf %s", &minorticinc, minorticunits );
 		}
 
-	else if( stricmp( &attr[astart], "minorticlen" )==0 ||
-		stricmp( attr, "minorticlen" )==0 ) {
+	else if( strcmp( &attr[astart], "minorticlen" )==0 ) {
 		sscanf( lineval, "%lf %lf", &mticout, &mticin );
 		if( PLS.usingcm ) { mticout /= 2.54; mticin /= 2.54; }
 		}
 
-	else if( stricmp( &attr[astart], "grid" )==0 ) {
-		strcpy( grid, lineval );
-		if( strnicmp( grid, "no", 2 )!= 0 ) doinggrid = 1;
-		}
-	else if( stricmp( &attr[astart], "gridskip" )==0 ) strcpy( gridskip, val );
-	else if( stricmp( &attr[astart], "gridlineextent" )==0 ) {
-		nt = sscanf( lineval, "%s %s", glemins, glemaxs );
-		}
-	else if( stricmp( &attr[astart], "gridblocks" )==0 ) {
-		nt = sscanf( lineval, "%s %s", gbcolor1, gbcolor2 );
-		if( stricmp( gbcolor1, "no" )==0 || stricmp( gbcolor1, "none" )==0 ) strcpy( gbcolor1, "" );
+	else if( strcmp( &attr[astart], "grid" )==0 ) { griddet = lineval; if( strncmp( griddet, "no", 2 )!= 0 ) doinggrid = 1; }
+	else if( strcmp( &attr[astart], "gridskip" )==0 ) gridskip = lineval;
+	else if( strcmp( &attr[astart], "gridlineextent" )==0 ) nt = sscanf( lineval, "%s %s", glemins, glemaxs );
+	else if( strcmp( &attr[astart], "gridblocks" )==0 ) {
+		sscanf( lineval, "%s %s", gbcolor1, gbcolor2 );
+		if( strcmp( gbcolor1, "no" )==0 || strcmp( gbcolor1, "none" )==0 ) strcpy( gbcolor1, "" );
 		else doinggrid = 1;
 		}
 
-	else if( stricmp( &attr[astart], "stubcull" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 ) stubcull = 0.1;
-		else if( atof( val ) > 0.0 ) stubcull = atof( val );
+	else if( strcmp( &attr[astart], "stubcull" )==0 ) {
+		if( getyn( lineval ) ) stubcull = 0.1;
+		else if( ftokncpy( lineval ) > 0.0 ) stubcull = ftokncpy( lineval );
                 else stubcull = 0.0;
 		}
 
-	else if( stricmp( &attr[astart], "autoyears" )==0 ) {
-		strcpy( autoyears, val );
-		if( stricmp( autoyears, "yes" )==0 || stricmp( autoyears, "y" )==0 ) strcpy( autoyears, "'yy" );
-		else if( stricmp( autoyears, "no" )==0 ) strcpy( autoyears, "" );
+	else if( strcmp( &attr[astart], "autoyears" )==0 ) {
+		tokncpy( autoyears, lineval, 20 );
+		if( strcmp( autoyears, "yes" )==0 || strcmp( autoyears, "y" )==0 ) strcpy( autoyears, "'yy" );
+		else if( strcmp( autoyears, "no" )==0 ) strcpy( autoyears, "" );
 		}
 
-	else if( stricmp( &attr[astart], "autodays" )==0 ) {
-		strcpy( autodays, val );
-		if( stricmp( autodays, "yes" )==0 || stricmp( autodays, "y" )==0 ) strcpy( autodays, "Mmmdd" );
-		else if( stricmp( autodays, "no" )==0 ) strcpy( autodays, "" );
+	else if( strcmp( &attr[astart], "autodays" )==0 ) {
+		tokncpy( autodays, lineval, 40 );
+		if( strcmp( autodays, "yes" )==0 || strcmp( autodays, "y" )==0 ) strcpy( autodays, "Mmmdd" );
+		else if( strcmp( autodays, "no" )==0 ) strcpy( autodays, "" );
 		}
 
-	else if( stricmp( &attr[astart], "automonths" )==0 ) {
-		strcpy( automonths, val );
-		if( stricmp( automonths, "yes" )==0 || stricmp( automonths, "y" )==0 ) strcpy( automonths, "Mmm" );
-		else if( stricmp( automonths, "no" )==0 ) strcpy( automonths, "" );
+	else if( strcmp( &attr[astart], "automonths" )==0 ) {
+		tokncpy( automonths, lineval, 40 );
+		if( strcmp( automonths, "yes" )==0 || strcmp( automonths, "y" )==0 ) strcpy( automonths, "Mmm" );
+		else if( strcmp( automonths, "no" )==0 ) strcpy( automonths, "" );
 		}
 
+	else if( strcmp( &attr[astart], "signreverse" )==0 ) revsign = getyn( lineval );
+	else if( strcmp( &attr[astart], "stubevery" )==0 ) stubevery = itokncpy( lineval );
+	else if( strcmp( &attr[astart], "firststub" )==0 ) { firststub = lineval; if( lineval[0] == '"' && lineval[1] == '"' ) firststub = " "; }
+	else if( strcmp( &attr[astart], "laststub" )==0 ) { laststub = lineval; if( lineval[0] == '"' && lineval[1] == '"' ) laststub = " "; }
+	else if( strcmp( &attr[astart], "stubsubpat" )==0 ) stubsubpat = lineval;
+	else if( strcmp( &attr[astart], "stubsubnew" )==0 ) { stubsubnew = lineval; if( lineval[0] == '"' && lineval[1] == '"' ) stubsubnew = " "; }
 
-	else if( stricmp( &attr[astart], "signreverse" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 )revsign = 1;
-                else revsign = 0;
+	else if( strcmp( &attr[astart], "clickmap" )==0 ) {
+		if( strncmp( lineval, "xy", 2 )==0 ) { if ( xory == 'x' ) clickmap=3; else clickmap=4; }
+		else { if( xory == 'x' ) clickmap=1; else clickmap=2; }
 		}
-
-	else if( stricmp( &attr[astart], "stubevery" )==0 ) stubevery = atoi( val );
-
-	else if( stricmp( &attr[astart], "firststub" )==0 ) {
-		strcpy( firststub, lineval );
-		if( strcmp( firststub, "\"\"" )==0 ) strcpy( firststub, " " );
-		}
-	else if( stricmp( &attr[astart], "laststub" )==0 ) {
-		strcpy( laststub, lineval );
-		if( strcmp( laststub, "\"\"" )==0 ) strcpy( laststub, " " );
-		}
-	else if( stricmp( &attr[astart], "stubsubpat" )==0 ) strcpy( stubsubpat, lineval );
-	else if( stricmp( &attr[astart], "stubsubnew" )==0 ) {
-		strcpy( stubsubnew, lineval );
-		if( strcmp( stubsubnew, "\"\"" )==0 ) strcpy( stubsubnew, " " );
-		}
-
-	else if( stricmp( &attr[astart], "clickmap" )==0 ) {
-		if( strnicmp( val, "xy", 2 )==0 ) {
-			if( xory == 'x' ) clickmap = 3;
-			else clickmap = 4;
-			}
-		else 	{
-			if( xory == 'x' ) clickmap = 1;
-			else clickmap = 2;
-			}
-		}
-	else if( stricmp( &attr[astart], "clickmapextent" )==0 ) nt = sscanf( lineval, "%s %s", cmemins, cmemaxs );
-	else if( stricmp( &attr[astart], "clickmapvalformat" )==0 ) strcpy( cmvalfmt, lineval );
-	else if( stricmp( &attr[astart], "nolimit" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 ) circuit_breaker_disable = 1;
-		}
-	else if( stricmp( &attr[astart], "arrow" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 ) axis_arrow = 1;
-		}
-	else if( stricmp( &attr[astart], "arrowheadsize" )==0 ) {
-		arrowheadsize = atof( val );
-		if( PLS.usingcm ) arrowheadsize /= 2.54;
-		}
-	else if( astart == 0 || strnicmp( attr, "xaxis.", 6 )==0 || 
-	       strnicmp( attr, "yaxis.", 6 )==0 )
-			Eerr( 301, "axis attribute not recognized", attr );
+	else if( strcmp( &attr[astart], "clickmapextent" )==0 ) nt = sscanf( lineval, "%s %s", cmemins, cmemaxs );
+	else if( strcmp( &attr[astart], "clickmapvalformat" )==0 ) cmvalfmt = lineval;
+	else if( strcmp( &attr[astart], "labelurl" )==0 ) labelurl = lineval;
+	else if( strcmp( &attr[astart], "labelinfo" )==0 ) labelinfo = lineval;
+        else if( strcmp( &attr[astart], "labelinfotext" )==0 ) labelinfo = getmultiline( lineval, "get" ); 
+	else if( strcmp( &attr[astart], "nolimit" )==0 ) circuit_breaker_disable = getyn( lineval );
+	else if( strcmp( &attr[astart], "arrow" )==0 ) axis_arrow = getyn( lineval );
+	else if( strcmp( &attr[astart], "arrowheadsize" )==0 ) { arrowheadsize = ftokncpy( lineval ); if (PLS.usingcm) arrowheadsize /= 2.54; }
+	else if( astart == 0 || strncmp( attr, "xaxis.", 6 )==0 || strncmp( attr, "yaxis.", 6 )==0 ) 
+		Eerr( 301, "axis attribute not recognized", attr );
 	}
 
 
@@ -482,7 +271,6 @@ if( stubstop > max || stubstop < min ) stubstop = max;
 if( axlinestart < min || axlinestart > max ) axlinestart = min;
 if( axlinestop > max || axlinestop < min ) axlinestop = max;
 if( stubevery == 0 ) stubevery = 1;
-
 
 
 
@@ -567,7 +355,8 @@ if( stubformat[0] != '\0' && isrc == 0 )
  */
 	
 
-if( minorticinc > 0.0 && strnicmp( mtics, "no", 2 ) == 0 ) strcpy( mtics, "yes" );
+if( minorticinc > 0.0 && strncmp( mtics, "no", 2 ) == 0 ) mtics = "yes";
+
 
 
 /* compute abs grid line extent - added scg 11/22/00 */
@@ -597,11 +386,14 @@ if( stubround[0] != '\0' ) {    /* stubround is useful when user requires min an
 		PLP_findnearest( buf, buf, xory, stubround, minval, maxval );  
 		stubstart = Econv( xory, maxval );
 		}
-	else if( stricmp( stubround, "useinc" )==0 ) {   /* base it on whatever the axis increment value is/will be.. */
+	else if( strcmp( stubround, "useinc" )==0 ) {   /* base it on whatever the axis increment value is/will be.. */
 		if( incamount > 0.0 ) stubstart = GL_numgroup( stubstart, incamount, "high" );
 		else	{
+			double newstubstart;
 			PL_defaultinc( min, max, &ninc );
-			stubstart = GL_numgroup( stubstart, ninc, "high" );
+			newstubstart = GL_numgroup( stubstart, ninc, "high" );
+			if( newstubstart - ninc == stubstart );  /* already on a round boundary.. do nothing.. */
+			else stubstart = newstubstart;
 			}
 		}
 	else if( GL_goodnum( stubround, &prec )) stubstart = GL_numgroup( stubstart, atof( stubround ), "high" );
@@ -610,33 +402,33 @@ if( stubround[0] != '\0' ) {    /* stubround is useful when user requires min an
 	
 
 /* render minor tics.. */
-if( isrc == INCREMENTAL && strnicmp( mtics, "no", 2 )!= 0 ) {
+if( isrc == INCREMENTAL && strncmp( mtics, "no", 2 )!= 0 ) {
 	/* unit conversions.. */
-	if( stricmp( scaleunits, "time" )==0 && strnicmp( minorticunits, "hour", 4 ) ==0 ) {
+	if( strcmp( scaleunits, "time" )==0 && strncmp( minorticunits, "hour", 4 ) ==0 ) {
 		strcpy( minorticunits, "" );
 		minorticinc = minorticinc * 60;
 		}
-	else if( stricmp( scaleunits, "datetime" )==0 && 
-		(strnicmp( minorticunits, "hour", 4 ) ==0 || strnicmp( minorticunits, "minute", 3 )==0 )) {
+	else if( strcmp( scaleunits, "datetime" )==0 && 
+		(strncmp( minorticunits, "hour", 4 ) ==0 || strncmp( minorticunits, "minute", 3 )==0 )) {
 		double winsize, mm; /* window size in hours */
 		DT_getwin( &winsize );
 		mm = ((24.0/winsize) / 24.0);
-		if( strnicmp( minorticunits, "minute", 3 )==0 ) mm /= 60.0;
+		if( strncmp( minorticunits, "minute", 3 )==0 ) mm /= 60.0;
 		minorticinc *= mm;
 		/* minorticinc = minorticinc / winsize;
-		 * if( strnicmp( minorticunits, "minute", 3 )==0 ) minorticinc = minorticinc / 60.0;
+		 * if( strncmp( minorticunits, "minute", 3 )==0 ) minorticinc = minorticinc / 60.0;
 		 * strcpy( minorticunits, "" );
 		 */
 		}
-	else if( stricmp( scaleunits, "time" )==0 && strnicmp( minorticunits, "second", 3 ) ==0 ) {
+	else if( strcmp( scaleunits, "time" )==0 && strncmp( minorticunits, "second", 3 ) ==0 ) {
 		strcpy( minorticunits, "" );
 		minorticinc = minorticinc / 60.0;
 		}
-	else if( stricmp( scaleunits, "date" )==0 && strnicmp( minorticunits, "year", 4 ) ==0 ) {
+	else if( strcmp( scaleunits, "date" )==0 && strncmp( minorticunits, "year", 4 ) ==0 ) {
 		strcpy( minorticunits, "month" );
 		minorticinc = minorticinc * 12;
 		}
-	else if( stricmp( scaleunits, "date" )==0 && strnicmp( minorticunits, "month", 5 ) ==0 ) {
+	else if( strcmp( scaleunits, "date" )==0 && strncmp( minorticunits, "month", 5 ) ==0 ) {
 		strcpy( minorticunits, "month" );
 		minorticinc = minorticinc * (365.25/12.0);
 		}
@@ -657,19 +449,15 @@ if( isrc == INCREMENTAL && strnicmp( mtics, "no", 2 )!= 0 ) {
 
 
 
-
 /* --------------------------------- */
 /* preliminaries based on stubs type */
 /* --------------------------------- */
 
-if( isrc == HERE ) bigbuflen = strlen( PL_bigbuf );
+if( isrc == HERE ) txtlen = strlen( stubs );
 
 if( isrc == FROMFILE ) {  /* if taking from file, read the file into PL_bigbuf */
 	stubfp = fopen( filename, "r" );
-	if( stubfp == NULL ) {
-		Eerr( 303, "warning, cannot open specified stub file.. using incremental stubs.", filename );
-		isrc = INCREMENTAL; /* fallback */
-		}
+	if( stubfp == NULL ) { Eerr( 303, "cannot open stub file", filename ); isrc = INCREMENTAL; }
 	else	{
 		i = 0;
 		while( fgets( buf, 128, stubfp ) != NULL ) {
@@ -677,55 +465,52 @@ if( isrc == FROMFILE ) {  /* if taking from file, read the file into PL_bigbuf *
 			i += strlen( buf );
 			}
 		fclose( stubfp );
-		bigbuflen = i;
+		stubs = PL_bigbuf;
+		txtlen = i;
 		}
 	}
 
 if( isrc == FROMDATA ) {
 	if( nstubdf >= 1 ) stubdf1--;  /* off-by-one */
-
-	if( nstubdf >= 2 ) { 
-		stubdf2--;
-		nstubdf = 2;
-		}
+	if( nstubdf >= 2 ) { stubdf2--; nstubdf = 2; }
 	}
 
 if( isrc == FROMCATS ) selfloc = 0; 	/* for rendering purposes don't treat category stubs as self locating */
-
 
 if( isrc == 0 && (doingtics || doinggrid) ) {   /* no stubs but doing tics or doing grid */
 	strcpy( incunits, ticincunits );
 	incamount = ticincamount;
 	} 
 
+
 /* incunit conversions.. */
-if( stricmp( scaleunits, "time" )==0 && strnicmp( incunits, "hour", 4 ) ==0 ) {
+if( strcmp( scaleunits, "time" )==0 && strncmp( incunits, "hour", 4 ) ==0 ) {
 	strcpy( incunits, "" );
 	incamount = incamount * 60.0;
 	}
-else if( stricmp( scaleunits, "datetime" )==0 && 
-	( strnicmp( incunits, "hour", 4 ) ==0 || strnicmp( incunits, "minute", 3 )==0 )) {
+else if( strcmp( scaleunits, "datetime" )==0 && 
+	( strncmp( incunits, "hour", 4 ) ==0 || strncmp( incunits, "minute", 3 )==0 )) {
 	double winsize; /* window size in hours */
 	/* must be relative to window size.. */
 	DT_getwin( &winsize );
 	incamount = incamount / winsize;
-	if( strnicmp( incunits, "minute", 3 )==0 ) incamount = incamount / 60.0;
+	if( strncmp( incunits, "minute", 3 )==0 ) incamount = incamount / 60.0;
 	strcpy( incunits, "" );
 	/* incamount = incamount / 24.0; */
 	}
-else if( stricmp( scaleunits, "datetime" )==0 && strnicmp( incunits, "minute", 3 ) ==0 ) {
+else if( strcmp( scaleunits, "datetime" )==0 && strncmp( incunits, "minute", 3 ) ==0 ) {
 	strcpy( incunits, "" );
 	incamount = (incamount / 24.0) / 60.0;
 	}
-else if( stricmp( scaleunits, "time" )==0 && strnicmp( incunits, "second", 3 ) ==0 ) {
+else if( strcmp( scaleunits, "time" )==0 && strncmp( incunits, "second", 3 ) ==0 ) {
 	strcpy( incunits, "" );
 	incamount = incamount / 60.0;
 	}
-else if( stricmp( scaleunits, "date" )==0 && strnicmp( incunits, "year", 4 ) ==0 ) {
+else if( strcmp( scaleunits, "date" )==0 && strncmp( incunits, "year", 4 ) ==0 ) {
 	strcpy( incunits, "month" );
 	incamount = incamount * 12;
 	}
-else if( strnicmp( incunits, "month", 5 )!=0 && 
+else if( strncmp( incunits, "month", 5 )!=0 && 
 	atof( incunits ) == 0.0 ) strcpy( incunits, "" ); /* prevent racecon */
 
 
@@ -735,7 +520,7 @@ Egetunitsubtype( xory, scalesubtype );
 if( scalesubtype[0] != '\0' ) {
 	if( GL_slmember( scalesubtype, "yymm yy?mm yyyy?mm mm?yy mm?yyyy" ) && incunits[0] == '\0'  ) 
 			strcpy( incunits, "month" );
-	if( stricmp( scalesubtype, "yy" )==0 && incunits[0] == '\0' ) 
+	if( strcmp( scalesubtype, "yy" )==0 && incunits[0] == '\0' ) 
 			strcpy( incunits, "year" );
 	}
 
@@ -743,7 +528,7 @@ if( scalesubtype[0] != '\0' ) {
 if( isrc == INCREMENTAL || ( isrc == 0 && (doingtics || doinggrid )) ) {
 
 	/* for special units, initialize */
-	if( strnicmp( incunits, "month", 5 )==0 ) {
+	if( strncmp( incunits, "month", 5 )==0 ) {
 		long l;
 		if( ! GL_smember( scaleunits, "date datetime" ))  /* changed to include datetime as well as date - scg 8/11/05 */
 			return( Eerr( 2476, "month increment only valid with date or datetime scale type", "" ) );
@@ -757,8 +542,8 @@ if( isrc == INCREMENTAL || ( isrc == 0 && (doingtics || doinggrid )) ) {
 		else inc = 1; 	/* added scg 3/29 */
 		}
 
-	else if( stricmp( scaleunits, "datetime" )==0 && 
-			strnicmp( incunits, "hour", 4 ) ==0 ) {
+	else if( strcmp( scaleunits, "datetime" )==0 && 
+			strncmp( incunits, "hour", 4 ) ==0 ) {
 		inc = incamount / 24.0;
 		}
 
@@ -784,8 +569,8 @@ if( isrc == INCREMENTAL || ( isrc == 0 && (doingtics || doinggrid )) ) {
 		}
 	}
 
-if( xory == 'x' ) setfloatvar( "XINC", inc );
-else if( xory == 'y' ) setfloatvar( "YINC", inc );
+if( xory == 'x' ) setfloatvar( "XINC", inc, "%g" );
+else if( xory == 'y' ) setfloatvar( "YINC", inc, "%g" );
 
 /* log mode */
 logx = logy = 0;
@@ -803,17 +588,23 @@ if( inc <= 0.0 ) return( Eerr( 2705, "axis increment is zero or negative", "" ))
 /* render the stubs and/or tics and/or grid lines.. */
 /* ---------------------------------------------- */
 
+textdet( "stubdetails", stubdetails, &align, &adjx, &adjy, -2, "R", 1.0 );   /* needs to be done here as well as within loop below */
 
 if( stubreverse ) y = stubstop;
 else y = stubstart;
 ibb = 0;
 irow = 0;
-if( vertstub ) Etextdir(90);
+if( stubvert ) Etextdir( stubvert );
 prevstub = NEGHUGE;
 
 
 firsttime = 1;
 
+
+if( isrc == HERE ) {  /* skip over initial "text" or "list" token */
+	if( strncmp( stubs, "text", 4 )==0 ) GL_getseg( txt, stubs, &ibb, "\n" ); 
+	else if( strncmp( stubs, "list", 4 )==0 ) GL_getok( stubs, &ibb ); 
+	}
 
     
 for( sanecount = 0; sanecount < 2000; sanecount++ ) {
@@ -823,6 +614,7 @@ for( sanecount = 0; sanecount < 2000; sanecount++ ) {
 	strcpy( txt, "" );
 
 	/* if( isrc == 0 ) goto DOTIC;  */ /* no stubs */
+
 
 	if( isrc == INCREMENTAL ) {
 
@@ -853,8 +645,8 @@ for( sanecount = 0; sanecount < 2000; sanecount++ ) {
 		}
 
 	if( isrc == HERE || isrc == FROMFILE ) {
-		if( ibb >= bigbuflen ) break;
-		GL_getseg( txt, PL_bigbuf, &ibb, "\n" );
+		if( ibb >= txtlen ) break;
+		GL_getseg( txt, stubs, &ibb, "\n" );
 		if( PLS.clickmap && clickmap ) strcpy( cmtxt, txt );
 		}
 		
@@ -919,7 +711,7 @@ for( sanecount = 0; sanecount < 2000; sanecount++ ) {
 
 	/* autodays */
 	if( autodays[0] != '\0' ) {
-		if( stricmp( scaleunits, "datetime" )!=0 ) Eerr( 9677, "warning, autodays is only valid with datetime scaling", "" );
+		if( strcmp( scaleunits, "datetime" )!=0 ) Eerr( 9677, "warning, autodays is only valid with datetime scaling", "" );
 		else	{
 			double datepart, timepart;
 			char dt[40];
@@ -1014,7 +806,7 @@ for( sanecount = 0; sanecount < 2000; sanecount++ ) {
 			gbylast = Ea( Y, y );
 			}
 		else	{
-			linedet( "grid", grid, 0.5 );
+			linedet( "grid", griddet, 0.5 );
 			Emov( glemin, Ea( Y, y ) );
 			Elin( glemax, Ea( Y, y ) );
 			}
@@ -1049,11 +841,15 @@ for( sanecount = 0; sanecount < 2000; sanecount++ ) {
 
 	/* determine exact position and render stub text.. */ 
 	if( isrc > 0 && !stubhide && ! GL_slmember( txt, stubomit ) ) {   /* stub can't be in omit list.. */ 
-		textdet( "stubdetails", stubdetails, &align, &adjx, &adjy, -2, "R", 1.0 );
-		if( vertstub && xory == 'x' ) { 
-			if( align == '?' ) align = 'R';
+		textdet( "stubdetails", stubdetails, &align, &adjx, &adjy, -2, "R", 1.0 );  /* needs to be here within the loop (stub color) */
+		if( stubvert && xory == 'x' ) { 
+			if( align == '?' ) {
+				if( stubvert >= 270 ) align = 'L';
+				else align = 'R';
+				}
 			ofsx = adjx + (ticout * -2.0) ;
 			ofsy = (adjy + 0.04) + stubslide;
+			if( stubvert >= 270 ) ofsy -= (Ecurtextheight*0.6);
 			}
 		else if( xory == 'y' ) {
 			if( align == '?' ) align = 'R';
@@ -1101,8 +897,6 @@ for( sanecount = 0; sanecount < 2000; sanecount++ ) {
 		yr += ((mon-1) / 12);
 		mon = newmon;
 		
-		/* fprintf( stderr, "[mon=%d yr=%d]", mon, yr ); */
-
 		day = 1;
 		}
 
@@ -1118,13 +912,14 @@ for( sanecount = 0; sanecount < 2000; sanecount++ ) {
 		}
 	}
 
-if( vertstub ) Etextdir(0);
+if( stubvert ) Etextdir(0);
 
 
 SKIPLOOP:
 
+
 /* make the line..  do it last of all for appearance sake.. */
-if( stricmp( axisline, "none" )!= 0 ) {
+if( strcmp( axisline, "none" )!= 0 ) {
 	linedet( "axisline", axisline, 0.5 );
 	Emov( pos, Ea( Y, axlinestart ) ); Elin( pos, Ea( Y, axlinestop ) );
 	if( axis_arrow ) PLG_arrow( pos, Ea( Y, axlinestop), pos, Ea( Y, axlinestop)+(arrowheadsize*2.0), arrowheadsize, 0.3, Ecurcolor );
@@ -1140,7 +935,7 @@ return( 0 );
 
 
 /* ======================================================= *
- * Copyright 1998-2005 Stephen C. Grubb                    *
+ * Copyright 1998-2008 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */

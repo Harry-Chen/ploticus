@@ -66,10 +66,12 @@ if( strcmp( name, "inrange" )==0 ) {
 /* hash:564 $icolor( i ) - return one of 20 color entries, chosen for contrast */
 else if( strcmp( name, "icolor" )==0 ) {
 	int i;
+	char *colorname;
 	i = atoi( arg[0] );
 	if( i < 1 ) i = 1;
 	i--;
-	Eicolor( i, result );
+	colorname = Eicolor( i );
+	strcpy( result, colorname );
 	*typ = 1;
 	return( 0 );
 	}
@@ -233,6 +235,14 @@ else if( strcmp( name, "textwidth" )==0 ) {
 else if( strcmp( name, "rewritenum" )==0 ) {
 	strcpy( result, arg[0] );
 	PL_rewritenums( result );
+	return( 0 );
+	}
+
+/* -------------- */
+/* hash: 1750 $changeunits( axis, newunitspec ) */
+/* change the units associated with an existing axis (used to be done using proc defineunits) */
+else if( strcmp( name, "changeunits" )==0 ) {
+	Esetunits( arg[0][0], arg[1] );
 	return( 0 );
 	}
 

@@ -6,9 +6,9 @@
 
 #proc getdata
 data:
-	120301	8
+	120301	0
 	120401	12
-	120501	6
+	120501	0
 	120601	10
 	120701	9
 	120801	14
@@ -24,7 +24,7 @@ data:
 	121801	22
 
 
-#for COL in 1,2,3
+#for COL in 1,2,3,4
 
   #if @COL = 1
      #set XLEFT = 0.2
@@ -32,9 +32,12 @@ data:
   #elseif @COL = 2
      #set XLEFT = 2.2
      #set GAPMISSING = yes
-  #else
+  #elseif @COL = 3
      #set XLEFT = 4.2
      #set GAPMISSING = small
+  #else
+     #set XLEFT = 6.2
+     #set GAPMISSING = autozero
   #endif
 
   // ------- set templates.. 
@@ -60,8 +63,10 @@ data:
     title: standard 
   #elseif @COL = 2
     title: gapmissing: yes
-  #else
+  #elseif @COL = 3
     title: gapmissing: small
+  #else
+    title: gapmissing: autozero
   #endif
   location: @XLEFT 4
   

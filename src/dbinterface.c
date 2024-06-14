@@ -62,14 +62,15 @@ return( stat );
    SQLROW - get one row of results from most recent SQL SELECT.
    Return 0 if row fetched, 1 if not (no more rows), or an error code. 
    All result fields should be character strings, including "null".
-   FIELDS is an array of char pointers; each will point to a result field.
+   FIELDS is an array of char pointers; each will be made to point to a result field in shsql space.
+	(app should immediately copy into app space or risk obliteration on subsequent shsql retrieval)
    N will be set to the number of fields.
 */
 
 int
 TDH_sqlrow( dbc, fields, n )
 int dbc;
-char *fields[];  /* size should be 256 */
+char *fields[];
 int *n;
 {
 int stat;

@@ -4,7 +4,7 @@
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */
 
-/* MAPFILE - generate a clickable imagemap.  All related bookkeeping is here. 
+/* clickmap.c - generate a clickable imagemap.  All related bookkeeping is here. 
 
    Feb    2002 scg	client-side HTML clickmap supported
 
@@ -28,11 +28,12 @@ static struct {
 	int pmode;
 	int x1; int y1; int x2; int y2;
 	} box[MAXENTRIES];
-static char defaulturl[MAXPATH] = "";
-static char tpurl[MAXPATH] = ""; /* a url template */
+static char defaulturl[MAXURL] = "";
+static char tpurl[MAXURL] = ""; /* a url template */
 static int mapstatus = 0; /* 1 if we are in the process of doing a map; 0 otherwise */
 static int demomode = 0;  /* 1 if we are in demo mode */
 static int intersect = 0;
+static double adjx = 0.0, adjy = 0.0;
 
 extern int PLGS_clickregion();
 static int get_targetstr();
@@ -52,6 +53,7 @@ strcpy( tpurl, "" );
 imap = 0;
 intersect = 0;
 mapstatus = 1;
+adjx = 0.0; adjy = 0.0;
 return( 0 );
 }
 
@@ -104,6 +106,7 @@ if( pmode > 2 ) intersect = 1;
 box[ imap ].pmode = pmode;
 box[ imap ].typ = typ;
 if( typ == 'p' ) { x2 = x1; y2 = y1; }
+if( pmode ) { x1 += adjx; x2 += adjx; y1 += adjy; y2 += adjy; }  /* for grid regions, apply adjustment if any */
 
 /* adjust for textpad, clip, and global scaling, if any.. */
 if( textpad ) { x1 -= 0.15; x2 += 0.1; y1 -= 0.04; }
@@ -128,25 +131,26 @@ return( 0 );
 /* ========================= */
 /* OUT - write out the clickmap info */
 /* Note: PLS.clickmap == 1 for server-side,  2 for client-side */
-/* SVG: tx and ty may be anything (they aren't used).  For SVG the entries must be
-   in opposite order than image clickmap file, hence the two gotos herein. */
+
+/* In gif/png/jpg image maps the "top" elements (from an overlap standpoint) need to be near the top of the list.
+   In SVG this is the opposite.  Hence for SVG things have to be done in reverse order (see the gotos). */
+
 
 int
 PL_clickmap_out( tx, ty )
-int tx, ty; /* translate vector  - should be 0, 0 for svg */
+int tx, ty; /* translate vector - compensates for image cropping, etc.  (pass as 0, 0 for svg) */
 {
 int i, j;
 FILE *fp;
-char buf[255];
+char buf[1024], targetstr[1024]; /* raised from 256 scg 11/5/07 */
 int ox1, oy1, ox2, oy2;
 int loopstart, loopend, loopinc;
-char targetstr[80];
 
 if( imap < 1 ) return( Eerr( 2795, "Warning, no map regions were assigned", PLS.mapfile ) );
 
 if( PLS.device != 's' ) {
-	if( stricmp( PLS.mapfile, "stdout" )==0 ) fp = stdout;
-	else if( stricmp( PLS.mapfile, "stderr" )==0 ) fp = stderr;
+	if( strcmp( PLS.mapfile, "stdout" )==0 ) fp = stdout;
+	else if( strcmp( PLS.mapfile, "stderr" )==0 ) fp = stderr;
 	else fp = fopen( PLS.mapfile, "w" );
 	if( fp == NULL ) return( Eerr( 2705, "Cannot open mapfile", PLS.mapfile ));
 
@@ -160,17 +164,55 @@ if( PLS.device != 's' ) {
 if( PLS.device == 's' ) { loopstart = 0; loopend = imap; loopinc = 1; goto DO_THE_REST; }	/* svg: "top" is last */
 else { loopstart = imap-1; loopend = -1; loopinc = -1; }		/* images: "top" is first */
 
-/* first do any intersections.. */
+
+/* do any plot elements (these sit on top of any grid).. split out from "do_the_rest" scg 10/30/06 */
+DO_ELEMENTS:
+for( i = loopstart; i != loopend; i += loopinc ) { 
+
+	if( box[ i ].pmode > 0 ) continue;
+	strcpy( buf, urls[i] );
+	strcpy( targetstr, "" ); get_targetstr( buf, targetstr );
+
+#ifndef NOSVG
+	if( PLS.device == 's' ) {
+		if( titles[i] == NULL ) PLGS_clickregion( buf, "", targetstr, box[ i ].x1, box[ i ].y1, box[ i ].x2, box[ i ].y2 );
+		else PLGS_clickregion( buf, titles[i], targetstr, box[ i ].x1, box[ i ].y1, box[ i ].x2, box[ i ].y2 );
+		}
+	else 
+#endif
+	if( PLS.clickmap == SERVERSIDE ) fprintf( fp, "rect %s	%d,%d	%d,%d\n", 
+				buf, box[ i ].x1 - tx, box[ i ].y1 - ty, box[ i ].x2 - tx, box[ i ].y2 - ty );
+
+	else if( PLS.clickmap == CLIENTSIDE ) {
+		fprintf( fp, "<area shape=\"rect\" %s%s%c coords=\"%d,%d,%d,%d\" ",
+			(buf[0] == '\0') ? "nohref" : "href=\""   , buf,    (buf[0] == '\0' ) ? ' ' : '"',
+			box[ i ].x1 - tx, box[ i ].y1 - ty, box[ i ].x2 - tx, box[ i ].y2 - ty );
+		if( titles[i] != NULL ) fprintf( fp, "title=\"%s\" %s >\n", titles[i], targetstr );
+		else fprintf( fp, "%s >\n", targetstr );
+		}
+	}
+
+if( PLS.device == 's' ) return( 0 ); 
+
+/* do any xygrid regions (intersections) before any xonly or yonly grid regions.. */
 DO_INTERSECTS:
 if( intersect ) for( i = loopstart; i != loopend; i += loopinc ) { 
+
 	if( box[i].pmode == 3 ) {
 		/* find all '4' entries.. write out an entry for each one found.. */
 		/* assume all '4' entries overlap all '3' entries.. */
 		for( j = imap-1; j >= 0; j-- ) {
 			if( box[j].pmode == 4 ) {
-				strcpy( buf, tpurl );
-				GL_varsub( buf, "@XVAL", urls[ i ] );
-				GL_varsub( buf, "@YVAL", urls[ j ] );
+
+				/* strcpy( buf, tpurl ); */
+				/* GL_varsub( buf, "@XVAL", urls[ i ] ); */
+				/* GL_varsub( buf, "@YVAL", urls[ j ] ); */  /* changed to the following, allows general vars to be present */
+				PL_setcharvar( "XVAL", urls[i] );
+				PL_setcharvar( "YVAL", urls[j] );
+				PL_fref_showerr( 0 );
+				PL_value_subst( buf, tpurl, NULL, URL_ENCODED );
+				PL_fref_showerr( 1 );
+
 				strcpy( targetstr, "" );
 				get_targetstr( buf, targetstr );
 
@@ -217,30 +259,31 @@ if( intersect ) for( i = loopstart; i != loopend; i += loopinc ) {
 		}
 	}
 
-if( PLS.device == 's' ) return( 0 ); 
+if( PLS.device == 's' ) goto DO_ELEMENTS;
 
-/* now do the rest.. */
 DO_THE_REST:
+/* now do the rest.. this section is basically the same as DO_ELEMENTS, above.. */
 for( i = loopstart; i != loopend; i += loopinc ) { 
-
+	if( box[i].pmode == 0 ) continue;
 	strcpy( buf, "" );
 	if( box[ i ].pmode > 0 ) {
-		strcpy( buf, tpurl );
+		/* strcpy( buf, tpurl ); */
+		PL_fref_showerr( 0 );  
 		if( box[ i ].pmode == 1 || box[i].pmode == 3 ) {
-			GL_varsub( buf, "@XVAL", urls[ i ] );
-			GL_varsub( buf, "@YVAL", "" );
+			/* GL_varsub( buf, "@XVAL", urls[ i ] ); */
+			/* GL_varsub( buf, "@YVAL", "" ); */
+			PL_setcharvar( "XVAL", urls[i] );
+			PL_value_subst( buf, tpurl, NULL, URL_ENCODED );
 			}
 		else if( box[ i ].pmode == 2 || box[i].pmode == 4 ) {
-			GL_varsub( buf, "@YVAL", urls[ i ] );
-			GL_varsub( buf, "@XVAL", "" );
+			/* GL_varsub( buf, "@YVAL", urls[ i ] ); */
+			/* GL_varsub( buf, "@XVAL", "" ); */
+			PL_setcharvar( "YVAL", urls[i] );
+			PL_value_subst( buf, tpurl, NULL, URL_ENCODED );
 			}
+		PL_fref_showerr( 1 );
 		}
-	else strcpy( buf, urls[i] );
-
-	/* handle <area> tag attributes construct eg. [target=xxx] - added scg 5/11/06 */
-	strcpy( targetstr, "" );
-	get_targetstr( buf, targetstr );
-
+	strcpy( targetstr, "" ); get_targetstr( buf, targetstr );
 
 #ifndef NOSVG
 	if( PLS.device == 's' ) {
@@ -264,7 +307,7 @@ for( i = loopstart; i != loopend; i += loopinc ) {
 
 if( PLS.device == 's' ) goto DO_INTERSECTS;
 
-if( PLS.clickmap == CLIENTSIDE && PLS.device != 's' ) { /* do default */
+if( PLS.clickmap == CLIENTSIDE && PLS.device != 's' ) { /* do default (last, so it's on the "bottom") */
 	strcpy( buf, defaulturl );
 	strcpy( targetstr, "" );
 	get_targetstr( buf, targetstr );
@@ -377,6 +420,16 @@ PL_clickmap_setdefaulturl( url )
 char *url;
 {
 strcpy( defaulturl, url );
+return( 0 );
+}
+/* ========================= */
+/* ADJUST - for grid clickmaps, this allows a horizontal and vertical adjustment to be set. */
+int
+PL_clickmap_adjust( x, y )
+double x, y;
+{
+adjx = x;
+adjy = y;
 return( 0 );
 }
 

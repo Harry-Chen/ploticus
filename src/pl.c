@@ -1,5 +1,5 @@
 /* ======================================================= *
- * Copyright 1998-2005 Stephen C. Grubb                    *
+ * Copyright 1998-2008 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */
@@ -23,20 +23,16 @@ int longmsg;
 char outputformats[80];
 PL_devstring( outputformats );
 
-fprintf( PLS.diagfp, "\n\
-Usage: pl -prefab prefabname [parameters]     ..or.. pl scriptfile [options] \n\
-%s\n\n", outputformats );
 
 #ifdef WIN32
-fprintf( PLS.diagfp, "ploticus %s (win32) ", PLVERSION );
+fprintf( PLS.diagfp, "ploticus %s (win32).", PLVERSION );
 #else
-fprintf( PLS.diagfp, "ploticus %s (unix) ", PLVERSION );
+fprintf( PLS.diagfp, "ploticus %s (unix).", PLVERSION );
 #endif
-fprintf( PLS.diagfp, " Copyright 1998-2006 Steve Grubb, http://ploticus.sourceforge.net\n" );
+fprintf( PLS.diagfp, "  %s\n", outputformats );
+fprintf( PLS.diagfp, "Copyright 1998-2008 Steve Grubb, http://ploticus.sourceforge.net\n\n" );
 
-
-if( longmsg ) fprintf( PLS.diagfp, "\n\
-Please see the Copyright file or web site for additional credits and information.\n\
+if( longmsg ) fprintf( PLS.diagfp, "Please see the Copyright file or web site for additional credits and information.\n\
 \n\
 This program is free software; you can redistribute it and/or modify it\n\
 under the terms of the GNU General Public License as published by the\n\
@@ -58,7 +54,7 @@ main( argc, argv )
 int argc;
 char **argv;
 {
-int i, argi, use_stdin, stat, found, valused, stoparg, ci, cii;
+int argi, use_stdin, stat, found, valused, stoparg, ci, cii;
 char buf[256];
 char scriptfile[MAXPATH];
 char prefabname[80];
@@ -135,6 +131,7 @@ for( argi = 1; argi < stoparg; argi++ ) {
 	if( strcmp( arg, "-stdin" )==0 && PLS.cgiargs == NULL ) use_stdin = 1;
 
 
+#ifdef HOLD
 	else if( strcmp( arg, "-png" )==0 && !devavail( "png" ) && PLS.cgiargs == NULL ) { 
 		char *p[100];
 		if( strlen( argv[0] ) >= 5 ) {
@@ -150,6 +147,7 @@ for( argi = 1; argi < stoparg; argi++ ) {
 		fprintf( PLS.errfp, "PNG not supported in this build (plpng not found).\n" );
                 PL_version_msg( 0 ); exit(1);
 		}
+#endif
 
 	else if( strcmp( arg, "-f" )==0 ) {
 		if( strlen( nextarg ) > MAXPATH-10 ) { /* allow extra for output file suffix add */
@@ -230,7 +228,7 @@ if( use_stdin ) {
 	
 
 if( scriptfile[0] == '\0' ) {
-	Eerr( 20, "No -prefab or scriptfile specified on command line", "" );
+	fprintf( PLS.diagfp, "usage: pl scriptfile [options] ...or...  pl -prefab prefabname [options]\n" );
 	PL_version_msg( 0 );
 	}
 
@@ -306,7 +304,7 @@ exit( 0 );
 }
 
 /* ======================================================= *
- * Copyright 1998-2005 Stephen C. Grubb                    *
+ * Copyright 1998-2008 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */

@@ -1,5 +1,5 @@
 /* ======================================================= *
- * Copyright 1998-2006 Stephen C. Grubb                    *
+ * Copyright 1998-2008 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */
@@ -43,205 +43,103 @@ return( 0 );
 int
 PLP_bars( )
 {
-int i;
-char attr[NAMEMAXLEN], val[256];
-char *line, *lineval;
-int nt, lvp;
-int first;
+char attr[NAMEMAXLEN], *line, *lineval;
+int lvp, first;
 
-char buf[256];
-int j;
-int stat;
-int align;
-double adjx, adjy;
-int lenfield;
-int locfield;
-char color[COLORLEN];
-char outline[256];
-int do_outline;
-double halfw;
-double x, y, y0, xleft, xright;
-char axis, baseax;
-double barwidth;
-int showvals;
-char labeldetails[256];
-int nstackf;
+char *barcolor, *outline, *labeldetails, *backbox, *crossover, *selectex, *legendlabel, *thinbarline;
+char *colorlist, *mapurl, *maplabel, *labelselectex, *constantlen, *constantloc;
+char *lblpos, *numstrfmt, *labelword, *expandedurl, *expandedlabel;
+int i, j, ix, ixx, nt, stat, align, lenfield, locfield, do_outline, showvals;
+double adjx, adjy, halfw, x, y, y0, xleft, xright, barwidth, fval, cr, laby, taillen;
 int stackf[MAXSTACKFIELDS];
-double fval;
-int ncluster;
-int clusterpos;
-char crossover[40];
-double cr;
-double laby;
-char backbox[COLORLEN];
-int labelfld;
-char labelword[NAMEMAXLEN], labelstr[NAMEMAXLEN]; 
-int lwl; /* do longwise labels */
-int reverse;
-int stopfld;
-double taillen;
-int errbars, errlofld, errhifld, reflecterr;
-char selectex[256];
-int result;
-char legendlabel[256]; /* raised from 120 because it can contain long URLs... scg 4/22/04 */
-int reverseorder, reversespecified;
-char rangelo[40], rangehi[40];
-double rlo, rhi;
-double clustsep;
-int trunc;
-int y_endin, y0_endin;
-int label0val;
-char thinbarline[256];
-int leftticfld, rightticfld, midticfld;
-double ticlen;
-double ytic;
-char colorlist[256];
-char *colorlp[MAXCLP];
-int ncolorlp;
-char dcolor[40];
-char lblpos[40];
-int taillengiven;
-char numstrfmt[40];
-int barwidthfield;
-int hidezerobars; /* scg 11/29/00 */
-double errbarmult;
-int ibar;
-int colorfield;
-char mapurl[MAXPATH], expurl[MAXPATH];
-int irow;
-int segmentflag;
-char constantlen[40], constantloc[40];
-char maplabel[MAXTT], explabel[MAXTT]; 
-int clickmap_on;
-int exactcolorfield;
-double minlabel;
-int lwl_mustfit;
-char overlapcolor[40];
-double prev_y, prev_y0; /* used in segment bar overlap */
-char labelselectex[256];
-int labelmaxlen;
+int nstackf, ncluster, clusterpos, labelfld, lwl, reverse, stopfld;
+int errbars, errlofld, errhifld, reflecterr; int result; int reverseorder, reversespecified, labelmaxlen;
+double rlo, rhi, clustsep, ticlen, ytic, errbarmult, minlabel;
+int trunc, y_endin, y0_endin, label0val, leftticfld, rightticfld, midticfld, lwl_mustfit;
+int ncolorlp, taillengiven, barwidthfield, hidezerobars, ibar, colorfield, irow, segmentflag, exactcolorfield;
+char buf[256], tok[80], *colorlp[MAXCLP], axis, baseax;
+char rangelo[40], rangehi[40], dcolor[COLORLEN], labelstr[128], colorbuf[COLORLEN+1];
 
 TDH_errprog( "pl proc bars" );
 
 
-
 /* initialize */
 axis = 'y';
-lenfield = -1;
-locfield = -1;
-strcpy( color, "0.7" );
+
+lenfield = locfield = labelfld = errlofld = errhifld = -1;
+stopfld = leftticfld = rightticfld = midticfld = -1;
+barwidthfield = colorfield = exactcolorfield = -1;
+
+barcolor = "0.7";
+outline = "yes";
+
+labeldetails = ""; crossover = ""; backbox = ""; labelword = ""; selectex = "";
+labelselectex = ""; thinbarline = ""; colorlist = ""; lblpos = ""; 
+mapurl = ""; constantlen = ""; constantloc = ""; maplabel = ""; legendlabel = "";
+
+strcpy( rangelo, "" ); strcpy( rangehi, "" );
+
+numstrfmt = "%g";
+
+showvals = 0; nstackf = 0; lwl = 0; errbars = 0; reflecterr = 0; reverseorder = 0; reversespecified = 0;
+trunc = 0; label0val = 0; ncolorlp = 0; taillengiven = 0; hidezerobars = 0; segmentflag = 0; 
+labelrot = 0; lwl_mustfit = 0;
+
 do_outline = 1;
-strcpy( outline, "yes" );
 barwidth = 0.0;
-showvals = 0;
-strcpy( labeldetails, "" );
-nstackf = 0;
+
 ncluster = 1;
 clusterpos = 1;
-strcpy( crossover, "" );
-strcpy( backbox, "" );
-strcpy( labelword, "" );
-labelfld = -1;
-lwl = 0;
-stopfld = -1;
 taillen = 0.0;
-errbars = 0;
-errlofld = errhifld = -1;
-reflecterr = 0;
-strcpy( selectex, "" );
-strcpy( labelselectex, "" );
-reverseorder = 0;
-reversespecified = 0;
-strcpy( rangelo, "" );
-strcpy( rangehi, "" );
 clustsep = 0.0;
-trunc = 0;
-label0val = 0;
-strcpy( thinbarline, "" );
-leftticfld = rightticfld = midticfld = -1;
 ticlen = 0.02;
-strcpy( colorlist, "" );
-strcpy( lblpos, "" );
-ncolorlp = 0;
-taillengiven = 0;
-strcpy( numstrfmt, "%g" );
-barwidthfield = -1;
-hidezerobars = 0;
 errbarmult = 1.0;
-colorfield = -1;
-strcpy( mapurl, "" );
-segmentflag = 0;
-strcpy( constantlen, "" );
-strcpy( constantloc, "" );
-strcpy( maplabel, "" ); 
-clickmap_on = 0;
-exactcolorfield = -1;
-labelrot = 0;
 minlabel = NEGHUGE;
-lwl_mustfit = 0;
-strcpy( overlapcolor, "" );
-strcpy( legendlabel, "" );
 labelmaxlen = 250;
-
 
 
 /* get attributes.. */
 first = 1;
 while( 1 ) {
-	line = getnextattr( first, attr, val, &lvp, &nt );
+	line = getnextattr( first, attr, &lvp );
 	if( line == NULL ) break;
 	first = 0;
 	lineval = &line[lvp];
 
-
-	if( stricmp( attr, "lenfield" )==0 ) lenfield = fref( val ) -1;
-	else if( stricmp( attr, "locfield" )==0 ) locfield = fref( val ) -1; 
-	else if( stricmp( attr, "axis" )==0 ) axis = tolower(val[0]);
-	else if( stricmp( attr, "horizontalbars" )==0 ) axis = 'x';
-	else if( stricmp( attr, "color" )==0 ) strcpy( color, val );
-	else if( stricmp( attr, "outline" )==0 ) strcpy( outline, lineval );
-	else if( stricmp( attr, "barwidth" )==0 ) {
-		barwidth = atof( val );
-		if( PLS.usingcm ) barwidth /= 2.54;
-		}
-	else if( strnicmp( attr, "stackfield", 10 )==0 ) {
-		int ix;
-		char fname[50];
-		/* if( strcmp( val, "*" )==0 || strcmp( val, "all" )==0 ) strcpy( lineval, stacklist ); */
+	if( strcmp( attr, "lenfield" )==0 ) lenfield = fref( lineval ) -1;
+	else if( strcmp( attr, "locfield" )==0 ) locfield = fref( lineval ) -1; 
+	else if( strcmp( attr, "axis" )==0 ) axis = lineval[0];
+	else if( strcmp( attr, "horizontalbars" )==0 ) axis = 'x';
+	else if( strcmp( attr, "color" )==0 ) barcolor = lineval;
+	else if( strcmp( attr, "outline" )==0 ) outline = lineval;
+	else if( strcmp( attr, "barwidth" )==0 ) { barwidth = ftokncpy( lineval ); if( PLS.usingcm ) barwidth /= 2.54; }
+	else if( strncmp( attr, "stackfield", 10 )==0 ) {
 		for( ix = 0, j = 0; j < MAXSTACKFIELDS; j++ ) {
-                        if( GL_smember( val, "* all" )) strcpy( fname, GL_getok( stacklist, &ix ) );
-                        else strcpy( fname, GL_getok( lineval, &ix ) );
-			if( fname[0] == '\0' ) break;
-			stackf[j] = fref( fname );
+                        if( GL_smember( lineval, "* all" )) strcpy( buf, GL_getok( stacklist, &ix ) );
+                        else strcpy( buf, GL_getok( lineval, &ix ) );
+			if( buf[0] == '\0' ) break;
+			stackf[j] = fref( buf );
 			}
 		nstackf = j;
 		}
-	else if( stricmp( attr, "cluster" )==0 ) {
+	else if( strcmp( attr, "cluster" )==0 ) {
 		nt = sscanf( lineval, "%d %s %d", &clusterpos, buf, &ncluster );
 		if( nt == 2 ) sscanf( lineval, "%d %d", &clusterpos, &ncluster );
 		}
-	else if( stricmp( attr, "clustersep" )==0 ) {
-		clustsep = atof( val );
-		if( PLS.usingcm ) clustsep /= 2.54;
-		}
-	else if( stricmp( attr, "crossover" )==0 ) strcpy( crossover, val );
-	else if( strnicmp( attr, "constantlen", 11 )==0 ) strcpy( constantlen, val );
-	else if( strnicmp( attr, "constantloc", 11 )==0 ) strcpy( constantloc, val );
-	else if( strnicmp( attr, "segmentfield", 12 )==0 ) {
-		char fnames[2][50];
-		/* nt = sscanf( lineval, "%d %d", &stackf[0], &stopfld ); */
-		nt = sscanf( lineval, "%s %s", fnames[0], fnames[1] );
-		
-		if( nt == 1 ) stopfld = fref( fnames[0] );
-		
-		if( nt == 2 ) {
-			nstackf = 1;
-			stackf[0] = fref( fnames[0] );
-			stopfld = fref( fnames[1] );
+	else if( strcmp( attr, "clustersep" )==0 ) { clustsep = ftokncpy( lineval ); if( PLS.usingcm ) clustsep /= 2.54; }
+	else if( strcmp( attr, "crossover" )==0 ) crossover = lineval;
+	else if( strncmp( attr, "constantlen", 11 )==0 ) constantlen = lineval;
+	else if( strncmp( attr, "constantloc", 11 )==0 ) constantloc = lineval;
+	else if( strncmp( attr, "segmentfield", 12 )==0 ) {
+		for( i = 0, ix = 0; ; i++ ) {
+			strcpy( buf, GL_getok( lineval, &ix ));
+			if( buf[0] == '\0' ) break;
+			if( i == 0 ) stopfld = fref( buf );
+			else if( i == 1 ) { stackf[0] = stopfld; nstackf = 1; stopfld = fref( buf ); }
 			}
 		segmentflag = 1;
 		}
-	else if( strnicmp( attr, "errbarfield", 11 )==0 ) {
+	else if( strncmp( attr, "errbarfield", 11 )==0 ) {
 		char fname[2][50];
 		errbars = 1;
 		nt = sscanf( lineval, "%s %s", fname[0], fname[1] );
@@ -255,82 +153,46 @@ while( 1 ) {
 			reflecterr = 0;
 			errhifld = fref( fname[1] );
 			}
-		/* taillen = 0.2; */ /* default */ /* can't set taillen here- 
-						messes up cloning of tails - scg 12/21/99 */
-		/* barwidth = 0.001; */ /* force lines */
 		}
-	else if( strnicmp( attr, "errbarmult", 10 )==0 ) {
-		errbarmult = atof( val );
-		}
-	else if( stricmp( attr, "tails" )==0 ) {
-		taillen = atof( val );
-		taillengiven = 1;
-		if( PLS.usingcm ) taillen /= 2.54;
-		}
-	else if( stricmp( attr, "showvalues" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 ) showvals = 1;
-		else showvals = 0;
-		}
-	else if( stricmp( attr, "numbersformat" )==0 ) strcpy( numstrfmt, val );
-	else if( stricmp( attr, "labelzerovalue" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 ) label0val = 1;
-		else label0val = 0;
-		}
-	else if( stricmp( attr, "minlabel" )==0 ) minlabel = atof( val );
-	else if( stricmp( attr, "truncate" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 ) trunc = 1;
-		else trunc = 0;
-		}
-	else if( stricmp( attr, "labeldetails" )==0 ) strcpy( labeldetails, lineval );
-	else if( stricmp( attr, "backbox" )==0 ) strcpy( backbox, val );
-	else if( stricmp( attr, "labelfield" )==0 ) labelfld = fref( val ) - 1;
-	else if( stricmp( attr, "labelword" )==0 ) strcpy( labelword, lineval );
-	else if( stricmp( attr, "thinbarline" )==0 ) strcpy( thinbarline, lineval );
-	else if( stricmp( attr, "leftticfield" )==0 ) leftticfld = fref( val ) -1;
-	else if( stricmp( attr, "rightticfield" )==0 ) rightticfld = fref( val ) -1;
-	else if( stricmp( attr, "midticfield" )==0 ) midticfld = fref( val ) -1;
-	else if( stricmp( attr, "ticlen" )==0 ) ticlen = atof( val );
-	else if( stricmp( attr, "reverseorder" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 ) { reversespecified = 1; reverseorder = 1; }
-		else reverseorder = 0;
-		}
-	else if( stricmp( attr, "hidezerobars" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 ) hidezerobars = 1;
-		else hidezerobars = 0;
-		}
+	else if( strncmp( attr, "errbarmult", 10 )==0 ) errbarmult = ftokncpy( lineval );
+	else if( strcmp( attr, "tails" )==0 ) { taillen = ftokncpy( lineval ); taillengiven = 1; if( PLS.usingcm ) taillen /= 2.54; }
+	else if( strcmp( attr, "showvalues" )==0 ) showvals = getyn( lineval );
+	else if( strcmp( attr, "numbersformat" )==0 ) numstrfmt = lineval;
+	else if( strcmp( attr, "labelzerovalue" )==0 ) label0val = getyn( lineval );
+	else if( strcmp( attr, "minlabel" )==0 ) minlabel = ftokncpy( lineval );
+	else if( strcmp( attr, "truncate" )==0 ) trunc = getyn( lineval );
+	else if( strcmp( attr, "labeldetails" )==0 ) labeldetails = lineval;
+	else if( strcmp( attr, "backbox" )==0 ) backbox = lineval;
+	else if( strcmp( attr, "labelfield" )==0 ) labelfld = fref( lineval ) - 1;
+	else if( strcmp( attr, "labelword" )==0 ) labelword = lineval;
+	else if( strcmp( attr, "thinbarline" )==0 ) thinbarline = lineval;
+	else if( strcmp( attr, "leftticfield" )==0 ) leftticfld = fref( lineval ) -1;
+	else if( strcmp( attr, "rightticfield" )==0 ) rightticfld = fref( lineval ) -1;
+	else if( strcmp( attr, "midticfield" )==0 ) midticfld = fref( lineval ) -1;
+	else if( strcmp( attr, "ticlen" )==0 ) ticlen = ftokncpy( lineval );
+	else if( strcmp( attr, "reverseorder" )==0 ) { reverseorder = getyn( lineval ); reversespecified = 1; } 
+	else if( strcmp( attr, "hidezerobars" )==0 )  hidezerobars = getyn( lineval );
 
-	else if( stricmp( attr, "barsrange" )==0 ) sscanf( lineval, "%s %s", rangelo, rangehi );
-	else if( stricmp( attr, "colorlist" )==0 ) strcpy( colorlist, lineval );
-	else if( stricmp( attr, "colorfield" )==0 ) colorfield = fref( val ) -1;
-	else if( stricmp( attr, "exactcolorfield" )==0 ) exactcolorfield = fref( val ) -1;
-
-	else if( stricmp( attr, "longwayslabel" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 ) lwl = 1;
-		else lwl = 0;
-		}
-	else if( stricmp( attr, "labelmustfit" )==0 ) {
-		if( stricmp( val, "omit" )==0 ) lwl_mustfit = 1;
-		else if( stricmp( val, "truncate" )==0 ) lwl_mustfit = 2;
+	else if( strcmp( attr, "barsrange" )==0 ) sscanf( lineval, "%s %s", rangelo, rangehi );
+	else if( strcmp( attr, "colorlist" )==0 ) colorlist = lineval;
+	else if( strcmp( attr, "colorfield" )==0 ) colorfield = fref( lineval ) -1;
+	else if( strcmp( attr, "exactcolorfield" )==0 ) exactcolorfield = fref( lineval ) -1;
+	else if( strcmp( attr, "longwayslabel" )==0 ) lwl = getyn( lineval );
+	else if( strcmp( attr, "labelmustfit" )==0 ) {
+		if( strcmp( lineval, "omit" )==0 ) lwl_mustfit = 1;
+		else if( strcmp( lineval, "truncate" )==0 ) lwl_mustfit = 2;
 		else lwl_mustfit = 0;
 		}
-
-	else if( stricmp( attr, "labelmaxlen" )==0 ) labelmaxlen = atoi( val );
-	else if( strnicmp( attr, "labelrot", 8 )==0 ) labelrot = atoi( val );
-	else if( stricmp( attr, "select" )==0 ) strcpy( selectex, lineval );
-	else if( stricmp( attr, "labelselect" )==0 ) strcpy( labelselectex, lineval );
-	else if( stricmp( attr, "legendlabel" )==0 ) strcpy( legendlabel, lineval );
-	else if( stricmp( attr, "labelpos" )==0 ) strcpy( lblpos, val );
-	else if( stricmp( attr, "barwidthfield" )==0 ) barwidthfield = fref( val ) -1;
-	else if( stricmp( attr, "overlapcolor" )==0 ) strcpy( overlapcolor, val );
-	else if( stricmp( attr, "clickmapurl" )==0 ) {
-		if( PLS.clickmap ) { strcpy( mapurl, val ); clickmap_on = 1; }
-		}
-	else if( stricmp( attr, "clickmaplabel" )==0 ) {
-		if( PLS.clickmap ) { strcpy( maplabel, lineval ); clickmap_on = 1; }
-		}
-	else if( stricmp( attr, "clickmaplabeltext" )==0 ) {
-		if( PLS.clickmap ) { getmultiline( "clickmaplabeltext", lineval, MAXTT, maplabel ); clickmap_on = 1; }
-		}
+	else if( strcmp( attr, "labelmaxlen" )==0 ) labelmaxlen = itokncpy( lineval );
+	else if( strncmp( attr, "labelrot", 8 )==0 ) labelrot = itokncpy( lineval );
+	else if( strcmp( attr, "select" )==0 ) selectex = lineval;
+	else if( strcmp( attr, "labelselect" )==0 ) labelselectex = lineval;
+	else if( strcmp( attr, "legendlabel" )==0 ) legendlabel = lineval;
+	else if( strcmp( attr, "labelpos" )==0 ) lblpos = lineval;
+	else if( strcmp( attr, "barwidthfield" )==0 ) barwidthfield = fref( lineval ) -1;
+	else if( strcmp( attr, "clickmapurl" )==0 ) mapurl = lineval; 
+	else if( strcmp( attr, "clickmaplabel" )==0 ) maplabel = lineval;
+	else if( strcmp( attr, "clickmaplabeltext" )==0 ) maplabel = getmultiline( lineval, "get" );
 	else Eerr( 1, "attribute not recognized", attr );
 	}
 
@@ -342,23 +204,18 @@ if( axis == 'y' ) baseax = 'x';
 else baseax = 'y';
 
 if( Nrecords < 1 ) return( Eerr( 17, "No data has been read yet w/ proc getdata", "" ) );
-if( !scalebeenset() )
-         return( Eerr( 51, "No scaled plotting area has been defined yet w/ proc areadef", "" ) );
-
-
+if( !scalebeenset() ) return( Eerr( 51, "No scaled plotting area has been defined yet w/ proc areadef", "" ) );
 
 if( locfield > Nfields ) return( Eerr( 52, "locfield out of range", "" ) );
 if( lenfield > Nfields ) return( Eerr( 52, "lenfield out of range", "" ) );
-if( lenfield < 0 && !segmentflag && constantlen[0] == '\0' ) 
-	return( Eerr( 2805, "Either lenfield, segmentfields, or constantlen must be defined", ""));
+if( lenfield < 0 && !segmentflag && constantlen[0] == '\0' ) return( Eerr( 2805, "Either lenfield, segmentfields, or constantlen must be defined", ""));
 
 if( stopfld >= 0 ) {
-	if( nstackf > 1 )  /* but 1 is ok */
-		{ Eerr( 2984, "stackfield may not be used with segments", "" ); nstackf=0; }
+	if( nstackf > 1 )  { Eerr( 2984, "stackfield may not be used with segments", "" ); nstackf=0; }
 	}
 
 if( labelword[0] != '\0' ) showvals = 1;
-if( showvals && labelword[0] == '\0' ) strcpy( labelword, "@N" );
+if( showvals && labelword[0] == '\0' ) labelword = "@N";
 
 if( locfield == lenfield && locfield >= 0 ) Eerr( 2479, "Warning, locfield same as lenfield", "" );
 
@@ -369,7 +226,7 @@ for( i = 0; i < nstackf; i++ ) {
 
 if( axis == 'x' && !reversespecified ) reverseorder = 1;
 
-if( strnicmp( legendlabel, "#usefname", 9 )==0 ) getfname( lenfield+1, legendlabel );
+if( strncmp( legendlabel, "#usefname", 9 )==0 ) getfname( lenfield+1, legendlabel );
 
 if( segmentflag ) lwl = 1;  /* when doing floating segment bars, default to use labels that are centered within the bar - scg 5/8/06 */
 
@@ -402,8 +259,7 @@ else	{
 	}
 
 
-
-if( outline[0] == '\0' || strnicmp( outline, "no", 2 )==0 ) do_outline = 0;
+if( outline[0] == '\0' || strncmp( outline, "no", 2 )==0 ) do_outline = 0;
 else do_outline = 1;
 
 
@@ -412,11 +268,11 @@ else cr = Econv( axis, crossover );
 if( cr < Elimit( axis, 'l', 's' )) cr = Elimit( axis, 'l', 's' );  /* be sure crossover is in range .. added scg 8/25/04 */
 if( cr > Elimit( axis, 'h', 's' )) cr = Elimit( axis, 'h', 's' );  /* be sure crossover is in range .. added scg 8/25/04 */
 
+
 /* parse colorlist if any */
 if( colorlist[0] != '\0' ) {
-	int ix, ixx; char tok[40];
 	/* initialize all pointers to default color.. */
-	strcpy( dcolor, color );
+	strcpy( dcolor, barcolor );
 	for( i = 0; i < MAXCLP; i++ ) colorlp[i] = dcolor;
 	ix = 0; ixx = 0;
 	i = 0;
@@ -436,13 +292,9 @@ if( colorlist[0] != '\0' ) {
 	}
 
 linedet( "outline", outline, 0.5 );
-/* "draw" something so that line color is persistent - related to recent color chg opt - scg 10/21/04 */
-PLG_pcodeboundingbox( 0 );
-Emovu( 0.0, 0.0 ); Elinu( 0.0, 0.0 );   /* CC-DOT */
-PLG_pcodeboundingbox( 1 );
+PLG_forcecolorchg();
 
-if( thinbarline[0] != '\0' && strnicmp( thinbarline, "no", 2 ) != 0 ) 
-	linedet( "thinbarline", thinbarline, 0.3 );
+if( thinbarline[0] != '\0' && strncmp( thinbarline, "no", 2 ) != 0 ) linedet( "thinbarline", thinbarline, 0.3 );
 
 if( errbars && !taillengiven ) taillen = 0.2; /* set a default taillen for errorbars */
 
@@ -451,9 +303,7 @@ if( errbars && !taillengiven ) taillen = 0.2; /* set a default taillen for error
 /* loop through current data set, draw bars.. */
 /* ---------------- */
 ibar = -1;
-prev_y = NEGHUGE; prev_y0 = NEGHUGE;
 for( irow = 0; irow < Nrecords; irow++ ) {
-
 
 	if( selectex[0] != '\0' ) { /* process against selection condition if any.. */
                 stat = do_select( selectex, irow, &result );
@@ -575,39 +425,36 @@ for( irow = 0; irow < Nrecords; irow++ ) {
 		}
 
 	/* if colorfield used, get color.. */
-	if( colorfield >= 0 ) {
-		strcpy( color, "" );
-		PL_get_legent( da( irow, colorfield ), val, NULL, NULL );
-		sscanf( val, "%s", color ); /* strip off any space */
-		}
-	else if( exactcolorfield >= 0 ) strcpy( color, da( irow, exactcolorfield ));
+	if( colorfield >= 0 )  barcolor = PL_get_legent( da( irow, colorfield ) );
+	else if( exactcolorfield >= 0 ) barcolor = da( irow, exactcolorfield );
+
 
 	/* if colorlist used, get color.. */
-	if( colorlist[0] != '\0' && ibar < MAXCLP ) sscanf( colorlp[ibar], "%s", color ); 
+	if( colorlist[0] != '\0' && ibar < MAXCLP ) {
+		sscanf( colorlp[ibar], "%s", colorbuf );
+		barcolor = colorbuf;
+		}
 
 	/* now do the bar.. */
 
 	/* allow @field substitutions into url */
-	if( clickmap_on ) {
-		do_subst( expurl, mapurl, irow, URL_ENCODED );
-		do_subst( explabel, maplabel, irow, NORMAL );
+	if( PLS.clickmap && ( mapurl != "" || maplabel != "" )) {
+		expandedurl = PL_bigbuf;
+		expandedlabel = &PL_bigbuf[2000];
+		do_subst( expandedurl, mapurl, irow, URL_ENCODED );
+		do_subst( expandedlabel, maplabel, irow, NORMAL );
 		}
 
 
 	/* if thinbarline specified, or if doing error bars, render bar as a line */
-	if( ( thinbarline[0] != '\0' && strnicmp( thinbarline, "no", 2 )!= 0 ) || errbars ) { 
+	if( ( thinbarline[0] != '\0' && strncmp( thinbarline, "no", 2 )!= 0 ) || errbars ) { 
 		Emov( xleft+halfw, Ea( Y, y0 ) ); 
 		Elin( xleft+halfw, Ea( Y, y ) ); 
 		}
 
   	/* otherwise, render bar as a rectangle */
   	else 	{
-		Ecblock( xleft, Ea( Y, y0 ), xright, Ea( Y, y ), color, 0 ); 
-
-		if( overlapcolor != "" && segmentflag ) {   /* not documented in 2.33 - color change glitches on GD */
-			/* See if segments overlap.. if so show the overlap region. Do this before outline.  added scg 5/11/06 */
-			if( y0 < prev_y ) Ecblock( xleft, Ea( Y, y0 ), xright, Ea( Y, prev_y ), overlapcolor, do_outline );
-			}
+		Ecblock( xleft, Ea( Y, y0 ), xright, Ea( Y, y ), barcolor, 0 ); 
 
 		if( do_outline ) {   /* render bar outline.. but no outline where truncated.. added scg 5/11/06 */
 			Emov( xleft, Ea( Y, y0 ) );
@@ -618,22 +465,9 @@ for( irow = 0; irow < Nrecords; irow++ ) {
 			if( y0_endin ) Elin( xleft, Ea( Y, y0 ) );
 			}
 
-#ifdef HOLD	
-		/* if bar was truncated do the "fadeout" effect.. */
-		/* on hold for now.. needs some adjustment, and undesired interaction with outline color scg 5/17/06 */
-		if( !y_endin ){	
-			Ecblock( xleft, Ea( Y, y)+0.03, xright, Ea( Y, y)+0.07, color, 0 );
-			Ecblock( xleft, Ea( Y, y)+0.09, xright, Ea( Y, y)+0.11, color, 0 );
-			}
-		if( !y0_endin ) {
-			Ecblock( xleft, Ea( Y, y0)-0.07, xright, Ea( Y, y0)-0.03, color, 0 );
-			Ecblock( xleft, Ea( Y, y0)-0.11, xright, Ea( Y, y0)-0.09, color, 0 );
-			}
-#endif
-
-		if( clickmap_on ) {
-			if( Eflip ) clickmap_entry( 'r', expurl, 0, Ea( Y, y0 ), xleft, Ea( Y, y ), xright, 0, 0, explabel );
-			else clickmap_entry( 'r', expurl, 0, xleft, Ea( Y, y0 ), xright, Ea( Y, y ), 0, 0, explabel );
+		if( PLS.clickmap && (mapurl != "" || maplabel != "" )) {
+			if( Eflip ) clickmap_entry( 'r', expandedurl, 0, Ea( Y, y0 ), xleft, Ea( Y, y ), xright, 0, 0, expandedlabel );
+			else clickmap_entry( 'r', expandedurl, 0, xleft, Ea( Y, y0 ), xright, Ea( Y, y ), 0, 0, expandedlabel );
 			}
 
 		}
@@ -673,7 +507,6 @@ for( irow = 0; irow < Nrecords; irow++ ) {
 		if( y0_endin ) { Emov( g-h, Ea(Y,y0) ); Elin( g+h, Ea(Y,y0) ); }
 		}
 
-	prev_y = y; prev_y0 = y0;
 	}
 
 
@@ -807,11 +640,11 @@ if( showvals || labelfld >= 0 ) {
 		        if( baseax == Y ) x += ((halfw+clustsep) * (ncluster-clusterpos)*2.0);
 			else x += ((halfw+clustsep) * (clusterpos-1)*2.0);
 			x += halfw;
-			if( lwl ) do_lwl( labelstr, x+adjx, Ea(Y,y)+adjy, Ea(Y,fval), align, reverse, lwl_mustfit );
+			if( lwl ) do_lwl( labelstr, x+adjx, Ea(Y,y)+adjy, Ea(Y,fval)+adjy, align, reverse, lwl_mustfit );
 			else do_label( labelstr, x+adjx, laby, align, backbox, reverse );
 			}
 		else 	{
-			if( lwl ) do_lwl( labelstr, Ea(X,x)+adjx, Ea(Y,y)+adjy, Ea(Y,fval), align, reverse, lwl_mustfit );
+			if( lwl ) do_lwl( labelstr, Ea(X,x)+adjx, Ea(Y,y)+adjy, Ea(Y,fval)+adjy, align, reverse, lwl_mustfit );
 			else do_label( labelstr, Ea(X,x)+adjx, laby, align, backbox, reverse );
 			}
 		}
@@ -820,13 +653,14 @@ if( showvals || labelfld >= 0 ) {
 
 
 if( legendlabel[0] != '\0' ) {
-	if( errbars || ( thinbarline[0] != '\0' && strnicmp( thinbarline, "no", 2 )!= 0) ) 
+	if( errbars || ( thinbarline[0] != '\0' && strncmp( thinbarline, "no", 2 )!= 0) ) 
 		PL_add_legent( LEGEND_LINE, legendlabel, "", thinbarline, "", "" );
 
-	else PL_add_legent( LEGEND_COLOR, legendlabel, "", color, "", "" );
+	else PL_add_legent( LEGEND_COLOR, legendlabel, "", barcolor, "", "" );
 	}
 
 if( baseax == 'y' ) Eflip = 0;
+
 return( 0 );
 }
 
@@ -901,8 +735,6 @@ int mustfit;
 double y1, y2;
 int nlines, maxlen;
 
-/* fprintf( stderr, " %s y=%g  y0=%g\n", s, y, y0 ); */
-
 if( y0 < y ) { y1 = y; y2 = y0; }
 else { y1 = y0; y2 = y; }
 
@@ -965,7 +797,7 @@ return( 0 );
 
 
 /* ======================================================= *
- * Copyright 1998-2005 Stephen C. Grubb                    *
+ * Copyright 1998-2008 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */

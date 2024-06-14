@@ -54,7 +54,7 @@ char typ[];
 char axis;
 {
 
-if( stricmp( typ, "linear" )==0 ) {
+if( strcmp( typ, "linear" )==0 ) {
 	/* Esetunits( axis, "linear" ); */
 	if( axis == 'x' ) Escaletype_x = E_LINEAR;
 	else if( axis == 'y' ) Escaletype_y = E_LINEAR;
@@ -62,14 +62,14 @@ if( stricmp( typ, "linear" )==0 ) {
 	}
 
 #ifndef NOSCALE
-else if( stricmp( typ, "log" )==0 ) {
+else if( strcmp( typ, "log" )==0 ) {
 	/* Esetunits( axis, "linear" ); */ /* linear ok */
 	if( axis == 'x' ) Escaletype_x = E_LOG;
 	else if( axis == 'y' ) Escaletype_y = E_LOG;
 	return( 0 );
 	}
 
-else if( stricmp( typ, "log+1" )==0 ) {		/* log+1 added scg 11/29/00 */
+else if( strcmp( typ, "log+1" )==0 ) {		/* log+1 added scg 11/29/00 */
 	if( axis == 'x' ) Escaletype_x = E_LOGPLUS1;
 	else if( axis == 'y' ) Escaletype_y = E_LOGPLUS1;
 	return( 0 );

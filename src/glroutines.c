@@ -22,7 +22,7 @@ extern int getpid();
 static int getdecplaces(), wcmp();
 
 static char Sep = ',';  /* separator character for lists */
-static char Gettok_buf[256];
+static char Gettok_buf[260];
 static char Wildcard = '*';
 static char Wildcard1 = '?';
 static int Maxlen = 99999;
@@ -79,7 +79,7 @@ return( 0 );
 
 
 /* ============================================= */
-/* GETOK - copied so that buffer size could be increased.. */
+/* GETOK - get next whitespace-delimited token */
  
 char 
 *GL_getok( string, index )
@@ -174,8 +174,8 @@ return( 0 );
 	'prec' is returned.. and is the precision of the number (position of decimal point).
 
 	Number may contain unary + or -, and one decimal point.
-	Leading and trailing whitespace are discarded before determining
-	whether the case is a valid number or not.
+
+	Leading and trailing whitespace are tolerated by this routine, eg. "  28.5 " is considered OK
 */
 
 int
@@ -433,7 +433,7 @@ GL_slmember( str, list )
 char *str;
 char *list;
 {
-char tok[100], *GL_getok();
+char tok[256], *GL_getok();
 int i;
 i = 0;
 while( 1 ) {
@@ -604,6 +604,8 @@ GL_addmember( newmem, list )
 char *newmem;
 char *list;
 {
+/* hard code a destination length limit of 256 for now.. scg 3/22/07 */
+if( strlen( newmem ) + strlen( list ) > 254 ) return( 0 );  /* silently don't do it.. */
 if( list[0] == '\0' ) strcpy( list, newmem );
 else	{
 	strcat( list, "," );
@@ -663,34 +665,36 @@ return( 0 );
 /* ============================================= */
 /* SUBST - change all occurances of s1 to s2, in t.
 
-   Max length of t is 255.
-   Returns 0 if successful, 1 if no occurance of s1 found. */
+   Returns 0 if successful, 1 if no occurance of s1 found. 
+   scg 11/5/07 - now silently truncates the result to fit within buf[1024]
+*/
 
 int
 GL_substitute( s1, s2, t )
 char *s1, *s2, *t;
 {
-char buf[255];
-int i, j, len1, buflen, found;
+char buf[1024];
+int i, j, len1, len2, buflen, found;
 
 len1 = strlen( s1 );
 if( len1 < 1 ) return( 1 );
 strcpy( buf, t );
 buflen = strlen( buf );
 if( buflen < 1 ) return( 1 );
+len2 = strlen( s2 );
 
 found = 0;
 j = 0;
 for( i = 0; i < buflen; i++ ) {
-/* 	printf( "[%s|%s|%d]", &buf[i], s1, len1 ); */
-
 	if( strncmp( &buf[i], s1, len1 )==0 ) {
+		if( j + len2 > 1020 ) break; /* scg 11/3/07 */
 		strcpy( &t[j], s2 );
-		j += strlen( s2 );
+		j += len2;
 		i += (len1 - 1);
 		found = 1;
 		}
 	else t[j++] = buf[i];
+	if( j > 1020 ) break; /* scg 11/3/07 */
 	}
 t[j] = '\0';
 if( found ) return( 0 );
@@ -788,27 +792,32 @@ return( 0 );
      -Returns number of times a substitution was made, 0 if none.
      -This routine is not sophisticated about delimiting the symbol;
       e.g. if s contains $NUMBER and varsub() is looking for $NUM it will find it.
+
+     -scg 11/5/07 - now silently truncates result to fit within rtnbuf[1024]
 */
 
 int
 GL_varsub( s, symbol, value )
 char *s, *symbol, *value;
 {
-int i, j, len, found;
+int i, j, len, vlen, found;
 int slen;
-char rtnbuf[256];
+char rtnbuf[1024];
 
 len = strlen( symbol );
 slen = strlen( s );
+vlen = strlen( value );
 found = 0;
 for( i = 0, j = 0; i < slen; i++, j++ ) { 
 	if( strncmp( &s[i], symbol, len )==0 ) {  /* note- strncmp man page says that it won't go beyond null terminator */
+		if( j + vlen > 1020 ) break;
 		strcpy( &rtnbuf[j], value );
 		j = strlen( rtnbuf ) - 1;
 		i+= (len-1);
 		found++;
 		}
 	else rtnbuf[j] = s[i]; 
+	if( j >= 1020 ) break; /* scg 11/3/07 */
 	}
 rtnbuf[j] = '\0';
 strcpy( s, rtnbuf );
@@ -943,7 +952,7 @@ int *n;  /* in: size of list (max number of members)
 	    out: number of members in list that have been filled */
 {
 int i, ix, p, j, lo, hi;
-char tok[80], histr[80];
+char tok[256], histr[80];
 
 /* parse spec.. */
 ix = 0;
@@ -1057,7 +1066,7 @@ return( 0 );
 }
 
 /* ===================================== */
-/* GETCGIARG - get next arg from CGI QUERY_STRING (escape constructs are converted) */
+/* GETCGIARG - get next arg from CGI QUERY_STRING (encoded constructs are converted) */
 
 int
 GL_getcgiarg( arg, uri, pos, maxlen )
@@ -1085,6 +1094,8 @@ for( i = *pos, j = 0; j < maxlen; i++ ) {
 		i += 2;
 		}
 
+	else if( uri[i] == '+' ) arg[j++] = ' ';  /* added scg 10/9/07 */
+
 	else arg[j++] = uri[i];
 
 	}
@@ -1102,12 +1113,22 @@ char *in, *out;
 int i, j, c;
 for( i = 0, j = 0; in[i] != '\0'; i++ ) {
 	c = in[i];
-	if( GL_member( c, "$-_.+!*'()," ));
-	else if( c <= 47 || c >= 123 || (c >= 58 && c <= 64 ) || ( c >= 91 && c <= 96 ) ) {
-		sprintf( &out[j], "%%%X", c );
-		j += 3;
-		}
-	else out[j++] = in[i];
+
+	/* per the wikipedia entry for "Query string"... changed scg 6/4/07 */
+	if( c >= 48 && c <= 57 ) out[j++] = c;  /* 0-9 */
+	else if( c >= 65 && c <= 90 ) out[j++] = c;  /* A-Z */
+	else if( c >= 97 && c <= 122 ) out[j++] = c;  /* a-z */
+	else if( GL_member( c, ".-~_" )) out[j++] = c; 
+	else if( c == ' ' ) out[j++] = '+';
+	else { sprintf( &out[j], "%%%X", c ); j += 3; } /* encode as %FF */
+
+	/* if( GL_member( c, "$-_.+!*'()," )) out[j++] = in[i];  */ /* changed, bug fix scg 9/8/06 */
+	/* else if( c <= 47 || c >= 123 || (c >= 58 && c <= 64 ) || ( c >= 91 && c <= 96 ) ) {
+	 *	sprintf( &out[j], "%%%X", c );
+	 *	j += 3;
+	 *	}
+	 * else out[j++] = in[i];
+	 */
 	}
 out[j] = '\0'; /* terminate */
 return( 0 );

@@ -65,22 +65,22 @@ mininit = maxinit = 0;
 while( 1 ) {
         strcpy( buf, GL_getok( specline, &ix ) );
         if( buf[0] == '\0' ) break;
-        if( strnicmp( buf, "datafields", 10 )==0 ) strcpy( dfield, &buf[11] );
-        else if( strnicmp( buf, "datafield", 9 )==0 ) strcpy( dfield, &buf[10] ); 
-        else if( strnicmp( buf, "incmult", 7 )==0 ) incmult = atof( &buf[8] );
-        else if( strnicmp( buf, "nearest", 7 )==0 ) strcpy( nearest, &buf[8] );
-        else if( strnicmp( buf, "margin", 6 )==0 ) margin = atof( &buf[7] );
-        else if( strnicmp( buf, "lowfix", 6 )==0 ) strcpy( lowfix, &buf[7] );
-        else if( strnicmp( buf, "hifix", 5 )==0 ) strcpy( hifix, &buf[6] );
-        else if( strnicmp( buf, "mininit", 7 )==0 ) { strcpy( lowfix, &buf[8] ); mininit = 1; }
-        else if( strnicmp( buf, "maxinit", 7 )==0 ) { strcpy( hifix, &buf[8] ); maxinit = 1; }
-        else if( strnicmp( buf, "numformat", 9 )==0 ) { strcpy( floatformat, &buf[10] ); ffgiven = 1; }
-        else if( strnicmp( buf, "combomode", 9 )==0 ) {
-		if( stricmp( &buf[10], "stack" )==0 ) combomode = 1;
-		else if( stricmp( &buf[10], "hilo" )==0 ) combomode = 2;
+        if( strncmp( buf, "datafields", 10 )==0 ) strcpy( dfield, &buf[11] );
+        else if( strncmp( buf, "datafield", 9 )==0 ) strcpy( dfield, &buf[10] ); 
+        else if( strncmp( buf, "incmult", 7 )==0 ) incmult = atof( &buf[8] );
+        else if( strncmp( buf, "nearest", 7 )==0 ) strcpy( nearest, &buf[8] );
+        else if( strncmp( buf, "margin", 6 )==0 ) margin = atof( &buf[7] );
+        else if( strncmp( buf, "lowfix", 6 )==0 ) strcpy( lowfix, &buf[7] );
+        else if( strncmp( buf, "hifix", 5 )==0 ) strcpy( hifix, &buf[6] );
+        else if( strncmp( buf, "mininit", 7 )==0 ) { strcpy( lowfix, &buf[8] ); mininit = 1; }
+        else if( strncmp( buf, "maxinit", 7 )==0 ) { strcpy( hifix, &buf[8] ); maxinit = 1; }
+        else if( strncmp( buf, "numformat", 9 )==0 ) { strcpy( floatformat, &buf[10] ); ffgiven = 1; }
+        else if( strncmp( buf, "combomode", 9 )==0 ) {
+		if( strcmp( &buf[10], "stack" )==0 ) combomode = 1;
+		else if( strcmp( &buf[10], "hilo" )==0 ) combomode = 2;
 		else combomode = 0;
 		}
-        else if( strnicmp( buf, "selectrows", 10 )==0 ) {
+        else if( strncmp( buf, "selectrows", 10 )==0 ) {
                 strcpy( selex, &buf[11] );
                 strcat( selex, &specline[ix] );
                 break;
@@ -111,7 +111,6 @@ if( ndf == 0 ) return( Eerr( 7194, "autorange: datafield omitted or invalid ", d
 /* ----------------- */
 
 /* override.. */
-/* if( stricmp( nearest, "day" )==0 && stricmp( unittyp, "date" )==0 ) strcpy( nearest, "exact" ); */ /* removed scg 4/19/05 */
 
 /* find data min and max.. */
 
@@ -225,250 +224,14 @@ if( GL_slmember( nearest, "dat*matic" ) ) {
 	}
 
 
-if( stricmp( nearest, "exact" )==0 ) {  /* exact */
+if( strcmp( nearest, "exact" )==0 ) {  /* exact */
 	sprintf( minval, "%s", smin ); 
 	sprintf( maxval, "%s", smax ); 
 	}
 
 else if( PLP_findnearest( smin, smax, axis, nearest, minval, maxval ) );
 
-
-#ifdef CUT
-
-else if( strnicmp( nearest, "month", 5 )== 0 || strnicmp( nearest, "quarter", 7 )==0 || strnicmp( nearest, "3month", 6 )==0 ) { 
-	/* nearest month boundary / quarter-year boundary.. */
-	int mon, day, yr, newmon;
-	long l;
-	if( !GL_smember( unittyp, "date datetime" )) 
-		Eerr( 2892, "autorange 'nearest=month' or 'nearest=quarter' only valid with date or datetime scaletype", unittyp );
-	/* min */
-	stat = DT_jdate( smin, &l );
-        DT_getmdy( &mon, &day, &yr );
-	if( tolower( nearest[0] ) == 'q' || nearest[0] == '3' ) {
-		if( mon >= 10 ) mon = 10;
-		else if( mon >= 7 ) mon = 7;
-		else if( mon >= 4 ) mon = 4;
-		else if( mon >= 1 ) mon = 1;
-		}
-	DT_makedate( yr, mon, 1, "", datepart );
-	if( strcmp( unittyp, "datetime" )==0 ) {
-		DT_maketime( 0, 0, 0.0, timepart );
-		DT_build_dt( datepart, timepart, minval );
-		}
-	else strcpy( minval, datepart );
-
-	/* max */
-	stat = DT_jdate( smax, &l );
-        DT_getmdy( &mon, &day, &yr );
-	if( tolower( nearest[0] ) == 'q' || nearest[0] == '3' ) {
-		if( mon <= 3 ) mon = 4;
-		else if( mon <= 6 ) mon = 7;
-		else if( mon <= 9 ) mon = 10;
-		else if( mon <= 12 ) mon = 13;
-		}
-	else mon ++;
-
-        /* wrap around year.. */
-        newmon = ((mon-1) % 12 ) +1;
-        yr += ((mon-1) / 12);
-        mon = newmon;
-	DT_makedate( yr, mon, 1, "", datepart );
-	if( strcmp( unittyp, "datetime" )==0 ) {
-		DT_maketime( 0, 0, 0.0, timepart );
-		DT_build_dt( datepart, timepart, maxval );
-		}
-	else strcpy( maxval, datepart );
-	}
-
-
-else if( strnicmp( nearest, "year", 4 )== 0 || strnicmp( nearest, "2year", 5 )==0 || 
-	strnicmp( nearest, "5year", 5 )==0 || strnicmp( nearest, "10year", 6 )==0 ) { 
-	int mon, day, yr;
-	long l;
-	int yearsblock; /* 0 5 or 10 */
-
-	if( !GL_smember( unittyp, "date datetime" )) 
-		Eerr( 2892, "autorange 'nearest=year' only valid with date or datetime scaletype", unittyp );
-
-	if( tolower( (int) nearest[0] ) != 'y' ) {			/* this section scg 1/28/05 */
-		yearsblock = nearest[0] - '0';
-		if( yearsblock == 1 ) yearsblock = 10;
-		}
-	else yearsblock = 0;
-
-	/* min */
-	stat = DT_jdate( smin, &l );
-        DT_getmdy( &mon, &day, &yr );
-	if( yearsblock ) yr = (yr / yearsblock) * yearsblock; 		/* scg 1/28/05 */
-	DT_makedate( yr, 1, 1, "", datepart );
-	if( strcmp( unittyp, "datetime" )==0 ) {
-		DT_maketime( 0, 0, 0.0, timepart );
-		DT_build_dt( datepart, timepart, minval );
-		}
-	else strcpy( minval, datepart );
-		
-	/* max */
-	stat = DT_jdate( smax, &l );
-        DT_getmdy( &mon, &day, &yr );
-	if( yearsblock ) yr = ((yr / yearsblock)+1) * yearsblock; 		/* scg 1/28/05 */
-	else yr++;
-	DT_makedate( yr, 1, 1, "", datepart );
-	if( strcmp( unittyp, "datetime" )==0 ) {
-		DT_maketime( 0, 0, 0.0, timepart );
-		DT_build_dt( datepart, timepart, maxval );
-		}
-	else strcpy( maxval, datepart );
-	}
-
-
-else if( strnicmp( nearest, "day", 3 )== 0 || stricmp( nearest, "monday" )==0 || stricmp( nearest, "sunday" )==0 ) { 
-	int mon, day, yr;
-	double days, mins;
-
-	if( !GL_smember( unittyp, "date datetime" )) 
-		Eerr( 2892, "autorange 'nearest=day' only valid with date or datetime scaletype", unittyp );
-
-	/* min */
-	if( strcmp( unittyp, "datetime" )==0 ) DT_getdtparts( smin, datepart, timepart ); 
-	else strcpy( datepart, smin ); /* if and else added scg 8/10/05 */
-
-	if( tolower( nearest[0] ) == 'm' || tolower( nearest[0] ) == 's' ) {  /* adjust datepart back to a monday or sunday */
-		int iwk;  char rbuf[40];
-		DT_weekday( datepart, rbuf, &iwk ); /* rbuf not used */
-		if( tolower( nearest[0] ) == 'm' ) { if( iwk == 1 ) iwk = 8; DT_dateadd( datepart, 2 - iwk, rbuf ); }
-		else if( tolower( nearest[0] ) == 's' ) DT_dateadd( datepart, 1 - iwk, rbuf );
-		strcpy( datepart, rbuf );
-		}
-
-	/* this is just a way to get the dt parts (?) ...
-	 * DT_datetime2days( smin, &days ); 
-         * DT_getmdy( &mon, &day, &yr );
-	 * DT_makedate( yr, mon, day, "", datepart );
-	 */
-
-	if( strcmp( unittyp, "date" )==0 ) 
-	/* check for biz day window.. scg 7/21/04 */
-	mins = 0.0;
-	DT_frame_mins( &mins ); /* adjust to any biz day window.. */
-	DT_frommin( mins, timepart ); 
-	if( strcmp( unittyp, "date" )==0 ) strcpy( minval, datepart );
-	else DT_build_dt( datepart, timepart, minval );
-
-	/* max */
-	if( strcmp( unittyp, "datetime" )==0 ) DT_getdtparts( smax, datepart, timepart );
-	else strcpy( datepart, smax );  /* if and else added scg 8/10/05 */
-
-	if( tolower( nearest[0] ) == 'm' || tolower( nearest[0] ) == 's' ) {  /* adjust datepart to next monday or sunday */
-		int iwk;  char rbuf[40];
-		DT_weekday( datepart, rbuf, &iwk ); /* rbuf not used */
-		if( tolower( nearest[0] ) == 'm' ) { if( iwk == 1 ) iwk = 8; DT_dateadd( datepart, 9 - iwk, rbuf ); }
-		else if( tolower( nearest[0] ) == 's' ) DT_dateadd( datepart, 8 - iwk, rbuf );
-		DT_build_dt( rbuf, timepart, smax );
-		}
-
-	DT_datetime2days( smax, &days );
-	if( fabs( days - floor( days )) < 0.0001 ) ; /* avoid spurious extra day when data max is on date boundary added scg 7/21/04 */
-	else days++;
-	DT_days2datetime( days, smax ); 
-	DT_datetime2days( smax, &days ); /* set next day's date for getmdy below */
-        DT_getmdy( &mon, &day, &yr );
-	DT_makedate( yr, mon, day, "", datepart );
-	DT_maketime( 0, 0, 0.0, timepart );
-	if( strcmp( unittyp, "date" )==0 ) strcpy( maxval, datepart );
-	else DT_build_dt( datepart, timepart, maxval );
-	}
-
-else if( strnicmp( nearest, "hour", 4 )== 0 || strnicmp( nearest, "3hour", 5 )==0 ||
-	 strnicmp( nearest, "6hour", 5 )==0 || strnicmp( nearest, "12hour", 6 )==0 ) {
-	int hour, minute;
-	double sec;
-	int hoursblock; /* 0, 3, 6, or 12 */
-	if( !GL_smember( unittyp, "time datetime" )) 
-		Eerr( 2892, "autorange 'nearest=hour' is incompatible with scaletype", unittyp );
-
-	if( tolower( (int) nearest[0] ) != 'h' ) {				/* this section scg 1/28/05 */
-		hoursblock = nearest[0] - '0';
-		if( hoursblock == 1 ) hoursblock = 12;
-		}
-	else hoursblock = 0;
-
-	if( strcmp( unittyp, "time" )==0 ) {
-		/* min */
-		DT_tomin( smin, &sec ); /* sec not used */
-		DT_gethms( &hour, &minute, &sec );
-		if( hoursblock ) hour = (hour / hoursblock) * hoursblock; 		/* scg 1/28/05 */
-		DT_maketime( hour, 0, 0.0, minval );
-		/* max */
-		DT_tomin( smax, &sec ); /* sec not used */
-		DT_gethms( &hour, &minute, &sec );
-		if( hoursblock ) hour = ((hour / hoursblock)+1) * hoursblock; 		/* scg 1/28/05 */
-		if( minute != 0 || sec != 0.0 ) hour++; 				/* bug, scg 12/13/05 */
-		DT_maketime( hour, 0, 0.0, maxval ); 
-		}
-	else if( strcmp( unittyp, "datetime" )==0 ) {
-		double days;
-		int mon, day, yr;
-
-		/* min */
-		DT_datetime2days( smin, &days );
-		/* time part */
-		DT_gethms( &hour, &minute, &sec );
-		if( hoursblock ) hour = (hour / hoursblock) * hoursblock; 		/* scg 1/28/05 */
-		DT_maketime( hour, 0, 0.0, timepart );
-		/* date part */
-        	DT_getmdy( &mon, &day, &yr );
-		DT_makedate( yr, mon, day, "", datepart );
-		DT_build_dt( datepart, timepart, minval );
-
-		/* max */
-		DT_datetime2days( smax, &days );
-		/* time part */
-		DT_gethms( &hour, &minute, &sec );
-		if( hour == 23 ) {
-			DT_days2datetime( days+1.0, smax ); /* set next day's date for getmdy below*/
-			DT_datetime2days( smax, &days ); /* set next day's date for getmdy below*/
-			DT_maketime( 0, 0, 0.0, timepart );					/* ok for any hoursblock */
-			}
-		else 	{
-			if( hoursblock ) hour = ((hour / hoursblock)+1) * hoursblock; 		/* scg 1/28/05 */
-			else hour++;
-			DT_maketime( hour, 0, 0.0, timepart );
-			}
-		/* date part */
-        	DT_getmdy( &mon, &day, &yr );
-		DT_makedate( yr, mon, day, "", datepart );
-		DT_build_dt( datepart, timepart, maxval );
-		}
-	}
-
-else if( stricmp( nearest, "minute" )==0 || stricmp( nearest, "10minute" )==0 || 
-	stricmp( nearest, "20minute" )==0 || stricmp( nearest, "30minute" )==0 ) {		/* this section scg 1/28/05 */
-	int hour, minute, minblock;
-	double sec;
-
-	if( strcmp( unittyp, "time" )!= 0 ) Eerr( 2892, "autorange 'nearest=minute' is incompatible with scaletype", unittyp );
-
-	if( tolower( (int) nearest[0] ) != 'm' ) minblock = (nearest[0] - '0') * 10;
-	else minblock = 0;
-
-	/* min */
-	DT_tomin( smin, &sec ); /* sec not used */
-	DT_gethms( &hour, &minute, &sec );
-	if( minblock ) minute = (minute / minblock) * minblock; 		
-	DT_maketime( hour, minute, 0.0, minval );
-
-	/* max */
-	DT_tomin( smax, &sec ); /* sec not used */
-	DT_gethms( &hour, &minute, &sec );
-	if( minblock ) minute = ((minute / minblock)+1) * minblock; 	
-	else minute++;
-	if( minute >= 60 ) { minute = minute % 60; hour++; }
-	DT_maketime( hour, minute, 0.0, maxval );
-	}
-
-
-#endif
-else 	{      /* this section added scg 7/5/00 */
+else 	{      
 	double inc, h, fmod(), a, b;
 
 	if( strcmp( nearest, "auto" )==0 ) PL_defaultinc( min, max, &inc );

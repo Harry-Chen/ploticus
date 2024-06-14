@@ -22,14 +22,19 @@ pagesize: 10 4
 fieldnameheader: yes
 file: strainz.dat
 
+#proc categories
+  axis: x
+  datafield: 2
+
+#proc categories
+  axis: y
+  datafield: 1
 
 // set up the plotting area
 #proc areadef
 rectangle: 1 1 9 3.5
 xscaletype: categories
 yscaletype: categories
-xcategories: datafield=2
-ycategories: datafield=1
 yaxis.stubs: usecategories
 yaxis.stubdetails: adjust=0.7,0
 yaxis.axisline: none

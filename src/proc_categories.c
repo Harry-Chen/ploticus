@@ -1,5 +1,5 @@
 /* ======================================================= *
- * Copyright 1998-2005 Stephen C. Grubb                    *
+ * Copyright 1998-2008 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */
@@ -9,117 +9,106 @@
 #include "pl.h"
 
 int
-PLP_categories()
+PLP_categories( in_areadef )
+int in_areadef;
 {
-char attr[NAMEMAXLEN], val[256];
-char *line, *lineval;
-int nt, lvp;
-int first;
+char attr[NAMEMAXLEN], *line, *lineval;
+int lvp, first;
 
+char buf[256];
+char *catspec, *selectex, *datafield, *listsize, *compmethod;
+char *ecat[100], ecattype[100];
+int i, nextra;
 char axis;
 double slideamount;
-char dfield[NAMEMAXLEN];
-char selex[255];
+int parm, checkuniq, roundrobin, datafield_given;
 
 TDH_errprog( "pl proc categories" );
 
 slideamount = -99999.9;
 axis = '\0';
-strcpy( dfield, "" );
-strcpy( selex, "" );
-
+selectex = ""; catspec = ""; datafield = ""; listsize = ""; compmethod = "";
+roundrobin = datafield_given = 0;
+checkuniq = 1;
+nextra = 0;
 
 /* note: old AREADEF and CATSLIDE category-related attributes supported here as 'overlays'..
  *	hence, beware of attribute name collision with those procs */
 
-/* note: proc categories is unusual in that attribute order does matter..  
- *	- 'axis' and 'listsize' (if used) must specified before other attributes.  
- *	- extracategory adds categories pre or post depending on position relative to category set fill
- *	- select must be given before datafield
- *	- #clone is not supported for this proc 
- */
-
 /*  get attributes.. */
 first = 1;
 while( 1 ) {
-	line = getnextattr( first, attr, val, &lvp, &nt );
+        line = getnextattr( first, attr, &lvp );
 	if( line == NULL ) break;
 	first = 0;
 	lineval = &line[lvp];
 
-	if( stricmp( attr, "axis" )==0 ) {
-		axis = tolower( val[0] );
-		PL_setcatparms( axis, "compmethod", -1 ); /* default to exact.. */
-		}
+	if( strcmp( attr, "axis" )==0 ) axis = lineval[0]; 
 
+	else if( strcmp( attr, "listsize" )==0 ) listsize = lineval;
 	else if( GL_slmember( attr, "?categories categories" )) {
-		/* put category names into array slots now.. */
-		if( strnicmp( val, "datafield", 9 )==0 ) strcpy( PL_bigbuf, lineval );
-		else getmultiline( "categories", lineval, MAXBIGBUF, PL_bigbuf );
-		if( attr[0] == 'x' || attr[0] == 'y' ) PL_setcats( attr[0], PL_bigbuf );
-		else if( axis == '\0' ) return( Eerr( 2795, "'axis' expected as first attribute", "" ));
-		else PL_setcats( axis, PL_bigbuf );
+		if( strncmp( lineval, "datafield", 9 )==0 ) catspec = lineval;
+		else catspec = getmultiline( lineval, "get" ); 
+		if( attr[0] == 'x' || attr[0] == 'y' ) axis = attr[0]; /* support old areadef syntax */
 		}
+	else if( strcmp( attr, "datafield" )==0 ) { catspec = lineval; datafield_given = 1; }
 
 	else if( GL_slmember( attr, "?extracategory extracategory" )) {
-		char ax;
-		if( attr[0] == 'x' || attr[0] == 'y' ) ax = attr[0];
-		else ax = axis;
-		if( ax == '\0' ) return( Eerr( 2795, "'axis' expected as first attribute", "" ));
-		if( PL_ncats( ax ) < 1 ) PL_addcat( ax, "pre", lineval );
-		else PL_addcat( ax, "post", lineval );
+		if( nextra+1 >= 100 ) Eerr( 57933, "too many extra categories", "" );
+		else	{
+			ecat[ nextra ] = lineval;
+			if( catspec[0] == '\0' ) ecattype[ nextra ] = '<';
+			else ecattype[ nextra ] = '>'; 
+			nextra++;
+			}
 		}
 
-	else if( GL_slmember( attr, "comparemethod catcompmethod" )) {
-		/* old 'catcompmethod' affects both axes */
-		int p;
-		if( stricmp( val, "exact" )==0 ) p = -1;
-		else if( strnicmp( val, "length=", 7 )==0 ) p = atoi( val );
-		else p = 0;
-		if( axis == 'x' || axis == '\0' ) PL_setcatparms( 'x', "compmethod", p );
-		if( axis == 'y' || axis == '\0' ) PL_setcatparms( 'y', "compmethod", p );
-		}
-
-	else if( stricmp( attr, "slideamount" )==0 || stricmp( attr, "amount" )==0 ) slideamount = atof( val );
-
-	else if( stricmp( attr, "datafield" )==0 ) {
-		if( axis == '\0' ) return( Eerr( 2795, "'axis' expected as first attribute", "" ));
-		sprintf( PL_bigbuf, "datafield=%s %s%s", val, (selex[0]=='\0')?"":"selectrows=", selex );
-		PL_setcats( axis, PL_bigbuf );
-		}
-
-	else if( stricmp( attr, "select" )==0 ) strcpy( selex, lineval );
-
-	else if( stricmp( attr, "listsize" )==0 ) {
-		if( axis == '\0' ) return( Eerr( 2795, "'axis' expected as first attribute", "" ));
-		PL_setcatparms( axis, "listsize", atoi( val ) );
-		}
-
-	else if( stricmp( attr, "checkuniq" )==0 ) {
-		if( axis == '\0' ) return( Eerr( 2795, "'axis' expected as first attribute", "" ));
-		if( tolower( val[0] ) == 'y' ) PL_setcatparms( axis, "checkuniq", 1 );
-		else PL_setcatparms( axis, "checkuniq", 0 );
-		}
-
-	else if( stricmp( attr, "roundrobin" )==0 ) {
-		if( axis == '\0' ) return( Eerr( 2795, "'axis' expected as first attribute", "" ));
-		if( tolower( val[0] ) == 'y' ) PL_setcatparms( axis, "roundrobin", 1 );
-		else PL_setcatparms( axis, "roundrobin", 0 );
-		}
-
-	/* else Eerr( 1, "attribute not recognized", attr ); */ /* can't do this because we could be processing an areadef block */
+	else if( GL_slmember( attr, "comparemethod catcompmethod" )) compmethod = lineval;
+	else if( strcmp( attr, "slideamount" )==0 || strcmp( attr, "amount" )==0 ) slideamount = ftokncpy( lineval );
+	else if( strcmp( attr, "select" )==0 ) selectex = lineval;
+	else if( strcmp( attr, "checkuniq" )==0 ) checkuniq = getyn( lineval );
+	else if( strcmp( attr, "roundrobin" )==0 ) roundrobin = getyn( lineval ); 
+	else if( !in_areadef ) Eerr( 1, "attribute not recognized", attr ); 
+	/* can't do this in_areadef because there are other attributes not enumerated here.. */
 	}
 
-if( slideamount > -100.0 && slideamount < 100.0 ) {
-	if( axis == '\0' ) return( Eerr( 2795, "'axis' expected as first attribute", "" ));
-	Esetcatslide( axis, slideamount );
+/* now do the work.. */
+
+if( axis == '\0' ) return( Eerr( 2795, "'axis' attribute expected", "" ));
+
+
+/* things to be done before filling cats list.. */
+if( listsize[0] != '\0' ) PL_setcatparms( axis, "listsize", itokncpy( listsize ) );
+if( compmethod[0] == '\0' ) PL_setcatparms( axis, "compmethod", -1 ); 
+else	{
+	if( strcmp( compmethod, "exact" )==0 ) parm = -1;
+	else if( strncmp( compmethod, "length=", 7 )==0 ) parm = atoi( &compmethod[7] );
+	else parm = 0;
+	if( in_areadef ) { PL_setcatparms( 'x', "compmethod", parm ); PL_setcatparms( 'y', "compmethod", parm ); } /* old synax does both axes*/
+	else PL_setcatparms( axis, "compmethod", parm );
 	}
+for( i = 0; i < nextra; i++ ) if( ecattype[i] == '<' ) PL_addcat( axis, "pre", ecat[i] );  /* pre- extras */
+
+/* fill cats list.. */
+if( datafield_given ) {
+	sprintf( buf, "datafield=%s %s%s", catspec, (selectex[0]=='\0')?"":"selectrows=", selectex );  /* combine with selectex */
+	catspec = buf;  /* make catspec point to the whole thing.. */
+	}
+if( catspec != "" ) PL_setcats( axis, catspec );
+
+/* things to be done after filling list.. */
+for( i = 0; i < nextra; i++ ) if( ecattype[i] == '>' ) PL_addcat( axis, "post", ecat[i] );  /* post- extras */
+
+/* things that apply to lookups.. */
+PL_setcatparms( axis, "checkuniq", checkuniq );
+PL_setcatparms( axis, "roundrobin", roundrobin );
+if( slideamount > -100.0 && slideamount < 100.0 ) Esetcatslide( axis, slideamount );
 
 return( 0 );
 }
 
 /* ======================================================= *
- * Copyright 1998-2005 Stephen C. Grubb                    *
+ * Copyright 1998-2008 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */

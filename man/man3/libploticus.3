@@ -24,7 +24,7 @@
   <td align=right>
   <small>
   <a href="../doc/welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
-  Version 2.33 Jun'06
+  Version 2.40 Jan'08
   <td></tr></table>
 </td></tr>
 <td>
@@ -32,7 +32,7 @@
 <br>
 .>>
 
-.TH libploticus_API PL "02-JUN-2006   PL ploticus.sourceforge.net"
+.TH libploticus_API PL "15-JAN-2008   PL ploticus.sourceforge.net"
 
 .LP
 This simple C language API 
@@ -68,6 +68,9 @@ Each plot job should begin with a \fCploticus_init()\fR call and terminate with 
 \fCploticus_end()\fR call.  
 .LP
 No attempt has been made to write libploticus as thread-safe.
+.LP
+As of version 2.40 script lines can no longer be passed as string constants.  
+
 
 
 .ig >>
@@ -79,17 +82,17 @@ Here's a simple example (it may be found in \fC./pltestsuite/api_examp.c\fR)
  \0 main()
  \0 {
  \0 int stat;
+ \0 char sln[80];
  \0 stat = ploticus_init( "png", "hello.png" );
  \0 stat += ploticus_arg( "-scale", "0.8" );
  \0 if( stat != 0 ) { 
  \0	printf( "error in pl setup\\n" ); 
  \0     exit(1); 
  \0     }
- \0 ploticus_execline( "#proc annotate" );
- \0 ploticus_execline( "  location: 2 2" );
- \0 ploticus_execline( "  text: hello" );
- \0 ploticus_execline( "  world" );
- \0 ploticus_execline( "" );
+ \0 strcpy( sln, "#proc annotate" ); ploticus_execline( sln );
+ \0 strcpy( sln, "location: 2 2" ); ploticus_execline( sln );
+ \0 strcpy( sln, "text: hello" ); ploticus_execline( sln );
+ \0 strcpy( sln, " world." ); ploticus_execline( sln );
  \0 ploticus_end();
  \0 }
 .fi
@@ -192,29 +195,22 @@ Interpret one "raw"
 .>>
 line.  
 Typically called multiple times, allowing ploticus scripts to be 
-generated programatically.  "Raw" script lines can contain only these directives: \fC #proc\fR, \fC #procdef\fR, 
-\fC #endproc\fR, \fC #clone\fR and \fC #saveas\fR.  You can't use set, if/else, loops, or other flow-of-control 
-directives (these types of things should be handled by your host application).
-Also, "raw" script lines do not undergo a variable-evaluation pass, so
+generated programatically.  Script lines can contain only these directives: \fC #proc\fR, \fC #procdef\fR, 
+\fC #endproc\fR, \fC #clone\fR and \fC #saveas\fR.  
+You can't use set, if/else, loops, or other flow-of-control 
+directives (but these types of things can be handled by your host application).
+Further, these script lines do not undergo a variable-evaluation pass, so
 variables cannot be referenced, and \fCselect\fR statements (etc.) that reference data field names should
 use one at sign (@) instead of two (@@).  If your program needs to access a variable that has been set
 by the ploticus engine, use \fCploticus_getvar()\fR, described below.
+The script line may include a trailing newline or not.
 .IP
 An alternative is to use \fCploticus_execscript()\fR (described below)
 to execute an entire script file.
 You can't use both \fCploticus_execline()\fR and \fCploticus_execscript()\fR in the same application.
 .IP
-NOTE: If the \fCline\fR argument is passed as a constant it must \fBnot\fR contain a trailing newline character.
-If passed as a variable then it doesn't matter.
-.IP
-Example:
-.nf
-  \0 ploticus_execline( "#proc annotate" );
-  \0 ploticus_execline( "  location: 2 2" );
-  \0 ploticus_execline( "  text: hello" );
-  \0 ploticus_execline( "  world" );
-  \0 ploticus_execline( "" );
-.fi
+\fBCaution\fR As of ploticus version 2.40 string constants cannot be passed in this function.  See the example
+in the page intro above.
 
 .ig >>
 <br><br><br>

@@ -476,7 +476,6 @@ XMoveResizeWindow ( x_disp, x_win, win_size.x, win_size.y, win_size.width, win_s
 /* free and reallocate backing store at new size.. */
 XFreePixmap( x_disp, x_backstore );
 x_backstore = XCreatePixmap( x_disp, x_win, x_winwidth, x_winheight, x_display_depth );
-fprintf( stderr, "[created new pixmap %d]", x_backstore );
 
 /* XSetWMNormalHints( x_disp, x_win, &win_size ); */
 XFlush( x_disp ); /* scg 2-13-96 */
@@ -744,10 +743,12 @@ return( 0 );
 int
 PLGX_fill( )
 {
+
 if( !x_colordisplay ) {
 	XSetTile( x_disp, x_gc, x_shadetile );
 	XSetFillStyle( x_disp, x_gc, FillTiled );   /* added SCG 11-10-95 */
 	}
+
 
 XFillPolygon( x_disp, x_win, x_gc, x_ptlist, x_npt, Complex, CoordModeOrigin );
 
@@ -793,6 +794,9 @@ else if( strncmp( color, "gray", 4 )==0 || strncmp( color, "grey", 4 )==0 ) {
 	}
 else if( strncmp( color, "xrgb", 4 )==0 ) {
         if (PLG_xrgb_to_rgb( &color[5], &r, &g, &b)) return(1);
+        }
+else if( color[0] == 'x' ) {  /* added scg 11/5/07 */
+        if (PLG_xrgb_to_rgb( &color[1], &r, &g, &b)) return(1);
         }
 else if( GL_goodnum( color, &i ) ) {
 	r = atof( color );

@@ -98,13 +98,13 @@ else j = TDH_fieldmap( recordid, itemname );
 if( j < 0 ) {
 	stat = TDH_getvar( itemname, value );
 #ifdef PLOTICUS 
-	if( stat != 0 ) {  /* try data field name.. */
+	if( stat != 0 && data != NULL ) {  /* try data field name.. */
 		PL_fref_showerr( 0 );
 		j = PL_fref( itemname ) - 1; 
 		PL_fref_showerr( 1 );
 		if( PL_fref_error() ) return( 1308 );
 			/* return( err( 1308, "unrecognized variable or data field name", itemname )); */
-		if( data == NULL ) return( 1308 );
+		/* if( data == NULL ) return( 1308 ); */ /* moved above.. scg 11/5/07 */
 		strcpy( value, data[ j ] );
 		return( 0 );
 		}

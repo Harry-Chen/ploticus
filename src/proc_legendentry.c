@@ -1,5 +1,5 @@
 /* ======================================================= *
- * Copyright 1998-2005 Stephen C. Grubb                    *
+ * Copyright 1998-2008 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */
@@ -11,55 +11,47 @@
 int
 PLP_legendentry( )
 {
-char attr[NAMEMAXLEN], val[256];
-char *line, *lineval;
-int nt, lvp;
-int first;
+char attr[NAMEMAXLEN], *line, *lineval;
+int lvp, first;
 
-char label[120];
-char sampletype[80];
-char spec1[120];
-char spec2[120];
-char spec3[120];
-char tag[80];
+char *label, *sampletype, *spec1, *spec2, *spec3, *tag;
 int  samptyp;
 
 TDH_errprog( "pl proc legendentry" );
 
 
 /* initialize */
-strcpy( label, "" );
-strcpy( sampletype, "none" );
-strcpy( spec1, "" );
-strcpy( spec2, "" );
-strcpy( spec3, "" );
+label = "";
+sampletype = "none";
+spec1 = "";
+spec2 = "";
+spec3 = "";
+tag = "";
 
 /* get attributes.. */
 first = 1;
 while( 1 ) {
-	line = getnextattr( first, attr, val, &lvp, &nt );
+	line = getnextattr( first, attr, &lvp );
 	if( line == NULL ) break;
 	first = 0;
 	lineval = &line[lvp];
 
-	if( stricmp( attr, "label" )==0 ) strcpy( label, lineval );
-	else if( stricmp( attr, "tag" )==0 ) strcpy( tag, val ); /* was lineval, but docs say single token.  scg 11/21/03 */
-	else if( stricmp( attr, "sampletype" )==0 ) strcpy( sampletype, val );
-	else if( stricmp( attr, "details" )==0 ) strcpy( spec1, lineval );
-	else if( stricmp( attr, "details2" )==0 ) strcpy( spec2, lineval );
-	else if( stricmp( attr, "details3" )==0 ) strcpy( spec3, lineval );
-
+	if( strcmp( attr, "label" )==0 ) label = lineval;
+	else if( strcmp( attr, "tag" )==0 ) tag = lineval; 
+	else if( strcmp( attr, "sampletype" )==0 ) sampletype = lineval;
+	else if( strcmp( attr, "details" )==0 ) spec1 = lineval;
+	else if( strcmp( attr, "details2" )==0 ) spec2 = lineval;
+	else if( strcmp( attr, "details3" )==0 ) spec3 = lineval;
 	else Eerr( 1, "attribute not recognized", attr );
 	}
 
-
-if( stricmp( sampletype, "line" )==0 ) samptyp = LEGEND_LINE;
-else if( stricmp( sampletype, "color" )==0 ) samptyp = LEGEND_COLOR;
-else if( stricmp( sampletype, "symbol" )==0 ) samptyp = LEGEND_SYMBOL;
-else if( stricmp( sampletype, "text" )==0 ) samptyp = LEGEND_TEXT;
-else if( stricmp( sampletype, "line+symbol" )==0 ) samptyp = LEGEND_LINE + LEGEND_SYMBOL;
-else if( stricmp( sampletype, "text+symbol" )==0 ) samptyp = LEGEND_TEXT + LEGEND_SYMBOL;
-else if( stricmp( sampletype, "none" )==0 ) samptyp = 0;
+samptyp = 0; /* for 'none' */
+if( strcmp( sampletype, "line" )==0 ) samptyp = LEGEND_LINE;
+else if( strcmp( sampletype, "color" )==0 ) samptyp = LEGEND_COLOR;
+else if( strcmp( sampletype, "symbol" )==0 ) samptyp = LEGEND_SYMBOL;
+else if( strcmp( sampletype, "text" )==0 ) samptyp = LEGEND_TEXT;
+else if( strcmp( sampletype, "line+symbol" )==0 ) samptyp = LEGEND_LINE + LEGEND_SYMBOL;
+else if( strcmp( sampletype, "text+symbol" )==0 ) samptyp = LEGEND_TEXT + LEGEND_SYMBOL;
 
 PL_add_legent( samptyp, label, tag, spec1, spec2, spec3 );
 
@@ -67,7 +59,7 @@ return( 0 );
 }
 
 /* ======================================================= *
- * Copyright 1998-2005 Stephen C. Grubb                    *
+ * Copyright 1998-2008 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */

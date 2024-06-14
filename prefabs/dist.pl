@@ -74,6 +74,13 @@ datafield1: @x
 #endif
 #ifspec savetbl showresults
 
+#if @cats = yes
+  #proc categories
+    axis: x
+    datafield: 1
+
+#endif
+
 //// now that we have the distribution, recompute the plotting area with a auto Y range
 #include $chunk_area
 #if @yrange = ""
@@ -86,9 +93,9 @@ datafield1: @x
 #endif
 #if @cats = yes
   xscaletype: categories
-  xcategories: datafield=1
+  // xcategories: datafield=1
   // following added 9/2/02 scg
-  catcompmethod: exact
+  // catcompmethod: exact
 #else
   xrange: @XMIN @XMAX
 #endif

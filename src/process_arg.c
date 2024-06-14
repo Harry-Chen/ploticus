@@ -8,7 +8,7 @@
 
 #include "pl.h"
 extern char TDH_tmpdir[];
-extern int PLGS_showtag(), PLGS_zlevel(), PLGS_setxmlparms();
+extern int PLGS_showtag(), PLGS_zlevel(), PLGS_setxmlparms(), PLGG_setimpixsize();
 extern int chmod(), fchmod(), chdir();
 
 
@@ -109,11 +109,22 @@ else if( strcmp( opt, "crop" )==0 || strcmp( opt, "croprel" ) ==0 ) {
 
 else if( strcmp( opt, "pagesize" )==0 ) {
 	nt =  sscanf( val, "%lf,%lf", &(PLS.winw), &(PLS.winh) );
-	if( nt != 2 ) 
-		fprintf( PLS.errfp, "pl argument error, correct usage is: -pagesize width,height (inches or cm)\n" );
+	if( nt != 2 ) fprintf( PLS.errfp, "pl argument error, correct usage is: -pagesize width,height  (in inches or cm)\n" );
 	else PLS.winsizegiven = 1;
 	if( PLS.usingcm ) { PLS.winw /= 2.54; PLS.winh /= 2.54; }
 	}
+
+
+else if( strcmp( opt, "pixsize" )==0 ) {  /* added scg 1/9/08 */
+	int reqwidth, reqheight;
+	nt = sscanf( val, "%d,%d", &reqwidth, &reqheight );
+	if( nt != 2 ) fprintf( PLS.errfp, "pl argument error, correct usage is: -pixsize width,height  (in pixels)\n" );
+#ifndef NOGD
+	PLGG_setimpixsize( reqwidth, reqheight );
+#endif
+	if( PLS.device != 'g' ) fprintf( PLS.errfp, "-pixsize ignored.. it's only applicable when generating png/gif/jpeg images\n" ); 
+	}
+	
 
 else if( strcmp( opt, "winloc" )==0 ) {
 	nt = sscanf( val, "%d,%d", &(PLS.winx), &(PLS.winy) );
@@ -153,8 +164,15 @@ else if( strcmp( opt, "maxdrawpoints" )==0 ) { PLG_setmaxdrivervect( atoi( val )
 else if( strcmp( opt, "dir" )==0 ) chdir( val );
 else if( strcmp( opt, "outlabel" )==0 ) Esetoutlabel( val );
 
-else if( strcmp( opt, "map" )==0 ) { PLS.clickmap = 1; *valused = 0; }   /* server side map */
-else if( strcmp( opt, "mapdemo" )==0 ) { PLS.clickmap = 1; *valused = 0; PL_clickmap_demomode( 1 ); }   /* server side map */
+else if( strcmp( opt, "map" )==0 ) {   /* server side map */
+	PLS.clickmap = 1; *valused = 0; 
+	fprintf( PLS.errfp, "warning, server-side clickmaps (-map) are deprecated in 2.40 in favor of client-side (-csmap)\n" );
+	}   
+else if( strcmp( opt, "mapdemo" )==0 ) { 
+	PLS.clickmap = 1; *valused = 0; 
+	PL_clickmap_demomode( 1 ); 
+	fprintf( PLS.errfp, "warning, server-side clickmaps (-map) are deprecated in 2.40 in favor of client-side (-csmap)\n" );
+	}   
 else if( strcmp( opt, "csmap" )==0 ) { PLS.clickmap = 2; *valused = 0; } /* client side map */
 else if( strcmp( opt, "csmapdemo" )==0 ) { PLS.clickmap = 2; *valused = 0; PL_clickmap_demomode( 1 ); } /* client side map */
 else if( strcmp( opt, "mapfile" )==0 ) { 
@@ -192,9 +210,9 @@ else if( strcmp( opt, "drawdumpa" )==0 ) {
 #ifndef NOSVG
 else if( strcmp( opt, "tag" )==0) { PLGS_showtag( 1 ); *valused = 0; }
 else if( strcmp( opt, "zlevel" )==0) PLGS_zlevel( atoi( val ) ); 
-else if( stricmp( opt, "xml_encoding" )==0 ) PLGS_setxmlparms( "encoding", val );
-else if( stricmp( opt, "omit_xml_declaration" )==0 ) { PLGS_setxmlparms( "xmldecl", "0" ); *valused = 0; }
-else if( stricmp( opt, "svg_tagparms" )==0 ) PLGS_setxmlparms( "svgparms", val );
+else if( strcmp( opt, "xml_encoding" )==0 ) PLGS_setxmlparms( "encoding", val );
+else if( strcmp( opt, "omit_xml_declaration" )==0 ) { PLGS_setxmlparms( "xmldecl", "0" ); *valused = 0; }
+else if( strcmp( opt, "svg_tagparms" )==0 ) PLGS_setxmlparms( "svgparms", val );
 #endif
 
 
@@ -226,10 +244,15 @@ else if( strcmp( opt, "errfile" )==0 ) {
 	}
 
 else if( strcmp( opt, "echo" )==0 ) {
-	if( stricmp( val, "stdout" )==0 ) PLS.echolines = 1;
-	else if( stricmp( val, "diag" )==0 ) PLS.echolines = 2;
+	if( strcmp( val, "stdout" )==0 ) PLS.echolines = 1;
+	else if( strcmp( val, "diag" )==0 ) PLS.echolines = 2;
 	else { PLS.echolines = 2; *valused = 0; }
 	}
+
+#ifndef WIN32
+else if( strcmp( opt, "cpulimit" )==0 ) TDH_reslimits( "cpu", atoi( val ) );
+#endif
+
 
 else if( strcmp( opt, "ping" )==0 ) {
 	printf( "ploticus %s \n", PLVERSION );

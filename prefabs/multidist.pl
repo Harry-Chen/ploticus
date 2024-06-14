@@ -85,7 +85,7 @@ yrange: @yrange
   #if @rotate = yes
       #proc processdata
       action: rotate
-      stack: no
+      // stack: no
       // showresults: yes
       #endproc
   #endif
@@ -138,6 +138,11 @@ ID = @ID
 
 
 #if @overlay != yes
+#if @cats = yes
+  #proc categories
+   axis: x
+   datafield: 1
+#endif
 //// now that we have the distribution, recompute the plotting area with a auto Y range
 #include $chunk_area
 #if @yrange = ""
@@ -150,9 +155,9 @@ ID = @ID
 #endif
 #if @cats = yes
   xscaletype: categories
-  xcategories: datafield=1
-  // following added 9/2/02 scg
-  catcompmethod: exact
+  // xcategories: datafield=1
+  // // following added 9/2/02 scg
+  // catcompmethod: exact
 
 #else
   xrange: @XMIN @XMAX

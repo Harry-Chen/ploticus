@@ -12,10 +12,21 @@
 
 #define FILLCHAR 3
 #define SPACECHAR 4
-#define SPACE 's'
-#define WHITESPACE 'w'
-#define TAB 't'
-#define COMMA 'c'
+
+
+/* #define SPACE 's'
+ * #define WHITESPACE 'w'
+ * #define TAB 't'
+ * #define COMMA 'c'
+ */
+
+/* field delimitation methods */
+#define WHITESPACE 0
+#define SPACEQUOTE 1
+#define SPACE 1
+#define TAB 2
+#define CSV 3
+#define BAR 4
 
 
 /* Notes:
@@ -27,10 +38,10 @@
 
 /* ============================================ */
 int
-PL_parsedata( data, delimmethod, comsym, field, maxd, nr, nf, nd )
+PL_parsedata( data, delim, comsym, field, maxd, nr, nf, nd )
 unsigned char *data; 	/* for LOCALE scg 3/15/00 */
 /* char *data;  	// for LOCALE scg 3/15/00 //   this avoids gcc4 warning */
-char *delimmethod;	/* one of: space (whitespace w/ quotes), whitespace (no quotes), tab, comma */
+int delim;		/* see #defines above */
 char *comsym;		/* user symbol signifying beginning of comment */
 char *field[]; 		/* array of pointers to fields */
 int maxd; 		/* max # of elements in above array */
@@ -41,7 +52,7 @@ int *nd; 		/* total number of fields */
 {
 
 int i, j, ip, state, start, quotes, qon, firstline, reqnf, nfields, nrows, cslen, nt, lastbreak;
-char delim, sepchar, tok[255];
+char sepchar, tok[255];
 int datalen; /* added scg 9/30/03 */
 
 
@@ -50,14 +61,12 @@ ip = 0;
 if( *nf > 0 ) reqnf = *nf;
 else reqnf = 0;
 
-delim = tolower( delimmethod[0] );
-if( ! GL_member( delim, "tcw")) delim = SPACE;
 
 quotes = 0;
-if( delim == SPACE ) { sepchar = ' '; quotes = 1; }
+if( delim == SPACEQUOTE ) { sepchar = ' '; quotes = 1; delim = SPACE; }
 else if( delim == WHITESPACE ) { sepchar = ' '; delim = SPACE; }
 else if( delim == TAB ) sepchar = '\t';
-else if( delim == COMMA ) { sepchar = ','; quotes = 1; }
+else if( delim == CSV ) { sepchar = ','; quotes = 1; }
 
 
 cslen = strlen( comsym );
@@ -78,7 +87,7 @@ if( quotes ) for( i = 0, qon = 0; i < datalen; i++ ) {
 		}
 	else if( qon ) {    /* mask separator characters found within a quoted string */
 		if( delim == SPACE && isspace( data[i] ) ) data[i] = SPACECHAR;
-		else if( delim == COMMA && data[i] == ',' ) data[i] = SPACECHAR;
+		else if( delim == CSV && data[i] == ',' ) data[i] = SPACECHAR;
 		}
 	}
 
@@ -125,7 +134,7 @@ for( i = 0, start = 0; i < (datalen+1); i++ ) {
 			else if( data[j] == SPACECHAR ) data[j] = sepchar;
 			}
 
-		else if( delim == TAB || delim == COMMA ) for( j = start; data[j] != '\0'; j++ ) {
+		else if( delim == TAB || delim == CSV ) for( j = start; data[j] != '\0'; j++ ) {
 			if( state == 0 ) {
 				if( data[j] == FILLCHAR ) continue;
 				field[ip++] = &data[j];

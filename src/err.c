@@ -52,7 +52,8 @@ say_error = 1;
 
 
 if( strcmp( emode, "cgi" )==0 ) {
-	printf( "<br><h4>%s: %s %d: %s %s%s%s</h4><br>\n", progname, (say_error)?"error":"", errno, msg, op, parm, cp );
+	/* first \n is important in case it hasn't been delivered yet by quisp.. (http content-type statement) */
+	printf( "\n<br><h4>%s: %s %d: %s %s%s%s</h4><br>\n", progname, (say_error)?"error":"", errno, msg, op, parm, cp );
 	fflush( stdout );
 	}
 else if( strcmp( emode, "stderr" )==0 ) 

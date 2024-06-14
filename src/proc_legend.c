@@ -1,5 +1,5 @@
 /* ======================================================= *
- * Copyright 1998-2005 Stephen C. Grubb                    *
+ * Copyright 1998-2008 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */
@@ -8,8 +8,8 @@
 
 #include "pl.h"
 
-#define MAXLEGENT 80            /* max # of legend entries */
-#define MAXLEGTEXT 2000         /* max amount of legend text, including labels
+#define MAXLEGENT 100           /* max # of legend entries */
+#define MAXLEGTEXT 5000         /* max amount of legend text, including labels
                                         and details attributes */
 
 #define DOWN 0
@@ -41,182 +41,94 @@ int
 PLP_legend()
 {
 int i;
-char attr[NAMEMAXLEN], val[256];
-char *line, *lineval;
-int nt, lvp;
-int first;
+char attr[NAMEMAXLEN], *line, *lineval;
+int lvp, first;
 
-int align;
-double adjx, adjy;
-
-char buf[256];
-double x, y;
-char format;
-int outline;
-int nlines, maxlen;
-double yy;
-char textdetails[256];
-int reverseorder;
-int j;
-double seglen;
-double hsep, msep;
-int do_outline;
-int colortext;
-int specifyorder;
-int ix, ixx, k;
-double swatchsize;
-int noclear;
-char holdstdcolor[COLORLEN];
-char color[COLORLEN];
-int buflen;
-char url[MAXPATH];
-char *s;
-char symcode[80];
-double radius;
-double extent;
-double startx, starty;
-double sampwidth, colchunksep, colbreak;
-double rowchunksep;
-int nlinesym, maxtwidth, maxthi;
-int wraplen;
-double orig_x, orig_y, bx1, by1, bx2, by2;
-int dobox, bstate;
-char frame[128];
-char backcolor[COLORLEN];
-double bmx1, bmy1, bmx2, bmy2;
-char title[128], titledetails[128];
-double titx, tity;
+char buf[256], symcode[80], holdstdcolor[COLORLEN], url[MAXURL], color[COLORLEN], format;
+char *textdetails, *frame, *backcolor, *title, *titledetails, *s, *specifyorder;
+int j, k, ix, ixx, nt, align, outline, nlines, maxlen, reverseorder, do_outline, colortext;
+int buflen, noclear, nlinesym, maxtwidth, maxthi, wraplen, dobox, bstate;
+double adjx, adjy, x, y, yy, seglen, hsep, msep, swatchsize, radius, extent;
+double startx, starty, sampwidth, colchunksep, colbreak, rowchunksep, orig_x, orig_y, bx1, by1, bx2, by2, bmx1, bmy1, bmx2, bmy2, titx, tity;
 
 TDH_errprog( "pl proc legend" );
 
 /* initialize */
+textdetails = "";
+frame = "no";
+title = "";
+titledetails = "";
+specifyorder = "";
+backcolor = Ecurbkcolor;
 x = -9999.0;
 y = -9999.0;
 format = DOWN;
-strcpy( textdetails, "" );
-reverseorder = 0;
 seglen = 0.5;
 msep = 0.0;
-hsep = 0.3; /* was 1.2; changed scg 8/12/05 */
-do_outline = 0;
-colortext = 0;
-strcpy( PL_bigbuf, "" );
-specifyorder = 0;
-ix = 0;
+hsep = 0.3; 
+reverseorder = 0; do_outline = 0; colortext = 0; noclear = 0; wraplen = 0; dobox = 0;
 swatchsize = 0.1;
-noclear = 0;
 extent = -1.0;
 colchunksep = 0.35;
 rowchunksep = 0.1;
 nlinesym = 2;
-wraplen = 0;
-dobox = 0;
-strcpy( frame, "no" );
-strcpy( backcolor, Ecurbkcolor );
 bmx1 = bmy1 = bmx2 = bmy2 = 0.08;
-strcpy( title, "" );
-strcpy( titledetails, "" );
 
 /* get attributes.. */
 first = 1;
 while( 1 ) {
-	line = getnextattr( first, attr, val, &lvp, &nt );
+	line = getnextattr( first, attr, &lvp );
 	if( line == NULL ) break;
 	first = 0;
 	lineval = &line[lvp];
 
-	if( stricmp( attr, "location" )==0 ) {
-		/* note: location x = beginning of LABEL; y = top */
-		if( lineval[0] != '\0' ) getcoords( "location", lineval, &x, &y );
-		}
-	else if( stricmp( attr, "textdetails" )==0 ) strcpy( textdetails, lineval );
-	else if( stricmp( attr, "seglen" )==0 ) seglen = atof( val );
-	else if( stricmp( attr, "sep" )==0 ) ; /* superseded by the 'separation' attribute */
-	else if( stricmp( attr, "separation" )==0 ) {
-		hsep = atof( val );
-		msep = atof( val );
-		if( PLS.usingcm ) { hsep /= 2.54; msep /= 2.54; }
-		}
-	else if( stricmp( attr, "colortext" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 ) colortext = 1;
-		else colortext = 0;
-		}
-		
-	else if( stricmp( attr, "outlinecolors" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 ) do_outline = 1;
-		else do_outline = 0;
-		}
-	else if( stricmp( attr, "noclear" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 ) noclear = 1;
-		else noclear = 0;
-		}
-	else if( stricmp( attr, "format" )==0 ) {
-		format = tolower( val[0] );
+	if( strcmp( attr, "location" )==0 ) getcoords( "location", lineval, &x, &y );
+	else if( strcmp( attr, "format" )==0 ) {
+		format = lineval[0];
 		if( format == 'd' || format == 'm' ) format = DOWN;
 		else if( format == 'a' || format == 's' ) format = ACROSS;
 		}
-	else if( stricmp( attr, "specifyorder" )==0 ) {
-		getmultiline( "specifyorder", lineval, MAXBIGBUF, PL_bigbuf );
-		specifyorder = 1;
+	else if( strcmp( attr, "textdetails" )==0 ) textdetails = lineval;
+	else if( strcmp( attr, "seglen" )==0 ) seglen = ftokncpy( lineval );
+	else if( strcmp( attr, "sep" )==0 ) ; /* superseded by the 'separation' attribute */
+	else if( strcmp( attr, "separation" )==0 ) { 
+		hsep = ftokncpy( lineval ); msep = ftokncpy( lineval );
+		if( PLS.usingcm ) { hsep /= 2.54; msep /= 2.54; }
 		}
+	else if( strcmp( attr, "colortext" )==0 ) colortext = getyn( lineval );
+	else if( strcmp( attr, "outlinecolors" )==0 ) do_outline = getyn( lineval ); 
+	else if( strcmp( attr, "noclear" )==0 )  noclear = getyn( lineval ); 
+	else if( strcmp( attr, "specifyorder" )==0 ) specifyorder = getmultiline( lineval, "get" );
+	else if( strcmp( attr, "specifyorder1" )==0 ) { specifyorder = lineval; convertnl( specifyorder ); }
 
-	else if( stricmp( attr, "swatchsize" )==0 ) {
-		if( val[0] != '\0' ) {
-			swatchsize = atof( val );
-			if( PLS.usingcm ) swatchsize /= 2.54;
-			}
-		else swatchsize = 0.1;
-		}
+	else if( strcmp( attr, "swatchsize" )==0 ) { swatchsize = ftokncpy( lineval ); if( PLS.usingcm ) swatchsize /= 2.54; }
 
-	else if( stricmp( attr, "reverseorder" )==0 ) {
-		if( strnicmp( val, YESANS, 1 )==0 ) reverseorder = 1;
-		else reverseorder = 0;
-		}
-	else if( stricmp( attr, "reset" )==0 ) {
-		NLE = 0;
-		return( 0 );
-		}
+	else if( strcmp( attr, "reverseorder" )==0 )  reverseorder = getyn( lineval );
+	else if( strcmp( attr, "reset" )==0 ) { NLE = 0; return( 0 ); }
 
 	/* the following attributes added for 2.32 - scg 8/12/05 ....... */
 
-	else if( stricmp( attr, "extent" )==0 ) {  
-		extent = atof( val ); 
-		if( PLS.usingcm ) extent /= 2.54;
-		}
-	else if( stricmp( attr, "chunksep" )==0 ) {  /* additional amount of separation between column chunks or row chunks */
-		colchunksep = atof( val );
-		rowchunksep = atof( val );
+	else if( strcmp( attr, "extent" )==0 ) {  extent = ftokncpy( lineval ); if( PLS.usingcm ) extent /= 2.54; }
+	else if( strcmp( attr, "chunksep" )==0 ) {  /* additional amount of separation between column chunks or row chunks */
+		colchunksep = ftokncpy( lineval );
+		rowchunksep = ftokncpy( lineval );
 		if( PLS.usingcm ) { colchunksep /= 2.54; rowchunksep /= 2.54; }
 		}
-	else if( stricmp( attr, "nlinesym" )== 0 ) {  /* 1 2 or 0 */
-		nlinesym = atoi( val );
-		if( nlinesym > 2 ) nlinesym = 2;
-		}
-	else if( stricmp( attr, "wraplen" )==0 ) wraplen = atoi( val );
-
-	else if( stricmp( attr, "frame" )==0 ) {
-		dobox = 1;
-		strcpy( frame, lineval );
-		}
-	else if( stricmp( attr, "backcolor" )==0 ) {
-		dobox = 1;
-		strcpy( backcolor, val );
-		}
-	else if( stricmp( attr, "boxmargin" )==0 ) {
+	else if( strcmp( attr, "nlinesym" )== 0 ) {  nlinesym = itokncpy( lineval ); if( nlinesym > 2 ) nlinesym = 2; }
+	else if( strcmp( attr, "wraplen" )==0 ) wraplen = itokncpy( lineval );
+	else if( strcmp( attr, "frame" )==0 ) { frame = lineval; dobox = 1; }
+	else if( strcmp( attr, "backcolor" )==0 ) { backcolor = lineval; dobox = 1; }
+	else if( strcmp( attr, "boxmargin" )==0 ) {
 		char foo1[40], foo2[40];
 		nt = sscanf( lineval, "%s %s", foo1, foo2 );
-		if( nt == 1 ) {
-			if( PLS.usingcm ) bmx1 /= 2.54;
-			bmy1 = bmx2 = bmy2 = bmx1;
+		if( nt == 1 ) { if( PLS.usingcm ) bmx1 /= 2.54; bmy1 = bmx2 = bmy2 = bmx1; }
+		else 	{
+			PL_getbox( "boxmargin", lineval, &bmx1, &bmy1, &bmx2, &bmy2 );
+			if( PLS.usingcm ) { bmx1 /= 2.54; bmy1 /= 2.54; bmx2 /= 2.54; bmy2 /= 2.54; }
 			}
-		else PL_getbox( "boxmargin", lineval, &bmx1, &bmy1, &bmx2, &bmy2 );
 		}
-	else if( stricmp( attr, "title" )==0 ) { 
-		dobox = 1;
-		strcpy( title, lineval );
-		}
-	else if( stricmp( attr, "titledetails" )==0 ) strcpy( titledetails, lineval );
-
+	else if( strcmp( attr, "title" )==0 ) { title = lineval; dobox = 1; convertnl( title ); }
+	else if( strcmp( attr, "titledetails" )==0 ) titledetails = lineval;
 	else Eerr( 1, "attribute not recognized", attr );
 	}
 
@@ -228,12 +140,7 @@ if( NLE < 1 ) return( 0 ); /* silent is better here ... scg 5/5/04 */
 /*********** now do the plotting work.. **********/
 
 /* box init stuff.. */
-if( dobox ) {
-	bstate = 0;
-	PLG_init_bb2();
-	Esquelch( "on" );
-	}
-
+if( dobox ) { bstate = 0; PLG_init_bb2(); Esquelch( "on" ); }
 
 /* default location */
 if( x < -9000.0 ) { 
@@ -246,7 +153,7 @@ orig_x = x; orig_y = y;
 RENDER:
 
 ix = 0;
-buflen = strlen( PL_bigbuf );
+buflen = strlen( specifyorder );
 
 startx = x; starty = y;
 if( format == DOWN ) {
@@ -263,15 +170,15 @@ for( i = 0; i < NLE; i++ ) {
 
 	/* fprintf( stderr, "%d|%s|%s|%s\n", LEtype[i], &Ltext[LElabel[i]], &Ltext[LEparm1[i]], &Ltext[LEparm2[i]] ); */
 
-	if( specifyorder ) {
+	if( specifyorder != "" ) {
 		/* get next line in orderspec.. */
 		NEXTORDERLINE:
-		GL_getchunk( buf, PL_bigbuf, &ix, "\n" );
+		GL_getchunk( buf, specifyorder, &ix, "\n" );
 		if( ix >= buflen ) break;
 
 		/* now search for matching entry.. */
 		for( k = 0; k < NLE; k++ ) {
-			if( strnicmp( buf, &Ltext[LElabel[k]], strlen(buf) )==0) { 
+			if( strncmp( buf, &Ltext[LElabel[k]], strlen(buf) )==0) { 
 				j = k;
 				break;
 				}
@@ -354,8 +261,8 @@ for( i = 0; i < NLE; i++ ) {
 	s = &Ltext[ LElabel[ j ]];
 
 	/* check for embedded url.. */
-	url[0] = '\0';
-	if( strnicmp( s, "url:", 4 )==0 ) {
+	strcpy( url, "" );
+	if( strncmp( s, "url:", 4 )==0 ) {
 		ixx = 0;
 		strcpy( url, GL_getok( &s[4], &ixx ) );
 		s = &Ltext[ LElabel[j] + ixx + 4 + 1 ];
@@ -399,9 +306,10 @@ for( i = 0; i < NLE; i++ ) {
 		}
 
 	else if( format == ACROSS ) { /* single line */
-		/* if( hsep > 0.0 ) x += ((Ecurtextwidth * maxlen ) + sampwidth + hsep); */ /* sampwidth added scg 8/12/05 */
-		if( hsep > 0.0 ) x += ((Ecurtextwidth * maxlen ) + hsep);  
-		else x += ((Ecurtextwidth * maxlen ) + 1.2);
+		/* if( hsep > 0.0 ) */ /* changed, scg 11/1/07 */
+		x += ((Ecurtextwidth * maxlen ) + hsep);  
+		/* else x += ((Ecurtextwidth * maxlen ) + 1.2); */
+		if( x < startx ) x = startx; /* 11/1/07 */
 
 		if( extent > 0.0 && ((x-startx) > extent) ) { /* start a new row - added scg 8/12/05 */
 			y -= ((Ecurtextheight * maxthi) + rowchunksep);
@@ -417,7 +325,6 @@ if( dobox ) {
 	if( title[0] != '\0' ) { /* do invisible title 1st time thru to influence bb, then really draw it 2nd time thru.. */
 		textdet( "titledetails", titledetails, &align, &adjx, &adjy, 0, "R", 1.0 );
 		if( align == '?' ) align = 'C';
-		convertnl( title );
 		measuretext( title, &nlines, &maxlen );
 		if( bstate == 0 ) { titx = bx1+((bx2-bx1)/2.0)+adjx;  tity = by2+(nlines*Ecurtextheight)+adjy; }
 		Emov( titx, tity );
@@ -428,11 +335,11 @@ if( dobox ) {
 		/* now that we know the extent of the legend, do box now; 
 		 * then we'll go back and draw the legend on top of it */
 		PLG_get_bb2( &bx1, &by1, &bx2, &by2 ); /* may have changed if there was a title.. */
-		if( stricmp( frame, "bevel" )==0 ) {
+		if( strcmp( frame, "bevel" )==0 ) {
 			Ecblock( bx1-bmx1, by1-bmy1, bx2+bmx2, by2+bmy2, backcolor, 0 );
 			Ecblockdress( bx1-bmx1, by1-bmy1, bx2+bmx2, by2+bmy2, 0.07, "0.6", "0.8", 0.0, "" );
 			}
-		else if( stricmp( frame, "no" ) == 0 ) Ecblock( bx1-bmx1, by1-bmy1, bx2+bmx2, by2+bmy2, backcolor, 0 );
+		else if( strcmp( frame, "no" ) == 0 ) Ecblock( bx1-bmx1, by1-bmy1, bx2+bmx2, by2+bmy2, backcolor, 0 );
 		else	{
 			linedet( "frame", frame, 1.0 );
 			Ecblock( bx1-bmx1, by1-bmy1, bx2+bmx2, by2+bmy2, backcolor, 1 );
@@ -445,7 +352,7 @@ if( dobox ) {
 
 
 /* now reset so a new legend can be accumulated.. */
-if( !noclear ) NLE = 0;
+if( !noclear ) { NLE = 0; LEavail = 0; }  /* LEavail init added here, scg 10/3/06 */
 return( 0 );
 }
 
@@ -461,9 +368,11 @@ char *errmsg;
 
 errmsg = "Sorry, too much legend content";
 
-convertnl( label );
-
 LEtype[ NLE ] = typ;
+
+if( typ == 0 ) label = "\n\n";  /* type=none is supposed to create extra space.. */
+else if( label[0] != '\0' ) convertnl( label );
+	
 LElabel[ NLE ] = LEavail;
 if( LEavail + strlen( label ) >= MAXLEGTEXT ) 
 	return( Eerr( 8478, errmsg, "" ) );
@@ -487,55 +396,57 @@ if( LEavail + strlen( parm2 ) >= MAXLEGTEXT )
 LEparm2[ NLE ] = LEavail;
 strcpy( &Ltext[ LEavail ], parm2 );
 LEavail += (strlen( parm2 ) + 1);
-
+	
 if( LEavail + strlen( parm3 ) >= MAXLEGTEXT ) 
 	return( Eerr( 8478, errmsg, "" ) );
 LEparm3[ NLE ] = LEavail;
 strcpy( &Ltext[ LEavail ], parm3 );
 LEavail += (strlen( parm3 ) + 1);
 
-
 NLE++;
 return( 0 );
 }
 
 /* ========================================= */
-/* GET_LEGENT - get a legend entry based on tag */
-int
-PL_get_legent( tag, parm1, parm2, parm3 )
-char *tag, *parm1, *parm2, *parm3;
+/* GET_LEGENT - get parm1 of a legend entry, based on tag ... used for "legend-driven" plot element selection */
+char *
+PL_get_legent( tag )
+char *tag;
 {
 int i;
 for( i = 0; i < NLE; i++ ) if( strcmp( tag, &Ltext[ LEtag[i] ] )==0 ) break;
-if( i == NLE ) return( 1 ); /* tag not found.. */
+if( i == NLE ) return( "" ); /* tag not found.. */
 
-if( parm1 != NULL ) strcpy( parm1, &Ltext[ LEparm1[i] ] );
-if( parm2 != NULL ) strcpy( parm2, &Ltext[ LEparm2[i] ] );
-if( parm3 != NULL ) strcpy( parm3, &Ltext[ LEparm3[i] ] );
-return( 0 );
+return( &Ltext[ LEparm1[i] ] );
+
+/* if( parm1 != NULL ) strcpy( parm1, &Ltext[ LEparm1[i] ] ); */
+/* if( parm2 != NULL ) strcpy( parm2, &Ltext[ LEparm2[i] ] ); */
+/* if( parm3 != NULL ) strcpy( parm3, &Ltext[ LEparm3[i] ] ); */
+/* return( 0 ); */
 }
 /* ========================================= */
-/* GET_LEGENT_RG - get a legend entry based numeric comparison with tag */
-int
-PL_get_legent_rg( val, parm1, parm2, parm3 )
+/* GET_LEGENT_RG - get a legend entry based numeric comparison with tag ... used for "legend-driven" plot element selection */
+char *
+PL_get_legent_rg( val )
 double val;
-char *parm1, *parm2, *parm3;
 {
 int i;
 double atof();
 
 for( i = 0; i < NLE; i++ ) if( val >= atof( &Ltext[ LEtag[i] ] ) ) break;
 	
-if( i == NLE ) return( 1 ); /* tag not found.. */
+if( i == NLE ) return( "" ); /* tag not found.. */
 
-if( parm1 != NULL ) strcpy( parm1, &Ltext[ LEparm1[i] ] );
-if( parm2 != NULL ) strcpy( parm2, &Ltext[ LEparm2[i] ] );
-if( parm3 != NULL ) strcpy( parm3, &Ltext[ LEparm3[i] ] );
-return( 0 );
+return( &Ltext[ LEparm1[i] ] );
+
+/* if( parm1 != NULL ) strcpy( parm1, &Ltext[ LEparm1[i] ] ); */
+/* if( parm2 != NULL ) strcpy( parm2, &Ltext[ LEparm2[i] ] ); */
+/* if( parm3 != NULL ) strcpy( parm3, &Ltext[ LEparm3[i] ] ); */
+/* return( 0 ); */
 }
 
 /* ======================================================= *
- * Copyright 1998-2005 Stephen C. Grubb                    *
+ * Copyright 1998-2008 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */

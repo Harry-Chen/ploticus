@@ -1,5 +1,5 @@
 /* ploticus data display engine.  Software, documentation, and examples.  
- * Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org).
+ * Copyright 1998-2008 Stephen C. Grubb  (scg@jax.org).
  * Covered by GPL; see the file ./Copyright for details. */
 #ifndef PLHEAD
 
@@ -9,7 +9,7 @@
 #include "plg.h"
 
 
-#define PLVERSION "2.33-Jun'06" 	/* see also the Copyright page, and page headers and footers */
+#define PLVERSION "2.40-Jan'08" 	/* see also the Copyright page, and page headers and footers */
 
 /* =========== working limits.. ============ */
 #define CPULIMIT 30		/* default max amount of cpu (seconds) - setrlimit() - may be overridden */
@@ -21,7 +21,7 @@
 #define MAXPROCLINES 5000	/* max # of proc lines in current proc plus all #saved 
 					procs - may be overridden using -maxproclines */
 
-#define MAXBIGBUF  100000 	/* size of PL_bigbuf (chars) */
+#define MAXBIGBUF  10000 	/* size of PL_bigbuf (chars) (was 100K .. scg 11/27/07) */
 #define MAXNCATS 250		/* default max # of categories - may be overriden using proc categories listsize */
 
 #define MAXOBJ 40		/* max # of currently "active" procs.. includes all #saved procs and #proc getdata with inline data */
@@ -29,6 +29,7 @@
 #define MAXCLONES 5		/* max # of #clone that may be used in one proc */
 
 #define MAXPATH 256		/* pathname max */
+#define MAXURL 256		/* url max */
 
 #define MAXTT 1500		/* max size of a tooltip text chunk */
 
@@ -47,13 +48,6 @@
   #define Eerr(a,b,c) TDH_err(a,b,c)
 #endif
 
-#ifdef LOCALE
- #define stricmp( s, t )        stricoll( s, t )
- #define strnicmp( s, t, n )     strnicoll( s, t, n )
-#else
- #define stricmp( s, t )        strcasecmp( s, t )
- #define strnicmp( s, t, n )     strncasecmp( s, t, n )
-#endif
 
 #define X 'x'
 #define Y 'y'
@@ -128,15 +122,17 @@ struct proclines {
 	};
 
 struct pldata {
-	char **datarow; 	/* array of pointers to malloc'ed row buffers */
+	char **datarow; 	/* array of pointers to malloc'ed data row buffers */
 	int currow;		/* current number of members in datarow array */
 	int maxrows;		/* total malloc'ed size of datarow array */
+				/* note: in-script data is stored in persistent proclines, not data rows */
 
 	char **df;		/* array of field pointers */
 	int curdf;		/* next available field pointer in df array */
 	int maxdf;		/* total malloc'ed size of df array; */
+				/* note: field pointers point into datarows (or into proclines for in-script data) */
 
-	/* data sets are managed as a stack of up to MAXDS elements */
+	/* data sets are managed as a stack of up to MAXDS elements.  proc getdata always clears the stack and fills at ds=0.  */
 	int curds;		/* identifies the current dataset (or stack size).  First is 0 */
 	int dsfirstdf[MAXDS];	/* where a dataset begins in the df array */
 	int dsfirstrow[MAXDS];	/* where a dataset begins in the datarow array.. if data set in procline array this is -1 */
@@ -160,8 +156,12 @@ extern char PL_bigbuf[];
 
 /* ================ function redefines =========================== */
 /* internally, functions usually don't use the PL_ prefix.. */
-#define getmultiline(parmname,firstline,maxlen,result)	PL_getmultiline(parmname,firstline,maxlen,result)
-#define getnextattr(flag,attr,val,linevalpos,nt) 	PL_getnextattr(flag,attr,val,linevalpos,nt)
+#define getmultiline(firstline,mode)			PL_getmultiline(firstline,mode)
+#define getnextattr(flag,attr,valpos) 			PL_getnextattr(flag,attr,valpos)
+#define tokncpy(val,lineval,maxlen)			PL_tokncpy(val,lineval,maxlen)
+#define itokncpy(lineval)				PL_itokncpy(lineval)
+#define ftokncpy(lineval)				PL_ftokncpy(lineval)
+#define newattr(lineval,len)				PL_newattr(lineval,len)
 
 #define da( r, c )					PL_da( r, c )
 #define fda( r, a, ax )					PL_fda( r, a, ax )
@@ -169,8 +169,9 @@ extern char PL_bigbuf[];
 #define getcoords( p, v, x, y )				PL_getcoords( p, v, x, y )
 #define getbox( p, v, x1, y1, x2, y2 )			PL_getbox( p, v, x1, y1, x2, y2 )
 #define getrange( v, l, h, ax, dl, dh )			PL_getrange( v, l, h, ax, dl, dh )
+#define getyn( s )					PL_getyn( s )
 #define file_to_buf( f, m, r, b )			PL_file_to_buf( f, m, r, b )
-#define setfloatvar( v, f )				PL_setfloatvar( v, f )
+#define setfloatvar( v, f, m )				PL_setfloatvar( v, f, m )
 #define setintvar( v, n )				PL_setintvar( v, n )
 #define setcharvar( v, s )				PL_setcharvar( v, s )
 #define conv_msg( r, c, a )				PL_conv_msg( r, c, a )
@@ -229,9 +230,15 @@ extern char PL_bigbuf[];
 extern char *PL_da();
 extern double PL_fda(), PL_conv(), PL_u();
 extern char *PL_getnextattr();
+extern double PL_ftokncpy();
+extern char *PL_newattr();
+extern char *PL_getmultiline();
+extern char *PL_get_legent();
+extern char *PL_get_legent_rg();
 
 /* ================ int functions =========================== */
-extern int PL_getmultiline();
+extern int PL_tokncpy();
+extern int PL_itokncpy();
 extern int PL_num();
 extern int PL_getcoords();
 extern int PL_getbox();
@@ -287,12 +294,12 @@ extern int PL_f_inr();
 extern int PL_addcat();
 extern int PL_begin();
 extern int PL_catfree();
-extern int PL_checkds();
 extern int PL_clickmap_demomode();
 extern int PL_clickmap_free();
 extern int PL_clickmap_getdemomode();
 extern int PL_clickmap_inprogress();
 extern int PL_clickmap_out();
+extern int PL_clickmap_adjust();
 extern int PL_custom_function();
 extern int PL_devstring();
 extern int PL_do_preliminaries();
@@ -310,7 +317,6 @@ extern int PL_holdmem();
 extern int PL_init_mem();
 extern int PL_lib_initstatic();
 extern int PL_ncats();
-extern int PL_newdataset();
 extern int PL_nextcat();
 extern int PL_parsedata();
 extern int PL_process_arg();
@@ -322,10 +328,12 @@ extern int PL_startdatarow();
 extern int PL_units_initstatic();
 extern int PL_value_subst();
 extern int PL_add_legent();
-extern int PL_get_legent();
-extern int PL_get_legent_rg();
 extern int PL_resetstacklist();
-extern int PL_getdata_specialmode();
+extern int PL_getyn();
+extern int PL_cleardatasets();
+extern int PL_begindataset();
+extern int PL_finishdataset();
+extern int PL_popdataset();
 
 extern int PLP_annotate();
 extern int PLP_areadef();
@@ -335,12 +343,13 @@ extern int PLP_bars();
 extern int PLP_bars_initstatic();
 extern int PLP_breakaxis();
 extern int PLP_categories();
+extern int PLP_catlines();
 extern int PLP_curvefit();
 extern int PLP_defineunits();
 extern int PLP_drawcommands();
 extern int PLP_getdata();
 extern int PLP_getdata_initstatic();
-extern int PLP_import();
+extern int PLP_image();
 extern int PLP_legend();
 extern int PLP_legend_initstatic();
 extern int PLP_legendentry();
@@ -351,14 +360,14 @@ extern int PLP_pie();
 extern int PLP_print();
 extern int PLP_processdata();
 extern int PLP_processdata_initstatic();
-extern int PLP_rangebar();
-extern int PLP_rangebar_initstatic();
+extern int PLP_boxplot();
 extern int PLP_rangesweep();
 extern int PLP_rect();
 extern int PLP_scatterplot();
 extern int PLP_settings();
 extern int PLP_symbol();
 extern int PLP_tabulate();
+extern int PLP_tree();
 extern int PLP_usedata();
 extern int PLP_vector();
 extern int PLP_venndisk();

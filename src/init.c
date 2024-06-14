@@ -175,8 +175,8 @@ Efont( Estandard_font );
 Etextsize( 10 );
 Etextdir( 0 );
 Elinetype( 0, 0.6, 1.0 );
-Ecolor( Estandard_color );
-strcpy( Ecurcolor, Estandard_color );  /* added scg 7/28/04 ... related to pcode color change optimization */
+Ecolor( Estandard_color ); PLG_forcecolorchg();
+/* strcpy( Ecurcolor, Estandard_color ); */ /* added scg 7/28/04 ... related to pcode color change optimization */
 Ebackcolor( Estandard_bkcolor );
 Escaletype( "linear", 'x' );
 Escaletype( "linear", 'y' );

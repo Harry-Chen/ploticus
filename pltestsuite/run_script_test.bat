@@ -18,11 +18,6 @@ set OPTS=
 
 echo "--------- stock2..." 
 %PL% -%MODE% %OPTS% stock2.htm 
-echo "--------- timely..." 
-%PL% -%MODE% %OPTS% timely.htm 
-echo "Note: some numbers should have appeared above..  " 
-echo "--------- clickmap_mouse... (should produce a server-side image map file..)" 
-%PL% -%MODE% %OPTS% -map clickmap_mouse.htm 
 echo "--------- kmslide..." 
 %PL% -%MODE% %OPTS% kmslide.htm 
 echo "--------- propbars1..." 
@@ -30,15 +25,11 @@ echo "--------- propbars1..."
 echo "--------- td..." 
 %PL% -%MODE% %OPTS% td.htm 
 echo "5 plots done"
-echo "--------- distrib..." 
-%PL% -%MODE% %OPTS% distrib.htm 
 echo "--------- errbar5..." 
 %PL% -%MODE% %OPTS% errbar5.htm 
 echo "Note: some warnings are ok in errbar5..  " 
 echo "--------- scatterplot10..." 
 %PL% -%MODE% %OPTS% scatterplot10.htm 
-echo "--------- errbar1..." 
-%PL% -%MODE% %OPTS% errbar1.htm 
 echo "--------- devol..." 
 %PL% -%MODE% %OPTS% devol.htm 
 echo "10 plots done"
@@ -67,14 +58,28 @@ echo "Note: there should be 8 'warning: time is outside of window range' msgs ab
 echo "20 plots done.."
 echo "--------- lineplot20..." 
 %PL% -%MODE% %OPTS%  lineplot20.htm 
-echo "--------- colorgrid..." 
-%PL% -%MODE% %OPTS%  colorgrid.htm 
+
+echo "--------- colorgrid2 (should produce client-side image map to file csmap.out)..." 
+%PL% -%MODE% %OPTS%  colorgrid2.htm  -csmap > csmap.out
+
 echo "--------- heatmap3..." 
 %PL% -%MODE% %OPTS%  heatmap3.htm 
 echo "--------- vector1..." 
 %PL% -%MODE% %OPTS%  vector1.htm 
 echo "--------- windbarbs..." 
 %PL% -%MODE% %OPTS%  windbarbs.htm 
+echo "--------- venn..." 
+%PL% -%MODE% %OPTS%  venn.htm 
+echo "--------- catlines1..." 
+%PL% -%MODE% %OPTS%  catlines1.htm 
+echo "--------- tree1..." 
+%PL% -%MODE% %OPTS%  tree1.htm 
+echo "--------- dtfut..." 
+%PL% -%MODE% %OPTS%  dtfut.htm 
+echo "--------- rangesweep2_dostext..." 
+%PL% -%MODE% %OPTS%  rangesweep2.htm 
+echo "--------- sar-cpu..." 
+%PL% -%MODE% %OPTS%  sar-cpu.htm 
 
 
 echo "Finished."

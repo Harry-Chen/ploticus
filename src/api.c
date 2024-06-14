@@ -7,6 +7,8 @@
 /* PLOTICUS API */
 #include "pl.h"
 
+int PL_init_statics();
+
 static int begin_needed = 1;
 
 /* ================================== */
@@ -90,8 +92,10 @@ int
 ploticus_end()
 {
 int stat;
+char buf[80];
 
-stat = PL_execline( "#endproc" );
+strcpy( buf, "#endproc" );
+stat = PL_execline( buf );
 if( PLS.eready ) {
 	Eflush();
 	stat = Eendoffile();

@@ -24,7 +24,7 @@
   <td align=right>
   <small>
   <a href="../doc/welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
-  Version 2.33 Jun'06
+  Version 2.40 Jan'08
   <td></tr></table>
 </td></tr>
 <td>
@@ -32,7 +32,7 @@
 <br>
 .>>
 
-.TH pl(1) PL "02-JUN-2006   PL ploticus.sourceforge.net"
+.TH pl(1) PL "15-JAN-2008   PL ploticus.sourceforge.net"
 
 .SH Name
 pl
@@ -489,19 +489,6 @@ These can be used for hyperlinks, and also for providing
 pop-up text labels that appear when the mouse passes over a region.
 By default, client-side map content is written to stdout.
 
-.LP
-\fB-map\fR
-.IP \0
-produce a 
-.ig >>
-<a href="clickmap.html">
-.>>
-\0server-side clickable imagemap file
-.ig >>
-</a>
-.>>
-to accompany a png, gif, jpeg, or SVG.  
-
 .ig >>
 <br><br>
 .>>
@@ -511,11 +498,6 @@ to accompany a png, gif, jpeg, or SVG.
 .IP \0
 Same as \fB-csmap\fR but all mapped regions are shown outlined in green,
 and a complete HTML chunk is produced which involves the output image name.
-
-.LP
-\fB-mapdemo\fR
-.IP \0
-Same as \fB-map\fR but all mapped regions are shown outlined in green.
 
 .ig >>
 <br><br>
@@ -537,10 +519,24 @@ explicitly name the output file containing the map info.  The name may also be s
 </a>
 .>>
 If a name is not specified, client-side image map info will be written to stdout;
-server-side image map info will be written to a file having the same name as the output result file
-except with a \fC.map\fR suffix
-(\fCstdout\fR may be useful in dynamic content HTML situations).
 For SVG this parameter is not needed, since image map info is embedded in the SVG file.
+
+.ig >>
+<br><br>
+.>>
+.LP
+\fB-map\fR
+.IP \0
+produce a 
+.ig >>
+<a href="clickmap.html">
+.>>
+\0server-side clickable imagemap file
+.ig >>
+</a>
+.>>
+to accompany a png, gif, jpeg, or SVG.   
+\fBNote: server-side maps are deprecated.\fR
 
 .ig >>
 <a name=resultsize></a>
@@ -669,6 +665,21 @@ affect coordinate locations.
 .br
 Example: \fC-croprel 0,-0.1,0,0.1\fR
 
+.ig >>
+<br><br>
+.>>
+
+.LP
+\fB-pixsize\fR
+.ig >>
+&nbsp; &nbsp;
+.>>
+\fIwidth,height\fR
+.IP \0
+If specified, result PNG/GIF/JPG image will be created at exactly this width and height in pixels.
+Does not interact with scaling or cropping... user is responsible for ensuring that content fits appropriately into the specified size.
+User is also responsible for setting -pagesize appropriately for larger images.
+New in 2.40
 
 .ig >>
 <a name=graphic></a>
@@ -916,6 +927,18 @@ Note: raising the maximum number of categories may be done using
 </a>
 .>>
 from within the script.
+
+.ig >>
+<br><br>
+.>>
+.LP
+\fB-cpulimit\fR
+#Include nbsp2
+\fIs\fR
+.IP \0
+Set unix resource limit on cpu time to \fIs\fR seconds.  Default is 30 seconds.  
+New in 2.40
+
 
 .ig >>
 <br><br><br>

@@ -1,236 +1,158 @@
-######## This Makefile will build the PL program.  To build libploticus, see Makefile_api
-######## Root is not required to build ploticus.
+######## PLOTICUS version 2.40    Copyright 1998-2008 Stephen C. Grubb  http://ploticus.sourceforge.net
 ########
-######## This Makefile is READY TO GO for Linux and PNG.  For other platforms or 
-######## configurations just follow the simple 3-step procedure to choose OS platform, 
-######## options, etc.
-########
-######## Then type:  make clean; make
-########
-######## The executable(s) will be placed into this directory.  Move them to your desired
-######## bin manually or use "make install" (which may require root)
-######## 
-######## After building, set environment variable PLOTICUS_PREFABS to the full pathname
-######## of the ./prefabs directory.  
-########
-######## Unless specifically disabled herein, all ploticus builds can produce PostScript,
-######## EPS, and SVG without needing any external libraries.  X11 is available by default
-######## on unix, and requires xlib.  Image file output (PNG, GIF, etc) is created using
-######## the GD library (see Step 2 below) which may require certain libraries.  GD code
-######## is bundled with ploticus, or you can use your own copy (1.84+) if desired.
-######## SWF output can be enabled if desired (see Step 3).
-########
-######## PLOTICUS data display engine.  Software, documentation, and examples.  
-######## Copyright 1998-2005 Stephen C. Grubb  (stevegrubb@gmail.com)
-######## Covered by GPL; see the file ./Copyright for details. 
+######## Use this Makefile to build  pl executable  or  libploticus.  Root permission is not required.
+######## Configure the 3 settings below then do:  make clean; make
+######## Default settings should be ready to go for most linux platforms.
+######## Problem reports and questions may be sent to  ploticus@yahoogroups.com
 
 
 # defaults..
 CC = gcc
 PLATFORM = UNIX
 RMCOM = rm -f
-XOBJ = x11.o interact.o
-PL = pl
-PLPNG = plpng 
-BIN = ./
+NOX11 = -DNOX11
+NOSWF = -DNOSWF
 EXE = pl
 
 
-#############################################################
-######## Step 1. Select an OS platform.               #######
-########         All others should be commented out.  #######
-#############################################################
 
-#### For Linux uncomment the following.. #######################
+####################################################################
+########## Setting 1:
+########## What do you wish to build?  pl executable?  libploticus?
+########## Select ONE option below by activating the appropriate lines...
+########## All other lines should be commented out.
+####################################################################
+
+
+############ Option 1: build the pl executable (unix), no X11 ....
+# NOX11 = -DNOX11
+
+
+
+############ Option 2: build the pl executable (unix), with X11 enabled .... 
+NOX11 = 
+XOBJ = x11.o interact.o
+
+############ ...AND... activate the lines below for your platform... (X11 libs & header files)
+#### linux
 XLIBS = -L/usr/X11R6/lib -lX11
-INCLUDEDIRS = -I/usr/X11R6/include
-
-#### Note: for 64 bit platform I used: XLIBS = -L/usr/X11R6/lib64
-
-
-#### For Solaris 2.x uncomment the following.. #################
+XINCLUDEDIR = -I/usr/X11R6/include
+#### alt linux
+# XLIBS = -lX11
+# XINCLUDEDIR = -I/usr/include/X11
+#### 64bit linux
+# XLIBS = -L/usr/X11R6/lib64 -lX11
+#### solaris
 # XLIBS = -L/usr/openwin/lib -lX11
-# INCLUDEDIRS = -I/usr/openwin/include
-
-
-#### For FreeBSD uncomment the following.. #####################
+# XINCLUDEDIR = -I/usr/openwin/include
+#### mac osx
+# CC = cc
 # XLIBS = -L/usr/X11R6/lib -lX11
-# INCLUDEDIRS = -I/usr/X11R6/include -I/usr/local/include
-# ADDLIBS = -L/usr/local/lib
+# XINCLUDEDIR = -I/usr/X11R6/include
+#### cygwin 
+# XLIBS = -L/usr/X11R6/lib -lX11
+# XINCLUDEDIR = -I/usr/X11R6/include
+# PLATFORM = WIN32
 
 
-#### For Windows/NT/MinGW uncomment the following.. ############
+
+############ Option 3: build pl executable (native win32 pl.exe)
 # PLATFORM = WIN32
 # RMCOM = del
-# XOBJ = 
-# NOXFLAG = -DNOX11
-# NORLIMFLAG = -DNORLIMIT
 
 
-#### For Max OS X uncomment the following.. ######################
-# CC = cc
-#### with X11..
-# XLIBS = -L/usr/X11R6/lib -lX11
-# INCLUDEDIRS = -I/usr/X11R6/include
-#### without X11..
-# XLIBS =
-# NOXFLAG = -DNOX11
+
+############ Option 4: build static libploticus (unix) with png support (remember to also select setting 2 option 2)
+# LIBEXT = a
+# ARCOM = ar r
+# target: libploticus-static
 
 
-#### For AIX 3.2.5, HP-UX 10.20 uncomment the following.. ########
-# XLIBS = -L /usr/X11/lib -lX11
-# INCLUDEDIRS = -I/usr/X11/include
-## ..note for HP-UX it was necessary to do: ln gd_io.h gd16 by hand to get the png compiled
 
-
-#### For SunOS4, Irix, other BSD uncomment the following.. #######
-# XLIBS = -L/usr/lib -lX11
-# INCLUDEDIRS = -I/usr/include
-## ..note the following additional lines were necessary on the Irix system we used:  CC = cc    FLAGS = -o32
-
-
-#### For UnixWare uncomment the following.. ######################
-# XLIBS = -L/usr/X11/lib -lX11
-# INCLUDEDIRS = -I/usr/X11/include
-# ADDLIBS = -lnsl -lresolv -L/usr/ucblib -lucb
-## ..note: the following was necessary on the UnixWare system we used: CC = cc
-
-
-#### For MPE/iX uncomment the following.. ########################
-# XLIBS = -L/usr/local/lib -lX11
-# INCLUDEDIRS = -I/usr/local/include
-# FLAGS = -D_POSIX_SOURCE
-# CC = /usr/local/bin/gcc  
-
-#### For Cygwin uncomment the following.. ########################
-# PLATFORM = WIN32
-# XLIBS = -L/usr/X11R6/lib -lX11
-# INCLUDEDIRS = -I/usr/X11R6/include
-# NORLIMFLAG = -DNORLIMIT
-
+############ Option 5: build shared libploticus (unix)
+############ Note: untested by me ... suggestions welcome -sg
+# LIBEXT = a
+# FPIC = -fPIC
+# SONAME = libploticus.so.0
+# SHAREFLAG = -shared -Wl,-soname,$(SONAME)
+# target: libploticus-so
 
 
 
 ############################################################################
-######## Step 2. GD image options                                   ########
-########        Ploticus uses the GD library (www.boutell.com/gd)   ########
-########	for image creation (PNG, JPEG, WBMP, pseudo-GIF).   ########
-########	Several capability combinations are available.      ########
-########        Choose ONE of the following...  all others should   ########
-########	be commented out.                                   ########
+######### Setting 2:
+######### Ploticus uses the GD library to create PNG, GIF, JPEG images.
+######### This distribution includes GD13 (GIF), and GD16 (PNG) code.
+######### You can choose to use one of these or you can choose to use your 
+######### own GD version, or you can choose to not use GD at all.
 ############################################################################
 
-#### For PNG (only) uncomment the following.. (this will use a version of GD that comes
-#### bundled with ploticus; you need to have libpng and zlib ).  Set GD16H if your
-#### png.h or other header files are in a nonstandard place, eg GD16H = -I/home/scg/lib
-ploticus: plpng 
-PLPNG = pl 
+
+########### Option 1: use bundled GD13 (pseudoGIF only). No additional lib dependencies.
+# exetarget: pl 
+
+########### Option 2: use bundled GD16 (PNG only).  Requires libpng and zlib.
+exetarget: plpng 
 GD16LIBS = -lpng -lz
 GD16H = 
 ZFLAG = -DWZ
 
-
-#### For pseudo-GIF (only) uncomment the following..  (this will use a version of GD that
-#### comes bundled with ploticus; no additional libs required) 
-# ploticus: pl 
-
-
-#### For both pseudo-GIF & PNG uncomment the following..  (this will use a version of GD
-#### that comes bundled with ploticus; no additional libs required).  Set GD16H if your 
-#### png.h or other header files are in a nonstandard place, eg GD16H = -I/home/scg/lib
-# ploticus: pl plpng 
-# EXE = pl plpng
-# GD16LIBS = -lpng -lz
-# GD16H = 
-
-
-
-#### For JPEG, WBMP, and PNG (without FreeType2), using your copy of GD 1.84+,  
-####  uncomment the following.. (gd 1.84+, libpng, zlib, libjpeg required).  Set GD18H if your 
-#### png.h or other header files are in a nonstandard place, eg GD18H = -I/home/scg/lib
-
-# ploticus: plgd18 
+########### Option 3: use your own GD resource.  Requires GD 1.84+, libpng, zlib, libjpeg
+# exetarget: plgd18 
 # GD18LIBS = -lgd -lpng -lz -ljpeg 
 # GD18H = 
 # GDFREETYPE = 
 # ZFLAG = -DWZ
 
-
-#### For JPEG, WBMP, PNG, and FreeType2, using your copy of GD 1.84+,          ######
-#### uncomment the following..  (gd 1.84+, libpng, zlib, libjpeg, libfreetype  ######
-#### are all required).  Set GDFONTPATH to directory containing .ttf files     ######
-# ploticus: plgd18 
+########### Option 4: use your own GD resource with FreeType2 fonts enabled.  
+###########           Requires GD 1.84+, libpng, zlib, libjpeg and libfreetype
+# exetarget: plgd18 
 # GD18LIBS = -lgd -lpng -lz -ljpeg -lfreetype
 # GD18H = 
 # GDFREETYPE = -DGDFREETYPE
 # ZFLAG = -DWZ
 
-
-#### To disable all GD image support uncomment the following..  ######################
-# ploticus: plnogd 
-# NOGDFLAG = -DNOGD
+########### Option 5: don't use GD at all.
+# exetarget: plnogd 
+# NOGD = -DNOGD
 
 
 
 ################################################################
-######## Step 3.  Some other things you might       ############
-########          want control over..               ############
+######## Third question.
+######## Other various settings you may want to make.
 ################################################################
 
 
-#### If you want SWF (flash) output capability
-#### uncomment the following.  You need to have ming library.  If necessary change -lming to location of ming.
-#### Note, was successful with ming 0.2a... but problems were noted when attempting with later ming versions..
+#### For SWF (flash) output capability activate the following.  If necessary change -lming to location of ming.
+#### Note, successful with ming 0.2a but not with later ming versions..
 # MING = -lming
-# ..and if your ming.h is in a nonstandard place add a line like this:
-# MINGH = -I/home/scg/lib
-####
-#### Otherwise, for no SWF capability, uncomment the following line..
-NOSWFFLAG = -DNOSWF 
+#optional for non-standard location:  MINGH = -I/home/scg/lib
 
 
-#### If you plan to do a "make install", where do you want the executable(s) to be moved to?
-BIN = /usr/local/bin
-
-
-#### To set a hard-coded directory for prefabs files, uncomment & edit the following.. 
-#### If done, users won't be required to have PLOTICUS_PREFABS environment variable defined.
-#### This option not available for win32
-# PREFABS_DIR = "/usr/lib/ploticus"
+#### If you do a "make install", where do you want the executable(s) to be moved to?
+INSTALLBIN = /usr/local/bin
 
 
 #### For LOCALE support (non-roman alphabets & collation), uncomment the following..
 # LOCALEOBJ = localef.o
 # LOCALE_FLAG = -DLOCALE
 
-
 #### SVG output is always available by default.
-#### If you want compressed SVG (.svgz), and you selected "GIF only" or "disable GD" above, 
+#### If you want compressed SVG (.svgz), and you selected GD13 or no GD above, 
 #### uncomment the following.  You need to have zlib.  If necessary change -lz to location of zlib.
 # ZLIB = -lz
 # ZFLAG = -DWZ
 
-
-#### To completely remove X11 output capability from any of the above unix builds, uncomment the following..
-# NOXFLAG = -DNOX11
-# XLIBS = 
-# XOBJ =
-
-
 #### To completely remove PostScript / EPS output capability, uncomment the following..
-# NOPSFLAG = -DNOPS 
-
+# NOPS = -DNOPS 
 
 #### To completely remove SVG output capability, uncomment the following..
-# NOSVGFLAG = -DNOSVG 
-
-
-#### To completely remove safety limits on cpu time uncomment the following line..
-# NORLIMFLAG = -DNORLIMIT
-
+# NOSVG = -DNOSVG 
 
 #### To see all possible compiler warnings, uncomment the following line..
-# WALL = -Wall
+WALL = -Wall
+
 
 
 ###############################################################################
@@ -252,35 +174,55 @@ BIN = /usr/local/bin
 ###############################################################################
 ###############################################################################
 
-#### for basic gd build..
+
 GD13 = grgd13.o devstuff13.o gd13.o 
 GD16 = grgd16.o devstuff16.o gd16.o gd_io.o gd_io_dp.o gd_io_file.o gd_png.o 
 GD = gdfontg.o gdfontl.o gdfontmb.o gdfonts.o gdfontt.o
 
-
 LIBS = $(XLIBS) -lm $(ADDLIBS) 
 
-CFLAGS = $(WALL) -DPLOTICUS -D$(PLATFORM) -DTDH_NOREC $(ZFLAG) $(FLAGS) $(LOCALE_FLAG) \
-  $(NOGDFLAG) $(NOXFLAG) $(NOPSFLAG) $(NOSVGFLAG) $(NOSWFFLAG) $(INCLUDEDIRS) \
-  $(MINGH) $(NORLIMFLAG) -DPREFABS_DIR=\"$(PREFABS_DIR)\"
+CFLAGS = $(FPIC) $(WALL) -DPLOTICUS -D$(PLATFORM) -DTDH_NOREC $(ZFLAG) $(LOCALE_FLAG) \
+  $(NOGD) $(NOX11) $(NOPS) $(NOSVG) $(NOSWF) $(XINCLUDEDIR) $(MINGH) 
 
 OBJ = proc_annotate.o proc_areadef.o proc_axis.o proc_bars.o proc_rect.o proc_breakaxis.o \
-  proc_categories.o proc_curvefit.o proc_settings.o proc_defineunits.o proc_drawcommands.o \
-  proc_getdata.o proc_import.o proc_legend.o proc_legendentry.o proc_line.o proc_lineplot.o \
-  proc_page.o proc_pie.o proc_print.o proc_rangebar.o proc_rangesweep.o proc_usedata.o \
-  proc_scatterplot.o proc_vector.o proc_symbol.o proc_processdata.o proc_tabulate.o proc_venndisk.o clickmap.o\
+  proc_categories.o proc_curvefit.o proc_settings.o proc_drawcommands.o \
+  proc_getdata.o proc_image.o proc_legend.o proc_legendentry.o proc_line.o proc_lineplot.o \
+  proc_page.o proc_pie.o proc_print.o proc_boxplot.o proc_rangesweep.o proc_usedata.o \
+  proc_scatterplot.o proc_vector.o proc_symbol.o proc_processdata.o proc_tabulate.o proc_venndisk.o clickmap.o proc_tree.o proc_catlines.o \
   plhead.o execscriptfile.o execline.o lib.o details.o parse.o units.o preliminaries.o \
-  process_arg.o plvalue_subst.o cats.o fieldnames.o autorange.o nearest.o select.o memstuff.o \
+  process_arg.o plvalue_subst.o cats.o fieldnames.o autorange.o nearest.o select.o datasets.o \
   color.o plg.o init.o arrow.o mark.o block.o pcode.o ps.o svg.o swf.o stub.o winscale.o lineclip.o smoothfit.o \
   condex.o dates.o dbinterface.o err.o functions.o glroutines.o reslimits.o secondaryops.o  \
-  shell.o sinterp.o tdhkit.o times.o value.o value_subst.o variable.o custom.o datetime.o \
+  shell.o sinterp.o tdhkit.o times.o value.o value_subst.o variable.o custom.o \
   $(LOCALEOBJ)
 
-pl: pl.o $(OBJ) $(XOBJ) gd00files gd13files
-	$(CC) pl.o $(FLAGS) $(OBJ) $(GD13) $(GD) $(XOBJ) $(LIBS) $(ZLIB) $(MING) -o $(PL)
 
+# pl with gif support
+pl: pl.o $(OBJ) $(XOBJ) gd00files gd13files
+	$(CC) pl.o $(OBJ) $(GD13) $(GD) $(XOBJ) $(LIBS) $(ZLIB) $(MING) -o $(EXE)
+
+# pl with png support
 plpng: pl.o $(OBJ) $(XOBJ) gd00files gd16files
-	$(CC) pl.o $(FLAGS) $(OBJ) $(GD16) $(GD) $(XOBJ) $(GD16LIBS) $(LIBS) $(MING) -o $(PLPNG)
+	$(CC) pl.o $(OBJ) $(GD16) $(GD) $(XOBJ) $(GD16LIBS) $(LIBS) $(MING) -o $(EXE)
+
+# pl with jpeg support (user must supply gd 1.8+)
+plgd18: pl.o $(OBJ) $(XOBJ) gd18files
+	$(CC) pl.o grgd.o devstuff.o $(OBJ) $(XOBJ) $(GD18LIBS) $(LIBS) $(MING) -o $(EXE)
+
+# pl with no GD support
+plnogd: pl.o $(OBJ) $(XOBJ) nogdfiles
+	$(CC) pl.o devstuff.o $(OBJ) $(XOBJ) $(LIBS) $(ZLIB) $(MING) -o $(EXE)
+
+# libploticus.a with png
+libploticus-static: $(OBJ) api.o gd00files gd16files
+	$(RMCOM) libploticus.$(LIBEXT)
+	$(ARCOM) libploticus.$(LIBEXT) $(OBJ) api.o $(GD16) $(GD)
+
+# this one needs work... suggestions welcome
+libploticus-so: $(OBJ) $(GDOBJ)
+	$(RMCOM) libploticus.$(LIBEXT)
+	$(CC) $(SHAREFLAG) -o libploticus.$(LIBEXT) $(OBJ) $(GDOBJ)
+
 
 gd00files: 
 	$(CC) -I./gd13 -I./ -c gdfontg.c gdfontl.c gdfontmb.c gdfonts.c gdfontt.c
@@ -298,32 +240,29 @@ gd16files:
 	$(CC) -c -I./gd16 -I./ $(GD16H) gd16.c gd_io.c gd_io_dp.c gd_io_file.c gd_png.c
 	echo "done with gd16files" > gd16files
 
+gd18files:
+	$(CC) -c grgd.c devstuff.c -DGD18 $(GDFREETYPE) $(GD18H) $(CFLAGS)
+
+nogdfiles:
+	$(CC) -c devstuff.c $(CFLAGS)
+
 devgrgd:
 	$(CC) -c $(WALL) grgd.c -DGD13 -DPLOTICUS -I./gd13 -o grgd13.o
 	touch pcode.c
 	make
 
-# GD18: 
-plgd18: pl.o $(OBJ) $(XOBJ) gd18files
-	$(CC) $(FLAGS) pl.o grgd.o devstuff.o $(OBJ) $(XOBJ) $(GD18LIBS) $(LIBS) $(MING) -o $(PL)
-
-gd18files:
-	$(CC) -c grgd.c devstuff.c -DGD18 $(GDFREETYPE) $(GD18H) $(CFLAGS)
-
-
-
-# NOGD: 
-plnogd: pl.o $(OBJ) $(XOBJ) nogdfiles
-	$(CC) $(FLAGS) pl.o devstuff.o $(OBJ) $(XOBJ) $(LIBS) $(ZLIB) $(MING) -o $(PL)
-
-nogdfiles:
-	$(CC) -c devstuff.c $(CFLAGS)
-
 
 
 install:
-	mv $(EXE) $(BIN)
+	cp $(EXE) $(INSTALLBIN)
 
 clean:
 	$(RMCOM) *.o gd??files 
 
+distclean:  clean
+	$(RMCOM) $(EXE)
+
+
+########
+######## PLOTICUS     Copyright 1998-2008 Stephen C. Grubb  http://ploticus.sourceforge.net
+########

@@ -7,13 +7,16 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <sys/types.h>  /* for mode_t */
 
 extern int GL_getchunk(), TDH_err(), TDH_value_subst(), TDH_getvalue(), GL_goodnum(), GL_member(), GL_getseg();
 extern int GL_substitute(), GL_ranger(), GL_wildcmp(), GL_contains(), GL_addmember(), TDH_errmode(), GL_substring();
 extern int GL_autoround(), TDH_setvalue(), GL_make_unique_string(), GL_changechars(), GL_deletechars(), GL_deletemember();
 extern int GL_urlencode(), GL_urldecode();
-extern int GL_commonmembers(), GL_checksum_functions(), DT_datefunctions(), DT_timefunctions(), TDH_shfunctions();
-extern int atoi(), sleep(), geteuid(), getegid(); /* sure thing or return value not used */
+extern int GL_commonmembers(), GL_checksum_functions(), DT_datefunctions(), DT_timefunctions(), TDH_shfunctions(), TDH_showvars();
+extern int atoi(), sleep(), geteuid(), getegid(), chmod(), chdir(); /* sure thing or return value not used */
+extern char *crypt();  /* linux may require -lcrypt */
+
 
 #ifdef PLOTICUS
   extern int PL_custom_function();
@@ -205,6 +208,19 @@ if( hash < 1000 ) {
 	if( hash == 262 ) goto EXT_TIME; /* $time() */
 	}
   else if( hash < 500 ) {
+	if( hash == 354 ) {  /* $chmod( file, mode ) */   /* support common modes.. */
+		if( strcmp( arg[1], "664" )==0 ) chmod( arg[0], 00664 );  
+		else if( strcmp( arg[1], "644" )==0 ) chmod( arg[0], 00644 );  
+		else if( strcmp( arg[1], "666" )==0 ) chmod( arg[0], 00666 );  
+		else if( strcmp( arg[1], "444" )==0 ) chmod( arg[0], 00644 );  
+		else if( strcmp( arg[1], "660" )==0 ) chmod( arg[0], 00660 );  
+		else if( strcmp( arg[1], "640" )==0 ) chmod( arg[0], 00640 );  
+		return( 0 );
+		}
+	if( hash == 374 ) {  /* chdir( dir ) */
+		chdir( arg[0] );
+		return( 0 );
+		}
 	if( hash == 385 ) { /* $arith() and $arithl() - L to R arithmetic expression evaluator */
 		/* improved to accomodate scientific notation operands eg 1.27e-4  .... scg 7/29/04 */
 		int j;
@@ -423,6 +439,16 @@ if( hash < 1000 ) {
 
   else if( hash < 1000 ) {
 
+#ifdef UNIX
+#ifndef PLOTICUS
+	if( hash == 811 ) { /* $encrypt(s,salt) */
+		if( arg[1][0] == '\0' ) strcpy( arg[1], "sG" );
+		sprintf( result, "%s", crypt( arg[0], arg[1] ) );  /* linux may require -lcrypt */
+		return( 0 );
+		}
+#endif
+#endif
+
 	if( hash == 827 ) {  /* $stripws(s,mode) - remove white space from string.. 2 modes */
 		int state;
 
@@ -521,6 +547,12 @@ else {
 		}
 
 	if( hash == 1002 ) goto EXT_TIME; /* $timevalid() */
+
+	if( hash == 1004 ) {  /* $showvars() - print a list of all existing variable names to stdout, for debugging - added scg 7/2/07 */
+		if( arg[0][0] == 'v' ) TDH_showvars(1); /* with values */
+		else TDH_showvars(0); /* names only */
+		return( 0 );
+		}
 
 	if( hash == 1006 ) goto EXT_SH;   /* $shellrow() */
 
@@ -697,6 +729,15 @@ else {
 			if( strcmp( tok, firsttok )!=0 ) { sprintf( result, "0" ); return( 0 ); }
 			}
 		sprintf( result, "1" );
+		return( 0 );
+		}
+
+	if( hash == 1781 ) { /* counttokens( s ) - return number of ws-delimited tokens in s */
+		int ix;
+		ix = 0;
+		for( i = 0; ; i++ ) { if( strcmp( GL_getok( arg[0], &ix ), "" ) == 0 ) break; }
+		*typ = NUMBER;
+		sprintf( result, "%d", i );
 		return( 0 );
 		}
 

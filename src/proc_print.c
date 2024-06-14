@@ -1,5 +1,5 @@
 /* ======================================================= *
- * Copyright 1998-2005 Stephen C. Grubb                    *
+ * Copyright 1998-2008 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */
@@ -11,81 +11,50 @@
 int
 PLP_print()
 {
-int i;
-char attr[NAMEMAXLEN], val[256];
-char *line, *lineval;
-int nt, lvp;
-int first;
+int i, lvp, first;
+char attr[NAMEMAXLEN], *line, *lineval;
 
-char buf[256];
-char label[256];
-char selectex[256];
-int result;
-char printstring[256];
-char outfile[MAXPATH];
-char outmode[40];
+char *printstring, *label, *selectex, *outfile, *outmode;
+char buf[512], tok[80];
+int result, dontclose, nrecords;
 FILE *outfp;
-int dontclose;
-int nrecords;
-
 
 TDH_errprog( "pl proc print" );
 
-
 /* initialize */
-strcpy( printstring, "" );
-strcpy( label, "" );
-strcpy( selectex, "" );
-strcpy( outfile, "" );
-strcpy( outmode, "w" );
+printstring = ""; label = ""; selectex = ""; outfile = ""; 
+outmode = "w";
 
 /* get attributes.. */
 first = 1;
 while( 1 ) {
-	line = getnextattr( first, attr, val, &lvp, &nt );
+	line = getnextattr( first, attr, &lvp );
 	if( line == NULL ) break;
 	first = 0;
 	lineval = &line[lvp];
 
-	if( stricmp( attr, "select" )==0 ) strcpy( selectex, lineval );
-	else if( stricmp( attr, "label" )==0 ) {
-		strcpy( label, lineval );
-		convertnl( label );
-		}
-
-	else if( stricmp( attr, "print" )==0 ) {
-		strcpy( printstring, lineval );
-		convertnl( printstring );
-		}
-
-	else if( stricmp( attr, "outfile" )==0 ) {
-		strcpy( outfile, val );
-		}
-	else if( stricmp( attr, "outmode" )==0 ) {
-		strcpy( outmode, val );
-		}
-
+	if( strcmp( attr, "select" )==0 ) selectex = lineval;
+	else if( strcmp( attr, "label" )==0 ) { label = lineval; convertnl( label ); }
+	else if( strcmp( attr, "print" )==0 ) { printstring = lineval; convertnl( printstring ); }
+	else if( strcmp( attr, "outfile" )==0 ) outfile = lineval;
+	else if( strcmp( attr, "outmode" )==0 ) outmode = lineval;
 	else Eerr( 1, "attribute not recognized", attr );
 	}
 
+if( printstring[0] != '\0' && Nrecords < 1 ) return( Eerr( 17, "Warning: no data has been read yet w/ proc getdata", "" ) );
 
-if( printstring[0] != '\0' && Nrecords < 1 ) 
-	Eerr( 17, "Warning: no data has been read yet w/ proc getdata", "" );
-
+fprintf( PLS.errfp, "Warning, proc print is deprecated in 2.40\n" );
 
 
 /* now do the work.. */
 dontclose = 0;
 if( outfile[0] != '\0' ) {
-	outfp = fopen( outfile, outmode );
-	if( outfp == NULL ) {
-		Eerr( 7259, "cannot open outfile", outfile );
-		outfp = PLS.diagfp;
-		dontclose = 1;
-		}
+	sprintf( tok, "%c", outmode[0] );
+	outfp = fopen( outfile, tok );
+	if( outfp == NULL ) { Eerr( 7259, "cannot open outfile", outfile ); outfp = PLS.diagfp; dontclose = 1; }
 	}
-else 	{
-	outfp = PLS.diagfp;
+else 	{ 
+	outfp = PLS.diagfp; 
 	dontclose = 1;
 	}
 
@@ -111,7 +80,7 @@ return( 0 );
 }
 
 /* ======================================================= *
- * Copyright 1998-2005 Stephen C. Grubb                    *
+ * Copyright 1998-2008 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */

@@ -18,7 +18,7 @@ extern int TDH_err();
 #define DATAMAXLEN 256  /* max length of one field - should be same value as VARMAXLEN */
 
 /* Variables list */
-#define MAXVAR 200	/* max number of variables */
+#define MAXVAR 250	/* max number of variables */ /* raised to 250 - scg 7/11/07 */
 #define VARMAXLEN 256	/* max length of variable contents - should be same value as DATAMAXLEN */
 
 /* Variable name size */
@@ -93,12 +93,23 @@ struct sinterpstate {
 	} ;
 
 /* ==== macros ==== */
-#ifndef stricmp
-#define stricmp( s, t ) 	strcasecmp( s, t )
+#ifdef LOCALE
+ #ifndef stricmp
+ #define stricmp( s, t )         stricoll( s, t )
+ #endif
+ #ifndef strnicmp
+ #define strnicmp( s, t, n )     strnicoll( s, t, n )
+ #endif
+ extern int stricoll(), strnicoll();   /* added scg 5/31/06 gcc4 */
+#else
+ #ifndef stricmp
+ #define stricmp( s, t )         strcasecmp( s, t )
+ #endif
+ #ifndef strnicmp
+ #define strnicmp( s, t, n )     strncasecmp( s, t, n )
+ #endif
 #endif
-#ifndef strnicmp
-#define strnicmp( s, t, n )     strncasecmp( s, t, n )
-#endif
+
 #define err(a,b,c) 		TDH_err(a,b,c)
 
 /* ==== fseek defines ==== */

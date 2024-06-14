@@ -60,6 +60,11 @@
 
 #musthave x y
 
+#if @cats != ""
+  #proc categories
+  axis: x
+  datafield: @x
+#endif
 
 //// plotting area..
 #include $chunk_area
@@ -70,10 +75,10 @@
     xrange: @xrange
   #endif
 #else
-  xscaletype: categories
-  xcategories: datafield=@x
+  // xscaletype: categories
+  // xcategories: datafield=@x
   // following added 9/2/02 scg
-  catcompmethod: exact
+  // catcompmethod: exact
 
   #ifspec stubvert xaxis.stubvert
 #endif

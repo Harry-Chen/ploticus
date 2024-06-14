@@ -81,10 +81,6 @@ datafield: @values
 #ifspec clickmaplabel
 #ifspec labelfmtstring
   
-#write stderr
-  legend: @legend
-#endwrite
-
 #if @dolegend = 1
   #proc legend
   location: @legend

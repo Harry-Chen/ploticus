@@ -21,7 +21,7 @@
 #include "tdhkit.h"
 
 extern int TDH_shellresultrow(), TDH_shellclose(), TDH_sqlnames(), TDH_sqlrow(), TDH_dequote(), TDH_function_call();
-extern int TDH_function_listsep(), TDH_condex_listsep(), TDH_errmode();
+extern int TDH_function_listsep(), TDH_condex_listsep(), TDH_errmode(), TDH_setshellfdelim();
 extern int atoi(); /* sure thing */
 
 #ifndef TDH_NOREC
@@ -82,6 +82,7 @@ while( 1 ) {
 		if( stat != 0 ) {
 			TDH_shellclose();
 			ss->doingshellresult = 0;
+			TDH_setshellfdelim( 0 ); /* reset shell delimiter.. added scg 8/3/06 */
 			continue;
 			}
 
@@ -292,7 +293,7 @@ while( 1 ) {
 	/* standard operators other than if-logic ones begin here.  
          * Each chunk must end with a 'continue'                 */
 
-	if( strcmp( tok, "#+" )==0 || strcmp( tok, "#print" )==0 ) {
+	if( strcmp( tok, "#+" )==0 || strcmp( tok, "#print" )==0 ) {    /* #print is used by ploticus getdata filters (only?) */
 		strcpy( line, &line[ix+1] );
 		goto PUT;
 		}

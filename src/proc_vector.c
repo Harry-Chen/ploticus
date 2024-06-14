@@ -1,5 +1,5 @@
 /* ======================================================= *
- * Copyright 1998-2005 Stephen C. Grubb                    *
+ * Copyright 1998-2008 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */
@@ -16,15 +16,14 @@
 int
 PLP_vector()
 {
-int i;
-char attr[NAMEMAXLEN], val[256];
-char *line, *lineval;
-int nt, lvp;
-int first, stat;
+char attr[NAMEMAXLEN], *line, *lineval;
+int first, lvp;
+
+int i, stat;
 int xfield, yfield, dirfield, magfield, colorfield, exactcolorfield, clip;
 double dirrange, lenscale, x, y, newx, newy, len, dir, ahlen, ahwid;
 double sin(), cos(), basedir, constantlen, holdx, holdy;
-char acolor[COLORLEN], linedetails[128], legendlabel[256], selex[128];
+char *acolor, *linedetails, *legendlabel, *selex;
 double barblimitbig, barblimitmedium, barblimitsmall, barblimittiny, barbdir, mag;
 char dirunits, zeroat, clockdir, lenunits, type;
 int x2field, y2field;
@@ -32,19 +31,11 @@ double taillen;
 
 TDH_errprog( "pl proc vector" );
 
-xfield = -1;
-yfield = -1;
-dirfield = -1;
-magfield = -1;
-colorfield = -1;
-exactcolorfield = -1;
+xfield = -1; yfield = -1; dirfield = -1; magfield = -1; colorfield = -1; exactcolorfield = -1; x2field = -1; y2field = -1;
 dirrange = 360.0;
 ahlen = 0.15;
 ahwid = 0.4;
-strcpy( acolor, "" );
-strcpy( selex, "" );
-strcpy( legendlabel, "" );
-strcpy( linedetails, "" );
+acolor = ""; selex = ""; legendlabel = ""; linedetails = "";
 dirunits = 'd'; /* degrees */
 zeroat = 't';   /* top */
 clockdir = '+'; /* clockwise */
@@ -52,9 +43,6 @@ lenunits = 'a'; /* absolute */
 type = 'a'; /* arrow */
 lenscale = 1.0;
 constantlen = 0.0;
-clip = 1;
-x2field = -1;
-y2field = -1;
 taillen = 0.1;
 
 barblimitbig = 50.0; /* Magnitude limits */
@@ -62,51 +50,46 @@ barblimitmedium = 10.0;
 barblimitsmall = 5.0;
 barblimittiny = 2.0;
 barbdir = 120;
+clip = 1;
 mag = 0;
 
 
 /* get attributes.. */
 first = 1;
 while( 1 ) {
-	line = getnextattr( first, attr, val, &lvp, &nt );
+	line = getnextattr( first, attr, &lvp );
 	if( line == NULL ) break;
 	first = 0;
 	lineval = &line[lvp];
 
-	if( stricmp( attr, "xfield" )==0 ) xfield = fref( val ) -1;
-	else if( stricmp( attr, "yfield" )==0 ) yfield = fref( val ) -1;
-	else if( stricmp( attr, "dirfield" )==0 ) dirfield = fref( val ) -1;
-	else if( stricmp( attr, "x2field" )==0 ) x2field = fref( val ) -1;
-	else if( stricmp( attr, "y2field" )==0 ) y2field = fref( val ) -1;
-	else if( stricmp( attr, "dirrange" )==0 ) dirrange = atof( val );
-	else if( stricmp( attr, "dirunits" )==0 ) dirunits = tolower( val[0] );
-	else if( stricmp( attr, "clockdir" )==0 ) clockdir = tolower( val[0] );
-	else if( stricmp( attr, "zeroat" )==0 ) zeroat = tolower( val[0] );
-	else if( stricmp( attr, "magfield" )==0 ) magfield = fref( val ) -1;
-	else if( stricmp( attr, "lenfield" )==0 ) magfield = fref( val ) -1;   /* Alias */
-	else if( stricmp( attr, "lenunits" )==0 ) lenunits = tolower( val[0] );
-	else if( stricmp( attr, "lenscale" )==0 ) lenscale = atof( val );
-	else if( stricmp( attr, "constantlen" )==0 ) constantlen = atof( val );
-	else if( stricmp( attr, "colorfield" )==0 ) colorfield = fref( val ) -1;
-	else if( stricmp( attr, "exactcolorfield" )==0 ) exactcolorfield = fref( val ) -1;
-	else if( stricmp( attr, "linedetails" )==0 ) strcpy( linedetails, lineval );
-	else if( stricmp( attr, "arrowheadlength" )==0 ) ahlen = atof( val );
-	else if( stricmp( attr, "arrowheadwidth" )==0 ) ahwid = atof( val );
-	else if( stricmp( attr, "arrowheadcolor" )==0 ) strcpy( acolor, val );
-	else if( stricmp( attr, "select" )==0 ) strcpy( selex, lineval );
-	else if( stricmp( attr, "legendlabel" )==0 ) strcpy( legendlabel, lineval );
-	else if( stricmp( attr, "taillen" )==0 ) taillen = atof( val );
-	else if( stricmp( attr, "clip" )==0 ) {
-		if( strnicmp( val, YESANS,  1 )==0 ) clip = 1;
-		else clip = 0;
-		}
-	else if( stricmp( attr, "type" )==0 ) type = tolower( val[0] );
-	else if( stricmp( attr, "barblimits" )==0 ) {
-		sscanf( lineval, "%lf %lf %lf %lf", 
-			&barblimitbig, &barblimitmedium, &barblimitsmall, &barblimittiny );
+	if( strcmp( attr, "xfield" )==0 ) xfield = fref( lineval ) -1;
+	else if( strcmp( attr, "yfield" )==0 ) yfield = fref( lineval ) -1;
+	else if( strcmp( attr, "dirfield" )==0 ) dirfield = fref( lineval ) -1;
+	else if( strcmp( attr, "x2field" )==0 ) x2field = fref( lineval ) -1;
+	else if( strcmp( attr, "y2field" )==0 ) y2field = fref( lineval ) -1;
+	else if( strcmp( attr, "dirrange" )==0 ) dirrange = atof( lineval );
+	else if( strcmp( attr, "dirunits" )==0 ) dirunits = lineval[0];
+	else if( strcmp( attr, "clockdir" )==0 ) clockdir = lineval[0];
+	else if( strcmp( attr, "zeroat" )==0 ) zeroat = lineval[0];
+	else if( strcmp( attr, "magfield" )==0 || strcmp( attr, "lenfield" )==0 ) magfield = fref( lineval ) -1;
+	else if( strcmp( attr, "lenunits" )==0 ) lenunits = lineval[0];
+	else if( strcmp( attr, "lenscale" )==0 ) lenscale = ftokncpy( lineval );
+	else if( strcmp( attr, "constantlen" )==0 ) constantlen = ftokncpy( lineval );
+	else if( strcmp( attr, "colorfield" )==0 ) colorfield = fref( lineval ) -1;
+	else if( strcmp( attr, "exactcolorfield" )==0 ) exactcolorfield = fref( lineval ) -1;
+	else if( strcmp( attr, "linedetails" )==0 ) linedetails = lineval;
+	else if( strcmp( attr, "arrowheadlength" )==0 ) ahlen = ftokncpy( lineval );
+	else if( strcmp( attr, "arrowheadwidth" )==0 ) ahwid = ftokncpy( lineval );
+	else if( strcmp( attr, "arrowheadcolor" )==0 ) acolor = lineval;
+	else if( strcmp( attr, "select" )==0 ) selex = lineval;
+	else if( strcmp( attr, "legendlabel" )==0 ) legendlabel = lineval;
+	else if( strcmp( attr, "taillen" )==0 ) taillen = ftokncpy( lineval );
+	else if( strcmp( attr, "clip" )==0 ) clip = getyn( lineval );
+	else if( strcmp( attr, "type" )==0 ) type = lineval[0];
+	else if( strcmp( attr, "barblimits" )==0 ) { 
+		sscanf( lineval, "%lf %lf %lf %lf", &barblimitbig, &barblimitmedium, &barblimitsmall, &barblimittiny );
 		}	
-	else if( stricmp( attr, "barbdir" )==0 ) barbdir = atof( val );
-
+	else if( strcmp( attr, "barbdir" )==0 ) barbdir = ftokncpy( lineval );
 	else Eerr( 1, "attribute not recognized", attr );
 	}
 
@@ -131,7 +114,7 @@ if( magfield < 0 && type == 'b' && (x2field < 0 || y2field < 0 ))
 
 if( barblimitbig <= 0 || barblimitmedium <= 0 || barblimitsmall <= 0 ) return( Eerr( 2205, "barblimits must be grater then 0", ""));
 
-if( strnicmp( legendlabel, "#usefname", 9 )==0 ) getfname( dirfield+1, legendlabel );
+if( strncmp( legendlabel, "#usefname", 9 )==0 ) getfname( dirfield+1, legendlabel );
 
 if( !GL_member( type, "abelit" )) type = 'a';
 
@@ -168,12 +151,13 @@ for( i = 0; i < Nrecords; i++ ) {
 
 	/* if colorfield used, get color.. */
         if( colorfield >= 0 ) {
-                strcpy( linedetails, "" );
-                PL_get_legent( da( i, colorfield ), linedetails, NULL, NULL );
+		char *ldet; /* to get it to compile.. */
+                linedetails = "";
+                ldet = PL_get_legent( da( i, colorfield ) );
 		linedet( "colorfield", linedetails, 0.5 );
                 }
 	else if( exactcolorfield >= 0 ) {
-                strcpy( linedetails, da( i, exactcolorfield ) );
+                linedetails = da( i, exactcolorfield );
 		linedet( "exactcolorfield", linedetails, 0.5 );
 		}
 
@@ -347,7 +331,7 @@ return( 0 );
 }
 
 /* ======================================================= *
- * Copyright 1998-2005 Stephen C. Grubb                    *
+ * Copyright 1998-2008 Stephen C. Grubb                    *
  * http://ploticus.sourceforge.net                         *
  * Covered by GPL; see the file ./Copyright for details.   *
  * ======================================================= */
