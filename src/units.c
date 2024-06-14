@@ -550,18 +550,18 @@ static int
 setdatesub( tok, desc )
 char *tok, *desc;
 {
-if( strcmp( tok, "yymm" )==0 ) { strcpy( desc, "yymm" ); sprintf( tok, "yymmdd" ); }
-else if( strcmp( tok, "yymmm" )==0 ) { strcpy( desc, "yymmm" ); sprintf( tok, "ddmmmyy" ); }
-else if( GL_slmember( tok, "yy?mm" )) { strcpy( desc, "yy/mm" ); sprintf( tok, "yy/mm/dd" ); }
-else if( GL_slmember( tok, "yyyy?mm" )) { strcpy( desc, "yyyy/mm" ); sprintf( tok, "yyyy/mm/dd" ); }
-else if( GL_slmember( tok, "yy" )) { strcpy( desc, "yy" ); sprintf( tok, "yymmdd" ); }
-else if( GL_slmember( tok, "yyyy" )) { strcpy( desc, "yyyy" ); sprintf( tok, "yyyy/mm/dd" ); }  /* added scg 2/2/05 */
-else if( GL_slmember( tok, "mm?yy" )) { strcpy( desc, "mm/yy" ); sprintf( tok, "dd/mm/yy" ); }
-else if( GL_slmember( tok, "mm?yyyy" )) { strcpy( desc, "mm/yyyy" ); sprintf( tok, "dd/mm/yyyy" ); }
-else if( GL_slmember( tok, "yyqn" )) { strcpy( desc, "yyqn" ); sprintf( tok, "yy/mm/dd" ); }
-else if( GL_slmember( tok, "yyyyqn" )) { strcpy( desc, "yyyyqn" ); sprintf( tok, "yyyy/mm/dd" ); }
-else if( GL_slmember( tok, "nqyy" )) { strcpy( desc, "nqyy" ); sprintf( tok, "yy/mm/dd" ); }
-else if( GL_slmember( tok, "nqyyyy" )) { strcpy( desc, "nqyyyy" ); sprintf( tok, "yyyy/mm/dd" ); }
+if( strcmp( tok, "yymm" )==0 ) { strcpy( desc, "yymm" ); strcpy( tok, "yymmdd" ); }
+else if( strcmp( tok, "yymmm" )==0 ) { strcpy( desc, "yymmm" ); strcpy( tok, "ddmmmyy" ); }
+else if( GL_slmember( tok, "yy?mm" )) { strcpy( desc, "yy/mm" ); strcpy( tok, "yy/mm/dd" ); }
+else if( GL_slmember( tok, "yyyy?mm" )) { strcpy( desc, "yyyy/mm" ); strcpy( tok, "yyyy/mm/dd" ); }
+else if( GL_slmember( tok, "yy" )) { strcpy( desc, "yy" ); strcpy( tok, "yymmdd" ); }
+else if( GL_slmember( tok, "yyyy" )) { strcpy( desc, "yyyy" ); strcpy( tok, "yyyy/mm/dd" ); }  /* added scg 2/2/05 */
+else if( GL_slmember( tok, "mm?yy" )) { strcpy( desc, "mm/yy" ); strcpy( tok, "dd/mm/yy" ); }
+else if( GL_slmember( tok, "mm?yyyy" )) { strcpy( desc, "mm/yyyy" ); strcpy( tok, "dd/mm/yyyy" ); }
+else if( GL_slmember( tok, "yyqn" )) { strcpy( desc, "yyqn" ); strcpy( tok, "yy/mm/dd" ); }
+else if( GL_slmember( tok, "yyyyqn" )) { strcpy( desc, "yyyyqn" ); strcpy( tok, "yyyy/mm/dd" ); }
+else if( GL_slmember( tok, "nqyy" )) { strcpy( desc, "nqyy" ); strcpy( tok, "yy/mm/dd" ); }
+else if( GL_slmember( tok, "nqyyyy" )) { strcpy( desc, "nqyyyy" ); strcpy( tok, "yyyy/mm/dd" ); }
 return( 0 );
 }
 
@@ -607,16 +607,16 @@ else if( strcmp( desc, "mm/yyyy" )==0 ) {
 	result[2] = '/'; result[5] = '/';
 	}
 else if( strcmp( desc, "yyqn" )==0 ) {
-	if( slen == 4 ) { sprintf( result, s ); quar = s[3]; placeconv = 2; }
+	if( slen == 4 ) { strcpy( result, s ); quar = s[3]; placeconv = 2; }
 	}
 else if( strcmp( desc, "yyyyqn" )==0 ) {
-	if( slen == 6 ) { sprintf( result, s ); quar = s[5]; placeconv = 4; }
+	if( slen == 6 ) { strcpy( result, s ); quar = s[5]; placeconv = 4; }
 	}
 else if( strcmp( desc, "nqyy" )==0 ) {
-	if( slen == 4 ) { sprintf( result, &s[2] ); quar = s[0]; placeconv = 2; }
+	if( slen == 4 ) { strcpy( result, &s[2] ); quar = s[0]; placeconv = 2; }
 	}
 else if( strcmp( desc, "nqyyyy" )==0 ) {
-	if( slen == 6 ) { sprintf( result, &s[2] ); quar = s[0]; placeconv = 4; }
+	if( slen == 6 ) { strcpy( result, &s[2] ); quar = s[0]; placeconv = 4; }
 	}
 else Eerr( 4802, "unrecognized subscale type", desc );
 

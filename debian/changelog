@@ -1,0 +1,254 @@
+ploticus (2.41-6) unstable; urgency=low
+
+  * Add dpkg-buildflags to debian/rules
+
+ -- Colin Tuckley <colint@debian.org>  Mon, 13 May 2013 21:02:20 +0100
+
+ploticus (2.41-5) unstable; urgency=low
+
+  * Upstream Bugfix: heatmap prefab wasn't obeying the legend=no parameter
+  * Upstream Bugfix: fixes to the error bars in chron prefab
+
+ -- Colin Tuckley <colint@debian.org>  Tue, 12 Jun 2012 21:03:31 +0100
+
+ploticus (2.41-4) unstable; urgency=low
+
+  * Incorporate the NMU (2.41-3.1)
+  * Fix lintian warnings for:
+      Add ${misc:Depends} to libploticus0[-dev]'s dependencies
+      Add build-arch and build-indep to debian/rules
+  * Add a new debian/source/format file
+  * Bump Standards-Version to 3.9.3 (No changes required).
+  * Fix "Please Build-Depends on libpng-dev, change from libpng12-dev"
+      do as the bug report requests (closes: #662468).
+
+ -- Colin Tuckley <colint@debian.org>  Tue, 06 Mar 2012 21:03:31 +0000
+
+ploticus (2.41-3.1) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Fix "FTBFS Please Build-Depends on libjpeg-dev, not libjpeg62-dev":
+    do as the bug report requests (closes: #635488).
+
+ -- gregor herrmann <gregoa@debian.org>  Tue, 13 Sep 2011 18:04:51 +0200
+
+ploticus (2.41-3) unstable; urgency=low
+
+  * Fix manpages.
+  * Upstream Bugfix: fix problems building apitest.
+  * Bump Standards-Version to 3.8.3 (No changes required).
+  * Fix unresolved symbols in shared libraries Closes: #558949.
+
+ -- Colin Tuckley <colint@debian.org>  Fri, 11 Dec 2009 23:31:55 +0000
+
+ploticus (2.41-2) unstable; urgency=low
+
+  * Fix bashism in run_script_test again
+    and push upstream this time Closes: #530163
+  * Upstream Bugfix: for the 'legendlabel' attribute
+
+ -- Colin Tuckley <colint@debian.org>  Wed, 10 Jun 2009 20:15:28 +0100
+
+ploticus (2.41-1) unstable; urgency=low
+
+  * New Upstream version.
+  * Upstream Bugfix: proc boxplot - bug fix - incorrect error messages
+  * Bump Standards-Version (No changes required).
+
+ -- Colin Tuckley <colint@debian.org>  Fri, 10 Apr 2009 18:28:51 +0100
+
+ploticus (2.40-4) unstable; urgency=low
+
+  * Upstream Bugfix: Clickmap area tags not XHTML conformant.
+  * Upstream Bugfix: Controlling the last stub in a chron prefab plot.
+
+ -- Colin Tuckley <colint@debian.org>  Thu, 19 Feb 2009 18:25:44 +0000
+
+ploticus (2.40-3) unstable; urgency=low
+
+  * Upstream Bugfix: Closes: #502869
+    Fix "lines" prefab wasn't working when cats=yes in prefabs/lines.pl
+
+ -- Colin Tuckley <colint@debian.org>  Tue, 21 Oct 2008 11:12:49 +0100
+
+ploticus (2.40-2) unstable; urgency=low
+
+  * Fix bashism in run_script_test Closes: #489642.
+  * Bump standards-version to 3.8.0 (no changes required).
+  * Replace obsolete-package build-depends: x-dev with x11proto-core-dev
+  * Upstream Bugfix:
+    Fix proc processdata bug in datasets.c
+
+ -- Colin Tuckley <colint@debian.org>  Fri, 11 Jul 2008 17:13:23 +0100
+
+ploticus (2.40-1) unstable; urgency=low
+
+  * New Upstream version.
+  * Update maintainer Email address.
+  * Bump Standards-Version (No changes required).
+  * Add Homepage field to debian/control.
+  * Incorporate fix to proc_axis.c from upstream.
+  * Incorporate fix to gd13.c from upstream to fix compiler errors.
+  * Incorporate fix to execline.c from upstream.
+
+ -- Colin Tuckley <colint@debian.org>  Wed, 20 Feb 2008 09:54:35 +0000
+
+ploticus (2.33-3) unstable; urgency=low
+
+  * upstream bugfixes
+    proc_getdata.c filter attribute - # data fields
+    glroutines.c clickmap urls - certain punct chars dropped
+    cumufrac.pl cumufrac prefab - no curve produced for certain input data
+    proc_bars.c floating segment bars glitches
+    chunk_title prefab title align giving incorrect results
+    stub.c crosshatch fill weird linewidth interaction with -scale
+  * packaged libploticus Closes: #420735
+  * added homepage refs to descriptions in debian/control
+
+ -- Colin Tuckley <colin@tuckley.org>  Sat, 09 Jun 2007 11:29:57 +0100
+
+ploticus (2.33-2) unstable; urgency=low
+
+  * Fixed possible 64-bit problem in svg.c
+  * Modified X11 paths in src/Makefile for Xorg transition
+  * Fixed compiler warnings about redefinition of stricmp and strnicmp
+  * Reverted upstream change of char * to unsigned char * in various
+    places to fix "differ in signedness" compiler warnings
+  * Include patch from Thomer M. Gil to fix segfault in swf.c Closes: #372511
+  * Added a Recommends for ploticus-doc
+
+ -- Colin Tuckley <colin@tuckley.org>  Sat, 10 Jun 2006 17:03:18 +0100
+
+ploticus (2.33-1) unstable; urgency=low
+
+  * New Upstream release                              Closes: #262971
+  * Updated standards version to 3.7.2 (No package changes required)
+  * modified src/Makefile configuration options see debian/README.Debian
+
+ -- Colin Tuckley <colin@tuckley.org>  Sun,  4 Jun 2006 10:05:28 +0100
+
+ploticus (2.20-4) unstable; urgency=low
+
+  * New Maintainer.                                   closes: #361016
+  * updated the FSF address in debian/copyright
+  * removed debian/prerm which was for ploticus-doc
+  * updated standards version to 3.6.2 (No package changes required).
+  * changed depends for debhelper to >= 5.0.0
+  * added debian/compat (set to 5)
+  * clean up debian/rules
+  * install run_prefabs_test.bat without execute privs
+  * corrected section number in man page .TH entry
+  * fixed compiler warnings due to implict library
+    function definitions (causes segfaults on 64bit) closes: #284080
+  * build with debug info, incorporated patch from
+    Peter Palfrader <weasel@debian.org>              closes: #284069
+
+ -- Colin Tuckley <colin@tuckley.org>  Thu, 27 Apr 2006 10:12:54 +0100
+
+ploticus (2.20-3.1) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Remove Build-Dependency on xlibs-dev (Closes: #347101).
+  * Credit and Big Thanks to Justin Pryzby <justinpryzby@users.sourceforge.net>
+    for the patch and testing.
+
+ -- Amaya Rodrigo Sastre <amaya@debian.org>  Sat, 21 Jan 2006 21:03:28 +0100
+
+ploticus (2.20-3) unstable; urgency=low
+  * Add "late fix" for errbarfields.  Fix found in
+    http://groups.yahoo.com/group/ploticus/message/691.
+    Solves a problem with asymetric error bands.
+  * Add "late fix" for proc_axis.c.  Fix found in
+    http://groups.yahoo.com/group/ploticus/message/722
+    This solves a problem with cumulative rounding of 
+    days in graphs with days stubs.
+  * Add  "late fix" version of chunk_area.  Fix from
+    http://ploticus.sourceforge.net/download/chunk_area
+    This solves a problem with dates with no day number,
+    as mm/yyyy.
+  * Add "late fix" version of heatarea.pl.  Fix from
+    http://ploticus.sourceforge.net/download/heatmap.pl
+  * Add "late fix" version of proc_getdata.c.  Fix found at
+    http://ploticus.sourceforge.net/download/proc_getdata.c
+    This permits comma delimited files with more than 255 characters
+    per row to be processed.
+  * Add "late fix" version of proc_lineplot.c.  This is from
+    http://ploticus.sourceforge.net/download/proc_lineplot.c
+    It clips labels, and handles the degenerate case of no points
+    in the range properly.
+  * Add pltestsuite to debian package as 
+    /usr/share/doc/ploticus/examples
+  * Remove recommends of libming-fonts-openoffice. The package has been
+    removed from debian.                         closes: Bug#240560
+    
+ -- James W. Penny <jpenny@debian.org>  Wed,  4 Apr 2004 22:12:00 -0500
+
+ploticus (2.20-2) unstable; urgency=low
+
+  * libming has been removed from the distribution, drop swf
+    support.                                 closes: Bug#228983
+
+ -- James W. Penny <jpenny@debian.org>  Wed, 21 Jan 2004 22:33:00 -0500
+
+ploticus (2.20-1) unstable; urgency=low
+
+  * New upstream.                            closes: Bug #197293
+
+ -- James W. Penny <jpenny@debian.org>  Thu, 25 Dec 2003 10:41:14 -0500
+
+ploticus (2.0.4-4) unstable; urgency=low
+
+  * Switch build-depends to libpng12-dev.     closes: Bug #164994
+  * Switch to libgd-noxpm.  Build fails with libgd-xpm.
+
+ -- James W. Penny <jpenny@debian.org>  Tue, 25 Oct 2002 22:49:31 -0400
+
+ploticus (2.0.4-3) unstable; urgency=low
+
+  * Rebuild due to problem with shlibs.  Switch to libgd2-dev.
+
+ -- James W. Penny <jpenny@debian.org>  Tue, 25 Oct 2002 22:49:31 -0400
+
+ploticus (2.0.4-2) unstable; urgency=low
+
+  * Caught in libpng2/libpng3 transition.  Changed for libpng3 and
+    libpng3-dev.				closes: Bug#164994
+
+ -- James W. Penny <jpenny@debian.org>  Tue, 20 Aug 2002 23:18:51 -0400
+
+ploticus (2.0.4-1) unstable; urgency=low
+
+  * New upstream release
+  * Include "late fixes" execplfile.c, proc_processdata.c.
+    These are buffer overflow related.
+  * Include "late fixes" proc_process_data.c, proc_bars.c.
+    These affect primarily cosmetic issues.
+
+ -- James W. Penny <jpenny@debian.org>  Mon, 12 Aug 2002 00:20:04 -0400
+ 
+ploticus (2.0.3-1) unstable; urgency=low
+
+  * The "That Tears it, Now You Have to Update Docs Package" Release.
+  * New upstream release (well, not so new :-( )   closes: Bug#137578
+  * Correct missing libpng2-dev in build-depends.  closes: Bug#142205
+  * Use correct syntax to:
+  * close URL type.                                closes: Bug#137577
+  * fix Architecture                               closes: Bug#141657
+  * close ITP                                      closes: Bug#132878
+
+ -- James W. Penny <jpenny@debian.org>  Wed, 10 Apr 2002 23:02:04 -0400
+
+ploticus (2.0.2-2) unstable; urgency=low
+
+  *  Correct packaging  mistakes.  
+  *  First, missing : in http:                close: Bug#137577
+  *  Second, should be Architecture: any.     close: Bug#141657
+
+ -- James W. Penny <jpenny@debian.org>  Mon,  4 Apr 2002 23:45:15 -0500
+
+ploticus (2.0.2-1) unstable; urgency=low
+
+  * Initial Debian package.			close: Bug#132878
+
+ -- James W. Penny <jpenny@debian.org>  Mon, 18 Feb 2002 22:24:15 -0500
+

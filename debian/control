@@ -1,0 +1,63 @@
+Source: ploticus
+Section: misc
+Priority: optional
+Maintainer: Colin Tuckley <colint@debian.org>
+Homepage: http://ploticus.sourceforge.net
+Build-Depends: debhelper (>= 9), zlib1g-dev, libgd2-noxpm-dev, libjpeg-dev, libfreetype6-dev, libx11-dev, x11proto-core-dev, libpng-dev, dpkg-dev (>= 1.16.1~)
+Standards-Version: 3.9.3
+
+Package: ploticus
+Section: misc
+Recommends: ploticus-doc
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: script driven business graphics package
+ Ploticus is script-driven, which makes it suitable for automated,
+ unattended uses, or for applications that will be run again and again.
+ In general, ploticus is good at making graphs like you would see in
+ newspapers and news magazines, business publications, journals for
+ medical and social sciences, and so on.
+ .
+ Ploticus is not a function or mathematical plotting package like
+ gnuplot, nor would it be a good choice for applications where
+ mathematical formulas or scientific notations are to be rendered
+ as an integral part of the data display.  Ploticus is also not
+ intended as a "marketing" graphics package.  Its goal is to
+ display data crisply without extra decoration and distracting
+ "dingbats" that cloud the picture.
+ .
+ Ploticus supports a wide range of output options, including jpeg
+ (Joint Photographics Experts Group format), png (Portable Network
+ Graphics format), svg (Simple Vector Graphics), bmp (Microsoft BitMaP),
+ ps (PostScript), swf (Flash), and X11.
+
+Package: libploticus0
+Section: libs
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: script driven business graphics library
+ libploticus is not a function or mathematical plotting package like
+ gnuplot, nor would it be a good choice for applications where
+ mathematical formulas or scientific notations are to be rendered
+ as an integral part of the data display.  libploticus is also not
+ intended as a "marketing" graphics package.  Its goal is to
+ display data crisply without extra decoration and distracting
+ "dingbats" that cloud the picture.
+ .
+ libploticus supports a wide range of output options, including jpeg
+ (Joint Photographics Experts Group format), png (Portable Network
+ Graphics format), svg (Simple Vector Graphics), bmp (Microsoft BitMaP),
+ ps (PostScript), swf (Flash), and X11.
+
+Package: libploticus0-dev
+Section: libdevel
+Architecture: any
+Depends: ${misc:Depends}, libploticus0 (= ${binary:Version})
+Description: Development files for the ploticus library
+ libploticus is not a function or mathematical plotting package like
+ gnuplot, nor would it be a good choice for applications where
+ mathematical formulas or scientific notations are to be rendered
+ as an integral part of the data display.  libploticus is also not
+ intended as a "marketing" graphics package.  Its goal is to
+ display data crisply without extra decoration and distracting
+ "dingbats" that cloud the picture.

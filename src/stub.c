@@ -9,9 +9,10 @@
 /* not to be confused with axis "stubs".. which are a completely different thing */
 
 
-#include "plg.h"
 #include <ctype.h>
+#include "plg.h"
 extern int GL_getseg(), GL_member();
+
 
 static int doing_sup = 0;  /* 1 if superscript/subscript enabled */
 static double textslantparm = 0.3;  /* how much to move vertically for every 1.0 horizontal */

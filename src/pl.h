@@ -8,8 +8,9 @@
 #include <stdlib.h>
 #include "plg.h"
 
+#define PREFABS_DIR ""  	 /* INSTALLERS can set this to a valid pathname, so that users don't need to set PLOTICUS_PREFABS env var */
 
-#define PLVERSION "2.41-Mar2009" 	/* see also the Copyright page, and page headers and footers */
+#define PLVERSION "2.42-May2013" /* see also the Copyright page, and page headers and footers */
 
 /* =========== working limits.. ============ */
 #define CPULIMIT 30		/* default max amount of cpu (seconds) - setrlimit() - may be overridden */
@@ -22,7 +23,9 @@
 					procs - may be overridden using -maxproclines */
 
 #define MAXBIGBUF  10000 	/* size of PL_bigbuf (chars) (was 100K .. scg 11/27/07) */
-#define MAXNCATS 250		/* default max # of categories - may be overriden using proc categories listsize */
+
+/* #define MAXNCATS 250 */ /* raising this... can't get 'listsize' to work.. scg 4/2013*/
+#define MAXNCATS 600 		/* default max # of categories - may be overriden using proc categories listsize */
 
 #define MAXOBJ 40		/* max # of currently "active" procs.. includes all #saved procs and #proc getdata with inline data */
 #define MAXDS 5			/* max # of stacked datasets in memory - maintain code instances when raising */

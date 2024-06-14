@@ -283,8 +283,8 @@ extern struct plgc PLG;
 double atof(), sqrt(), log();
 extern double PLG_a(), PLG_ax(), PLG_ay(), PLG_dx(), PLG_dy(), PLG_limit(), PLG_conv(), PLG_u();
 extern double  PLG_xsca_inv(), PLG_ysca_inv();
-extern char *GL_getok(), *GL_autoround(), *GL_autoroundf();
 extern char *PLG_icolor();
+extern char *GL_getok(), *GL_autoround(), *GL_autoroundf(); 
 
 
 /* ========== int function declares =================== */

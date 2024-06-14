@@ -62,7 +62,8 @@
 
 #include "plg.h"
 
-extern int GL_member(), PL_clickmap_inprogress(), PL_clickmap_out();
+extern int PL_clickmap_inprogress(), PL_clickmap_out();
+extern int GL_member(), GL_member_nullmode();
 #ifndef NOX11
   extern int PLGX_pointsize(), PLGX_stroke(), PLGX_moveto(), PLGX_lineto(), PLGX_path(), PLGX_text(), PLGX_color(), PLGX_fill(); 
   extern int PLGX_savewin(),  PLGX_restorewin(),  PLGX_centext(),  PLGX_rightjust(),  PLGX_wait(),  PLGX_linetype(),  PLGX_async();

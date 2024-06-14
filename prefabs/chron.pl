@@ -22,6 +22,17 @@
 #setifnotgiven linedet2 = "color=red"
 #setifnotgiven linedet3 = "color=blue"
 #setifnotgiven linedet4 = "color=orange"
+#setifnotgiven err2 = ""
+#setifnotgiven err3 = ""
+#setifnotgiven err4 = ""
+#setifnotgiven pointsym = ""
+#setifnotgiven pointsym2 = ""
+#setifnotgiven pointsym3 = ""
+#setifnotgiven pointsym4 = ""
+
+#setifnotgiven errcolor = black
+#setifnotgiven errwidth = 0.08
+#setifnotgiven errthick = 0.5
 
 #setifnotgiven datefmt = "mmddyy"
 #setifnotgiven mode = bars
@@ -158,7 +169,7 @@ omitweekends: @omitweekends
 
 //// X axis..
 #include $chunk_xaxis
-#set autoyears = @xyears
+#setifnotgiven autoyears = @xyears
 #ifspec autoyears
 #ifspec automonths
 #ifspec autodays
@@ -174,6 +185,40 @@ omitweekends: @omitweekends
 #endif
 
 
+#if @pointsym = default
+  #set pointsym = "shape=square style=outline fillcolor=white"
+#endif
+#if @pointsym2 = default
+  #set pointsym2 = "shape=triangle style=outline fillcolor=white"
+#endif
+#if @pointsym3 = default
+  #set pointsym3 = "shape=diamond style=outline fillcolor=white"
+#endif
+#if @pointsym4 = default
+  #set pointsym4 = "shape=downtriangle style=outline fillcolor=white"
+#endif
+// turn off point symbols if doing stairsteps..
+#if @step = yes
+  #set pointsym = ""
+  #set pointsym2 = ""
+  #set pointsym3 = ""
+  #set pointsym4 = ""
+#endif
+
+
+#set ncluster = 1
+#if @y4 != ""
+  #set ncluster = 4
+#elseif @y3 != ""
+  #set ncluster = 3
+#elseif @y2 != ""
+  #set ncluster = 2
+#endif
+#write stderr
+  [@ncluster]
+#endwrite
+
+
 //// do curve fit..
 #if @curve != ""
   #if @curve = "yes"
@@ -185,6 +230,7 @@ omitweekends: @omitweekends
   linedetails: @curve
   order: @order
 #endif
+ 
 
 
 //// do bars or line..
@@ -204,20 +250,13 @@ omitweekends: @omitweekends
   #ifspec clickmaplabel
   #ifspec ptselect select
   
-  #set ncluster = 1
-  #if @y4 != ""
-    #set ncluster = 4
-  #elseif @y3 != ""
-    #set ncluster = 3
-  #elseif @y2 != ""
-    #set ncluster = 2
-  #endif
   #if @ncluster > 1  && @stack != yes
     cluster: 1 / @ncluster
   #endif
   #saveas B
 
 #elseif @mode = line
+  // note... this is a procdef that is saved then cloned below...
   #procdef lineplot
   xfield: @x
   linedetails: @linedet
@@ -225,19 +264,45 @@ omitweekends: @omitweekends
   #ifspec gapmissing
   // the following was added - scg 11/19/04..
   #ifspec lineclip clip
+  #if @pointsym != ""
+    legendsampletype: line+symbol
+  #else
+    legendsampletype: line
+  #endif
+
   #saveas L
 
   #proc lineplot
   #clone L
   yfield: @y
+  pointsymbol: @pointsym
   #ifspec ptselect select
   #ifspec fill
 #endif
 legendlabel: @name
 
+#if @err != ""
+ #write stderr
+   #+ [Please ignore any warning messages re: barwidth not useful... they are incorrect]
+ #endwrite
+ #proc bars
+  locfield: @x
+  lenfield: @y
+  errbarfield: @err
+  thinbarline: color=@errcolor width=@errthick
+  tails: @errwidth
+  truncate: yes
+  #ifspec barwidth
+  #ifspec ptselect select
+  #if @ncluster > 1  && @stack != yes
+    cluster: 1 / @ncluster
+  #endif
+#endif
+
 
 // optional 2nd curve or set of bars..
 #if @y2 != ""
+
   #if @mode = bars
     #proc bars
     #clone B
@@ -259,10 +324,24 @@ legendlabel: @name
     #clone L
     yfield: @y2
     linedetails: @linedet2
+    pointsymbol: @pointsym2
     #ifspec fill2 fill
     #ifspec ptselect2 select
   #endif
   legendlabel: @name2 
+
+  #if @err2 != ""
+    #proc bars
+    locfield: @x
+    lenfield: @y2
+    errbarfield: @err2
+    thinbarline: color=@errcolor width=@errthick
+    tails: @errwidth
+    truncate: yes
+    cluster: 2 / @ncluster
+    #ifspec barwidth
+    #ifspec ptselect select
+  #endif
 #endif
     
 
@@ -289,10 +368,24 @@ legendlabel: @name
     #clone L
     yfield: @y3
     linedetails: @linedet3
+    pointsymbol: @pointsym3
     #ifspec fill3 fill
     #ifspec ptselect3 select
   #endif
   legendlabel: @name3 
+
+  #if @err3 != ""
+    #proc bars
+    locfield: @x
+    lenfield: @y3
+    errbarfield: @err3
+    thinbarline: color=@errcolor width=@errthick
+    tails: @errwidth
+    truncate: yes
+    cluster: 3 / @ncluster
+    #ifspec barwidth
+    #ifspec ptselect select
+  #endif
 #endif
 
 
@@ -320,11 +413,25 @@ legendlabel: @name
     #clone L
     yfield: @y4
     linedetails: @linedet4
+    pointsymbol: @pointsym4
     #ifspec fill4 fill
     #ifspec ptselect4 select
 
   #endif
   legendlabel: @name4
+
+  #if @err4 != ""
+    #proc bars
+    locfield: @x
+    lenfield: @y4
+    errbarfield: @err4
+    thinbarline: color=@errcolor width=@errthick
+    tails: @errwidth
+    truncate: yes
+    cluster: 4 / @ncluster
+    #ifspec barwidth
+    #ifspec ptselect select
+  #endif
 #endif
 
 

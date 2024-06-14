@@ -345,7 +345,7 @@ if( hash == 753 ) { /* $timediff(t1,t2) - find the difference between two times 
 	return( 0 );
 	}
 
-if( hash == 1397 ) { /* $settimefmt(fmt) - set the "current time format" */
+if( hash == 1397 ) { /* $settimefmt(fmt) - set the "time format" currently being used */
 	stat = DT_settimefmt( arg[0] );
 	if( stat != 0 ) {
 		err( 1614, "$settimefmt - invalid format", arg[0] );

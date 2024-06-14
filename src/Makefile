@@ -62,10 +62,12 @@ NOX11 = -DNOX11
 
 
 
-############ Option 4: build static libploticus (unix) with png support (remember to also select setting 2 option 2)
+############ Option 4: build static libploticus (unix) with PNG support (remember to also select PNG in Setting 2)
 # LIBEXT = a
 # ARCOM = ar r
 # target: libploticus-static
+#### and if you want X11 enabled uncomment the following line..
+# XOBJ = x11.o interact.o
 
 
 
@@ -89,13 +91,16 @@ NOX11 = -DNOX11
 
 
 ########### Option 1: use bundled GD16 (PNG only).  Requires libpng and zlib.
-exetarget: plpng 
-GD16LIBS = -lpng -lz
-GD16H = 
-ZFLAG = -DWZ
+# exetarget: plpng 
+# GD16LIBS = -lpng -lz
+# GD16H =  -I/usr/local/include
+# ZFLAG = -DWZ
+### Leave the following commented unless libs not in usual places
+### GD16LIBS = /home/scg/lib/libpng.a /home/scg/lib/libz.a
+### GD16H = -I/home/scg/lib
 
-########### Option 2: use bundled GD13 (pseudoGIF only). No additional lib dependencies.
-# exetarget: pl 
+########### Option 2: use bundled GD13 (GIF only). No additional lib dependencies.
+exetarget: pl 
 
 ########### Option 3: use your own GD resource.  Requires GD 1.84+, libpng, zlib, libjpeg
 # exetarget: plgd18 
@@ -104,7 +109,7 @@ ZFLAG = -DWZ
 # GDFREETYPE = 
 # ZFLAG = -DWZ
 
-########### Option 4: use your own GD resource with FreeType2 fonts enabled.  
+########### Option 4: use your own GD resource with FreeType2 (ttf) fonts enabled.  
 ###########           Requires GD 1.84+, libpng, zlib, libjpeg and libfreetype
 # exetarget: plgd18 
 # GD18LIBS = -lgd -lpng -lz -ljpeg -lfreetype
@@ -119,7 +124,7 @@ ZFLAG = -DWZ
 
 
 ################################################################
-######## Third question.
+######## Settings 3:
 ######## Other various settings you may want to make.
 ################################################################
 
@@ -130,10 +135,8 @@ ZFLAG = -DWZ
 #optional for non-standard location:  MINGH = -I/home/scg/lib
 
 
-#### To set a hard-coded directory for prefabs files, uncomment & edit the following..
-#### If done, users won't be required to have PLOTICUS_PREFABS environment variable defined.
-#### This option not available for win32
-# PREFABS_DIR = "/usr/lib/ploticus/prefabs"
+#### To set a hard-coded directory for prefabs files, edit the PREFABS_DIR define in pl.h before doing the build.
+#### If the installer does this, users won't be required to have PLOTICUS_PREFABS environment variable defined.
 
 
 #### If you do a "make install", where do you want the executable(s) to be moved to?
@@ -157,7 +160,7 @@ INSTALLBIN = /usr/local/bin
 # NOSVG = -DNOSVG 
 
 #### To see all possible compiler warnings, uncomment the following line..
-WALL = -Wall
+# WALL = -Wall
 
 
 
@@ -220,9 +223,9 @@ plnogd: pl.o $(OBJ) $(XOBJ) nogdfiles
 	$(CC) pl.o devstuff.o $(OBJ) $(XOBJ) $(LIBS) $(ZLIB) $(MING) -o $(EXE)
 
 # libploticus.a with png
-libploticus-static: $(OBJ) api.o gd00files gd16files
+libploticus-static: $(OBJ) $(XOBJ) api.o gd00files gd16files
 	$(RMCOM) libploticus.$(LIBEXT)
-	$(ARCOM) libploticus.$(LIBEXT) $(OBJ) api.o $(GD16) $(GD)
+	$(ARCOM) libploticus.$(LIBEXT) $(OBJ) $(XOBJ) api.o $(GD16) $(GD)
 
 # this one needs work... suggestions welcome
 libploticus-so: $(OBJ) $(GDOBJ)
@@ -231,7 +234,7 @@ libploticus-so: $(OBJ) $(GDOBJ)
 
 
 gd00files: 
-	$(CC) -I./gd13 -I./ -c gdfontg.c gdfontl.c gdfontmb.c gdfonts.c gdfontt.c
+	$(CC) $(FPIC) -I./gd13 -I./ -c gdfontg.c gdfontl.c gdfontmb.c gdfonts.c gdfontt.c
 	echo "done with gd00files" > gd00files
 
 gd13files: 
@@ -241,9 +244,9 @@ gd13files:
 	echo "done with gd13files" > gd13files
 
 gd16files: 
-	$(CC) -c $(WALL) grgd.c -DGD16 -DPLOTICUS -I./ -I./gd16 -o grgd16.o
-	$(CC) -c $(CFLAGS) devstuff.c -DGD16 -o devstuff16.o
-	$(CC) -c -I./gd16 -I./ $(GD16H) gd16.c gd_io.c gd_io_dp.c gd_io_file.c gd_png.c
+	$(CC) -c $(WALL) $(FPIC) grgd.c -DGD16 -DPLOTICUS -I./ -I./gd16 -o grgd16.o
+	$(CC) -c $(CFLAGS) $(FPIC) devstuff.c -DGD16 -o devstuff16.o
+	$(CC) -c $(FPIC) -I./gd16 -I./ $(GD16H) gd16.c gd_io.c gd_io_dp.c gd_io_file.c gd_png.c
 	echo "done with gd16files" > gd16files
 
 gd18files:

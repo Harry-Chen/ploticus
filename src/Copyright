@@ -109,6 +109,15 @@ Citation is always appreciated.  Language like this is suggested:
 Graphical data displays were produced using Ploticus software (ploticus.sf.net).
 <br>
 <br>
+<h3>Q5. Can I deploy a mirror copy of the ploticus web site, or of a portion?</h3>
+Yes, provided you include a prominent link back to the original site (ploticus.sourceforge.net)
+<br>
+<br>
+<h3>Q6. Can I produce language translations of ploticus manual pages and put them on the web?</h3>
+Yes, provided you include a prominent link back to the original page on ploticus.sourceforge.net.
+Please also include the translator's name near the top of the page, and mention
+that the translated page has not been reviewed in any way by the original author.
+<br>
 <br>
 
 == end of clarifications ==

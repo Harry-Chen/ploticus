@@ -139,6 +139,14 @@ if( NLE < 1 ) return( 0 ); /* silent is better here ... scg 5/5/04 */
 
 /*********** now do the plotting work.. **********/
 
+
+/* If we're doing a legend title and/or a bounding box around the legend... some tricks required....
+   What we'll do is go into squelch mode (suppressing all graphic device output calls), and
+   render the legend invisibly while keeping a bounding box.  Then (see "goto RENDER"), we'll
+   get out of squelch mode, render the box (since we know it's coordinates now) then go back
+   and render the legend for real.  [Note added scg 3/18/2011]
+ */
+
 /* box init stuff.. */
 if( dobox ) { bstate = 0; PLG_init_bb2(); Esquelch( "on" ); }
 
@@ -167,6 +175,7 @@ maxthi = 0;  /* keep track of the max text #lines in column (since individual en
 textdet( "textdetails", textdetails, &align, &adjx, &adjy, -2, "R", 1.0 );
 y -= Ecurtextheight; 
 for( i = 0; i < NLE; i++ ) {
+
 
 	/* fprintf( stderr, "%d|%s|%s|%s\n", LEtype[i], &Ltext[LElabel[i]], &Ltext[LEparm1[i]], &Ltext[LEparm2[i]] ); */
 
@@ -202,7 +211,7 @@ for( i = 0; i < NLE; i++ ) {
 		sscanf( &Ltext[LEparm1[j]], "%s", color );
 		if( strcmp( color, backcolor ) ==0 ) outline = 1;
 		else outline = do_outline;
-		if( outline ) { Elinetype( 0, 0.5, 1.0 ); Ecolor( Estandard_color ); }
+		if( outline ) { Elinetype( 0, 0.5, 1.0 ); Ecolor( Estandard_color ); PLG_forcecolorchg(); }  
 		Ecblock( x-(swatchsize+0.1), y, x-0.1, y+swatchsize, color, outline );
 		}
 	else if( LEtype[j] == LEGEND_LINE ) {

@@ -8,7 +8,9 @@
 
 #include <stdio.h>
 #include <string.h>
-extern int GL_sysdate(), GL_systime(), GL_slmember();
+extern int GL_sysdate( int *mon, int *day, int *yr );
+extern int GL_systime( int *hr, int *min, int *sec );
+extern int GL_slmember( char *str, char *list );
 
 static char emode[20] = "stderr";
 static char progname[80] = "";
@@ -53,8 +55,9 @@ say_error = 1;
 
 if( strcmp( emode, "cgi" )==0 ) {
 	/* first \n is important in case it hasn't been delivered yet by quisp.. (http content-type statement) */
-	printf( "\n<br><h4>%s: %s %d: %s %s%s%s</h4><br>\n", progname, (say_error)?"error":"", errno, msg, op, parm, cp );
+	printf( "\n<br><h4>%s %d: %s %s%s%s</h4><br>\n", (say_error)?"Error":"", errno, msg, op, parm, cp );
 	fflush( stdout );
+	/* took out progname */
 	}
 else if( strcmp( emode, "stderr" )==0 ) 
 	fprintf( stderr, "%s: %s %d: %s %s%s%s\n", progname, (say_error)?"error":"", errno, msg, op, parm, cp );
@@ -65,17 +68,31 @@ else 	{
 	}
 
 /* if an error log file was specified, write a line to this file .. */
+
 #ifndef BAREBONES
-if( errlog[0] != '\0' ) {
+
+  if( errlog[0] != '\0' ) {
 	FILE *logfp;
 	int mon, day, yr, hr, min, sec;
+	char *qs, *ref, *host, *ip;
 	GL_sysdate( &mon, &day, &yr );
 	GL_systime( &hr, &min, &sec );
 
 	logfp = fopen( errlog, "a" );
 	if( logfp != NULL ) {
-		fprintf( logfp, "20%02d/%02d/%02d %02d:%02d:%02d error %d: %s (%s)\n", 
+		fprintf( logfp, "20%02d/%02d/%02d %02d:%02d:%02d error %d: %s (%s) ", 
                 	yr, mon, day, hr, min, sec, errno, msg, parm );
+		if( strcmp( emode, "cgi" )==0 ) {  /* give web context info  ... added scg 3/26/10 */
+			qs = getenv( "QUERY_STRING" );
+			ref = getenv( "HTTP_REFERER" );
+			host = getenv( "REMOTE_HOST" );
+			ip = getenv( "REMOVE_ADDR" );
+			if( host != NULL ) fprintf( logfp, "h=%.30s ", host );
+			else if( ip != NULL ) fprintf( logfp, "h=%s ", ip );
+			if( qs != NULL ) fprintf( logfp, "qs=%.80s ", qs );
+			if( ref != NULL ) fprintf( logfp, "r=%.80s ", ref );
+			}
+		fprintf( logfp, "\n" );
 		fclose( logfp );
 		}
 	}

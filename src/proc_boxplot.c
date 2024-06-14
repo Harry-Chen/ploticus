@@ -52,7 +52,7 @@ char *statfields, *tailmode, *nlocation, *taildet, *outlinedet, *barcolor, *text
 char *medsym, *selectex, *meansym, *legendlabel;
 char buf[256], symcode[50], sfbuf[80];
 int i, stat, align, ix, locfield, printn, baroutline;
-int pf[6], fnftics, trunc, result, npf, imeth, irow, legendtype;
+int pf[10], fnftics, trunc, result, npf, imeth, irow, legendtype;  /* bug fix 3/20/09, was pf[6] */
 double stats[20], h[5];
 double adjx, adjy, nloc, barwidth, hb, r, ticsize, ticlen, radius, barloc;
 
@@ -132,10 +132,11 @@ if( imeth == MEDIANBASED && statfields[0] == '\0' ) {
 	if( meansym[0] != '\0' ) strcat( sfbuf, "mean" );
 	statfields = sfbuf;
 	}
-	
+
 else if( imeth == MEANBASED && statfields[0] == '\0' ) statfields = "n_obs mean sd min max";
+
 	
-for( ix = 0, i = 0; ; i++ ) { /* fill pf */
+for( ix = 0, i = 0; i < 7; i++ ) { /* fill pf */
 	strcpy( buf, GL_getok( statfields, &ix ));
 	if( buf[0] == '\0' ) break;
 	pf[i] = fref( buf ) - 1;
@@ -145,7 +146,7 @@ npf = i;
 
 if( imeth == MEDIANBASED ) {
 	if( meansym[0] != '\0' && npf != 7 ) return( Eerr( 2749, "expecting 7 statfields for median-based boxplots including mean", "" ));
-	else if( npf != 6 ) return( Eerr( 2749, "expecting 6 statfields for median-based boxplots", "" ));
+	else if( meansym[0] == '\0' && npf != 6 ) return( Eerr( 2749, "expecting 6 statfields for median-based boxplots", "" ));  /* bug fix 3/19/09 */
 	}
 else if( imeth == MEANBASED ) {
 	if( npf != 5 ) return( Eerr( 2749, "expecting 5 statfields for mean-based boxplots", "" ));
@@ -193,6 +194,7 @@ for( irow = 0; irow < Nrecords; irow++ ) {
 		stats[PCTL75] = fda( irow, pf[4], axis );
 		if( tailmode[0] == '5' ) { stats[PCTL5] = fda( irow, pf[1], axis ); stats[PCTL95] = fda( irow, pf[5], axis ); }
 		else if( tailmode[0] == 'm' ) { stats[MIN] = fda( irow, pf[1], axis ); stats[MAX] = fda( irow, pf[5], axis ); }
+		if (meansym[0] != '\0') stats[MEAN] = fda( irow, pf[6], axis ); /* bug fix 3/19/09 */
 		}
 
 

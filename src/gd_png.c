@@ -118,8 +118,11 @@ gdImagePtr gdImageCreateFromPngCtx(gdIOCtx *infile)
     /* first do a quick check that the file really is a PNG image; could
      * have used slightly more general png_sig_cmp() function instead */
     gdGetBuf(sig, 8, infile);
+#ifdef CUT
+    /* png_check_sig() has been removed from libpng... hopefully we don't need it ... scg */
     if (!png_check_sig(sig, 8))
         return NULL;   /* bad signature */
+#endif
 
     png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, &gdPngJmpbufStruct,
       gdPngErrorHandler, NULL);
@@ -305,7 +308,7 @@ gdImagePtr gdImageCreateFromPngCtx(gdIOCtx *infile)
                         }
                     }
                 }
-                png_set_dither(png_ptr, palette, idx, idx, NULL, 1);
+                /* png_set_dither(png_ptr, palette, idx, idx, NULL, 1); .... n/a in my libpng.a build.. hopefully not needed.. scg */
 #endif
             }
             break;

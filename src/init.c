@@ -8,7 +8,8 @@
 
 #include "plg.h"
 
-extern int GL_sysdate(), GL_systime(), PLGP_setup(), PLGS_setup(), PLGX_setup(), PLGG_setup(), PLGF_setup();
+extern int PLGP_setup(), PLGS_setup(), PLGX_setup(), PLGG_setup(), PLGF_setup();
+extern int GL_sysdate(), GL_systime();
 
 #define DEFAULT_WIN_WIDTH 8
 #define DEFAULT_WIN_HEIGHT 9

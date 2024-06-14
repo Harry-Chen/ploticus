@@ -12,6 +12,8 @@
 #define MAXPTS 1000	/* default max # input points for movingavg curve */
 #define MAXORDER 21	/* max bspline order value (no limit for movingavg order) */
 #define MAXBSP_IN 100  /* max # input points for bspline curve */
+#define PI 3.141592653589
+
 
 #define MOVINGAVG	'm'
 #define REGRESSION	'r'
@@ -22,6 +24,7 @@
 /* the PLV vector is used for curve points */
 static int bspline(), mavg(), plainavg(), lregress();
 static int dblcompare(const void *a, const void *b);  
+static double find_pvalue();
 
 
 int
@@ -70,7 +73,7 @@ while( 1 ) {
 	else if( strcmp( attr, "resolution" )==0 ) resolution = ftokncpy( lineval );
 	else if( strcmp( attr, "xsort" )==0 ) xsort = getyn( lineval );
 	else if( strcmp( attr, "linedetails" )==0 ) linedetails = lineval;
-	else if( strcmp( attr, "legendlabel" )==0 ) tokncpy( legendlabel, lineval, 256 );
+	else if( strcmp( attr, "legendlabel" )==0 ) { strncpy( legendlabel, lineval, 255 ); legendlabel[255] = '\0'; }
 	else if( strcmp( attr, "select" )==0 ) selectex = lineval;
 	else if( strcmp( attr, "linerange" )==0 ) {
 		if( lineval[0] != '\0' ) linerangegiven = 1;
@@ -327,7 +330,7 @@ double start, stop; /* X values - result line start and stop */
 int i;
 double sumx, sumxx, sumy, sumyy, sumxy;
 double b, m;
-double numer, denom, denomleft, denomright;
+double numer, denom, denomleft, denomright, pvalue;
 char buf[128], tok[128];
 double sqrt();
 char *GL_autoroundf();
@@ -361,7 +364,6 @@ sprintf( buf, "Y = %s + %sX", GL_autoroundf(b,0), tok );
 TDH_setvar( "REGRESSION_LINE", buf );
 
 /* compute r (pearson correlation coeff) */
-/* numer = ((double) nvalues * sumxy) - (sumx * sumy ); */
 denomleft = ((double) npts * sumxx)  - (sumx * sumx);
 denomright = ((double) npts * sumyy)  - (sumy * sumy);
 denom = sqrt( denomleft * denomright );
@@ -369,6 +371,15 @@ denom = sqrt( denomleft * denomright );
 if( denom == 0.0 ) strcpy( buf, "(none)" );
 else sprintf( buf, "%s", GL_autoroundf( (numer/denom), 0 ) );
 TDH_setvar( "CORRELATION", buf );
+
+/* also compute the pvalue on r ... scg 10/15/10 */
+if( denom == 0.0 ) strcpy( buf, "(none)" );
+else	{
+	pvalue = find_pvalue( (numer/denom), npts );
+	if( pvalue >= 0.001 ) sprintf( buf, "%.3f", pvalue );
+	else sprintf( buf, "%.6f", pvalue  );
+	}
+TDH_setvar( "CORRELATION_P", buf );
 
 return( 0 );
 }
@@ -470,6 +481,57 @@ if( *f > *g ) return( 1 );
 if( *f < *g ) return( -1 );
 return( 0 );
 }
+
+
+/* =============================  */
+/* FIND_PVALUE - compute the pvalue on r .    */
+/* added scg 10/15/10 */
+static 
+double 
+find_pvalue( r, npoints )
+double r;
+int npoints;
+{
+int i;
+double tvalue, df;
+double t1, t2, t3, cdf;
+
+/* the following from http://faculty.vassar.edu/lowry/tabs.html#r */
+df = (double)(npoints-2);
+tvalue = r / sqrt( ( 1 - (r*r) ) / df ); 
+
+/* the following from mmn ttest_p.c */
+t1 = df / ( df + (tvalue * tvalue) );
+
+if( df/2 != (double)(int)( df/2 ) ) { /* odd df */
+        t3 = 0;
+        if( df != 1.0 ) {
+                t2 = t3 = 2 * sqrt( t1 * ( 1 - t1 )) / PI;
+                for( i = 1; i <= (int) (df/2) -1; i++ )
+                        {
+                        t2 = t2 * (double)(i) / ( (double)(i) + 0.5 ) * t1 ;
+                        t3 = t3 + t2;
+                        }
+                }
+        t3 = 1 - 2 / PI * atan( sqrt ( t1 / (1-t1) )) + t3;
+        }
+
+else {  /* even df */
+        t2 = t3 = sqrt( 1 - t1 );
+        for( i = 1; i <= df/2 -1; i++ )
+                {
+                t2 = t2 * ( (double)i - 0.5 ) / (double)i * t1;
+                t3 = t3 + t2;
+                }
+        }
+
+if( tvalue > 0 ) cdf = ( 1 + t3 / 2 );
+else cdf = ( 1 - t3 / 2 );
+
+if( tvalue >= 0 ) return( 1- fabs( ( 1-cdf ) * 2 ) );
+else return( fabs( 1- ( 2 * cdf ) ) );
+}
+
 
 
 /* ======================================================= *

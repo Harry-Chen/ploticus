@@ -4,6 +4,8 @@
 /* scg uses:  gcc apitest.c /home/scg/ploticus/src/libploticus.a  /home/scg/lib/libpng.a  /home/scg/lib/libz.a -lm -o apitest  */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #define RESULT_TYPE "png"
 
 main( argc, argv )
