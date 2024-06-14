@@ -1,0 +1,669 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: the pl program</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>The pl program</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH The_pl_program PL "01-MAR-2002   PL ploticus.sourceforge.net"
+
+.SH NAME
+pl
+
+.SH SYNOPSIS
+\fCpl  -prefab \fIprefabname\fC   \fIparm=value\fC ..  [\fI-options\fR]
+.br
+\0.. OR ..
+.br
+\fCpl \fIscriptfile\fC  [\fI-options\fC]  
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH DESCRIPTION
+\fBpl\fR is a program that produces plots and charts from data, and 
+produces results that can be viewed on web pages, paper, slides,
+or interactively on the screen.  Standard types of plots may be
+done using
+.ig >>
+<a href="prefabs.html">
+.>>
+\0prefab plot templates
+.ig >>
+</a>
+.>>
+, or a user-developed 
+.ig >>
+<a href="scripts.html">
+.>>
+\0script file
+.ig >>
+</a>
+.>>
+may be supplied for greater flexibility and customization.
+\fBpl\fR may be executed from the command line or 
+.ig >>
+<a href="cgi.html">
+.>>
+\0as a CGI program.
+.ig >>
+</a>
+.>>
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH EXAMPLES
+See the various
+.ig >>
+<a href="prefabs.html">
+.>>
+\0prefab examples
+.ig >>
+</a>
+.>>
+\0.
+A large number of 
+.ig >>
+<a href="../gallery/index.html">
+.>>
+\0script examples
+.ig >>
+</a>
+.>>
+are also available.
+
+
+.ig >>
+<br><br><br>
+.>>
+.ig >>
+<a name=options></a>
+<br>
+.>>
+
+.SH COMMAND LINE ARGUMENTS
+.LP
+The \fBpl\fR command line arguments may be given in any order.
+
+.LP
+\fB-prefab\fR \fIprefabname\fR
+.IP
+Produce a plot using a 
+.ig >>
+<a href="prefabs.html">
+.>>
+\0prefab
+.ig >>
+</a>
+.>>
+plot template.
+\fIprefabname\fR identifies the template, eg.
+\fCcron\fR or \fCvbars\fR.
+Necessary parameters are supplied on the command line using the form \fIparm=value\fR.
+
+.LP
+\fIscriptfile\fR
+.IP
+Ploticus 
+.ig >>
+<a href="scripts.html">
+.>>
+\0script file
+.ig >>
+</a>
+.>>
+that will be interpreted to produce results.
+Alternatively, \fB-stdin\fR may be used to indicate
+that script will be available on standard input.
+
+.ig >>
+<a name=varvalue></a>
+.>>
+.LP
+\fIvariable\fC=\fIvalue\fR
+.IP
+Declares the named
+\fIvariable\fR and sets it to the given \fIvalue\fR.  
+This is a convenient way to pass information
+to prefabs and scripts.  For example: \fCCUTDATE=10-31-98\fR
+would declare the variable \fCCUTDATE\fR and set it to \fC10-31-98\fR.
+Any argument on the command line that contains an embedded equals-sign
+(=) is taken as a var-value pair.  Variable names are case-sensitive.
+
+
+.LP
+\fB-o \fIoutfile\fR | \fCstdout\fR
+.IP
+Specify a filename where the result will be written.
+No processing is applied to this name.  
+If \fC-o stdout\fR is used,
+result will be sent to standard output.  
+If \fB-o\fR is not specified, a 
+.ig >>
+<a href="#outfile">
+.>>
+\0default output filename
+.ig >>
+</a>
+.>>
+will be used.  
+
+
+.ig >>
+<br><br><br>
+.>>
+
+.LP
+\fBRESULT FORMAT OPTIONS\fR (availability may depend on specific ploticus build):
+.LP
+\fB-png \fR 
+.ig >>
+&nbsp; &nbsp; &nbsp;
+.>>
+PNG image
+
+.LP
+\fB-gif \fR
+.ig >>
+&nbsp; &nbsp; &nbsp; &nbsp;
+.>>
+pseudo-GIF image
+
+.LP
+\fB-jpeg\fR
+.ig >>
+&nbsp; &nbsp; 
+.>>
+JPEG image 
+
+.LP
+\fB-svg\fR 
+.ig >>
+&nbsp; &nbsp; &nbsp;
+.>>
+.ig >>
+<a href="svg.html">
+.>>
+\0SVG
+.ig >>
+</a>
+.>>
+graphic.  \fB-svgz\fR, \fB-tag\fR and \fB-zlevel\fR options are
+.ig >>
+<a href="svg.html">
+.>>
+\0also available
+.ig >>
+</a>
+.>>
+
+.LP
+\fB-wbmp\fR
+.ig >>
+&nbsp; 
+.>>
+WBMP image
+
+
+.LP
+\fB-eps \fR
+.ig >>
+&nbsp; &nbsp; &nbsp;
+.>>
+EPS (encapsulated PostScript) 
+
+.LP
+\fB-ps \fR
+.ig >>
+&nbsp; &nbsp; &nbsp; &nbsp; 
+.>>
+paginated PostScript to stdout
+
+.LP
+\fB-x11 \fR
+.ig >>
+&nbsp; &nbsp; &nbsp; &nbsp; 
+.>>
+display on X11 screen
+
+
+.LP
+\fB-map\fR
+.ig >>
+&nbsp; &nbsp;
+.>>
+produce a 
+.ig >>
+<a href="clickmap.html">
+.>>
+\0server-side clickable imagemap file
+.ig >>
+</a>
+.>>
+along with png, gif, or jpeg image
+
+.LP
+\fB-csmap\fR
+.ig >>
+&nbsp; &nbsp;
+.>>
+produce a 
+.ig >>
+<a href="clickmap.html">
+.>>
+\0client-side clickable imagemap file
+.ig >>
+</a>
+.>>
+along with png, gif, or jpeg image
+
+.ig >>
+<br><br><br>
+.>>
+
+.LP
+\fBRESULT SIZE OPTIONS\fR
+.LP
+\fB-scale\fR \fIsx\fR[,\fIsy\fR]
+.IP
+Scale the final result.
+If one value is given, the result is scaled by this amount in both x and y.
+If two values are given, scaling in x and scaling in y may be done independently.
+A scale value of less than 1.0 reduces the
+size; an scale value of greater than 1.0 enlarges.  
+Scaling is done relative to the origin (0,0) which is at the lower left.
+
+.LP
+\fB-pagesize\fR \fIwidth,height\fR
+.IP
+Control the size of the display window or image.
+\fIwidth\fR and \fIheight\fR are in absolute units.
+Absolute location 0,0 is at the lower left corner.
+.IP
+This option may be used to control the size of the X11 display window
+result.  The default size is 8 inches wide by 8 inches high.
+The resulting size is not influenced by the -scale option.
+.IP
+PNG, GIF, JPEG size will be determined by the extent of the graphic;
+however, -pagesize (or the proc page \fCpagesize\fR attribute) \fBmust\fR be used 
+for images where drawing occurred beyond (8.0,8.0) absolute (inch) coordinate,
+in order to allocate enough image memory (otherwise the top or right areas of the graphic 
+will not be visible).
+.IP
+\fB-pagesize\fR has no effect with EPS or paginated PostScript results (the PostScript
+BoundingBox will be determined by the extent of the graphic).
+.IP
+Example: \fC-pagesize 7,3\fR
+
+.LP
+\fB-tightcrop\fR
+.IP
+For image or EPS output, crop the result tightly to the extent of
+the design.  Normally a small margin is allowed on all four sides.
+This option sometimes crops a bit too tight; if so try \fB-croprel\fR.
+
+.LP
+\fB-crop\fR \fIx1,y1,x2,y2\fR
+.IP
+Crop image or EPS result to the box specified by
+\fIx1,y1\fR and \fIx2,y2\fR, in absolute units.  
+Note that there may be no spaces in the coordinates specification.
+Cropping takes place after design is rendered and does not
+affect coordinate locations.
+
+.LP
+\fB-croprel\fR \fIleft,bottom,right,top\fR
+.IP
+.IP
+Crop image or EPS result tightly to the extent of the design (like \fB-tightcrop\fR),
+but then adjust the cropping outward or inward on one or more sides.
+\fIleft\fR is the amount to adjust the left side, in absolute units.  
+Similarly for \fIbottom\fR, \fIright\fR, and \fItop\fR.
+Positive values always adjust outward from center; negative values adjust inward (tighter).
+There may be no spaces in the \fIleft,bottom,right,top\fR specification.
+Cropping takes place after design is rendered and does not
+affect coordinate locations.
+
+
+.ig >>
+<br><br><br>
+.>>
+
+.LP
+\fBGRAPHICS ENVIRONMENT OPTIONS\fR
+.LP
+\fB-font\fR \fIfont\fR 
+.IP
+sets the overall font to \fIfont\fR.  See
+.ig >>
+<a href="fonts.html">
+.>>
+\0fonts
+.ig >>
+</a>
+.>>
+for more info.
+.LP
+\fB-textsize\fR \fIpointsize\fR 
+.IP
+sets the overall default textsize to \fIpointsize\fR.
+All embedded size specifications will be rendered relative to this.
+.LP
+\fB-linewidth\fR \fIw\fR 
+.IP
+sets the overall default linewidth to \fIw\fR.
+All embedded line width specifications will be rendered relative to this.
+See linedetails(pli) for more on line width.
+.LP
+\fB-color\fR \fIcolor\fR 
+.IP
+sets the overall default text and line drawing color to \fIcolor\fR.
+.LP
+\fB-backcolor\fR \fIcolor\fR 
+.IP
+sets the background color to \fIcolor\fR.
+.LP
+\fB-cm\fR
+.IP
+Use centimeters as absolute units.  
+On the command line this must appear to the left of any arguments dealing with
+absolute unit values, such as -pagesize.
+If cm will always be the desired
+absolute units, the preferred way to achieve this is by using 
+\fCunits: cm\fR in a 
+.ig >>
+<a href="../doc/config.html">
+.>>
+\0ploticus config file.
+.ig >>
+</a>
+.>>
+.LP
+\fB-inches\fR
+.IP
+Use inches as absolute units.  This is the default.
+
+
+.ig >>
+<br><br><br>
+.>>
+.LP
+\fBINTERACTIVE USE OPTIONS\fR
+.LP
+\fB-winloc\fR \fIx,y\fR
+.IP
+Control where on the screen the upper-left corner of the X11 display
+window will be placed.  \fIx\fR and \fIy\fR are in pixels.
+Example: \fC-winloc 200 0\fR
+
+.LP
+\fB-v\fR \fIcommand\fR
+.br
+\fB-viewer\fR \fIcommand\fR
+.IP
+After generating results in the specified format, execute \fIcommand\fR
+in order to view the results on your screen.  
+The output file will automatically be
+included in the \fIcommand\fR.  For example, if a GIF file is being
+generated you might use this to invoke the xv utility: \fC-viewer xv\fR.  
+If PostScript is being generated you could use something like this to
+invoke the ghostview utility: \fC-viewer "gv -magstep -1"\fR.
+The given command must be available on your system and locatable in
+your command search path.
+This option may not be used with \fC-o stdout\fR.
+
+.ig >>
+<br><br><br>
+.>>
+
+.LP
+\fBPAPER ORIENTATION OPTIONS\fR
+.LP
+\fB-landscape\fR  
+.IP
+For paginated postscript, set paper orientation to landscape (oblong).
+.LP
+\fB-portrait\fR  
+.IP
+For paginated postscript, set paper orientation to portrait.
+.LP
+\fB-posteroffset\fR  \fIx,y\fR
+.IP
+Allows production of large-size posters made up of multiple standard
+sheets of paper butted together.  May be used only with paginated PostScript,
+and should be used in combination with the \fC-scale\fR and \fC-textsize\fR
+options.  \fIx,y\fR is the point within your result (in
+.ig >>
+<a href="attributetypes.html#positionunits">
+.>>
+\0absolute units
+.ig >>
+</a>
+.>>
+) that is to be placed at the lower left corner of the page.
+For further discussion of this, see
+.ig >>
+<a href="posters.html">
+.>>
+\0posters
+.ig >>
+</a>
+.>>
+\0.
+
+.ig >>
+<br><br><br>
+.>>
+.LP
+\fBDEVELOPMENT AND DEBUGGING OPTIONS\fR
+.LP
+\fB-debug\fR
+.IP
+Debug mode; extra dianostic information produced and 
+temporary files not cleaned up upon termination.
+
+.LP
+\fB-showbad\fR
+.IP
+Identify unplottable data, showing the value, and its row and field.
+
+.LP
+\fB-diagfile\fR \fIfilename\fR | \fCstderr\fR | \fCstdout\fR
+.IP
+All non-error messages and output will be written to this file (default is stderr).
+
+.LP
+\fB-errfile\fR \fIfilename\fR | \fCstderr\fR | \fCstdout\fR
+.IP
+All error messages will be written to this file (default is stderr).
+
+.LP
+\fB-help\fR or \fB-?\fR or \fB-version\fR
+.IP
+Print version number, copyright info, web site address, etc.
+
+
+.ig >>
+<br><br><br>
+.>>
+
+.ig >>
+<a name=outfile></a>
+.>>
+
+.SH OUTPUT FILE NAMES
+The output file may be specified on the command line using the \fB-o\fR option,
+or via Proc Page's outfilename attribute.
+If so, the result is written to a file of that name.
+\fC-o stdout\fR may also be used to send result to standard output.
+.LP
+Otherwise, if your script filename has a "recognized extension"
+.\" a prefab is being used or 
+( \fB.p\fR, \fB.pl\fR, \fB.plo\fR, \fB.pls\fR, \fB.htm\fR or \fB.html\fR ),
+the base part of the script file name is used and \fC.png\fR, \fC.gif\fR, etc.
+is appended.  If your script filename doesn't have a recognized extension, the 
+generic name \fCout.*\fR will be used.
+.LP
+X11 output is always displayed on the screen, and
+paginated PostScript is written to standard output unless \fC-o\fR is used.
+.LP
+If page breaks (Proc Page) are encountered when rendering in any format other
+than paginated PostScript,
+special action is necessary since each page must go into a separate file.  
+A Proc Page \fCoutfilename\fR may be specified for each page;
+otherwise a \fCp\fIn\fR prefix will be attached to the beginning of
+each page's output file name to indicate page \fIn\fR.
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH USAGE EXAMPLES
+.LP
+The following example uses the 
+.ig >>
+<a href="scat.html">
+.>>
+\0scat prefab
+.ig >>
+</a>
+.>>
+:
+.IP
+\fCpl -prefab scat -png datafile=results.dat x=2 y=3\fR
+
+.LP
+The following examples assume
+that you have a script file called \fClineplot1.p\fR.
+.IP
+ \fCpl -x lineplot1.p\fR = view on X11 screen
+.IP
+ \fCpl -png lineplot1.p\fR = create PNG image lineplot1.png
+.IP
+ \fCpl -gif lineplot1.p -o stdout\fR = create GIF image on standard output
+.IP
+ \fCpl -gif lineplot1.p -viewer xv\fR = produce GIF and view using xv 
+(assuming xv image viewer is available on your system).
+.IP
+ \fCpl -eps lineplot1.p\fR = produce EPS file lineplot1.eps
+.IP
+ \fCpl -eps lineplot1.p -viewer gv\fR = produce EPS and view using gv 
+(that's ghostview, assuming it is available on your system).
+.IP
+ \fCpl -eps lineplot1.p -o lineplot.eps\fR = produce EPS into file lineplot.eps
+.IP
+ \fCpl -ps lineplot1.p | lp\fR = produce paginated postscript and send to
+unix lp print spooler.
+.IP
+ \fCpl -ps lineplot1.p -veiwer gv\fR = produce paginated postscript
+and view using ghostview.
+
+.ig >>
+<br><br><br>
+.>>
+.ig >>
+<a name=environment></a>
+.>>
+.SH ENVIRONMENT
+.LP
+\fBPLOTICUS_CONFIG\fR 
+.IP
+The name of a 
+.ig >>
+<a href="config.html">
+.>>
+\0ploticus configuation file
+.ig >>
+</a>
+.>>
+, for setting default date notations, number
+notations, measurement units, etc.  
+.LP
+\fBPLOTICUS_PREFABS\fR
+.IP
+The path name of a directory where ploticus will look for
+.ig >>
+<a href="prefabs.html">
+.>>
+\0prefab
+.ig >>
+</a>
+.>>
+scripts.  The "factory" prefabs are located in 
+the ploticus ./prefabs subdirectory.
+.LP
+\fBLC_CTYPE\fR, \fBLC_COLLATE\fR, \fBLANG\fR
+.IP
+Locale support.  Thanks to Oleg Bartunov oleg@sai.msu.su
+for contributing this.  \fBpl\fR must be 
+built with -DLOCALE for this to work.
+
+.LP
+\fBTDH_ERRMODE\fR
+.IP
+Control the disposition of error messages.  Allowable values: \fCstderr\fR
+which is the default, and \fCcgi\fR which causes error messages to be written 
+to stdout with html formatting.
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH AUTHOR
+Stephen C. Grubb
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH SEE ALSO
+.ig >>
+<a href="http://ploticus.sourceforge.net">
+.>>
+\0http://ploticus.sourceforge.net
+.ig >>
+</a>
+.>>
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="../doc/Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

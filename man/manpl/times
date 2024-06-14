@@ -1,0 +1,154 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: times</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>times</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH times PL "04-MAR-2002   PL ploticus.sourceforge.net"
+
+.SH Ploticus time support
+Ploticus can plot time values directly.
+There are also several 
+that deal with time values.
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH Supported notations
+.IP \(bu
+\fChh:mm\fR (example  11:25)
+.IP \(bu
+\fChh:mm:ss\fR (example  11:25:02)
+.IP \(bu
+\fCmm:ss\fR (example  25:02) 
+.IP
+The default format is \fChh:mm\fR.
+.IP
+Seconds are floating-point values (see Fractional seconds, below).
+
+
+.SH Using various time notations
+To work with data having other time notations, use the
+\fIformat\fR portion of the
+\fCxscaletype\fR or \fCyscaletype\fR attributes of
+\fBproc areadef\fR or \fBproc defineunits\fR.
+.br
+For example:
+.nf
+.ft C
+\0#proc areadef
+  xscaletype: time mm:ss
+.ft R
+.fi
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH Display-only notations
+In addition to the time arithmetic notations shown above,
+the following formats may be used to display time values:
+.IP \(bu
+\fChh:mma\fR (example: 11:25am)
+.IP \(bu
+\fChhA\fR (example: 11AM)
+.IP \(bu
+Others:
+\fChh:mm:ssa    m:ss    hh     mm    m    ss    s\fR
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH Basic unit
+The basic time unit is a \fBminute\fR, regardless of
+which notation is in use.  Axis stubs and tics may be
+expressed in \fChours\fR or \fCseconds\fR if desired.
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH Fractional seconds
+Seconds are represented as floating point values, and by default 
+only non-zero decimal components are displayed (\fC%02g\fR).
+To control the displayed decimal format of seconds,
+use a printf-style double format specifier instead of \fCss\fR
+in the time notation string.
+For example, \fChh:mm:%02.02f\fR
+.LP
+Stubs may be incremented by fractions of seconds, eg. \fCstubs: inc 0.2 seconds\fR
+
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH Key to notation codes    
+.LP
+\fChh\fR = hour, 00 to 23 (00 to 11 for am/pm notation)
+.br
+\fCh\fR = hour, 0 to 23, (0 to 11 for am/pm notation)
+.br
+\fCmm\fR = minute 00 to 59
+.br
+\fCm\fR = minute 0 to 59
+.br
+\fCss\fR = second 00.0 to < 60.0  (floating point, see above)
+.br
+\fCs\fR = second 0.0 to < 60.0  (floating point, see above)
+.br
+\fCa\fRi = am/pm notation (use \fCA\fR capitals e.g. AM or PM)
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH Notes
+.LP
+\fC24:00\fR is generally considered equivalent to \fC00:00\fR
+.LP
+With am/pm notation noon is shown as \fC12N\fR; midnight is \fC12AM\fR
+
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="../doc/Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

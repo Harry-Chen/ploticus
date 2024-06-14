@@ -1,0 +1,370 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: proc annotate</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>proc annotate</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH proc_annotate PL "04-MAR-2002   PL ploticus.sourceforge.net"
+
+.SH DESCRIPTION
+\fBproc annotate\fR may be used to place arbitrary text at 
+specific locations, in either absolute space or scaled space.
+Annotation may include one or two arrows and a box if desired.
+
+.ig >>
+<br><br><br>
+.>>
+.SH FEATURES
+Text may be single line or multiple lines.
+Optional backing box for text, that can be colored, outlined,
+and have a bevel or drop shadow.
+Semi-intelligent placement of one or two arrows.
+Control over text and arrow color.
+.ig >>
+<a href="clickmap.html">
+.>>
+\0HTML clickmap support
+.ig >>
+</a>
+.>>
+for annotations box.
+
+.ig >>
+<br><br><br>
+.>>
+.SH EXAMPLES
+See the Gallery Annotations examples
+.ig >>
+<a href="../gallery/gall.annot.html"><img src="../gallery/btn/here.gif"></a>
+.>>
+
+.ig >>
+<br><br><br>
+.>>
+.SH PREREQUISITES
+None.
+
+.ig >>
+<br><br><br>
+.>>
+.SH MANDATORY ATTRIBUTES
+The \fCtext\fR and \fClocation\fR attributes MUST be specified.
+If an arrow is desired, the \fCarrowhead\fR attribute must be specified.
+
+.ig >>
+<br><br><br>
+.>>
+.SH ATTRIBUTES
+.LP
+\fBtext\fR 
+.ig >>
+<a href="attributetypes.html#text">
+.>>
+\0multiline text
+.ig >>
+</a>
+.>>
+.IP
+The text to be displayed.  Terminates with a blank line.
+Text may also come from a file or command (see below).
+.br
+Example:
+.nf
+.ft C
+text:	Value
+	as of 1/15/99
+
+.LP
+\fBlocation\fR 
+.ig >>
+<a href="attributetypes.html#xy">
+.>>
+\0x y
+.ig >>
+</a>
+.>>
+.IP
+The text will be placed at this location.
+By default the text will be centered around X, and
+the bottom of the first line will be at Y.
+Absolute units are assumed;
+append \fC(s)\fR to one or both values to indicate scaled units.  
+.br
+Example: \fClocation: 2.2(s) 3.0\fR
+
+
+.LP
+\fBarrowhead\fR 
+.ig >>
+<a href="attributetypes.html#xy">
+.>>
+\0x y
+.ig >>
+</a>
+.>>
+.IP
+If specified, an arrow will be drawn pointing at this location.
+The tail of the arrow will be placed automatically if \fCarrowtail\fR
+is not specified.
+Absolute units are assumed;
+append \fC(s)\fR to one or both values to indicate scaled units.  
+.br
+Example: \fCarrowhead: 2012(s) 85(s)\fR
+
+.LP
+\fBarrowhead2\fR 
+.ig >>
+<a href="attributetypes.html#xy">
+.>>
+\0x y
+.ig >>
+</a>
+.>>
+.IP
+Same as \fCarrowhead\fR above, for a second arrow.
+
+.ig >>
+<br><br><br>
+.>>
+.SH DETAIL ATTRIBUTES
+.LP
+\fBfromfile\fR \fIfilename\fR
+.IP
+If specified, the text will be read from this file.
+This filename is expanded by a shell.
+
+.LP
+\fBfromcommand\fR \fIshell command\fR
+.IP
+If specified, this shell command will be executed to yield 
+text on its standard output.
+
+.LP
+\fBtextdetails\fR 
+.ig >>
+<a href="attributetypes.html#textdetails">
+.>>
+\0textdetails
+.ig >>
+</a>
+.>>
+.IP
+Allows control of details pertaining to the text, such as alignment, color, size, and font.
+Example: \fCtextdetails: align=C size=9\fR
+
+.LP
+\fBbox\fR 
+.ig >>
+<a href="attributetypes.html#linedetails">
+.>>
+\0linedetails
+.ig >>
+</a>
+.>>
+.IP
+If specified, a box will be drawn around the text.
+May be used with or without \fCbackcolor\fR.
+.br
+Example: \fCbox: yes\fR  (do a default box)
+.br
+Example: \fCbox: color=yellow width=1.0\fR
+
+.LP
+\fBboxmargin\fR \fIn\fR
+.IP
+If specified, increase the size of any backing box by
+\fIn\fR absolute units on all four sides. 
+.br
+Example: boxmargin: 0.15
+
+.LP
+\fBbackcolor\fR 
+.ig >>
+<a href="color.html">
+.>>
+\0color
+.ig >>
+</a>
+.>>
+.IP
+Supply a colored rectangle backing box, to be filled with \fIcolor\fR.
+No box outline is drawn, use \fCbox\fR to get one.
+May be used with or without \fCbox\fR.
+
+.LP
+\fBarrowdetails\fR 
+.ig >>
+<a href="linedetails.html">
+.>>
+\0linedetails
+.ig >>
+</a>
+.>>
+.IP
+Allows control of details pertaining to the arrows, such as line thickness and color.
+
+.LP
+\fBarrowheadsize\fR \fIn\fR
+.IP
+Controls the size of the arrowhead.  
+\fIn\fR is the length of the arrowhead in absolute units (default 0.1 inches).
+This attribute may be set to 0 to suppress arrowhead and just draw line.
+
+.LP
+\fBarrowtail\fR 
+.ig >>
+<a href="attributetypes.html#xy">
+.>>
+\0x y
+.ig >>
+</a>
+.>>
+.IP
+If specified, tail of 1st arrow will be at this point.  
+
+.LP
+\fBarrowtail2\fR 
+.ig >>
+<a href="attributetypes.html#xy">
+.>>
+\0x y
+.ig >>
+</a>
+.>>
+.IP
+If specified, tail of 2nd arrow will be at this point.  
+
+.LP
+\fBverttext\fR  \fCyes\fR | \fCno\fR
+.IP
+If \fCyes\fR, text will be rendered vertically, from low to high.
+This is a limited implementation;
+backing box does not work with vertical text, nor does
+automatic arrow tail placement (arrow tail must be specified).
+
+.LP
+\fBclickmapurl\fR \fIurl\fR
+.IP
+If generating an
+.ig >>
+<a href="clickmap.html">
+.>>
+\0HTML clickmap
+.ig >>
+</a>
+.>>
+on the attribute box,
+this specifies a url.
+See
+.ig >>
+<a href="clickmap.html">
+.>>
+\0HTML clickmap
+.ig >>
+</a>
+.>>
+for more details and examples.
+.br
+Example: \fCclickmapurl: http://abc.com/docs/explanation.html\fR
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH Pertaining to optional bevel & drop shadow 
+.LP
+\fBbevelsize\fR \fIn\fR
+.IP
+Width of optional bevel area, in
+.ig >>
+<a href="attributetypes.html#positionunits">
+.>>
+\0absolute units.
+.ig >>
+</a>
+.>>
+Default is \fC0.0\fR (no bevel).
+
+.LP
+\fBshadowsize\fR \fIn\fR
+.IP
+Width of visible portion of optional drop shadow in absolute units.
+Default is \fC0.0\fR (no drop shadow).
+
+.LP
+\fBhibevelcolor\fR
+.ig >>
+<a href="color.html">
+.>>
+\0color
+.ig >>
+</a>
+.>>
+.IP
+Color of upper and lefttmost bevels.  Default is \fCgray(0.6)\fR
+
+.LP
+\fBlowbevelcolor\fR
+.ig >>
+<a href="color.html">
+.>>
+\0color
+.ig >>
+</a>
+.>>
+.IP
+Color of lower and rightmost bevels.  Default is \fCgray(0.8)\fR
+
+.LP
+\fBshadowcolor\fR
+.ig >>
+<a href="color.html">
+.>>
+\0color
+.ig >>
+</a>
+.>>
+.IP
+Color of drop shadow.  Default is \fCblack\fR.
+
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="../doc/Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

@@ -1,0 +1,12 @@
+//// do title..
+#proc endproc
+
+#if @title != ""
+  #proc annotate
+  #set XCENTER = $arith(@AREARIGHT-@AREALEFT/2.0)
+  #set XCENTER = $arith(@AREALEFT+@XCENTER)
+  #set TOP = $arith(@AREATOP+0.2)
+  location: @XCENTER @TOP
+  textdetails: @titledet 
+  text: @title
+#endif

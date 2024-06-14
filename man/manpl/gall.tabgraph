@@ -1,0 +1,82 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: gallery - table-based graphs</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>Gallery - Table-based graphs</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH Gallery_-_Table-based_graphs PL "14-SEP-2001   PL www.sgpr.net"
+
+.ig >>
+<p>
+This page contains examples of table-based graphs,
+illustrating the available varieties and options.
+These are an array of graphs that are tied to entries in a table or list.
+These lists can overflow onto an unlimited number of pages.
+These examples all use the
+<a href="../doc/pltab.1.html">pltab</a> program
+to take a plain ascii table (perhaps produced by a program
+or by hand) and create presentable results.
+<b>pltab</b> is most apt for producing paper reports; thus
+most of these examples look best in PostScript.
+<p>
+<h1><br>Example 1</h1>
+<a href="caselist.html">caselist.tab<br><img src="caselistp3.gif"></a>
+<br>
+A multi-page example where many cases are shown.
+For each case, a lineplot shows a level that changes over time.
+The table layout is defined in <a href="caselist.tab">caselist.tab</a>;
+the plotting is done by the ploticus script <a href="caselist.p">caselist.p</a>
+which is executed once per page.
+<p>
+<h1><br>Example 2</h1>
+<a href="timewin.html">timewin.tab<br><img src="timewinp1.gif"></a>
+<br>
+Another multi-page example where the time windows for a number
+of patient follow-up visits according to a clinical trials protocol
+are shown.  Date data is plotted directly.
+The table layout is defined in <a href="timewin.tab">timewin.tab</a>;
+the plotting is done by the ploticus script <a href="timewin.p">timewin.p</a>
+which is executed once per page.
+
+.>>
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

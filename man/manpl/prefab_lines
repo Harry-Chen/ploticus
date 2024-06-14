@@ -1,0 +1,373 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: lines prefab</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>lines prefab</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH lines_prefab PL "11-JAN-2002   PL ploticus.sourceforge.net"
+
+.ig >>
+<a href="#desc">Skip over the examples</a>
+<br><br>
+.>>
+
+.SH EXAMPLE 1
+.ig >>
+<center><table cellpadding=2><tr>
+<td><img src="../gallery/prefab_img/lines1.gif"></td></tr>
+</table></center>
+.>>
+.LP
+.nf
+   pl -prefab lines  data=data17  x=1 y=2  pointsym=none
+
+   The data17 file:
+	331 75
+	331.624 83.5518
+	332.105 88.7758
+	..etc.
+
+
+.fi
+
+.SH EXAMPLE 2
+.ig >>
+<center><table cellpadding=2><tr>
+<td><img src="../gallery/prefab_img/lines2.gif"></td></tr>
+</table></center>
+.>>
+.LP
+.nf
+   pl  -prefab lines data=data10 delim=tab  x=1  y=2  y2=4  step=yes \\
+     yrange=0 name="Group A" name2="Group B" xlbl=Months
+
+
+.fi
+
+.SH EXAMPLE 3
+.LP
+.ig >>
+<center><table cellpadding=2><tr>
+<td><img src="../gallery/prefab_img/lines3.gif"></td></tr>
+</table></center>
+.>>
+.LP
+.nf
+   pl  -prefab lines  data=data10 delim=tab  x=1  y=2 err=3  y2=4 err2=5  \\
+       y3=6 err3=7  y4=8 err4=9   yrange=0  xlbl=Months \\
+       name="Group A" name2="Group B" name3="Group C" name4="Group D" 
+
+   The data10 file:
+       0	100	2	100	4	100	3	100	4
+       1.5	92	4	94	7	87	6	86	5
+       3	89	4	92	8	78	6	74	4
+       6	86	5	91	8	65	8	61	6
+       ..etc.
+
+.fi
+
+.SH EXAMPLE 4
+.LP
+.ig >>
+<center>
+<img src="../gallery/prefab_img/lines4.gif">
+</center>
+.>>
+.LP
+.nf
+   pl -prefab lines  data=data20  x=1  y=2 
+
+   The data20 file:
+      1031 20.96 6.4
+      1032 19.71 5.8
+      1033 19.98 5.9
+      ... etc.
+
+.fi
+
+.SH EXAMPLE 5
+.LP
+.ig >>
+<center>
+<img src="../gallery/prefab_img/lines5.gif">
+</center>
+.>>
+
+.LP
+.nf
+  pl -prefab lines  data=data20  x=1  y=2  fill=redorange pointsym=none  \\
+	y2=2 pointsym2=none  
+.fi
+In this example the same data field was given twice, first to do the filled
+area, and again to do the blue line.
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH EXAMPLE 6
+.LP
+.ig >>
+<center>
+<img src="../gallery/prefab_img/lines6.gif">
+</center>
+.>>
+
+.LP
+.nf
+   pl -prefab lines  data=data20  x=1  y=2  gapmissing=yes 
+
+.fi
+
+.SH EXAMPLE 7
+.LP
+.ig >>
+<center>
+<img src="../gallery/prefab_img/lines7.gif">
+</center>
+.>>
+
+.LP
+.nf
+   pl -prefab lines  data=data20  x=1  y=2  fill=tan1  pointsym=none  \\
+	y2=2 pointsym2=none  y3=3  pointsym3=none  linedet3=color=black \\
+	yrange="0 25"  name="background" name3="interior" 
+
+.fi
+
+.ig >>
+<br><br><br>
+.>>
+
+.LP
+.ig >>
+<a href="prefabs.html#examples">
+.>>
+\0How to run these examples
+.ig >>
+</a>
+.>>
+
+.ig >>
+<a name=desc></a>
+.>>
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH DESCRIPTION
+\fBlines\fR is a 
+.ig >>
+<a href="prefabs.html">
+.>>
+\0prefab
+.ig >>
+</a>
+.>>
+for producing line plots with optional point symbols and error bars,
+for up to four groups.
+For the first group data points are in data fields given in \fBx\fR and \fBy\fR, and 
+optional error bar value given in \fBerr\fR.
+By default \fBx\fR is assumed to be continuous numeric, but it can be categories
+if \fBcats\fR is specified (for chronological X data, use the
+.ig >>
+<a href="prefab_chron.html">
+.>>
+\0chron prefab
+.ig >>
+</a>
+.>>
+).
+To display a second curve, use \fBy2\fR, \fBerr2\fR, etc.
+Same for third and fourth curves.
+This prefab is based on
+.ig >>
+<a href="lineplot.html">
+.>>
+\0proc lineplot
+.ig >>
+</a>
+.>>
+\0.
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH PARAMETERS
+
+.IP
+.ig >>
+<a href="prefab_stdparms.html">
+.>>
+\0Standard prefab parameters
+.ig >>
+</a>
+.>>
+are all supported.  \fBdata\fR, \fBx\fR and \fBy\fR are required.
+
+.br
+.br
+.IP
+\fBname\fR is a short description for the first curve, for
+inclusion in a legend.
+
+.br
+.br
+.IP
+\fBlinedet\fR controls
+.ig >>
+<a href="linedetails.html">
+.>>
+\0line appearance details
+.ig >>
+</a>
+.>>
+for the first curve.  
+
+.br
+.br
+.IP
+\fBpointsym\fR controls the data points on the first curve.
+.ig >>
+<a href="symboldetails.html">
+.>>
+\0symbol
+.ig >>
+</a>
+.>>
+\0.  It may be given as \fCnone\fR for no point symbol.
+
+.br
+.br
+.IP
+\fBfill\fR may be specified as a 
+.ig >>
+<a href="color.html">
+.>>
+\0color
+.ig >>
+</a>
+.>>
+and causes the area under the curve to be filled.
+
+.br
+.br
+.IP
+\fBy2\fR, \fBerr2\fR, \fBname2\fR, \fBlinedet2\fR, \fBpointsym2\fR, and \fBfill2\fR
+may be specified for a second curve.  \fBx\fR will be used for the
+X component of the curve.
+
+.br
+.br
+.IP
+\fBy3\fR, \fBerr3\fR, \fBname3\fR, \fBlinedet3\fR, \fBpointsym3\fR, and \fBfill3\fR
+may be specified for a third curve.  \fBx\fR will be used for the
+X component of the curve.
+
+.br
+.br
+.IP
+\fBy4\fR, \fBerr4\fR, \fBname4\fR, \fBlinedet4\fR, \fBpointsym4\fR, and \fBfill4\fR
+may be specified for a fourth curve.  \fBx\fR will be used for the
+X component of the curve.
+
+.br
+.br
+.IP
+\fBstep\fR may be specified as \fCyes\fR to get stairstep curves.
+This turns off point symbols.  Applies to all curves.
+
+
+.br
+.br
+.IP
+\fBgapmissing\fR may be specified as \fCyes\fR or \fCsmall\fR.
+If \fCyes\fR, missing data will cause a gap in the line (normally
+the line connects plottable points without a gap).  \fCsmall\fR is
+the same as \fCyes\fR except that it leaves a small overhang.
+Applies to all curves.
+
+.br
+.br
+.IP
+\fBcats\fR may be specified as \fCyes\fR to signify that X values
+are categories rather than numeric.
+
+.br
+.br
+.IP
+\fBerrcolor\fR is the error bar 
+.ig >>
+<a href="color.html">
+.>>
+\0color
+.ig >>
+</a>
+.>>
+(default = black)
+
+.br
+.br
+.IP
+\fBerrwidth\fR is the width of error bar tails (default = 0.08)
+
+.br
+.br
+.IP
+\fBerrthick\fR is the thickness of the error bar lines (default = 0.5)
+
+.br
+.br
+.IP
+\fBlegend\fR controls the 
+.ig >>
+<a href="attributetypes.html#xy">
+.>>
+\0location
+.ig >>
+</a>
+.>>
+of the legend.  Example: \fC"legend=1 0.5"\fR   Default is \fCmin+0.4 max\fR.
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

@@ -1,0 +1,16 @@
+#proc xaxis
+label: @xlbl
+labeldetails: @xlbldet
+stubs: inc @xinc
+#setifnotgiven stubfmt = ""
+#if @stubfmt != ""
+  stubformat: @stubfmt
+#endif
+stubrange: @XMIN
+#if @stubvert = yes
+  stubvert: yes
+#endif
+// stubcull: yes
+#if @xgrid != ""
+  grid: @ygrid
+#endif

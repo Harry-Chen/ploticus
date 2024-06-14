@@ -1,0 +1,1119 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: ploticus scripts</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>Ploticus scripts</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH Ploticus_scripts PL "04-FEB-2002   PL ploticus.sourceforge.net"
+
+.SH DESCRIPTION
+.LP
+Ploticus is controlled by scripts that a 
+user creates in a text editor and saves in a file.
+The scripts can also be created by other programs.
+Script files should be plain ascii text files, and they
+may be named anything, however a file name ending of
+\fB.p\fR, \fB.pl\fR, \fB.plo\fR, \fB.pls\fR, \fB.htm\fR or \fB.html\fR 
+is recommended.
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH EXAMPLE
+Here is an example of a ploticus script:
+.nf
+.ft C
+.ig >>
+<br><img src="../gallery/sa1.gif"><br>
+.>>
+\0#proc areadef
+\0  rectangle: 1 1 4 2
+\0  xrange: 0 5
+\0  yrange: 0 100
+\0
+\0#proc xaxis:
+\0  stubs: text
+\0	Africa
+\0	Americas
+\0	Asia
+\0	Europe,\\nAustralia,\\n\& Pacific
+\0
+\0#proc yaxis
+\0  label: Growth Rate
+\0  stubs: inc 20
+\0  minortics: yes
+\0  minorticinc: 5
+\0
+\0#proc getdata
+\0  data: 76 
+\0	54 
+\0	60 
+\0	59
+\0
+\0#proc bars
+\0  lenfield: 1
+\0  color: teal
+\0  barwidth: 0.2
+\0
+.ft R
+.fi
+
+.LP
+As you can see, this is not low-level 3GL-style code.  It is a sort of
+hybrid; plotting actions (#procs) are specified in procedural order,
+but within each #proc the language is goal-driven (4GL).  Thus, traditional
+procedural programming skills are not required.
+.LP
+The above Ploticus script invokes a number of procedures (procs).
+First,
+\fBproc areadef\fR to set up a plotting area, then
+\fBproc xaxis\fR and \fByaxis\fR to render the axes.
+Then \fBproc getdata\fR is invoked to define some data, 
+and then finally \fBproc bars\fR is invoked to produce a bar graph.
+.LP
+For each proc, the user may specify a various attributes or options.
+Attributes that are not specified use a default when possible.
+In the above example, the user has invoked \fCproc areadef\fR
+and specified values for these attributes: \fCrectangle\fR, \fCxrange\fR,
+and \fCyrange\fR.  
+All of the procs, as well as the names, types, and acceptable 
+values for all attributes, are described in the 
+.ig >>
+<a href="../doc/Contents.html">
+.>>
+\0ploticus handbook.
+.ig >>
+</a>
+.>>
+
+.ig >>
+<br><br><br>
+.>>
+.ig >>
+<a name=procs></a>
+.>>
+
+.SH PROCEDURES (PROCS) AND ATTRIBUTES
+.LP
+\fBProcedures (procs)\fR are always invoked using this construct: \fC#proc \fIprocname\fR.
+The word \fC#proc\fR indicates the start of a procedure specification block;
+the other word is the name of a procedure (case insensitive).
+.LP
+\fBAttributes\fR within a procedure may be specified in any order.  
+A colon (\fB:\fR) may be used after an attribute
+name or a procedure name (however it is not required).  
+All proc names and attribute names are case-insensitive.  
+Attributes that are multiline text type
+are terminated by a blank line.
+.LP
+The following script directives are used by ploticus in executing procedures:
+
+
+.SH #proc
+.IP
+This directive signals the beginning of a 
+.ig >>
+<a href="Contents.html#scripts">
+.>>
+\0ploticus procedure
+.ig >>
+</a>
+.>>
+(proc).  
+.br
+Example: \fC#proc bars\fR
+
+.SH #endproc 
+.IP
+This may also be written \fB#proc endproc\fR.
+It is not necessary to use this routinely.
+\fB#endproc\fR formally signals the end of a ploticus procedure, and
+must be used when a proc sets a variable and then
+that variable is referenced before the next #proc statement.
+Examples from the gallery that use \fB#endproc\fR are
+.ig >>
+<a href="../gallery/lineplot4.htm">
+.>>
+\0lineplot4
+.ig >>
+</a>
+.>>
+and
+.ig >>
+<a href="../gallery/distrib.htm">
+.>>
+\0distrib
+.ig >>
+</a>
+.>>
+
+
+.SH #procdef
+.IP
+This directive is used similarly to #proc, but it does not
+execute the procedure; it only defines it so that it may
+be \fB#clone\fRd later.
+The procedure should contain a \fC#saveas\fR.
+.br
+Example: \fC#procdef bars\fR
+
+.SH #saveas
+.IP
+Makes the current proc available to be \fBclone\fRd by procs 
+encountered later in the script, and assigns it an identifier
+(B1 in the example below).
+A gallery example that uses \fBsaveas\fR and \fBclone\fR is
+.ig >>
+<a href="../gallery/rangebar1.htm">
+.>>
+\0rangebar1
+.ig >>
+</a>
+.>>
+\0.  May be used anywhere within the proc.
+.br
+Example: \fC#saveas B1\fR
+
+.SH #clone
+.IP
+\fBclone\fR is used like an attribute.
+Inherits all attribute values from a previously \fBsave\fRd proc. 
+May be used anywhere within the proc.
+Attributes may be overridden locally as desired.
+.br
+Example: \fC#clone B1\fR
+
+.LP
+Other general purpose directives are described below.
+
+.ig >>
+<a name=syntax></a>
+.>>
+.ig >>
+<br><br><br>
+.>>
+
+.SH SYNTAX AND VARIABLES
+
+
+Any line where the first non-whitespace content is \fC//\fR is a \fBcomment\fR
+and is ignored.  Comments must be alone on the line.
+Any line where the first non-whitespace content begins with \fB#\fR is a
+.ig >>
+<a href="#directives">
+.>>
+\0directive
+.ig >>
+</a>
+.>>
+(an operator that does something).
+Everything else is generally HTML and is passed through transparently, except for 
+evaluation of \fBvariables\fR, and possible processing of certain
+.ig >>
+<a href="inlinecodes.html">
+.>>
+\0inline formatting codes
+.ig >>
+</a>
+.>>
+\0.
+.LP
+Double quotes (\fB"\fR) may be used to enclose character strings in
+.ig >>
+<a href="#set">
+.>>
+\0set
+.ig >>
+</a>
+.>>
+,
+.ig >>
+<a href="#setifnotgiven">
+.>>
+\0setifnotgiven
+.ig >>
+</a>
+.>>
+,
+.ig >>
+<a href="#if">
+.>>
+\0if, elseif
+.ig >>
+</a>
+.>>
+and 
+.ig >>
+<a href="#call">
+.>>
+\0call
+.ig >>
+</a>
+.>>
+\0.
+Everywhere else, quotes have no special syntactical meaning
+and may be used freely without any special treatment.
+It is safe to use \fBTAB\fRs to indent lines of code and in transparent
+output; other uses (such as embedding \fBTAB\fR in variable contents) should be avoided.
+.LP
+Scripts
+can set and reference \fBvariables\fR.
+Variable names must begin with a letter and may contain 
+letters, digits, underscore (_) and period (.).
+Names are case-sensitive.
+Maximum length of a variable name is 38 characters.
+Variables may hold numbers, alphanumerics, or single-line text strings, 
+up to a maximum content length of 250 characters.  
+Variables cannot hold more than one line of text.
+All data, including numbers, are stored as characters.
+Where a variable is to be evaluated,
+it should be prefaced with an at-sign (\fB@\fR).
+In order to print an at-sign a double at sign (@) may be used.
+When setting or identifying a variable, the at-sign should not be used.
+Examples:
+.nf
+	\0Hello, my name is @NAME
+	\0#shell cat data | recsel "@@3 = res"
+	\0#set NAME = "Harvey Smith"
+.fi
+An attempt to evaluate a variable that has never been assigned a value
+will result in cancellation of the evaluation (the variable name will be
+passed through transparently) and no error condition will be raised.
+Several 
+.ig >>
+<a href="variables.html">
+.>>
+\0reserved variables
+.ig >>
+</a>
+.>>
+exist.  All variables are global in scope.
+
+.ig >>
+<a name=functions>
+.>>
+.ig >>
+<br><br><br>
+.>>
+.SH FUNCTIONS
+Functions may be used to assign a value to a variable (
+.ig >>
+<a href="#set">
+.>>
+\0set
+.ig >>
+</a>
+.>>
+, 
+.ig >>
+<a href="#setifnotgiven">
+.>>
+\0setifnotgiven
+.ig >>
+</a>
+.>>
+), and in 
+.ig >>
+<a href="#if">
+.>>
+\0if
+.ig >>
+</a>
+.>>
+statements.  Function names always begin with a dollar sign ($), for
+example: \fC$strlen( "hello world" )\fR.
+For descriptions of the
+available functions, see the
+.ig >>
+<a href="functions.html">
+.>>
+\0functions man page
+.ig >>
+</a>
+.>>
+\0.
+
+There are functions for
+.ig >>
+<a href="functions.html#ploticus">
+.>>
+\0plotting
+.ig >>
+</a>
+.>>
+,
+.ig >>
+<a href="functions.html#arithmetic">
+.>>
+\0arithmetic
+.ig >>
+</a>
+.>>
+,
+.ig >>
+<a href="functions.html#strings">
+.>>
+\0strings
+.ig >>
+</a>
+.>>
+,
+.ig >>
+<a href="functions.html#commalists">
+.>>
+\0commalists
+.ig >>
+</a>
+.>>
+,
+.ig >>
+<a href="shell.html">
+.>>
+\0shell
+.ig >>
+</a>
+.>>
+,
+.ig >>
+<a href="sql.html">
+.>>
+\0sql
+.ig >>
+</a>
+.>>
+,
+.ig >>
+<a href="functions.html#dates">
+.>>
+\0dates
+.ig >>
+</a>
+.>>
+,
+.ig >>
+<a href="functions.html#times">
+.>>
+\0times
+.ig >>
+</a>
+.>>
+, and 
+.ig >>
+<a href="functions.html#misc">
+.>>
+\0other
+.ig >>
+</a>
+.>>
+\0.
+Custom functions may be implemented in \fCcustom.c\fR.
+
+
+
+.ig >>
+<a name=directives></a>
+.>>
+.ig >>
+<br><br><br>
+.>>
+
+.SH MORE DIRECTIVES
+Directives are operators that do something, such as \fC#set\fR.
+Directives always begin with a pound sign (\fB#\fR), and usually occupy one line alone
+(a few of the directives, such as
+.ig >>
+<a href="#shell">
+.>>
+\0shell
+.ig >>
+</a>
+.>>
+and
+.ig >>
+<a href="#sql">
+.>>
+\0sql
+.ig >>
+</a>
+.>>
+can be multiline constructs).
+Individual "words" or tokens within a directive must be separated by white space.
+Directives may be indented using spaces or tabs.
+.LP
+Descriptions of the flow-of-control directives follow:
+
+
+.ig >>
+<br><br><br>
+.>>
+
+.ig >>
+<a name=set></a>
+.>>
+
+.SH #set
+.RS
+.LP
+\fC#set  \fIvariable\fC  =  \fInumeric\fR
+.br
+\fC#set  \fIvariable\fC  =  "\fItext\fC"\fR
+.br
+\fC#set  \fIvariable\fC  =  $\fIfunction\fR
+.LP
+Assigns a value to a \fIvariable\fR.
+The value may be a constant or a variable, and
+may be a numeric, alphanumeric/text, or 
+.ig >>
+<a href="functions.html">
+.>>
+\0function
+.ig >>
+</a>
+.>>
+result.
+Alphanumeric/text literals should be enclosed in double quotes (the
+closing quote may be omitted if desired).
+The \fIvariable\fR may be a simple standalone variable or a field
+in a 
+.ig >>
+<a href="fdf.html">
+.>>
+\0logical record
+.ig >>
+</a>
+.>>
+\0.
+Whitespace must follow the \fC#set\fR, the \fIvariable\fR, and the equals sign (=).
+Multiple alphanumeric variables or constants may be used on the right hand side, resulting
+in concatenation, however they must be separated by whitespace.
+Other directives that can set variables include:
+.ig >>
+<a href="#setifnotgiven">
+.>>
+\0setifnotgiven
+.ig >>
+</a>
+.>>
+,
+.ig >>
+<a href="#shell">
+.>>
+\0shell
+.ig >>
+</a>
+.>>
+,
+.ig >>
+<a href="#sql">
+.>>
+\0sql
+.ig >>
+</a>
+.>>
+,
+\0.
+Examples:
+.LP
+.nf
+\0#set COUNT = 0
+\0#set LABEL = "My favorite martian"
+\0#set LABEL = "My favorite martian    
+\0#set LABEL = @A @B        
+\0#set LABEL = @A ", " @B        
+\0#set TODAY = $todaysdate()
+\0#set TOTAL = $arith(@X+@Y+@Z)     
+.fi
+.RE
+
+.ig >>
+<a name=setifnotgiven></a>
+.>>
+
+.SH #setifnotgiven
+.RS
+.LP
+\fC#setifnotgiven  \fIvariable\fC  =  \fIvalue\fR
+.LP
+Similar to
+.ig >>
+<a href="#set">
+.>>
+\0set
+.ig >>
+</a>
+.>>
+except that it takes action only if \fIvariable\fR is empty ("") or 
+has never been assigned a value.  Useful in assigning a default value to 
+optional passed variables.
+.br
+Example: \fC#setifnotgiven CUTOFF = 0.5\fR
+.RE
+
+.ig >>
+<a name=call></a>
+.>>
+
+.SH #call
+.RS
+.LP
+\fC#call  \fIfunction\fR
+.LP
+Invoke a \fI
+.ig >>
+<a href="functions.html">
+.>>
+\0function
+.ig >>
+</a>
+.>>
+\fR without retaining its return value.  
+.br
+Example: \fC#call $setdatefmt( "yyyy-mmm-dd" )\fR
+.RE
+
+.ig >>
+<a name=if></a>
+.>>
+
+.SH #if  
+.RS
+Alter execution flow of control based on \fI
+.ig >>
+<a href="condex.html">
+.>>
+\0conditional expressions
+.ig >>
+</a>
+.>>
+\fR. 
+\fBif\fR and \fBendif\fR are required.  
+\fBelseif\fR and \fBelse\fR are optional.
+An example of an #if construct:
+.LP
+.nf
+\0#if @mode = A
+    <h4>Mode is A</h4>
+\0#elseif @mode = B
+    <h4>Mode is B</h4>
+\0#else
+    <h4>Mode not given</h4>
+\0#endif
+.fi
+.LP
+Variables that have never been assigned are left as is by the script interpreter.
+This gives intuitively correct results, eg. suppose MODE is unassigned:
+\fC#if @MODE = \fIanything\fR will always be false, and
+\fC#if @MODE != \fIanything\fR will always be true.
+.ig >>
+<a href="#setifnotgiven">
+.>>
+\0setifnotgiven
+.ig >>
+</a>
+.>>
+can be used to assign values to optional passed variables. 
+.LP
+Some examples of conditional expressions:
+.LP
+.nf
+\0#if @tag = TOTAL
+\0#if @meas > 0.0 && @meas < 8.5
+\0#if @name = ""
+\0#if @type like "west*" || @type = "bl*"
+\0#if $arith(@A+@B) > 10
+.fi
+.RE
+.LP
+
+.ig >>
+<a name=for></a>
+.>>
+
+.SH #for
+.RS
+\fC#for  \fIvar\fC  in  \fIcommalist\fR
+.br
+\0..
+.br
+\fC#endloop\fR
+.br
+.br
+\fC#for  \fIvar\fC  across  \fImultirow-response\fR
+.br
+\0..
+.br
+\fC#endloop\fR
+.LP
+Loop the flow of control, iterating across members of 
+.ig >>
+<a href="commalist.html">
+.>>
+\0commalist
+.ig >>
+</a>
+.>>
+\fIvar\fR will be set to each member from first to last.
+If \fIcommalist\fR
+or \fImultirow-response\fR
+is empty, the loop body will not be executed.
+This example illustrates the construct, without doing
+anything useful:
+.LP
+.nf
+\0#set COLORLIST = "red,blue,green,yellow
+\0#for  COLOR  in  @COLORLIST
+\0    #if  @COLOR  =  green
+\0        #break
+\0    #elseif  @COLOR  =  blue
+\0        #continue
+\0    #endif
+\0#endloop
+.fi
+.RE
+
+.ig >>
+<a name=while></a>
+.>>
+
+.SH #while
+.RS
+\fC#while\fC  \fIconditional expression\fR
+.br
+\0..(loop body)..
+.br
+\fC#endloop\fR
+.LP
+Loop the flow of control while 
+.ig >>
+<a href="condex.html">
+.>>
+\0conditional
+.ig >>
+</a>
+.>>
+is true.
+If \fIconditional expression\fR is initially false, the loop body
+will not be executed at all.
+The following example loops until I > 10:
+.LP
+.nf
+\0#set I = 0
+\0#while @I <= 10
+\0  #set I = $arith(@I+1)
+\0#endloop
+.fi
+.RE
+
+.ig >>
+<a name=loop></a>
+.>>
+
+.SH #loop
+.RS
+.LP
+\fC#loop\fR
+.br
+\0..
+.br
+\fC#endloop\fR
+.LP
+Loop the flow of control.  A 
+.ig >>
+<a href="#break">
+.>>
+\0break
+.ig >>
+</a>
+.>>
+statement must be used to terminate the loop.
+The following example loops until I > 10:
+.LP
+.nf
+\0#set I = 0
+\0#loop
+\0   #set I = $arith(@I+1)
+\0   #if @I > 10
+\0       #break
+\0   #endif
+\0#endloop
+.fi
+.RE
+
+.ig >>
+<a name=break></a>
+.>>
+
+.SH #break
+.RS
+Terminate the iteration of the most recently invoked
+.ig >>
+<a href="#for">
+.>>
+\0for
+.ig >>
+</a>
+.>>
+loop,
+.ig >>
+<a href="#while">
+.>>
+\0while
+.ig >>
+</a>
+.>>
+loop, or plain
+.ig >>
+<a href="#loop">
+.>>
+\0loop
+.ig >>
+</a>
+.>>
+\0.  Script execution resumes at the statement immediately following
+the corresponding \fBendloop\fR.
+There are restrictions if used within an 
+.ig >>
+<a href="#include@_SL01">
+.>>
+\0included
+.ig >>
+</a>
+.>>
+file.
+.RE
+
+.ig >>
+<a name=continue></a>
+.>>
+
+.SH #continue
+.RS
+Proceed directly to the next
+iteration of the most recently invoked
+.ig >>
+<a href="#for">
+.>>
+\0for
+.ig >>
+</a>
+.>>
+loop,
+.ig >>
+<a href="#while">
+.>>
+\0while
+.ig >>
+</a>
+.>>
+loop, or plain
+.ig >>
+<a href="#loop">
+.>>
+\0loop
+.ig >>
+</a>
+.>>
+\0.  
+There are restrictions if used within an 
+.ig >>
+<a href="#include">
+.>>
+\0included
+.ig >>
+</a>
+.>>
+file.
+.RE
+
+.ig >>
+<a name=exit></a>
+.>>
+
+.SH #exit
+.RS
+Terminate execution immediately.  Example:
+.LP
+.nf
+\0#if @_DEBUG = 1
+\0    #exit
+\0#endif
+.fi
+.RE
+
+.ig >>
+<a name=include></a>
+.>>
+
+.SH #include
+.RS
+\fC#include  \fIfile\fR
+.LP
+Include script code from a \fIfile\fR.
+Includes may be nested.
+\fBinclude\fRd code is interpreted in the same manner as ordinary code.
+However, 
+.ig >>
+<a href="#break">
+.>>
+\0break
+.ig >>
+</a>
+.>>
+and
+.ig >>
+<a href="#continue">
+.>>
+\0continue
+.ig >>
+</a>
+.>>
+may be used only if the corresponding loop / #endloop is also within
+the included file.
+.ig >>
+<a href="#return">
+.>>
+\0return
+.ig >>
+</a>
+.>>
+may be used to immediately exit the included file and resume execution
+in the including file.
+.br
+Example: \fC#include projectheader\fR
+.RE
+
+.ig >>
+<a name=cat></a>
+.>>
+.SH #cat
+.RS
+\fC#cat  \fIfile1\fR [..\fIfileN\fR]
+.LP
+Copy the contents of \fIfile\fRs to the standard output.
+No processing or interpretation is done to the contents.
+Suitable for text files or binary files.
+.br
+Example: \fC#cat /home/scg/img/banner.gif\fR
+.RE
+
+.ig >>
+<a name=return></a>
+.>>
+
+.SH #return
+.RS
+Terminate execution of an
+.ig >>
+<a href="#include">
+.>>
+\0included
+.ig >>
+</a>
+.>>
+file immediately.
+Execution is resumed at the statement immediately following
+the \fBinclude\fR.
+.RE
+
+
+
+.ig >>
+<a name=write></a>
+.>>
+
+.SH #write
+.RS
+\fC#write  \fIfile\fC  [\fIfilemode\fR]
+.br
+\0..\fItext\fR..
+.br
+\fC#endwrite\fR \fC[noclose]\fR
+.LP
+Write \fItext\fR to \fIfile\fR.
+\fIfile\fR may be a file name or \fCstderr\fR or \fCstdout\fR.
+\fIfilemode\fR is either \fCw\fR to create, or \fCa\fR to append.
+Within the construct, other directives, such as
+.ig >>
+<a href="#if">
+.>>
+\0#if
+.ig >>
+</a>
+.>>
+,
+.ig >>
+<a href="#for">
+.>>
+\0#for
+.ig >>
+</a>
+.>>
+,
+.ig >>
+<a href="#include@_SL01">
+.>>
+\0#include
+.ig >>
+</a>
+.>>
+and so on may be freely used.
+If \fCstdout\fR or \fCstderr\fR are used, the \fIfilemode\fR is ignored
+and the \fCnoclose\fR option should be given with #endwrite.
+.LP
+The following example, if used in header code included by 
+all pages in a cgipal project, would log page hits with date, 
+time, name of page, and the HTTP info.
+.LP
+.nf
+\0#set RH = $getenv(HTTP_REMOTE_HOST)
+\0#set RF = $getenv(HTTP_REFERER)
+\0#call $setdatefmt(yyyy/mmm/dd)
+\0#set DATE = $todaysdate()
+\0#set TIME = $time()
+\0#write /tmp/mylog a
+\0@DATE @TIME @_PAGE @RH @RF
+\0#endwrite
+.fi
+.RE
+
+.ig >>
+<a name=control></a>
+.>>
+.SH #control
+.RS
+\fC#control  \fIattribute\fC   \fIvalue\fR
+.LP
+Set various operational modes.
+\fIattribute\fR may be one of:
+\fCallowinlinecodes\fR,
+\fCdbquote\fR,
+\fChtmlqhmode\fR,
+\fClistsep\fR,
+\fCevalvars\fR ,
+\fCsuppressdll\fR,
+or \fCdot_in_varnames\fR.
+
+.LP
+.ig >>
+<a href="control.html">
+.>>
+\0Full description of #control directive
+.ig >>
+</a>
+.>>
+.RE
+
+
+
+
+.ig >>
+<br><br><br>
+.>>
+
+.ig >>
+<a name=#interaction></a>
+.>>
+.SH INTERACTION WITH DATABASES AND SHELL
+
+.ig >>
+<a name=sql></a>
+.>>
+
+.SH #sql
+.RS
+\fC#sql [\fIoption\fC]  \fIsql command\fC  [#endsql]\fR
+.LP
+This directive allows SQL code to be embedded in scripts, and
+submits the embedded SQL code to your database.
+The \fIsql command\fR may use a single line construct or a
+multi-line construct.  \fC#endsql\fR must be used to terminate
+a multi-line construct.
+For SQL SELECT commands an \fIoption\fR may be given; available
+options are \fC#processrows\fR (the default), \fC#load\fR, 
+\fC#dump\fR, \fC#dumptab\fR, \fC#dumphtml\fR, and \fC#dumpsilent\fR.
+.LP
+Two separate SQL database connections are available.  For connection 1,
+use \fB#sql\fR; for connection 2, use \fB#sql2\fR instead of \fB#sql\fR
+(all other syntax is the same).
+.LP
+.ig >>
+<a href="sql.html">
+.>>
+\0More on #sql and interacting with databases
+.ig >>
+</a>
+.>>
+.RE
+
+.ig >>
+<a name=shell></a>
+.>>
+
+.SH #shell
+.RS
+\fC#shell  \fIoption\fC  \fIcommand\fC  [#endshell]
+.LP
+Execute the given shell \fIcommand\fR, and optionally display or 
+capture the results.
+The \fIcommand\fR may use a single line construct or a
+multi-line construct.  \fC#endshell\fR must be used to terminate
+a multi-line construct.
+An \fIoption\fR may be given; available
+options are \fC#load\fR, \fC#processrows\fR, 
+\fC#dump\fR (the default), \fC#dumptab\fR, \fC#dumphtml\fR, and \fC#dumpsilent\fR.
+.LP
+.ig >>
+<a href="shell.html">
+.>>
+\0More on #shell and interacting with the shell
+.ig >>
+</a>
+.>>
+
+.ig >>
+<a name=dataprep></a>
+.>>
+
+
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

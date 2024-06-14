@@ -1,0 +1,117 @@
+#set TITLE = "copyright and license"
+#include top
+.ig >>
+<pre>
+
+== Begin ploticus 2.03 copyright notice ==
+
+
+ploticus 2.03 data display engine.  Software, documentation, and examples.
+Copyright 1998-2002 Stephen C. Grubb  (scg@jax.org)
+
+<a href="http://ploticus.sourceforge.net/sgpr.html">About the author</a>
+
+This program is free software; you can redistribute it and/or modify it 
+under the terms of the GNU General Public License as published by the 
+Free Software Foundation; either version 2 of the License, or (at your 
+option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT 
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+<a href="http://www.gnu.org/copyleft/gpl.html">GNU General Public License</a> 
+&nbsp; <a href="http://www.gnu.org/copyleft/gpl.html"><img src="../doc/gpl.gif" 
+border=0></a>
+
+A copy of the GNU General Public License should be present with the code, in 
+file GPL.txt.
+
+A copy of the GNU General Public License may be obtained from: Free Software 
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+The home page for PLOTICUS is     http://ploticus.sourceforge.net
+The source code, binaries for some platforms, documentation, and examples 
+may be freely downloaded from that site.  
+
+The author wishes to be informed of and to maintain links to other development 
+efforts involving ploticus.  Feel free to copy and use this nifty new logo
+in works that use ploticus, as a link back to this site.
+<center><a href="../doc/Welcome.html"><img src="../doc/ploticus.gif"></a></center>
+
+Can ploticus be used as part of a commercial package or service?  The GPL 
+does not allow ploticus code to be used within proprietary software that is to 
+be distributed to others.  However, for cases where ploticus is included as a 
+separate, distinct reporting utility within a larger package, I interpret GPL 
+section 2 as requiring that GPL be attached only to ploticus, and not to the 
+entire product.  For this to be allowed: 1) the rest of your product must be 
+considered an independent and seperate work in its own right; 2) ploticus must 
+be invoked as a distinct, separate executable; 3) ploticus graphics capability 
+may not be involved as an option at additional cost; 4) ploticus source code 
+may not be modified or enhanced, except for changes to the Makefile or similar 
+as needed for configuration or packaging; 5) ploticus identity and authorship 
+must not be obfuscated of omitted-- a prominent statement must be visible to 
+users to the effect that "graphs are produced using the Ploticus data display 
+program (c) Steve Grubb.  The Ploticus program is freely downloadable at 
+http://ploticus.sourceforge.net".  I also request that you notify me out of 
+courtesy at scg@jax.org, and include a URL for your product.  If you have 
+questions or need clarification in this area just ask.
+
+
+SVG driver copyright 2001 Bill Traill  bill@traill.demon.co.uk 
+
+ploticus 2.03 generates PNG and run-length-encoded GIF-compatible 
+output using portions of Thomas Boutell's gd library versions 
+1.6.3 and 1.3.  ploticus 2.03 does not read GIF files.
+GD 1.6.3 and 1.3 (www.boutell.com) carry the following statements:
+   |
+   |	Portions copyright 1994, 1995, 1996, 1997, 1998, 1999 by 
+   |	Cold Spring Harbor Laboratory. Funded under Grant 
+   |	P41-RR02188 by the National Institutes of Health.
+   |	
+   |	Portions copyright 1996, 1997, 1998, 1999, by Boutell.Com, Inc.
+   | 
+   |    Portions relating to GD2 format copyright 1999 Philip Warner.
+   |
+   |    Portions relating to PNG copyright 1999, Greg Roelofs.
+   | 
+   |    Portions relating to libttf copyright 1999, John Ellson
+   |    (ellson@lucent.com).
+   |	
+   |	(Although his LZW compression code no longer appears 
+   |	in gd, the authors wish to thank David Rowley for the 
+   |	original LZW-based GIF compression code, which has been 
+   |	removed due to patent concerns.)
+   |	
+   |	Non-LZW-based GIF compression code copyright 1998, by 
+   |	Hutchison Avenue Software Corporation (http://www.hasc.com/, 
+   |	info@hasc.com).
+   |	
+   |	Permission has been granted to copy and distribute gd 
+   |	in any context, including a commercial application, 
+   |	provided that this notice is present in user-accessible 
+   |	supporting documentation.
+   |	
+   |	This does not affect your ownership of the derived work 
+   |	itself, and the intent is to assure proper credit for the 
+   |	authors of gd, not to interfere with your productive use 
+   |	of gd. If you have questions, ask. "Derived works" includes 
+   |	all programs that utilize the library. Credit must be 
+   |	given in user-accessible documentation.
+   |	
+   |	Permission to use, copy, modify, and distribute gd
+   |	and its documentation for any purpose and without fee is 
+   |	hereby granted, provided that the above copyright notice 
+   |	appear in all copies and that both that copyright notice 
+   |	and this permission notice appear in supporting documentation. 
+   |	This software is provided "as is" without express or implied 
+   |	warranty.
+   |
+
+
+== End of ploticus 2.03 Copyright Notice ==
+
+</pre>
+.>>
+
+#include bottom

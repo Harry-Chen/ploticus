@@ -1,0 +1,247 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: special characters</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>special characters</h2></td>
+  <td align=right>
+  <small>
+  <a href="Welcome.html"><img src="ploticus.gif" border=0></a><br>
+  <a href="Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH special_characters PL "18-JUN-2001   PL www.sgpr.net"
+ 
+.SH DESCRIPTION
+Text specifications may include embedded special characters.
+These correspond to the PostScript Symbol font and thus may be 
+used in PostScript mode only.
+The PostScript special characters feature was written by Marvin Newhouse.
+.LP
+If doing PNG, GIF or X11, you can render any of the characters found in 
+the ASCII range 128-255, by embedding the desired ascii value within the 
+text item. 
+
+.SH EXAMPLE
+\fCTitle: Cities having average temperature \\(<= 20 degrees C
+
+
+.LP
+Here are the available special characters.
+Usage: \fC\\(\fIAB\fR
+.br
+(e.g. \fC\\(bu\fR to get a bullet).
+
+.nf
+.ft C
+AB	 what
+---      ----------
+AE	 AE 
+PL	 Lslash 
+OE	 OE 
+O/	 Oslash 
+ae	 ae 
+be	 breve 
+bu	 bullet
+ct	 cent 
+^	 circumflex 
+dg	 dagger 
+dd	 daggerdbl 
+um	 dieresis 
+dt	 dotaccent 
+ui	 dotlessi 
+em	 emdash 
+en	 endash 
+!!	 exclamdown 
+ff	 ff 
+Fi	 ffi 
+Fl	 ffl 
+fi	 fi 
+fl	 fl 
+ss	 germandbls 
+ga	 grave 
+d<	 guillemotleft 
+d>	 guillemotright 
+hy	 hyphen 
+lb	 lb 
+lc	 lc 
+lf	 lf 
+lk	 lk 
+Pl	 lslash 
+lt	 lt 
+mc	 macron 
+ob	 ob 
+oe	 oe 
+og	 ogonek 
+o/	 oslash 
+pp	 paragraph 
+pm	 perthousand 
+??	 questiondown 
+lq	 quotedblleft 
+rq	 quotedblright 
+n'	 quotesingle 
+rb	 rb 
+rc	 rc 
+rf	 rf 
+ri	 ring 
+rk	 rk 
+rn	 rn 
+rt	 rt 
+ru	 ru 
+sc	 Section 
+sq	 sq 
+ps	 sterling 
+~	 tilde 
+ul	 ul 
+vr	 vr 
+yi	 yen 
+*d	 delta 
+*e	 epsilon 
+*f	 phi 
+*g	 gamma 
+*y	 eta 
+*i	 iota 
+*k	 kappa 
+*l	 lambda 
+*m	 mu 
+*n	 nu 
+*o	 omicron 
+*p	 pi 
+*h	 theta 
+*r	 rho 
+*s	 sigma 
+*t	 tau 
+*u	 upsilon 
+*w	 omega 
+*c	 xi 
+*q	 psi 
+*z	 zeta 
+or	 bar 
+ap	 similar 
+fm	 minute 
+<=	 lessequal 
+if	 infinity 
+$D	 florin 
+dm	 diamond 
+bs	 heart 
+<>	 arrowboth 
+<-	 arrowleft 
+ua	 arrowup 
+->	 arrowright 
+da	 arrowdown 
+de	 degree 
++-	 plusminus 
+sd	 second 
+>=	 greaterequal 
+mu	 multiply 
+pt	 proportional 
+pd	 partialdiff 
+	 bullet 
+di	 divide 
+!=	 notequal 
+==	 equivalence 
+~=	 approxequal 
+cr	 carriagereturn 
+al	 aleph 
+ax	 circlemultiply 
+a+	 circleplus 
+es	 emptyset 
+ca	 intersection 
+cu	 union 
+sp	 propersuperset 
+ip	 reflexsuperset 
+!s	 notsubset 
+sb	 propersubset 
+ib	 reflexsubset 
+mo	 element 
+!m	 notelement 
+gr	 gradient 
+rg	 registerserif 
+co	 copyrightserif 
+tm	 trademarkserif 
+sr	 radical 
+m.	 dotmath 
+no	 logicalnot 
+an	 logicaland 
+lo	 logicalor 
+io	 arrowdblboth 
+<:	 arrowdblleft 
+lh	 arrowdblleft 
+:>	 arrowdblright 
+rh	 arrowdblright 
+l<	 angleleft 
+r>	 angleright 
+is	 integral 
+fa	 universal 
+te	 existential 
+**	 asteriskmath 
+pl	 plus 
+\\-	 minus 
+sl	 slash 
+eq	 equal 
+*A	 Alpha 
+*B	 Beta 
+*X	 Chi 
+*D	 Delta 
+*E	 Epsilon 
+*F	 Phi 
+*G	 Gamma 
+*Y	 Eta 
+*I	 Iota 
+*K	 Kappa 
+*L	 Lambda 
+*M	 Mu 
+*N	 Nu 
+*O	 Omicron 
+*P	 Pi 
+*H	 Theta 
+*R	 Rho 
+*S	 Sigma 
+*T	 Tau 
+*U	 Upsilon 
+ts	 sigma1 
+*W	 Omega 
+*C	 Xi 
+*Q	 Psi 
+*Z	 Zeta 
+tf	 therefore 
+bt	 perpendicular 
+\\_	 underscore 
+*a	 alpha 
+*b	 beta 
+*x	 chi 
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="Welcome.html">
+<img src="ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

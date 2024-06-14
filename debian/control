@@ -1,0 +1,30 @@
+Source: ploticus
+Section: misc
+Priority: optional
+Maintainer: James W. Penny <jpenny@debian.org>
+Build-Depends: debhelper (>> 3.0.0), zlib1g-dev, libgd-dev, libjpeg62-dev, libfreetype6-dev, xlibs-dev, libpng2-dev
+Standards-Version: 3.5.2
+
+Package: ploticus
+Architecture: any
+Depends: ${shlibs:Depends}
+Recommends: ploticus-doc
+Description: A script driven business graphics package
+ Ploticus is script-driven, which makes it suitable for automated,
+ unattended uses, or for applications that will be run again and again.
+ In general, ploticus is good at making graphs like you would see in
+ newspapers and news magazines, business publications, journals for
+ medical and social sciences, and so on.
+ .
+ Ploticus is not a function or mathematical plotting package like 
+ gnuplot, nor would it be a good choice for applications where 
+ mathematical formulas or scientific notations are to be rendered 
+ as an integral part of the data display.  Ploticus is also not 
+ intended as a "marketing" graphics package.  Its goal is to 
+ display data crisply without extra decoration and distracting 
+ "dingbats" that cloud the picture.
+ .
+ Ploticus supports awide range of output options, including jpeg
+ (Joint Photographics Experts Group format), png (Portable Network 
+ Graphics format) , svg (Simple Vector Graphics), bmp (Microsoft BitMaP),
+ ps (PostScript), and X11.

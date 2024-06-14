@@ -1,0 +1,127 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: using ploticus interactively</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>using ploticus interactively</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH using_ploticus_interactively PL "04-MAR-2002   PL ploticus.sourceforge.net"
+
+.LP
+.ig >>
+<center>
+<img src="../gallery/kmslide.gif"><br>
+</center>
+.>>
+
+.SH DESCRIPTION
+This page contains notes regarding ploticus' use as an 
+interactive data display tool under X11.
+
+.ig >>
+<br><br><br>
+.>>
+.SH X11 DISPLAYS
+.LP
+\fBPloticus\fR 
+will draw in an X11 window if the \fC-x11\fR command line option is used.
+This is mostly intended for preview during development of data displays.
+The \fC-pagesize\fR command line option (or the \fCpagesize\fR attribute
+of \fBproc page\fR may be used to control the size of the window, and
+the \fC-winloc\fR command line option may be used to control the location
+of the upper-left corner of the window.  Not supported are the standard X 
+resources scheme and the standard X command line arguments such as \fC-geometry\fR.
+
+.ig >>
+<br><br><br>
+.>>
+.SH USING VIEWERS SUCH AS GHOSTVIEW OR XV
+.LP
+If you have a Postscript viewer such as GhostView you can automatically invoke
+the viewer to display PostScript results using the \fC-viewer\fR command line
+option.  Likewise, \fC-viewer\fR may be used to automatically invoke an
+image viewing tool such as XV.
+
+.ig >>
+<br><br><br>
+.>>
+.SH CONTROLLING PLOTICUS FROM OTHER PROGRAMS
+.LP
+See
+.ig >>
+<a href="controlling.html">
+.>>
+controlling
+.ig >>
+</a>
+.>>
+.
+
+.ig >>
+<br><br><br>
+.>>
+.SH FUNCTIONS
+Some 
+.ig >>
+<a href="functions.html#ploticus">
+.>>
+\0functions
+.ig >>
+</a>
+.>>
+are available that may be useful for interactive viewing under X11.
+
+.ig >>
+<br><br><br>
+.>>
+.SH SEE ALSO
+Some of the default behavior for ploticus tools be configurable
+using the 
+.ig >>
+<a href="config.html">
+.>>
+ploticus config file
+.ig >>
+</a>
+.>>
+\0.
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="../doc/Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

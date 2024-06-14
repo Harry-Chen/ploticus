@@ -1,0 +1,22 @@
+//// set default grid
+#if @xgrid = yes
+  #set xgrid = "color=tan1"
+#endif
+#if @ygrid = yes
+  #set ygrid = "color=tan1"
+#endif
+
+//// set up plotting area..
+#proc areadef
+rectangle: @rectangle
+xscaletype: @unittype
+#if @ylog != ""
+  yscaletype: @ylog
+#endif
+#if @xlog != ""
+  xscaletype: @xlog
+#endif
+#if @autow = yes
+  autowidth: 0.5 4.0 8.0
+#endif
+

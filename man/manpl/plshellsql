@@ -1,0 +1,189 @@
+
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: using #shell and #sql in ploticus scripts</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>Using #shell and #sql in ploticus scripts</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH Using_#shell_and_#sql_in_ploticus_scripts PL "17-SEP-2001   PL www.sgpr.net"
+
+.SH #shell and #sql
+These are two new directives that can be used in scripts with ploticus 2.00
+and higher.  They both work similary, and can either stream results into
+the script, or set variables.  
+.ig >>
+<a href="shell.html">
+.>>
+\0#shell
+.ig >>
+</a>
+.>>
+is an interface for running external commands and capturing the results.
+.ig >>
+<a href="sql.html">
+.>>
+\0#sql
+.ig >>
+</a>
+.>>
+will allow ploticus to operate as a client to SQL databases, and works with
+pocketSQL.  
+Interface to other databases (MySQL, Oracle, etc.) is not yet available;
+code contributions are sought in these areas (see \fCdbinterface.c\fR).
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH STREAMING DATA
+Here is an example of how 
+.ig >>
+<a href="sql.html">
+.>>
+\0#sql
+.ig >>
+</a>
+.>>
+is to be used with 
+.ig >>
+<a href="getdata.html">
+.>>
+\0proc getdata
+.ig >>
+</a>
+.>>
+:
+.nf
+\0	#proc getdata
+\0	delim: tab
+\0      data:
+\0	#sql #dumptab select * from trialresults where trialnum = @TRIALNUM
+.fi
+.LP
+For longer SQL commands a multi-line construct is available:
+.nf
+\0	#proc getdata
+\0	delim: tab
+\0      data:
+\0	#sql #dumptab 
+\0		select trialnum, age, sex, weight, time1, time2
+\0		 from trialresults 
+\0		where trialnum = @TRIALNUM and trialdate = @TDATE
+\0      #endsql
+.fi
+The
+.ig >>
+<a href="shell.html">
+.>>
+\0#shell
+.ig >>
+</a>
+.>>
+directive can be used similary, but this is redundant since 
+.ig >>
+<a href="getdata.html">
+.>>
+\0proc getdata
+.ig >>
+</a>
+.>>
+already has a \fCcommand\fR attribute.
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH SETTING VARIABLES
+These directives may be used to set variables for plot labels, etc.
+For example:
+.nf
+\0	#sql #load select fullname from tsyms where tickersym = @TSYM
+\0
+\0      #proc annotate
+\0      location: min max-0.2
+\0      text: @fullname
+\0
+.fi
+.LP
+Here is an example where the results of a shell command may be used to
+set variables:
+.nf
+\0      // submit the command..
+\0      #shell #processrows cat mydata | grep "^Jan"
+\0      // get one result rows and parse out fields..
+\0      #call $shellrow( A, B, C ) 
+\0
+\0	#proc annotate
+\0	location: min max-0.2
+\0	text: @A @B
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH DRIVING LOOPS
+These directives may be used to drive loops that iterate once per
+row of results.  For example:
+.nf
+\0	// get a list of cases
+\0	#sql #processrows select caseid from cases
+\0	#while $sqlrow() = 0
+\0	  // get data for a case
+\0	  #proc getdata
+\0	  delim: tab
+\0	  data:
+\0	    #sql2 #dumptab select * from casedata where caseid = @caseid
+\0	    ... plot the case
+\0
+\0	#endloop
+.fi
+.LP
+.ig >>
+<a href="shell.html">
+.>>
+\0#shell
+.ig >>
+</a>
+.>>
+may be used similary.
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

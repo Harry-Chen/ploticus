@@ -1,0 +1,210 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: scat prefab</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>scat prefab</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH scat_prefab PL "08-JAN-2002   PL ploticus.sourceforge.net"
+
+.SH EXAMPLES 1 & 2
+.ig >>
+<center><table cellpadding=2 cellspacing=8><tr>
+<td><img src="../gallery/prefab_img/scat1.gif"></td><td><img src="../gallery/prefab_img/scat2.gif"></td></tr>
+</table></center>
+.>>
+.LP
+.nf
+Left:	pl  -prefab scat  data=data1  x=2  y=3  
+
+
+Right:	pl  -prefab scat  data=data1  x=2  y=3  id=1 \\
+	   xlbl="Total Ch"  ylbl="White Blood Cell Count"  corr=yes  
+
+
+data1 file: 	A/J	1.39	331
+		BALB/cJ	1.67	182
+		C3H/HeJ	2.07	301
+		..etc..
+
+
+
+.fi
+.SH EXAMPLE 3
+.ig >>
+<center><table cellpadding=2><tr>
+<td><img src="../gallery/prefab_img/scat3.gif"></td></tr>
+</table></center>
+.>>
+.nf
+pl  -prefab scat  data=data3  x=2  y=6  err=3  xerr=7  corr=yes \\
+	  ptshape=triangle ptsize=0.08  ptcolor=red  "errcolor=gray(0.8)"
+
+data3 file:
+	129S1/SvImJ 0.4927 0.111 0.353 129S1/SvImJ 0.4080 0.0839 0.265
+	A/J 0.5547 0.0768 0.243 A/J 0.6051 0.0656 0.207
+	AKR/J 0.4125 0.0631 0.200 AKR/J 0.3653 0.0418 0.132
+	...etc.
+.fi
+
+.ig >>
+<br><br><br>
+.>>
+
+.LP
+.ig >>
+<a href="prefabs.html#examples">
+.>>
+\0How to run these examples
+.ig >>
+</a>
+.>>
+
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH DESCRIPTION
+\fBscat\fR is a 
+.ig >>
+<a href="prefabs.html">
+.>>
+\0prefab
+.ig >>
+</a>
+.>>
+for producing 2-D scatterplots with optional point labeling, correlation, regression line,
+and error bars.
+Based on 
+.ig >>
+<a href="scatterplot.html">
+.>>
+\0proc scatterplot
+.ig >>
+</a>
+.>>
+\0.
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH PARAMETERS
+
+.IP
+.ig >>
+<a href="prefab_stdparms.html">
+.>>
+\0Standard prefab parameters
+.ig >>
+</a>
+.>>
+are all supported.  \fBdata\fR, \fBx\fR and \fBy\fR are required.
+.br
+.br
+.IP
+\fBcorr\fR which, if \fCyes\fR, will cause correlation and regression 
+to be computed and displayed;
+
+.br
+.br
+.IP
+\fBid\fR, a 
+.ig >>
+<a href="attributetypes.html#dfield">
+.>>
+\0data field
+.ig >>
+</a>
+.>>
+holding a data point identifier string; 
+
+.br
+.br
+.IP
+\fBxerr\fR, a 
+.ig >>
+<a href="attributetypes.html#dfield">
+.>>
+\0data field
+.ig >>
+</a>
+.>>
+holding values for horizontal error bars;
+
+.br
+.br
+.IP
+\fBptsym\fR, \fBptcolor\fR, and \fBptsize\fR, which control
+the shape, color, radius, and fill style for the data points (see
+.ig >>
+<a href="symboldetails.html">
+.>>
+\0symboldetails
+.ig >>
+</a>
+.>>
+), default is filled blue circle of radius 0.04
+
+.br
+.br
+.IP
+\fBcorrcolor\fR, the color for the regression line and correlation annotation (default green)
+
+.br
+.br
+.IP
+\fBidcolor\fR, the color for the id labels (default orange)
+
+.br
+.br
+.IP
+\fBerrcolor\fR, the color for the error bars (default gray(0.7)).
+
+.br
+.br
+.IP
+\fBcats\fR may be specified as \fCyes\fR to indicate that X data will be
+processed as categories rather than continuous numerics.
+
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

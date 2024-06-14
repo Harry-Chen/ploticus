@@ -1,0 +1,616 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: release notes for earlier versions</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>Release notes for earlier versions</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH Release_notes_for_earlier_versions PL "01-MAR-2002   PL ploticus.sourceforge.net"
+
+.ig >>
+<a href="Versions.html">Release notes for current versions</a></h3>
+
+<br>
+<br>
+<h2>Version 2.02 - Jan 11, '02</h2>
+
+<li> <a href="clickmap.html">HTML server-side imagemap support</a> has been added.
+<br>
+<br>
+<li> The data parsing code has been rewritten, and now allows situations that 
+weren't allowed before, 
+such as blank fields (tab or .csv formats), and variable number of fields per row.  
+The <a href="dataformat.html">dataformat documentation</a> has also been improved.
+<br>
+<br>
+<li> new attribute - <a href="getdata.html">proc getdata</a> - <tt>nfields</tt> - Controls
+the expected number of fields per record.  
+<br>
+<br>
+<li> new attribute - <a href="getdata.html">proc getdata</a> - <tt>fieldnamerows</tt> - 
+like <tt>fieldnames</tt> but allows data field names to be given one per line.
+<br>
+<br>
+<li> modified attribute - <a href="getdata.html">proc getdata</a> - <tt>delim</tt> -
+There is now a distinction between 
+whitespace delimitation with quoted strings (<tt>spacequoted</tt>) and
+pure whitespace delimitation (<tt>whitespace</tt>).
+<tt>whitespace</tt> is faster, but the default remains <tt>spacequoted</tt>
+(<tt>space</tt> for short) so that existing scripts don't break.
+<a href="dataformat.html">More info</a>.
+<br>
+<br>
+<li> new attribute - <a href="lineplot.html">proc lineplot</a> - <tt>gapmissing</tt> - allows missing data
+points to cause a gap in the curve.  Similar parameter added to <b>lines</b> and <b>chron</b> prefabs.
+<br>
+<br>
+
+<li> new attribute - <a href="scatterplot.html">proc scatterplot</a> - <tt>clustermethod</tt> - 
+control how duplicate points will be clustered.
+<br>
+<br>
+
+<li> new attribute - <a href="scatterplot.html">proc scatterplot</a> - <tt>symfield</tt> and <tt>symrangefield</tt> -
+allows symbol shape, color, etc. to be controlled by a data field.
+<br>
+<br>
+
+<li> new attribute - <a href="scatterplot.html">proc scatterplot</a> - <tt>dupsleg</tt> 
+allows symbol shape, color, etc. to be controlled by degree of duplicity
+
+<br>
+<br>
+<li> <a href="../doc/prefabs.html">prefabs</a> - added <tt> rectangle </tt> as a standard parameter.  
+It controls plotting area size (and location, if rendering in paginated postscript).
+
+<br>
+<br>
+<li> <a href="../doc/prefab_lines.html">lines prefab</a> - changed the way that 
+the <tt> fill </tt> parameter works.  Previously
+it had applied to all curves and line color was used.  Now it is specified 
+as a color, and separately for each curve (using fill2, fill3, and fill4).
+<b>Note: this will break any existing applications that use 
+the lines prefab to render multiple filled curves</b>.
+
+<br>
+<br>
+<li> The directory for <a href="../doc/prefabs.html">prefab</a> files can now be
+hard-coded at build time, settable in the Makefile.  If this is done then users
+don't need the PLOTICUS_PREFABS environment variable to be set.
+This capability is not available on win32 builds.
+
+<br>
+<br>
+<li> a new prefab called <a href="prefab_draw.html">draw</a> has been added.
+It interprets ploticus draw commands.
+
+<br>
+<br>
+<li> some new <a href="functions.html">functions</a>, including $numgroup() and $dategroup()
+which are useful in grouping a set of numbers or dates into bins.
+
+<br>
+<br>
+<li> the internal name lookup scheme for function names has been changed, and is now a 
+little more efficient.
+<br>
+<br>
+<li> fixed bug: <a href="bars.html">proc bars</a> - stacked bars are drawn incorrectly when minima is non-zero.
+Eg. stacked vertical bars are incorrect if the plotting area Y min is non-zero.
+<br>
+<br>
+<li> fixed bug: <a href="bars.html">proc bars</a> - stacked bars - clobber bug causing core dump on linux.
+<br>
+<br>
+<li> fixed bug: datetime scaling - floating point rounding problem.  Came to light when
+user tried to autorange on a datetime field and was getting a minima time of 06:59
+when it should have been 07:00.
+<br>
+<br>
+<li> increased the size of file pathname variables from 127 to 255 and doing length checking
+on script file and output file name
+<br>
+<br>
+<br>
+<br>
+<h2>Version: 2.01 (16 Nov '01)</h2>
+<font size=+1>New features:</font>
+<ul>
+<li> <a href="svg.html">SVG</a> capabilities.  The driver was written by Bill Traill.
+<br>
+<br>
+<li> The Makefile has been reworked.  Before building ploticus you edit the
+Makefile and follow a simple 3-step procedure.  There are more build variations than before.
+<br>
+<br>
+<li> Source code can now be compiled on win32 using mingW and maybe other compilers.  
+<a href="../doc/nonunix.html">More info.</a>
+<br>
+<br>
+<li> postscript - ISO Latin1 encoding added, so that European characters may be produced
+in postscript exactly like they are in the other environments (ascii 128-255).
+<br>
+<br>
+<li> Created graphic files are automatically chmod'ed to mode 644.
+</ul>
+<font size=+1>Bug fixes:</font>
+<ul>
+<li> Some code problems related to the new CGI functionality have been cleaned up.  
+These may have caused problems on some platforms.
+<br>
+<br>
+<li> proc getdata filter - data field names within proc getdata filter statements were 
+not working.  Fixed.
+<br>
+<br>
+<li> dates - dates earlier than 1977 causing problems with autorange and
+probably in other areas.  This has been fixed to handle dates back to Jan 1 1800.
+<br>
+<br>
+<li> general - most command line args including var=value pairs were being retained in
+a 200 character buffer, a problem when command lines are longer.  Fixed.
+<br>
+<br>
+<li> proc bars - problems with bar labeling when select is used; also clustering should work 
+with segment bars.  Fixed.
+</ul>
+<br>
+<br>
+<br>
+<br>
+<h2>Version: 2.00 (18 Sep '01)</h2>
+<font size=+1>
+This major release introduces
+<a href="prefabs.html">prefabs</a> for creating standard types of plots
+directly from the command line,
+<a href="cgi.html">CGI mode</a>,
+and optional JPEG, WBMP, and FreeType2 support.
+The script interpreter code has been completely replaced;
+a general clean-up pass was applied to all code.
+<br>
+<br>
+Specific new features:
+</font>
+<ul>
+<li><a href="prefabs.html">Prefabs</a> 
+<br>
+<br>
+<li><a href="cgi.html">CGI mode</a>
+<br>
+<br>
+<li> Optional JPEG, WBMP, and <a href="fonts.html">FreeType2</a> support, however you must link to 
+your own copy of GD library version 1.84 
+or higher when you build ploticus, and have the other required libs.  
+See the Makefile for more info.  Thanks to Michael Tonkin for getting the ball rolling on this.
+<a href="../gallery/stock.jpeg">Here's an example that uses a TrueType sans serif font</a>.
+<br>
+<br>
+<li> A new script interpreter.
+New <a href="scripts.html#directives">flow of control operators</a> including: 
+<tt> #elseif #else #for #while #setifnotgiven #call #write #shell</tt>, etc.
+Also, increased <a href="limits.html">capacities</a> for data fields and variables (250 chars)
+and script input lines (3000).
+<b>The new interpreter involves some <a href="changes20.html">script syntax changes
+that may cause existing scripts to break</a> in some cases.</b>
+<br>
+<br>
+<li>
+General code clean-up and efficiency improvements
+(thanks for the suggestions.. who wrote that code, anyway?!).
+<br>
+<br>
+<li> <a href="sql.html">#sql</a>, a new directive for retrieving data directly from an SQL database.
+This is currently under development,
+and user-contributed client interfaces to DBMSs such as MySQL and Oracle would be welcome
+(the code is in dbinterface.c)
+</ul>
+<font size=+1>A number of minor improvements and bug fixes are also present:</font>
+<ul>
+<li> Added: proc areadef <a href="autorange.html">autorange</a> - new subattributes 
+<tt>selectrows</tt> (for selecting rows to be considered when
+scanning for min and max) and <tt>combomode</tt> (to allow correct finding
+of min and max for situations like error bars and stacked bars).
+<li> Added:  proc areadef <a href="autorange.html">autorange</a> - now sets variables
+DATAXMIN, DATAXMAX, DATAYMIN, and DATAYMAX - the actual minima and maxima of data field.
+<li> Added: <a href="axis.html">proc axis</a> - <tt>stubevery</tt> attribute
+<li> Added: <a href="getdata.html">proc getdata</a> - <tt>pathname</tt> attribute, to specify
+data file name directly without involving cat(1) 
+<li> Added: <a href="bars.html">proc bars</a> - <tt>colorfield</tt> attribute - set bar color based on a data field
+<li> Added: <a href="legendentry.html">proc legendentry</a> - <tt>tag</tt> attribute 
+<li> Added: various new <a href="functions.html">functions</a>
+<li> Added: the temp file default path name and default slash character can now be changed in pl.h
+or in a <a href="../doc/config.html">config file</a>.
+<li> Added: resource utilization (cpu time and size of created disk files) now can be controlled.
+Default upper limits are 10 cpu seconds and 5,000,000 bytes.
+Limits may be altered in pl.h or by using a <a href="../doc/config.html">config file</a>
+<li> Added: various other <a href="../doc/config.html">config file</a> settings
+<li> Changed: proc axis - minor changes to avoid orphan date stubs and improper year placement (autoyears)
+<li> Fixed bug: proc axis - when producing stubs running from negative to positive zero is displayed 
+as a very tiny non-zero value such as 5.2579e-17 due to rounding error.  
+<li> Fixed bug: proc getdata - buffer overflow when 'filter' is used with data records longer than 254 chars,
+causing garbage result or instability.  
+<li> Fixed bug: proc legend - legend entry text could not be adjusted using textdetails \fCadjust=\fR
+<li> Fixed bug: proc bars - <tt>select</tt> omits bars but not labels.  Thanks to Dan Tsafrir for finding this one.
+<li> Fixed bug: $arith() function - detects and issues an error on divide-by-zero.
+</ul>
+<br>
+<br>
+<h2>Ploticus is 2 years old - 25 Aug '01</h2>
+<br>
+
+
+<h2>Ploticus version 1.41: 18 Jun '01</h2>
+<ul>
+<li> Ploticus now covered under <a href="Copyright.html"><img src="../doc/gpl.gif" border=0></a>.
+<br><br>
+<li> proc bars - additional (diagonal) cross hatching available as an accessory (see <a href="../doc/Download.html">d
+ownload page</a>)
+<li> Fixed bug: colored background not completely filling the result window when scale
+is being done
+<br><br>
+<li> Fixed scripts in test suite:
+The change in default size (version 1.40) sometimes caused
+general layout problems with graphics that were layed out with an 8.5" x 11" 
+default size in mind.  The solution for these scripts is to add a #proc page and 
+specify <tt>pagesize: 8.5 11</tt>.
+Some of the scripts in the test suite had such problems and are now fixed.
+<br><br>
+<li> Fixed bug: EPS bounding box incorrect for 1) pltab output and 2) pl where result 
+draws into negative absolute coordinate space.
+<br><br>
+<li> Fixed bug: proc areadef xautorange/yautorange not working correctly in some cases 
+when a nearest= value is specified.  This bug was apparently introduced in 1.40.  
+<br><br>
+<li> Fixed bug: proc lineplot - accum option choking when non-numeric data encountered.
+<br><br>
+<li> Fixed bug: proc rangebar - negative barloc values not working.
+<br><br>
+<li> Added: proc areadef - autorange datafield may now be a comma-delimited list of dfields
+so that multiple data fields are considered when determining the axis min and max.
+<br><br>
+<li> Changed: scaletypes - times hh:mm:ss and mm:ss - validity checking relaxed 
+slightly to allow degenerate values such as 0:4:9
+<br><br>
+<li> Fixed bug: pltab - incorrect interaction between #font and sectionheadings
+<br><br>
+<li> Fixed bug: proc rangebar - textdetails controls N= label but not missing label 
+<br><br>
+<li> Fixed bug: pltab - creates 8.5 x 11 inch gif, png regardless of result size
+<br><br>
+<li> Fixed bug: axis - line grid and gridblock starting point incorrect in X
+<br><br>
+<li> Fixed bug: axis - colors incorrect when specified in certain combinations for tics, stubs, grid 
+<br><br>
+<li> Fixed bug: bars - ticks not being drawn when truncating was not switched on
+</ul>
+
+
+<br>
+<br>
+<h2>Ploticus version 1.40: Jan 16 '01</h2>
+This release includes improved support for automatic on-demand plotting, especially
+automatic determination of scale and plot size from data.  It also incorporates
+a bundle of new features, both user-requested and not.
+<ul>
+<li> <a href="getdata.html">proc getdata</a> - variables may 
+	be declared and set from within data files using #set
+<li> <a href="curvefit.html">proc curvefit</a> - linear regression and correlation
+<li> <a href="areadef.html">proc areadef</a> - "autowidth" and "autoheight" attributes
+	for data-driven plot area size
+<li> <a href="axis.html">proc axis</a> - alternating shaded block backgrounds
+</font>
+<br>
+<br>
+<li>added: new script $functions - $exists() and $notexists() to test if a @VARIABLE has a value.  
+	See <a href="functions.html">functions(pl)</a>
+<li>added: new script #operators - #hideund and #showund to control display of embedded underscores, and #includesh.
+	See <a href="scripts.html">scripts(pl)</a>
+<li>added: new <a href="scaleunits.html">scaletype</a> - log+1 scaling for handling log-characeristic data that
+	may contain values of 0.0
+<li>added: <a href="areadef.html">proc areadef</a> - autorange - "incmult", which assists in automatically determining hi and low margin
+<li>added: <a href="areadef.html">proc areadef</a> - "xextracategory" and "yextracategory" attributes, 
+which allow categories to be added explicitly even when most categories are defined from data
+<li>added: <a href="axis.html">proc axis</a> - "stubcull" attribute for eliminating stub collision, or pile up
+	on log axis
+<li>added: <a href="axis.html">proc axis</a> - definable extent for grid lines
+<li>added: cmyk <a href="color.html">color</a> specification for use with PostScript and EPS.
+<li>added: <a href="textdetails.html">textdetails</a> - "font" subattribute for setting PostScript font.
+<li>added: <a href="print.html">proc print</a> - "outfile" and "outmode" attributes allowing proc print to write to files
+<li>added: <a href="print.html">proc print</a> - now sets a variable called NSELECTED.
+<li>added: <a href="legend.html">proc legend</a> - "reset" attribute.
+<li>added: <a href="bars.html">proc bars</a> - "hidezerobars" attribute
+<li>added: <a href="curvefit.html">proc curvefit</a> - "select" attribute
+<li>added: <a href="curvefit.html">proc curvefit</a> - new curvetype - "avg"
+<li>added: <a href="tabulate.html">proc tabulate</a> - "showrange" attribute supercedes showrangelowonly.  
+	Range label can be the average of low and high end of range.
+<li>added: <a href="rangebar.html">proc rangebar</a> - "logmean" attribute, for computing means and standard
+	deviations in log space.
+<li>added: <a href="rangebar.html">proc rangebar</a> - "statsonly" attribute, to compute stats and set variables
+	without drawing the bar.  
+<li>added: <a href="rangebar.html">proc rangebar</a> - now sets the variables RANGEBARIQRMIN and RANGEBARIQRMAX.
+
+<br>
+<br>
+<li>changed: <a href="getdata.html">proc getdata</a> - pl no longer quits when no data could be read.  
+	Scripts can check @NRECORDS after getdata finishes and take appropriate action.
+<li>changed: default result size is now 8" x 8".  
+
+<li>changed: proc curvefit - data no longer need to be ordered on X for curve computation
+<li>changed: standalone $functions (those that are not part of an #if construct) may contain embedded white space
+<li>changed: <a href="color.html">color</a> specifications - the separator character in rgb(r,g,b) constructs may 
+	be any of comma, dash, colon, or pipe.  Comma was problematic if rgb constructs were put into a 
+	comma-delimited list, as in <a href="../gallery/students.htm">students example</a>.
+<li>changed: .pls is now a "known extension" for script files.
+<li>changed: improved the heuristic for automatic axis increment determination
+
+<br>
+<br>
+<li>fixed bug: proc scatterplot - if select condition used or if values are out-of-range,
+labels from data and datapoint size from data may be incorrect due to data alignment bug.
+<li>fixed bug: proc lineplot - if select condition used or if values are out-of-range,
+labels from data may be incorrect due to data alignment bug.
+<li>fixed bug: proc rangebar - file close problem causing core dump on linux
+<li>fixed bug: multipage plots & page breaks - if proc page was used to break to page 2, and proc page wasn't
+	used for page 1, drawing continues on page 1.
+<li>fixed bug: proc getdata - select was not working when field names used (message: no such data field).
+<li>fixed bug: date scaling - dates containing embedded dashes were not converted properly when used.
+as locvalue e.g. proc annotate location.  
+<li>fixed bug: $max() <a href="functions.html">function</a> was giving incorrect results 
+<li>fixed bug: proc page - on multipage landscape plots using PNG/GIF only the last page was viewable.  
+<li>fixed bug: PNG/GIF driver memory leak when doing multipage plots.  
+<li>fixed bug: incorrect fda() calls in tabulate.c and processdata.c.
+<li>fixed bug: proc getdata filters - potential instability if references were made to data fields beyond NFIELDS.
+<li>fixed bug: proc bars - tics produced through the use of leftticfield, rightticfield, 
+and midticfield were being drawn outside of plotting area 
+</ul>
+<br>
+<br>
+<br>
+<h2><a href="../doc/Faq.html">FAQ</a> Sept 29 '00</b> Expanded and updated.</h2>
+<ul>
+Recently added questions are denoted as <b>NEW</b>.
+Now includes some discussion of performance issues near the end of the document.
+</ul>
+<br>
+<br>
+<h2>Version 1.39: Sept 29 '00</h2>
+<ul>
+<li>Changed - proc transform renamed as proc processdata ('transform' still works)
+<li>Changed - script syntax - references to undeclared @variables are now left alone.  
+Formerly they had resulted in syntax errors.
+<li>Added - proc areadef - autorange - if nearest= is omitted a reasonable default will be used 
+for numeric data.  Formerly it defaulted to exact min and max, which was usually not desirable.
+It is now possible to say nearest=exact to get exact min and max, should that be wanted.
+<li>Added - proc areadef - categories - a new attribute called 'catcompmethod', to control the
+details of how category comparisons are done.
+<li>Added - proc areadef - now sets variables XMIN, XMAX, YMIN, and YMAX
+<li>Fixed bug - proc areadef - autorange - problems with negative numbers; 
+<li>Added - proc axis - 'stubs increment' with no following value gives a reasonable default increment.
+So does 'stubs inc 0'.
+<li>Added - proc bars - barwidthfield and bwfscale for data-driven bar widths
+<li>Added - proc datesettings - several new options for omitting weekends
+<li>Fixed bug - proc getdata - choking on long path names.  Increased sizes of many buffers
+throughout.
+<li>Fixed bug - proc getdata field names - a name beginning with a number such as 16kHz was being interpreted
+as an integer field number.
+<li>Added - proc processdata - new actions 'breaks' to do break processing on data sets, and related
+action 'breakreset'.
+<li>Added - proc rangebar - when using meanmode, plotfields may now be used for getting a mean, standard
+deviation, and optionally an N value. 
+<li>Changed - proc rangebar - variable NVALUES is now always set, even if nothing was plotted (it will be zero in this case).
+<li>Added - proc rangebar - new attributes showbriefstats, showstatsfile, briefstatstag to make a
+file holding computed statistical info that can be used by other programs
+<li>Added - proc rangebar - allow 'none' for outliernearsym and outlierfarsym, for when displaying
+outliers using only labels or line segments.
+<li>Added - proc rangebar - a new attribute called 'skipmed', to omit median and percentiles calculation
+when only means and standard deviations are needed (a performance consideration).
+<li>Fixed bug - proc rangesweep - bug involving the use of 'select'
+<li>Added - new function - $dataitem(), to access a single data item from the current data set by row 
+and field position.
+<li>Added - command line / proc page - the options -croprel and -crop
+<li>Changed - ploticus temp file naming now uses shorter names
+<li>Added - user-contributed RPM spec file.  See the Download page under Accessories.
+<li>Changed - makefile & build - copied gd_io.h to the gd16 subdirectory for successful solaris 'make' build
+<li>Added - MP/ix added to Makefile
+<li>Changed - gallery example EPS or Postscript files will no longer be stored on the web site, except for the pltab examples.
+<li>Changed - ploticus manual in postscript form will no longer be maintained or distributed.
+</ul>
+<br>
+<br>
+<h2>Ploticus is one year old: Aug 25 '00</h2>
+<br>
+<br>
+<h2>Version 1.38: Jun 9 '00</h2>
+<ul>
+<li>It is now possible to set the directory used for temp files, using a new
+config attribute tmpdir.
+<li>under cygwin, problems have been reported with pltab writing postscript to standard output.
+Workaround is to use pltab -o
+<br>
+<br>
+<b>Version 1.37: May 24 '00</b>
+<li>Added new proc - proc datesettings
+<li>Added - an option to omit weekends with date or datetime scaling, via proc datesettings
+<li>Improved - numeric data in scientific format e.g. 4.335e12 now supported
+<li>Improved - #declare and #musthave now can take comma-delimited lists of variable names
+<li>Fixed bug - proc bars, error bars not positioned correctly w/ clustering
+<li>Fixed bug - proc rangebar, 1.5iqr mode, incorrect upper tail length
+<li>Fixed bug - proc rangebar, zero length tail should not be drawn at all 
+<li>Fixed bug - proc tabulate, entries should not be sorted when valuelist is used
+</ul>
+<br>
+<br>
+<h2>Version 1.36: Apr 10 '00</h2>
+<ul>
+<li>Fixed bug - categories scaling - handling of duplicate category tags 
+<li>New attribute - proc bars - numberformat attribute
+<li>Improved - programs 8-bit clean and support locales - thanks to Oleg Bartunov
+<li>Fixed bug - removed a few x11 compile dependencies that were present even with -DNOX11
+<li>Improved - proc transform - numbernotation may be applied to TOTALS
+<li>Fixed bug - proc rangebar - 1.5iqr tails/outliers were incorrect for degenerate cases (small N)
+<li>Added a new function called $fieldname() 
+<li>Improved - proc tabulate now allows NO ordering 
+<li>Note: under cygwin, the directory /usr/tmp must exist and be writable by everybody.
+<li>Withdrawn - proc pie - lower edge of pie boundary is "fuzzy".  A gd rounding error?
+</ul>
+<br>
+<br>
+<h2>Version 1.35: Mar 1 '00</h2>
+<ul>
+<li>Fixed bug - numbernotation - spacer chars being added within leading blank zones in stubs
+<li>Fixed bugs - proc lineplot - incorrect fill under stairstep curve and lastseglen
+<li>Fixed bug - proc getdata - program crashed when proc getdata filter encounters blank lines in data file
+<li>Fixed bug - proc rangebar - 1.5 x IRQ tails not computed correctly (also affects outliers)
+<li>Improved - postscript %%Creator and %%Title tags not used correctly
+<li>Fixed bug - proc pie - line+label not working correctly on gallery example pie4.htm
+<li>Improved - proc line - first coordinate pair should implicitly do a 'moveto'
+<li>Added pltab -landscape option
+<li>Added new function $max()
+<li>Fixed bug - pltab centering of column stubs (had been left-aligned)
+<li>Fixed bug - multi-page landscape postscript - 2nd page orientation was incorrect
+</ul>
+<br>
+<br>
+<h2><a href="../download/ploticus.perl">ploticus.perl</a> Mar 1 '00</h2> 
+<ul>
+This is a perl script which implements a web interface to ploticus.
+It was contributed by Tom McClure.
+</ul>
+<br>
+<br>
+<h2>Version 1.34: Jan 28 '00</h2>
+<ul>
+<li>Added <tt>transparent</tt> color; use as background color to create transparent GIFs and PNGs.
+<li>Added feature to display numbers in european or us notation 
+with separators for large numbers (settable in config file).
+<li>Added proc tabulate <tt>accumfield</tt> option.
+<li>Added feature to make proc bars <tt>stackfields</tt> easier to use.
+<li>Fixed bug - proc tabulate not handling date (etc.) units correctly when ranges not specified.
+<li>Fixed bugs - proc areadef autorange - various problems involving large data values, datetime
+data, and nearest=hours.  
+<li>Fixed bug - datetime scaletype - all values 'outside window' when default date & time notations in use,
+even though no window was defined.  
+<li>Added areadef autorange sub-parameter <tt>format</tt>.
+<li>Added areadef autorange <tt>nearest=day</tt>.
+<li>Fixed bug - proc bars - default bar width sometimes much too wide; added a sanity override.
+</ul>
+<br>
+<br>
+<h2>Version 1.33: Dec 21 99</h2>
+<ul>
+<li>Added proc bars lablepos attribute
+<li>Fixed bug - config file "units: cm" not working.
+<li>Added -cm and -inches command line options.
+<li>Added -o stdout to write GIF, PNG, or EPS result to standard output.
+<li>Fixed bug - script files ending in .pl not handled properly.
+<li>Fixed bug - proc rangebar plotfields not working properly.
+<li>Fixed bug - proc bars taillen not being cloned properly for errorbars.
+<li>Fixed bug - proc areadef box attribute not handling cm properly.
+</ul>
+<br>
+<br>
+<h2>Version 1.32: Nov 15 99 (sunfreeware.com only)</h2>
+<ul>
+<li>Fixed bug - proc rangebar - 1.5*interquartile range tails
+were not truncated at the min/max.  
+<li>Added proc bars colorlist attribute
+</ul>
+<br>
+<br>
+<h2>Version 1.31: Oct 29 99.</h2>
+<ul>
+<li>Fixed bug - proc getdata 'filter' caused instability on linux
+<li>Fixed bug - multiline legend entries too far apart
+<li>Fixed bug - proc rangebar outliers when a 'select' is being used
+<li>Fixed bug - proc rangebar and proc bar 'entire bar out of range' problem
+</ul>
+<br>
+<br>
+<h2>Version 1.3: Oct 27 99.</h2>
+<ul>
+<li>Added datetime scale type.
+<li>Added proc breakaxis.
+<li>Added proc rangebar outlier display and reporting features 
+<li>Added hatch patterns as a color option
+<li>Added a new proc transform action called 'count'.
+<li>Added proc axis signreverse attribute to assist w/ high to low axes
+<li>Added 'hifix' and 'lowfix' to proc areadef autorange attribute.
+<li>In proc legend, the 'sep' attribute now controls the vertical separation 
+when multiline format is used, as well as the horizontal separation when
+singleline format is used.
+</ul>
+<br>
+<br>
+<h2>Version 1.21: Sep 28 99.</h2>
+<ul>
+<li>Fixed proc page bug involving missing postscript showpage.
+<li>Fixed proc page bug involving incorrect default line width on page 
+2 and up of a multipage result
+<li>Proc page - default EPS behavior changed to NOT do background, unless
+a background color is specified.
+<li>Fixed bug where timestamp directory name is truncated incorrectly.
+<li>Script file names can now end in .pl (in addition to .p, .htm, .html as before)
+<li>Minor items related to AIX port.
+</ul>
+<br>
+<br>
+<h2>Version 1.2, Sep 13 99.</h2>
+<ul>
+<li>Added PNG support.
+<li>Fixed bugs in Pie and textdetails style subattribute.
+<li>Dropped the Page/device attribute.
+<li>Added the Annotation/boxmargin attribute.
+<li>Removed support for GIF import.
+</ul>
+<br>
+<br>
+<h2>Version 1.1, Aug 30 99</h2>
+<ul>
+<li>fixed proc lineplot bug evidenced by stock.htm;
+<li>other minor items related to linux & irix port.  (note: pl -version still reports 1.0
+in some of the binaries)
+</ul>
+<br>
+<br>
+<h2>Version 1.0, Aug 25 99, original release.</h2>
+.>>
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="../doc/Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

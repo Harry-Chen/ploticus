@@ -1,0 +1,91 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: commalist</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>COMMALIST</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH COMMALIST PL "31-AUG-2001   PL www.sgpr.net"
+
+.SH COMMALISTS
+A commalist is a list of items, usually delimited with commas.  For example:
+.nf
+	Harry,Ron,Hermione
+.fi
+
+.LP
+Commalists allow a set of values to be manipulated as a unit, which is often
+convenient.  There are
+.ig >>
+<a href="condex.html">
+.>>
+\0conditional expression 
+.ig >>
+</a>
+.>>
+operators and
+.ig >>
+<a href="functions.html">
+.>>
+\0functions
+.ig >>
+</a>
+.>>
+that can process commalists.
+
+.LP
+Commalists may be suitable when individual values are known to be small in size 
+(such as integer id numbers) and where it is known that there will not be a large 
+number of choices.  The total length of a commalist is limited to 250 characters.
+
+.LP
+The separator character is comma by default.  This cannot be "escaped" but it
+may be changed to another character using the script directive
+.ig >>
+<a href="control.html">
+.>>
+\0#control listsep
+.ig >>
+</a>
+.>>
+\0.  
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

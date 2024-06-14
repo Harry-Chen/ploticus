@@ -1,0 +1,349 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: dates</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>Dates</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH Dates PL "01-MAR-2002   PL ploticus.sourceforge.net"
+
+.SH Ploticus date processing 
+Ploticus can plot dates directly and do date arithmetic.
+Many details of date processing, including localization of month and weekday names,
+can be controlled via settings in
+.ig >>
+<a href="settings.html">
+.>>
+\0proc settings
+.ig >>
+</a>
+.>>
+or in your
+.ig >>
+<a href="config.html">
+.>>
+\0config file.
+.ig >>
+</a>
+.>>
+There are also a number of 
+.ig >>
+<a href="functions.html">
+.>>
+\0functions
+.ig >>
+</a>
+.>>
+that deal with dates.
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH Plottable date notations
+The following date notations are supported for plotting and date arithmetic:
+.LP
+\fBMonth, day, and year notations:\fR
+.IP \(bu
+\fCmmddyy\fR      (example: 033199)
+.IP \(bu
+\fCmm-dd-yy\fR      (example: 03-31-99)
+.IP \(bu
+\fCmm-dd-yyyy\fR      (example: 03-31-1999)
+.IP \(bu
+\fCmm/dd/yy\fR      (example: 03/31/99)
+.IP \(bu
+\fCdd-mm-yy\fR      (example: 31-03-99)
+.IP \(bu
+\fCdd/mm/yyyy\fR      (example: 31/03/99)
+.IP \(bu
+\fCddmmmyyyy\fR      (example: 31mar1999 or 31MAR99)
+.IP \(bu
+\fCdd-mmm-yy\fR      (example: 31-mar-99 or 31-MAR-99)
+.IP \(bu
+Others:
+.nf
+.ft C
+mm/dd/yyyy  mmddyyyy      mm.dd.yy    mm.dd.yyyy
+mmm-dd-yy   mmm-dd-yyyy   mmm_dd_yy   mmm_dd_yyyy
+mmm/dd/yy   mmm/dd/yyyy
+
+dd-mm-yy    dd-mm-yyyy    dd/mm/yy    dd/mm/yyyy
+ddmmyy      dd.mm.yy      dd.mm.yyyy
+dd-mmm-yyyy dd_mmm_yy     dd_mmm_yyyy
+dd/mmm/yy   dd/mmm/yyyy   ddmmmyy     ddmmmyyyy
+
+yy-mm-dd    yy/mm/dd      yymmdd      yy.mm.dd
+yyyy-mm-dd  yyyy/mm/dd    yyyymmdd    yyyy.mm.dd
+yyyy-mmm-dd yyyy_mmm_dd   yyyymmmdd
+.fi
+.LP
+\fBMonth & year notations\fR
+.br
+(a day value of 01 is used internally for arithmetic/plotting purposes):
+.IP \(bu
+\fCyymm\fR      (example: 9903)
+.IP \(bu
+\fCmm/yyyy\fR      (example: 03/1999)
+.IP \(bu
+Others: \fC
+yy/mm     yy-mm       yyyymm       yyyy/mm      yyyy-mm
+mm/yy     mm-yy       mm-yyyy\fR 
+.LP
+\fBQuarter year notations\fR
+.br
+(day and month will be set to mid-quarter for arithmetic/plotting purposes):
+.IP \(bu
+\fCyyqn\fR      (example: 99q1 or 99Q1)
+.IP \(bu
+\fCnqyyyy\fR      (example: 1q1999 or 1Q1999)
+.IP \(bu
+Others:
+\fCyyyyqn       nqyy    \fR
+.LP
+\fBYear only notation\fR
+.IP \(bu
+\fCyy\fR (uses pivot year, so 00 is greater than 99)
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH Basic unit
+The basic date unit is always a \fBday\fR, regardless
+of which notation is in use.  Stub and tic increments
+may be expressed in \fCmonths\fR or \fCyears\fR, if desired.
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH Setting date notation
+Any date value to be plotted or involved in date arithmetic must
+conform to the current date notation.
+The default notation is \fBmmddyy\fR.
+The date notation can be set using the 
+\fCxscaletype\fR or \fCyscaletype\fR attributes of
+.ig >>
+<a href="areadef.html">
+.>>
+\0proc areadef
+.ig >>
+</a>
+.>>
+( or 
+.ig >>
+<a href="defineunits.html">
+.>>
+\0proc defineunits
+.ig >>
+</a>
+.>>
+), or using
+.ig >>
+<a href="settings.html">
+.>>
+\0proc settings
+.ig >>
+</a>
+.>>
+, by using a
+.ig >>
+<a href="config.html">
+.>>
+\0config file.
+.ig >>
+</a>
+.>>
+
+
+.ft R
+.ig >>
+<a name=display></a>
+.>>
+
+.SH Display-only notations
+In addition to the above plottable notations, 
+the following additional notations may be used only for
+displaying dates (such as with the stubformat 
+attribute, for instance).  They may not be used for 
+date plotting or arithmetic.
+.LP
+\fBFull dates for presentation:\fR 
+.IP \(bu
+\fCmonth_dd,_yyyy \fR(or \fCfull\fR) (example: March 31, 1999)
+.IP \(bu
+\fCmon_dd,_yyyy\fR      (example: Mar 31, 1999)
+.IP \(bu
+\fCdd_month,_yyyy\fR      (example: 31 March, 1999)
+.IP \(bu
+\fCdd_mon,_yyyy\fR      (example: 31 Mar, 1999)
+.IP \(bu
+\fCWww_dd_mon,_yyyy \fR(or \fCwfull\fR) (example: Wed 31 Mar, 1999)
+.LP
+\fBMonth & year only:\fR  \fCmmyy, mmyyyy\fR
+.LP
+\fBMonth & day only:\fR   \fCmmmdd, mmm/dd, mmm-dd, mmm_dd, mm/dd, mm-dd, mm_dd 
+.LP
+\fBYear only:\fR   \fC'yy, yyyy\fR 
+.LP
+\fBMonth only:\fR   \fCmmm, mm, m\fR 
+.LP
+\fBDay only:\fR   \fCdd d\fR 
+.LP
+\fBWeekday:\fR 
+.IP \(bu
+\fCW\fR (example: S M T W T F S) 
+.IP \(bu
+\fCWww\fR (example: Sun Mon Tue Wed Thu Fri Sat)
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH Key to notation codes     
+.br
+\fCm\fR = single character month (use M for capitalized)
+.br
+\fCmm\fR = numeric month 01-12
+.br
+\fCmmm\fR = three-character month e.g. jan (use MMM for JAN or Mmm for Jan)
+.br
+\fCmon\fR = month abbreviation e.g. Jan
+.br
+\fCmonth\fR = full month e.g. January
+.br
+\fCdd\fR = numeric day 01-31
+.br
+\fCd\fR = numeric day 1-31
+.br
+\fCyy\fR = numeric year 00-99
+.br
+\fCyyyy\fR = numeric year 1800-up
+.br
+\fCw\fR = single character weekday (use W for capitalized)
+.br
+\fCwww\fR = three character weekday (use Www or WWW for capitalized)
+.br
+\fCn\fR = 1, 2, 3 or 4 (quarter year notations)
+.br
+\fCq\fR = the letter \fCq\fR or \fCQ\fR (quarter year notations)
+.br
+\fC_\fR (underscore) = space
+.fi
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH Notes
+.LP
+1. It is possible to omit weekends.  This is usually done
+in business- or market-related plots.  To omit weekends,
+set the \fComitweekends\fR attribute in 
+.ig >>
+<a href="settings.html">
+.>>
+\0proc settings
+.ig >>
+</a>
+.>>
+
+.LP 
+2.  Conversion from two-digit dates to four  digit  dates  is
+achieved  using  a  pivot year- any two digit year less than
+this value is assumed to be 21st century.   
+The default pivot year is \fB77\fR.
+ 
+
+.LP 
+3.  When three-character months are  used,  they  are  always
+entered and stored as lower case; however the capitalization
+of the "mmm" can be altered to control  the  way  dates  are
+presented, e.g.  Mmm = Jan, MMM = JAN.
+ 
+.LP
+4.  "Lazy" dates may be used.
+A lazy date has 00 as the day and/or month portion and is usually
+used in situations where the day and/or month is unknown or unavailable.
+When a lazy date is used in date arithmetic the
+missing month and/or day is converted to 01.
+By default, lazy dates are not permitted for date arithmetic.
+ 
+.LP
+5. When using notations that do not contain a specific day
+(such as month year, quarter year, or year only)
+there may be occasions when it is necessary to specify an
+exact day point (for example to create an annotation).
+To do this, an alternate full date format may be used.
+For example, if \fCyyqn\fR notation is being used,
+full dates may be given in \fCyy/mm/dd\fR format.
+For an example this, see
+.ig >>
+<a href="../gallery/bars9.htm">
+.>>
+\0bars9
+.ig >>
+</a>
+.>>
+.IP
+.ft C
+.nf
+                        Alternate full-
+Notation                date notation
+-------------------     -----------
+yymm                    yymmdd
+yymmm                   ddmmmyy
+yy/mm, yy-mm, etc.      yy/mm/dd
+yyyy/mm, yyyy-mm, etc.  yyyy/mm/dd
+yy                      yymmdd
+mm/yy, mm-yy, etc.      dd/mm/yy
+mm/yyyy, mm-yyyy, etc.  dd/mm/yyyy
+yyqn                    yy/mm/dd
+yyyyqn                  yyyy/mm/dd
+nqyy                    yy/mm/dd
+nqyyyy                  yyyy/mm/dd
+.ft R
+.fi
+.ft R
+
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="../doc/Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

@@ -1,0 +1,186 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: correspondence, troubleshooting, and bug reports</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>Correspondence, troubleshooting, and bug reports</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH Correspondence,_troubleshooting,_and_bug_reports PL "01-MAR-2002   PL ploticus.sourceforge.net"
+ 
+
+.SH CORRESPONDENCE
+.ig >>
+<a href="http://ploticus.sourceforge.net/sgpr.html">Steve Grubb</a> is the author of ploticus.
+.>>
+.LP
+You can reach me by email at
+\fC 
+.ig >>
+ <a href="mailto:scg@jax.org">scg@jax.org</a> 
+.>>
+\fR, or by posting to the
+.ig >>
+<a href="http://groups.yahoo.com/group/ploticus">ploticus news group</a>
+.>>
+(you don't have to join the newsgroup to post or browse).
+I reserve the right to use your message in the 
+.ig >>
+<a href="Feedback.html">
+.>>
+user feedback page
+.ig >>
+</a>
+.>>
+or
+.ig >>
+<a href="Faq.html">
+.>>
+FAQ
+.ig >>
+</a>
+.>>
+\0.
+If you have interesting examples or web sites that use ploticus, please send the
+URLs or script files.
+
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH TROUBLESHOOTING
+Here are some troubleshooting tips and common snafus:
+.IP \(bu
+Unix users should download gzip tar files.
+Zip files are intended only for PC environments (text files have CR/LF line terminators).
+.br
+.br
+.IP \(bu
+Before compiling, review the \fBMakefile\fR and follow the simple 3-step 
+installation guide.
+.br
+.br
+.IP \(bu
+An ANSI-compliant C compiler such as \fBgcc\fR is required to compile the source code.
+.br
+.br
+.IP \(bu
+After building, do a quick test.  From within the \fCsrc\fR directory type \fCpl stock.htm\fR.
+For further testing see \fC pltestsuite \fR, or run some gallery examples.
+.br
+.br
+.IP \(bu
+If you get this error: \fCpl error 4899: No PLOTICUS_PREFABS env var (or hardcoded Makefile 
+PREFABS_DIR) found\fR, it indicates that no default prefabs directory was specified
+at build time and that each user must have the
+\fBPLOTICUS_PREFABS\fR environment variable set and exported.
+It must contain the full pathname of the directory where
+ploticus prefabs reside, as included in the download.  
+.br
+.br
+.IP \(bu
+Be sure you know which version you are executing
+(you might have earlier ploticus versions on your system and not realize it).
+Use \fCpl -version\fR to print the ploticus
+version; use the unix command \fCwhich pl\fR to print the file that you
+are actually executing when you type \fCpl\fR.
+.br
+.br
+.IP \(bu
+Unix builds do not read native PC text files.  This problem occurs
+if pl is compiled on a unix machine and you feed it native PC text files, 
+either as scripts or data files.  
+Symptoms may include truncated multi-line text
+items, or garbage characters appearing at the end of text items.  
+.br
+.br
+.IP \(bu
+If an image result contains blank areas at the top or side, it is probably because
+the image is larger than 8" x 8" in one or both dimensions.  To generate images larger than 
+8" x 8" a sufficient \fBpagesize\fR must be specified, either on the command line or via 
+proc page.  
+.br
+.br
+.IP \(bu
+If viewing result images in a browser, remember that image caching is usually
+being done, and that you might not be seeing the most recently generated image,
+even when you Reload or Refresh.
+
+.ig >>
+<br><br><br>
+.>>
+
+
+.SH BUG REPORTS
+Much of the incremental improvement in this package has been due to
+the careful bug reports that have been sent in by attentive users.  Thanks!
+Bug reports should be sent to \fC
+.ig >>
+<a href="mailto:scg@jax.org">
+.>>
+\0scg@jax.org
+.ig >>
+</a>
+.>>
+\fR or may be posted to the
+.ig >>
+<a href="http://yahoogroups.com/group/ploticus">
+.>>
+\0ploticus news group.
+.ig >>
+</a>
+.>>
+.LP
+When reporting a problem, please supply the following info:
+.IP 
+\fB1.\fR the OS environment where you invoked pl (eg. linux, solaris, windows/NT, etc.)
+.IP
+\fB2.\fR \fC pl \fR version number (type \fC pl -version \fR to find out).
+.IP
+\fB3.\fR exactly how you invoke \fCpl\fR.  Using a prefab?  CGI mode?  By typing in a pl command?
+Via perl or PHP?  With or without a config file?  Provide the exact pl command used.
+Since there are now a number of possibilities,
+this is especially important. 
+.IP
+\fB4.\fR a self-contained example that demonstrates the problem.  Usually the first thing
+I do is attempt to reproduce the problem here.
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="../doc/Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

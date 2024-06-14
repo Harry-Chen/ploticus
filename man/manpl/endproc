@@ -1,0 +1,90 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: proc endproc</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>proc endproc</h2></td>
+  <td align=right>
+  <small>
+  <a href="Welcome.html"><img src="ploticus.gif" border=0></a><br>
+  <a href="Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH proc_endproc PL "18-JUN-2001   PL www.sgpr.net"
+ 
+.SH DESCRIPTION
+.LP
+\fBproc endproc\fR is sometimes necessary
+to mark the end of a proc's statements,
+in certain situations described below.
+It does not need to be used routinely.
+.LP
+It is a do-nothing marker that may occasionally be needed because of 
+the way that ploticus scripts
+are parsed.  Variables that are set within a proc do not become available
+to the script until the proc is finished.  Procs are delineated
+by \fB#proc\fR statements.
+.LP
+Thus if a \fB#set\fR or \fB#if\fR statement is to be used immediately
+following a proc that set one of the involved operands, #proc endproc
+should be used before the \fB#set\fR or \fB#if\fR.
+.LP
+
+.SH ATTRIBUTES
+.LP
+None.
+
+.SH EXAMPLE
+.LP
+Examples from the gallery that use \fBproc endproc\fR are
+.ig >>
+<a href="../gallery/lineplot4.htm">
+.>>
+ lineplot4 
+.ig >>
+</a>
+.>>
+and
+.ig >>
+<a href="../gallery/distrib.html">
+.>>
+ distib
+.ig >>
+</a>
+.>>
+\0.
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="Welcome.html">
+<img src="ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

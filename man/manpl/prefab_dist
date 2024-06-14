@@ -1,0 +1,238 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: dist prefab</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>dist prefab</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH dist_prefab PL "26-FEB-2002   PL ploticus.sourceforge.net"
+
+.SH EXAMPLE 1
+.LP
+.ig >>
+<center><table cellpadding=2><tr>
+<td><img src="../gallery/prefab_img/dist1.gif"></td></tr>
+</table></center>
+.>>
+.LP
+.nf
+\fC	pl -prefab dist fld=1  data=data6  curve=yes  binsize=0.05 \\
+	  barwidth=0.08  ygrid=yes \fR
+
+	data6 file:
+		0.017
+		0.269
+		0.178
+		..etc.
+
+
+
+.fi
+.SH EXAMPLE 2
+.ig >>
+<center><table cellpadding=2><tr>
+<td><img src="../gallery/prefab_img/dist2.gif"></td></tr>
+</table></center>
+.>>
+.LP
+.nf
+  pl -prefab dist  fld=1  data=data8  cats=yes  yrange=0  \\
+     stubvert=yes  barwidth=0.05   ylbl="# Hits"   order=rev 
+
+  data8 file:
+	home
+	kwindex
+	details
+	browseform
+	..etc.
+.fi
+.LP
+.ig >>
+<br><br><br>
+.>>
+.LP
+.ig >>
+<a href="prefabs.html#examples">
+.>>
+\0How to run these examples
+.ig >>
+</a>
+.>>
+
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH DESCRIPTION
+\fBdist\fR is a 
+.ig >>
+<a href="prefabs.html">
+.>>
+\0prefab
+.ig >>
+</a>
+.>>
+that computes and displays a frequency distribution (histogram)
+on a data field.
+The data file does not need to be ordered in any particular way.
+The field may contain continuous numeric data, or alphanumeric values.
+Continuous numeric data is the default, but
+the \fBcats\fR option may be used to produce category distributions 
+(each unique value having a bar).
+With continuous numeric data, "bins" will be set up and values will
+be placed into these bins (any alpha values will be lumped into one
+"alpha" category).  
+.LP
+This prefab is based on
+.ig >>
+<a href="tabulate.html">
+.>>
+\0proc tabulate
+.ig >>
+</a>
+.>>
+and
+.ig >>
+<a href="bars.html">
+.>>
+\0proc bars
+.ig >>
+</a>
+.>>
+\0.
+
+.ig >>
+<br><br><br>
+.>>
+.SH HINT
+If no bars are appearing, try specifying bar size, eg.
+\fCbarsize=0.1\fR.  This glitch is due to the fact that 
+default bar widths are related to data space.
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH PARAMETERS
+
+.IP
+.ig >>
+<a href="prefab_stdparms.html">
+.>>
+\0Standard prefab parameters
+.ig >>
+</a>
+.>>
+are all supported except \fBx\fR, \fBy\fR, and \fBerr\fR.
+\fBdata\fR is required.
+
+.br
+.br
+.IP
+\fBfld\fR (required) is the 
+.ig >>
+<a href="attributetypes.html#dfield">
+.>>
+\0data field
+.ig >>
+</a>
+.>>
+that the frequency distribution will be computed on
+
+.br
+.br
+.IP
+\fBbinsize\fR is the size of one "bin" in numeric distributions.
+
+.br
+.br
+.IP
+\fBcats\fR may be given as \fCyes\fR if \fBfld\fR is not
+continuous numeric data.
+
+.br
+.br
+.IP
+\fBcurve\fR may be given as \fCyes\fR or as a 
+.ig >>
+<a href="linedetails.html">
+.>>
+\0linedetails attribute
+.ig >>
+</a>
+.>>
+to cause a bspline curve to be rendered along with the histogram.
+
+.br
+.br
+.IP
+\fBcolor\fR is the 
+.ig >>
+<a href="color.html">
+.>>
+\0color
+.ig >>
+</a>
+.>>
+of the bars (default = pink)
+
+.br
+.br
+.IP
+\fBbarwidth\fR is the width of the bars in absolute units.
+
+.br
+.br
+.IP
+\fBsavetable\fR may be given in order to save a text representation of
+the computed frequency distribution.  It may be a file name, \fCstderr\fR, or
+\fCstdout\fR.
+
+.br
+.br
+.IP
+\fBorder\fR controls the order in which bars are drawn from left to right.  
+By default this is \fCnatural\fR (alphabetical order). 
+Allowable values are \fCmag\fR (from low to high), and \fCrev\fR (high to low).
+
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

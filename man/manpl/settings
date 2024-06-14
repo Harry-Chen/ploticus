@@ -1,0 +1,296 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: proc settings</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>proc settings</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH proc_settings PL "28-FEB-2002   PL ploticus.sourceforge.net"
+
+Allows the script programmer to make certain overall settings.
+Many scripts will not need to use this proc;
+it may be useful to set a default date or number display notation,
+to set overall date processing behavior attributes, or to set certain
+system resource attributes.
+\fBproc settings\fR may be used more than once per script if desired.
+The settings take effect immediately.
+Many (but not all) of these settings can be also made using a
+.ig >>
+<a href="config.html">
+.>>
+\0config file
+.ig >>
+</a>
+.>>
+, which will affect ploticus' behavior on all scripts.
+.LP
+Note: this proc was previously called \fBproc datesettings\fR.
+It has been renamed because its functionality has been expanded.
+For backward compatibility, the \fBdateformat\fR attribute
+may be addressed using its old name: \fBformat\fR.
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH EXAMPLES
+See the gallery example
+.ig >>
+<a href="../gallery/settingsdemo.htm">
+.>>
+\0settingsdemo
+.ig >>
+</a>
+.>>
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH ATTRIBUTES
+
+
+
+.LP
+\fBunits:\fR \fCin\fR | \fCcm\fR
+.IP
+The measurement unit to be used for absolute units, either inches or centimeters.
+Default is \fCin\fR.
+If this is set in the config file, it will be in effect when command line
+arguments are evaluated.  If set in \fBproc settings\fR, it will not have any
+effect on command line argument evaluation.
+.br
+Example: \fCunits: cm\fR
+
+
+.LP
+\fBnumbernotation:\fR \fCstandard\fR | \fCus\fR | \fCeuro\fR
+.IP
+Specifies how decimal point and thousands separators will be displayed.  
+Default is \fCstandard\fR.
+The following table illustrates:
+.sp
+.nf
+ standard           us             euro
+----------    ------------    -------------
+     79              79               79
+     79.5            79.5             79,5  
+   4321.79         4321.79          4321,79 
+  54321          54,321           54.321
+ 654321.07      654,321.07       654.321,07
+1987654321    1,987,654,321    1.987.654.321
+
+.LP
+\fBnumberspacerthreshold:\fR  \fIn\fR
+.IP
+Specifies at what numeric magnitude thousands separators will begin to be inserted.
+Default is 4, and this is used in the above table.  If it were set to \fC3\fR, the third entry
+in the above table would appear like this:
+.nf
+   4321.79         4,321.79          4.321,79 
+.fi
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH SYSTEM ENVIRONMENT
+
+.LP
+\fBcpulimit:\fR
+.IP
+Number of seconds of CPU time that will be allowed to the \fBpl\fR or \fBpltab\fR process
+or any spawned subprocesses.  Default is 10 seconds.
+Any process exceeding this will abort.
+
+.LP
+\fBfilesizelimit:\fR
+.IP
+Number of bytes that will be allowed in any file that \fBpl\fR or \fBpltab\fR process
+or any spawned subprocesses creates.  Default is 5000000 bytes.
+Any process exceeding this will abort.
+
+.LP
+\fBuid:\fR
+.IP
+Set the effective user id of the \fBpl\fR or \fBpltab\fR process and all
+its subprocesses.
+Only useful in CGI environments where programs are invoked as root,
+
+.LP
+\fBgid:\fR
+.IP
+Same as \fBuid\fR, but sets the group id.
+
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH DATE-RELATED
+
+.LP
+\fBdateformat:\fR \fIformat\fR
+.IP
+Set the current date format.
+\fIformat\fR must be a
+date format from the
+.ig >>
+<a href="dates.html">
+.>>
+\0dates manual page
+.ig >>
+</a>
+.>>
+that includes month, day, and year, for which arithmetic is supported.
+To use other arithmetic date formats (such as quarter notation)
+specify the format in the 
+.ig >>
+<a href="areadef.html">
+.>>
+\0proc areadef
+.ig >>
+</a>
+.>>
+xscaletype or yscaletype attribute.
+.br
+Example: \fCdateformat: dd-mmm-yyyy\fR
+
+
+.LP
+\fBomitweekends\fR  \fComit\fR | \fCadjust\fR | \fCyes\fR | \fCno\fR
+.IP
+Allows date plotting as if
+Saturdays and Sundays did not exist.
+Mondays will follow Fridays directly.  
+Useful in certain business and work-related plots.
+.br
+If \fComit\fR, any Saturday or Sunday dates encountered will be considered invalid and omitted;
+however they will not be reported unless the -showbad command line option is used.
+.br
+If \fCadjust\fR or \fCyes\fR, any Saturday or Sunday dates encountered will be silently adjusted 
+to the nearest weekday.
+
+
+.fi
+.LP
+\fBpivotyear:\fR \fIyy\fR
+.IP
+Set the two digit year that should be used to convert
+two-digit years to four-digit years.  If two-digit years are 
+used, year values that are less than the pivot year are assumed
+to be 21st century years.  Default is 77.
+.br
+Example: \fCpivotyear: 50\fR
+
+.LP
+\fBmonths:\fR \fIlist\fR
+.IP
+Specify the three-character month abbreviations to be used, all in lower case,
+beginning with the first month.
+Default is the English (\fCjan feb mar apr may jun jul aug sep oct nov dec\fR).
+.br
+Example (Spanish) (must all be on one line): 
+.br
+\fCmonths: ene feb mar abr pue jun jul ago sep oct nov dic\fR
+
+.LP
+\fBmonths.abbrev:\fR \fIlist\fR
+.IP
+short month names, capitalized for presentation, begining with the first month.
+Default is English (\fCJan Feb Mar Apr May June July Aug Sept Oct Nov Dec\fR).
+.br
+Example (Spanish) (must all be on one line): 
+.br
+\fCmonths.abbrev: Ene Feb Mar Abr Pue Jun Jul Ago Sep Oct Nov Dic\fR
+
+.LP
+\fBmonths.full:\fR \fIlist\fR
+.IP
+full month names, capitalized for presentation.
+.br
+Example (Spanish) (must all be on one line): 
+.br
+\fCmonths.full: Enero Febrero Marcha Abril Pueda Junio Julio Agosto Septiembre Octubre Noviembre Diciembre\fR
+
+.LP
+\fBweekdays:\fR  \fIlist\fR
+.IP
+three-character weekday abbreviations, capitalized for presentation,
+beginning with Sunday.
+.br 
+Example (French): \fCweekdays: Dim Lun Mar Mer Jeu Ven Sam\fR
+.br
+Example (Spanish): \fCweekdays: Dom Lun Mar Mie Jue Vie Sab\fR
+
+.LP
+\fBlazydates\fR  \fCmonth\fR|\fCday\fR|\fCboth\fR
+.IP
+Allow handling of dates where the day component
+or the month component is not known.  See
+.ig >>
+<a href="dates.html">
+.>>
+\0dates
+.ig >>
+</a>
+.>>
+for further discussion of lazy dates.
+
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

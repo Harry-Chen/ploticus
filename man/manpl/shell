@@ -1,0 +1,344 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: shell</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>SHELL</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH SHELL PL "17-SEP-2001   PL www.sgpr.net"
+
+.SH NAME
+\fC#shell  \fIoption\fC  \fIcommand\fC  [#endshell]
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH DESCRIPTION
+Execute the given shell \fIcommand\fR, and optionally display or 
+capture the results.
+An \fIoption\fR may be given; available
+options (described below) are 
+\fC#dump\fR (the default), 
+\fC#processrows\fR,
+\fC#dumptab\fR, \fC#dumphtml\fR, and \fC#dumpsilent\fR.
+.LP
+\fIcommand\fR may use a single line construct or a
+multi-line construct formatted as in example 3 below.  
+\fC#endshell\fR must be used to terminate a multi-line construct.
+.LP
+The command's exit status is available in
+the @_STATUS script variable; 0 generally indicates 
+success.
+.LP
+.ig >>
+<a href="plshellsql.html">
+.>>
+\0Using #shell in ploticus scripts
+.ig >>
+</a>
+.>>
+
+
+.SH EXAMPLES
+.LP
+Example 1: \fC#shell date\fR
+.LP
+Example 2: 
+.IP
+.nf
+\0 #shell rm /tmp/myfile*
+\0 #if @_STATUS != 0
+\0   Command failed.
+\0 #endif
+.LP
+Example 3: 
+.IP
+.nf
+\0 #shell
+\0  cat /etc/vstab | 
+\0  grep "^afx"
+\0#endshell
+
+.SH OPTIONS
+An \fIoption\fR may be given to specify how command results should
+be displayed or captured.  If no option is given, \fC#dump\fR is
+done by default.
+The options all begin with a pound sign (#) so as not to be confused with
+command content.
+.LP
+\fB#dump\fR
+.IP
+Display all results immediately without any processing.
+Example:
+.nf
+\0#shell #dump ls -l
+.fi
+
+.LP
+\fB#dumptab\fR
+.IP
+Display all results immediately in tab-delimited field format.
+Fields will be parsed in each result line, then the fields
+will be displayed separated by tabs.
+Use the 
+.ig >>
+<a href="functions.html#shell">
+.>>
+\0$shellfielddelim() function 
+.ig >>
+</a>
+.>>
+to control shell result field parsing.
+Example:
+.nf
+\0#shell #dumptab 
+    cat mydata | grep "^Jan"
+\0#endshell
+.fi
+
+.LP
+\fB#dumphtml\fR
+.IP
+Display all results immediately in HTML table row format.
+Fields will be parsed in each result line, then the fields
+will be displayed separated by tabs.
+Use the 
+.ig >>
+<a href="functions.html#shell">
+.>>
+\0$shellfielddelim() function 
+.ig >>
+</a>
+.>>
+function to control shell result field parsing.
+
+.LP
+\fB#dumpsilent\fR
+.IP
+all rows of results will be retrieved then discarded.  Used to
+get a count of the number of rows.
+Example:
+.nf
+\0#shell #dumpsilent cat mydata | grep "^Jan"
+\0#set N = $shellrowcount()
+
+.LP
+\fB#processrows\fR
+.IP
+Indicates that results will be retrieved and processed later
+one line at a time using the \fC$shellrow()\fR
+.ig >>
+<a href="functions.html#shell">
+.>>
+\0function
+.ig >>
+</a>
+.>>
+\0.  When processing rows, retrieved fields are available as script variables.
+Example:
+.IP
+.nf
+\0      #shell #processrows cat mydata | grep "^Jan"
+\0      #if @_STATUS != 0
+\0        Command error @_STATUS.
+\0        #exit
+\0      #endif
+\0
+\0      // get the result rows..
+\0      #while $shellrow( A, B, C) = 0
+\0
+\0        // now access the fields as variables..
+\0
+\0        #if @B = 1
+\0	    ...etc..
+\0
+\0      #endloop
+
+.ig >>
+<br><br><br>
+.>>
+.SH SHELL-RELATED FUNCTIONS
+The following functions are related to
+the execution of shell commands.
+
+.LP
+\fB$shellrow( args )\fR
+.IP
+Read one line of shell command results, and perhaps parse into fields.
+Returns 0 on success, 1 if no more result lines, or an error code > 1.
+\fIargs\fR may be passed in one of several forms.
+If \fIargs\fR is a comma-delimited list of variable names, these variables
+will be set to values of parsed fields.  If \fIargs\fR is \fC#varvaluepair\fR
+the first parsed field will be taken as a variable name and the second field as
+the value (any trailing colon (:) will be removed from the variable name).
+No \fIargs\fR should be supplied if the command generates a field name
+header.
+.IP
+Example 1: \fC#set STAT = $shellrow( name, address, phone )\fR
+.IP
+Example 2: \fC#set STAT = $shellrow( #varvaluepair )\fR
+.IP
+Code example (assume that the given shell command produces three
+whitespace delimited fields (date, action, description):
+.nf
+\0	#call $shellfielddelim( whitespace )
+\0	#shell cat mydata | grep "^Jan"
+\0	#loop
+\0	  #set STAT = $shellrow( DATE, ACTION, DESC )
+\0	  #if @STAT != 0
+\0            #break
+\0        #endif
+\0        ...
+
+.LP
+\fB$shellrowcount()
+.IP
+Return the number of rows resulting from the most recent #shell command,
+that were processed.
+.IP
+Example: \fC#set N = $shellrowcount()\fR
+
+.LP
+\fB$shellreadheader()
+.IP
+For shell commands that generate a field name header, this function
+loads the header.  It should be called before $shellrow().  
+.IP
+Example:
+.nf
+\0	#call $shellfielddelim( tab )
+\0	#shell mycommand
+\0	#call $shellreadheader
+\0	#loop
+\0	  #set STAT = $shellrow()
+\0	  #if @STAT != 0
+\0            #break
+\0        #endif
+\0        ...
+\0      #endloop
+.fi
+
+.LP
+\fB$shellfielddelim( s )\fR
+.IP
+Set the delimitation method for parsing shell command result fields.
+Allowable values for \fIs\fR
+are \fCtab\fR, \fCwhitespace\fR, or \fCline\fR (which takes the entire
+line, sans newline, as a field).  Default is \fCline\fR.
+.IP
+Example: \fC#call shellfielddelim( whitespace )\fR
+
+
+.LP
+\fB$shellstripchars( chars, varname1, .. varnameN )\fR
+.IP
+Remove shell metacharacters (etc.) from user-supplied variables
+that are to be used to build a shell command to stop hackers from
+entering character combinations that would let them invoke their own 
+shell commands.  
+See the discussion of 
+.ig >>
+<a href="#security">
+.>>
+\0cgi shell security concerns
+.ig >>
+</a>
+.>>
+for more information.
+\fIchars\fR is a set of characters to be removed.
+\fIchars\fR may be omitted; in this case
+a basic set of exploitable characters (\fC ", ', `, $, \\, and ; \fR) will be 
+removed from variables (see example 1).
+\fIvarname\fRs are the names of variable(s) from which the
+dangerous characters will be removed.
+.IP
+Example 1: \fC#call $shellstripchars( NAME, ADDRESS )\fR
+.IP
+Example 2: \fC#call $shellstripchars( "\\"'`\\$*();|^", NAME, ADDRESS, PHONE )\fR
+
+.ig >>
+<a name=security></a>
+.>>
+
+.ig >>
+<br><br><br>
+.>>
+.SH SECURITY CONCERNS
+[Note: the following information is offered only a guide; developers are 
+completely responsible for fully examining and understanding 
+the security of their own systems.]
+.LP
+A security risk exists when user-supplied values are used
+to build shell commands.
+Devious users can enter input that, unless precautions
+are taken, can cause the shell to execute other commands.  
+For example, suppose a program takes a user search string 
+and uses it to build a grep command:
+.IP
+.nf
+\0 #cgivar SEARCH
+\0 #shell grep "@SEARCH" /data/*
+.fi
+.LP
+A devious user could enter something like this: \fCfoo" /etc/passwd; rm *; echo "hi\fR
+and remove all files in the program's current directory.
+.LP
+This security hole is especially relevant to
+CGI programs, which are often accessible by
+the world, and may run in priveledged mode.
+.LP
+To limit this security hole:
+1) remove characters that could be exploited (I would start with 
+these:\fC " ' ` $ \\ ; \fR)
+from variables that will be used to build shell commands
+(the function
+.ig >>
+<a href="functions.html#shell">
+.>>
+\0$shellstripchars()
+.ig >>
+</a>
+.>>
+is available for doing this);
+2) enclose all user-supplied variables in double quotes in the shell command
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

@@ -1,0 +1,416 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: ploticus config files</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>Ploticus config files</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH Ploticus_config_files PL "28-FEB-2002   PL ploticus.sourceforge.net"
+
+.LP
+A configuration file may be used to make certain settings
+that will apply to all ploticus invocations.
+A configuration file is not required (unless running in
+.ig >>
+<a href="cgi.html">
+.>>
+\0cgi mode
+.ig >>
+</a>
+.>>
+).  If no config file is found, standard defaults will be used.
+Upon execution, ploticus checks for an environment variable called
+\fBPLOTICUS_CONFIG\fR, which should contain the full path name of
+your config file.
+.LP
+If a config file is found, it will be read and processed before command line
+arguments are evaluated, and before script interpretation begins.
+.LP
+Typical uses of a config file are to set up non-English 
+month and weekday names,
+to set default date or numeric notations, or to
+use cm instead of inch as the absolute unit.
+Many (but not all) of these settings can also be made from within an individual 
+script using 
+.ig >>
+<a href="settings.html">
+.>>
+\0proc settings
+.ig >>
+</a>
+.>>
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH EXAMPLE
+Examples of config files set up for Spanish and Russian
+are located in the gallery directory, named
+.ig >>
+<a href="../gallery/plconfig.spanish">
+.>>
+\0plconfig.spanish
+.ig >>
+</a>
+.>>
+and
+.ig >>
+<a href="../gallery/plconfig.russian">
+.>>
+\0plconfig.russian
+.ig >>
+</a>
+.>>
+
+.ig >>
+<br><br><br>
+.>>
+
+
+.SH SYNTAX
+One parameter is specified per line (see the example below).
+Parameters are case-insensitive and must begin in the first column of the line.
+Lines beginning with \fC//\fR or \fC#\fR are taken as 
+comments; blank lines are skipped.
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH PARAMETERS
+.LP
+The following parameters may be set.
+Parameters that are not set assume the default value, which is shown
+in (parentheses).
+
+.LP
+\fBprojectroot:\fR
+.IP
+The directory from which ploticus will operate.  This must be specified when
+using pl in 
+.ig >>
+<a href="cgi.html">
+.>>
+\0cgi mode.
+.ig >>
+</a>
+.>>
+
+.LP
+\fBoption:\fR \fIoption\fR [\fIarg\fR]
+.IP
+Set any pl command line option (see
+.ig >>
+<a href="pl.1.html">
+.>>
+pl(1)
+.ig >>
+</a>
+.>>
+ for a list of supported command line options)
+or
+.ig >>
+<a href="prefabs.html">
+.>>
+\0prefab
+.ig >>
+</a>
+.>>
+parameter.
+The given command line option will be in effect for all invocations of pl.
+This parameter may be used as many times as necessary.
+.br
+Example:
+.nf
+  option: -gif
+  option: -viewer xv
+  option: delim=comma
+.fi
+
+.LP
+\fBvarvalue:\fR \fIvarname\fR=\fIvalue\fR
+.IP
+Preset a variable to a value.
+This may be used as many times as desired within the config file to
+set various variables.
+This may also be used to set a variable that will be referenced later
+in the config file.
+.br
+Example: \fCvarvalue: MODE=normal\fR
+
+.LP
+\fBputenv:\fR  \fIvarname\fR=\fIvalue\fR
+.IP
+Set an environment variable for current process and all subprocesses.
+This may be used as many times as desired within the config file to
+set various environment variables.  
+Especially useful when operating in 
+.ig >>
+<a href="cgi.html">
+.>>
+\0cgi mode
+.ig >>
+</a>
+.>>
+since a CGI process often inherits an environment that is not
+under the developer's control.
+.br
+Example: \fCputenv: ERRMODE=normal\fR
+
+
+.LP
+\fBtmpdir:\fR \fIdirname\fR
+.IP
+The directory that ploticus uses for temporary files.
+By default this is \fC/tmp\fR.
+This can also be set in \fCpl.h\fR.
+.br
+Example: \fCtmpdir: /var/tmp\fR
+
+
+
+
+.LP
+\fBunits:\fR \fCin\fR | \fCcm\fR
+.IP
+The measurement unit to be used for absolute units, either inches or centimeters.
+Default is \fCin\fR.
+If this is set in the config file, it will be in effect when command line
+arguments are evaluated.  If set in \fBproc settings\fR, it will not have any
+effect on command line argument evaluation.
+.br
+Example: \fCunits: cm\fR
+
+
+.LP
+\fBnumbernotation:\fR \fCstandard\fR | \fCus\fR | \fCeuro\fR
+.IP
+Specifies how decimal point and thousands separators will be displayed.  
+Default is \fCstandard\fR.
+The following table illustrates:
+.sp
+.nf
+ standard           us             euro
+----------    ------------    -------------
+     79              79               79
+     79.5            79.5             79,5  
+   4321.79         4321.79          4321,79 
+  54321          54,321           54.321
+ 654321.07      654,321.07       654.321,07
+1987654321    1,987,654,321    1.987.654.321
+
+.LP
+\fBnumberspacerthreshold:\fR  \fIn\fR
+.IP
+Specifies at what numeric magnitude thousands separators will begin to be inserted.
+Default is 4, and this is used in the above table.  If it were set to \fC3\fR, the third entry
+in the above table would appear like this:
+.nf
+   4321.79         4,321.79          4.321,79 
+.fi
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH SYSTEM ENVIRONMENT
+
+.LP
+\fBcpulimit:\fR
+.IP
+Number of seconds of CPU time that will be allowed to the \fBpl\fR or \fBpltab\fR process
+or any spawned subprocesses.  Default is 10 seconds.
+Any process exceeding this will abort.
+
+.LP
+\fBfilesizelimit:\fR
+.IP
+Number of bytes that will be allowed in any file that \fBpl\fR or \fBpltab\fR process
+or any spawned subprocesses creates.  Default is 5000000 bytes.
+Any process exceeding this will abort.
+
+.LP
+\fBuid:\fR
+.IP
+Set the effective user id of the \fBpl\fR or \fBpltab\fR process and all
+its subprocesses.
+Only useful in CGI environments where programs are invoked as root,
+
+.LP
+\fBgid:\fR
+.IP
+Same as \fBuid\fR, but sets the group id.
+
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH DATE-RELATED
+
+.LP
+\fBdateformat:\fR \fIformat\fR
+.IP
+Set the current date format.
+\fIformat\fR must be a
+date format from the
+.ig >>
+<a href="dates.html">
+.>>
+\0dates manual page
+.ig >>
+</a>
+.>>
+that includes month, day, and year, for which arithmetic is supported.
+To use other arithmetic date formats (such as quarter notation)
+specify the format in the 
+.ig >>
+<a href="areadef.html">
+.>>
+\0proc areadef
+.ig >>
+</a>
+.>>
+xscaletype or yscaletype attribute.
+.br
+Example: \fCdateformat: dd-mmm-yyyy\fR
+
+
+.LP
+\fBomitweekends\fR  \fComit\fR | \fCadjust\fR | \fCyes\fR | \fCno\fR
+.IP
+Allows date plotting as if
+Saturdays and Sundays did not exist.
+Mondays will follow Fridays directly.  
+Useful in certain business and work-related plots.
+.br
+If \fComit\fR, any Saturday or Sunday dates encountered will be considered invalid and omitted;
+however they will not be reported unless the -showbad command line option is used.
+.br
+If \fCadjust\fR or \fCyes\fR, any Saturday or Sunday dates encountered will be silently adjusted 
+to the nearest weekday.
+
+
+.fi
+.LP
+\fBpivotyear:\fR \fIyy\fR
+.IP
+Set the two digit year that should be used to convert
+two-digit years to four-digit years.  If two-digit years are 
+used, year values that are less than the pivot year are assumed
+to be 21st century years.  Default is 77.
+.br
+Example: \fCpivotyear: 50\fR
+
+.LP
+\fBmonths:\fR \fIlist\fR
+.IP
+Specify the three-character month abbreviations to be used, all in lower case,
+beginning with the first month.
+Default is the English (\fCjan feb mar apr may jun jul aug sep oct nov dec\fR).
+.br
+Example (Spanish) (must all be on one line): 
+.br
+\fCmonths: ene feb mar abr pue jun jul ago sep oct nov dic\fR
+
+.LP
+\fBmonths.abbrev:\fR \fIlist\fR
+.IP
+short month names, capitalized for presentation, begining with the first month.
+Default is English (\fCJan Feb Mar Apr May June July Aug Sept Oct Nov Dec\fR).
+.br
+Example (Spanish) (must all be on one line): 
+.br
+\fCmonths.abbrev: Ene Feb Mar Abr Pue Jun Jul Ago Sep Oct Nov Dic\fR
+
+.LP
+\fBmonths.full:\fR \fIlist\fR
+.IP
+full month names, capitalized for presentation.
+.br
+Example (Spanish) (must all be on one line): 
+.br
+\fCmonths.full: Enero Febrero Marcha Abril Pueda Junio Julio Agosto Septiembre Octubre Noviembre Diciembre\fR
+
+.LP
+\fBweekdays:\fR  \fIlist\fR
+.IP
+three-character weekday abbreviations, capitalized for presentation,
+beginning with Sunday.
+.br 
+Example (French): \fCweekdays: Dim Lun Mar Mer Jeu Ven Sam\fR
+.br
+Example (Spanish): \fCweekdays: Dom Lun Mar Mie Jue Vie Sab\fR
+
+.LP
+\fBlazydates\fR  \fCmonth\fR|\fCday\fR|\fCboth\fR
+.IP
+Allow handling of dates where the day component
+or the month component is not known.  See
+.ig >>
+<a href="dates.html">
+.>>
+\0dates
+.ig >>
+</a>
+.>>
+for further discussion of lazy dates.
+
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

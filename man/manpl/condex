@@ -1,0 +1,261 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: condex</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>CONDEX</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH CONDEX PL "31-AUG-2001   PL www.sgpr.net"
+
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH CONDITIONAL EXPRESSIONS
+Conditional expressions use a simple syntax made up of operators such as \fC=\fR and \fC!=\fR,
+operands, and logical connectors such as \fC&&\fR and \fC||\fR.  
+Operands may be literal numeric, alphanumeric, or text string values,
+@variables, data field @numbers, or
+.ig >>
+<a href="functions.html">
+.>>
+\0functions
+.ig >>
+</a>
+.>>
+\0.  In 
+.ig >>
+<a href="scripts.html">
+.>>
+\0scripts
+.ig >>
+</a>
+.>>
+, literal string operands may be enclosed in double quotes (").
+Parentheses have no special meaning in these expressions as there is
+no hierarchy of presidence.
+.LP
+
+\fBNote:\fR in ploticus \fB#if\fR statements, variables should
+be preceded by one at-sign (@).  In \fBselect\fR attributes
+or \fBgetdata filter\fR, variables should be preceded by two at-signs (@@).
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH EXAMPLES
+.LP
+- In a 
+.ig >>
+<a href="scripts.html">
+.>>
+\0script
+.ig >>
+</a>
+.>>
+, see if the value of the variable @SUM is greater than 100: 
+.nf
+	\0#if @SUM > 100
+	...
+	\0#endif
+.fi
+.LP
+- Another example:
+.nf
+	\0#if @SUM > 100 && @STATUS = s
+.fi
+.LP
+- Check to see if @description has any contents:
+.nf
+	\0#if $len(@description) > 0
+.fi
+.LP
+- Check to see if @val is a valid number:
+.nf
+	\0#if $isnumber(@val) = 1
+.fi
+.LP
+- See if @C does not countain a double quote:
+.nf
+	\0#if @C != "\\""
+.fi
+.LP
+.LP
+Conditional expression for finding lastname beginning with \fCGr\fR, \fCGu\fR or \fCGy\fR:
+.nf
+	@lastname inlike Gr*,Gu*,Gy*
+.fi
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH OPERANDS
+Operands may be 
+.IP \(bu
+@variables 
+.IP \(bu
+@field numbers, e.g. @1 = first data field
+.IP \(bu
+Literal values (numbers, alphanumerics, text strings, 
+.ig >>
+<a href="commalist.html">
+.>>
+\0commalists
+.ig >>
+</a>
+.>>
+)
+.IP \(bu
+.ig >>
+<a href="functions.html">
+.>>
+\0Functions
+.ig >>
+</a>
+.>>
+.LP
+In 
+.ig >>
+<a href="scripts.html">
+.>>
+\0scripts
+.ig >>
+</a>
+.>>
+, literal alphanumeric, text string, or 
+.ig >>
+<a href="commalist.html">
+.>>
+\0commalist
+.ig >>
+</a>
+.>>
+operands may be enclosed in double quotes (");
+no variable evaluation occurs inside quoted strings.
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH COMPARISON OPERATORS
+.IP
+.nf
+\fB= \fR	Equal to.  This is case sensitive for strings. 
+\fB!=\fR	Not equal to. 
+\fB> \fR	Greater than.
+\fB>=\fR 	Greater than or equal to. 
+\fB< \fR 	Less than. 
+\fB<=\fR 	Less than or equal to. 
+.fi
+.IP
+If at least one operand is non-numeric, comparison
+operators such as > will do an ascii value comparison.
+.LP
+\fBWild card matching\fR:  Wild card matching may be done
+using \fBlike\fP.  Wild card characters are \fB*\fR which matches
+any number of any character, and \fB?\fR which matches a single
+instance of any character.  This matching is case-insensitive.
+.IP
+.nf
+\fBlike\fR	Wild card match.  Example: \fChello like h*\fR (true)
+\fB!like\fR	Not a wild card match.
+.LP
+\fBCommalist operators\fP: these take a
+.ig >>
+<a href="commalist.html">
+.>>
+\0commalist
+.ig >>
+</a>
+.>>
+on the right side.
+By default, lists are delimited using commas.  If this is not convenient,
+the list delimitation character may be changed using
+.ig >>
+<a href="control">
+.>>
+\0#control listsep
+.ig >>
+</a>
+.>>
+\0.
+.IP
+.nf
+\fBin\fR	Member of list.  Example: \fCz in x,y,z\fR (true)
+\fB!in\fR	Not a member of list. (Alt: \fBni\fR)
+\fBinlike\fR 	Same as \fBin\fP but wild card matching is used.
+		(Wild cards may be used in list members.)
+\fB!inlike\fR	Same as \fB!in\fP but wild card matching is used.
+.fi
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH LOGICAL CONNECTORS
+Individual conditional expressions may be connected together using
+logical AND (\fB&&\fR) or OR (\fB||\fR).
+An entire expression may be negated by putting \fBnot:\fR at the beginning
+of the expression.
+.LP
+Because parentheses may not be used to establish presidence
+mixing AND and OR in the same expression requires care.
+When the expression is parsed, it is first
+split into OR terms, then each of the OR terms is split into AND terms.
+For example: \fCA = B and C = D or E = E of F = G\fR would evaluate to true,
+because it is interpreted as if it were written 
+\fC(a = B and C = D) or (e = e) or (f = g)\fR.
+It may be best to avoid mixing AND and OR in the same expression 
+and use multiple expressions instead.
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH LIMITATIONS AND BUGS
+.LP
+Because parentheses may not be used to establish presidence,
+the mixing of AND and OR in the same expression is problematic (see above).
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

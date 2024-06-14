@@ -1,0 +1,226 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: fonts</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>Fonts</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH Fonts PL "14-NOV-2001   PL ploticus.sourceforge.net"
+
+.SH What fonts are available?
+.LP
+This depends on what output format you are producing, since
+Ploticus does not include its own internal fonts.
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH PNG, GIF, etc.
+If the default built-in GD code is used, a basic ascii font is
+available in 5 sizes (you can specify any point size in ploticus; the nearest
+available size will be used).
+You can't set the font from ploticus; \fC-font\fR (etc.) will have no effect.
+Vertical rendering is available.
+Availability of symbols and nonroman characters is limited to those in ASCII
+extended range.
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH PNG, JPEG, WBMP with FreeType2 support
+If your ploticus build uses GD with FreeType2
+support, you can use TrueType fonts.
+The basic GD ascii font is also available in 5 sizes, and is the default
+(its name is \fCascii\fR should you need to use it explicitly).
+You can set the font from ploticus using \fC-font\fR, 
+.ig >>
+<a href="page.html">
+.>>
+\0proc page
+.ig >>
+</a>
+.>>
+\fCfont\fR attribute,
+or \fCfont\fR in any 
+.ig >>
+<a href="textdetails.html">
+.>>
+\0textdetails
+.ig >>
+</a>
+.>>
+attribute.
+TrueType font names should be given without the .ttf extension, 
+e.g. if you have a font file called times.ttf you would use 
+.IP
+\fC-font times \fR
+.LP
+You will need to have some TrueType .ttf font files stored in a directory somewhere.  
+The environment variable \fBGDFONTPATH\fR must be 
+set to contain the pathname of this directory.
+TrueType font files may be found on NT machines in 
+\fCc:/winnt/fonts\fR or they may be downloaded on the web.  
+.LP
+Vertical rendering is available.  
+Availability of symbols and nonroman characters:
+UTF-8 sequences such as \fC&#192\fR may be used.
+.LP
+.ig >>
+<a href="../gallery/stock.jpeg">
+.>>
+\0Here is an example rendered using TTF sans serif font.
+.ig >>
+</a>
+.>>
+For more information on building ploticus to use FreeType2, see ./src/FreeType2 
+and ./src/Makefile.  
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH PostScript, EPS
+Uses PostScript fonts.  The default font is \fC/Helvetica\fR.
+You can set the font from ploticus using \fC-font\fR, 
+.ig >>
+<a href="page.html">
+.>>
+\0proc page
+.ig >>
+</a>
+.>>
+\fCfont\fR attribute,
+or \fCfont\fR in any 
+.ig >>
+<a href="textdetails.html">
+.>>
+\0textdetails
+.ig >>
+</a>
+.>>
+attribute, for example:
+.IP
+\fC-font /Helvetica-Oblique\fR
+.LP
+Usually these fonts are available: \fC/Helvetica /Helvica-Oblique /Helvetica-Bold
+/Helvetica-BoldOblique /Times-Roman /Times-Bold\fR; many others are
+usually available as well.
+Vertical rendering is available.
+Availability of symbols and nonroman characters:
+As of version 2.01, the ploticus postscript driver supports
+ISO-LATIN encoding, so that European characters and symbols in ASCII extended range
+may be used.
+You can use the troff-like
+.ig >>
+<a href="specialchars.html">
+.>>
+\0special characters
+.ig >>
+</a>
+.>>
+feature that uses the /Symbols font.
+
+.ig >>
+<br><br><br>
+.>>
+.SH SVG
+.ig >>
+<a href="svg.html">
+.>>
+\0SVG
+.ig >>
+</a>
+.>>
+uses PostScript font names, and can access other fonts such as TrueType.
+The default font is \fCHelvetica\fR.
+You can set the font from ploticus using \fC-font\fR, 
+.ig >>
+<a href="page.html">
+.>>
+\0proc page
+.ig >>
+</a>
+.>>
+\fCfont\fR attribute,
+or \fCfont\fR in any 
+.ig >>
+<a href="textdetails.html">
+.>>
+\0textdetails
+.ig >>
+</a>
+.>>
+attribute, for example:
+.IP
+\fC-font Times-Roman\fR
+.LP
+Vertical rendering is available.
+European characters and symbols in ASCII extended range may be used.
+I was able to get results with \fCCourier\fR, \fCTimes-Roman\fR,
+\fCBookman\fR, \fCStencil\fR, \fCMagneto\fR, etc., some of which
+correspond to TrueType fonts resident on my system.
+
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH X11
+Always uses the same fixed width font.  
+You can't set the font from ploticus; \fC-font\fR (etc.) will have no effect.
+Depending on availablility, this will be
+either \fC-adobe-courier-bold-r-normal\fR, \fC-misc-fixed-medium-r-normal\fR, 
+or as a last resort, \fC9x15\fR.  Proper vertical rendering is not available.
+Availability of symbols and nonroman characters is limited to those in ASCII
+extended range.
+
+.LP
+.ig >>
+<br>
+<br>
+<center>
+<a href="../gallery/ascii.htm"><img src="../gallery/ascii.gif"></a>
+</center>
+.>>
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

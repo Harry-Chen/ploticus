@@ -1,0 +1,98 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: gallery - table rendering</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>Gallery - Table rendering</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH Gallery_-_Table_rendering PL "14-SEP-2001   PL www.sgpr.net"
+
+.ig >>
+This page contains examples of table rendering
+illustrating the available varieties and options.
+These examples all use the
+<a href="../doc/pltab.1.html">pltab</a> program
+to take a plain ascii table (perhaps produced by a program
+or by hand) and create presentable results.
+<b>pltab</b> is most apt for producing paper reports; thus
+most of these examples look best in PostScript.
+<p>
+<h1><br>Example 1</h1>
+<a href="simple.html">simple.tab<br><img src="simple.gif"></a>
+<br>
+A simple example.  Nothing much, except that if you look at the
+PostScript, the table is set in Helvetica.
+<p>
+<h1><br>Example 2</h1>
+<a href="vols.html">vols.tab<br><img src="vols.gif"></a>
+<br>
+This example illustrates a table having two panels.  Horizontal and vertical
+rules are added by way of embedded <b>#hr</b> operators.
+<p>
+<h1><br>Example 3</h1>
+<a href="checklist.html">checklist<br><img src="checklistp1.gif"></a>
+<br>
+In this multipage example, <b>pltab</b> operates in <b>chartmode</b>
+and creates shaded section headers.  When doing multipage tables, the
+title and column headers are automatically replicated at the top of
+each page.
+<a href="checklistp2.gif">Page 2</a> | 
+<a href="checklistp3.gif">Page 3</a>
+
+<p>
+<h1><br>Example 4</h1>
+<a href="inel.html">inel.tab<br><img src="inelp1.gif"></a>
+<br>
+Another multipage example of a table having mostly text content.
+Section headers (the city names) are set off by enlarging one
+point size and rendering in Bold Italic.
+<a href="inelp2.gif">Page 2</a>
+
+<p>
+<h1><br>Example 5</h1>
+<a href="markov.html">markov.tab<br><img src="markov.gif"></a>
+<br>
+This example shows how a table may be combined with a graph (this
+is not the same as a <a href="gall.tabgraph.html">tabular graph</a>.
+
+.>>
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

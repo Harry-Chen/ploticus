@@ -1,0 +1,780 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: proc bars</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>proc bars</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH proc_bars PL "01-MAR-2002   PL ploticus.sourceforge.net"
+ 
+.ig >>
+<center>
+<img src="../gallery/bars0.gif">
+</center>
+.>>
+
+.SH DESCRIPTION
+\fBproc bars\fR uses data to draw bargraphs, histograms, error bars,
+or segment bars, in 
+the vertical or horizontal directions.
+
+.ig >>
+<br><br><br>
+.>>
+.SH VERTICAL or HORIZONTAL BARS
+Bars can be vertical or horizontal.  
+This is controlled by the \fChorizontalbars\fR or \fCaxis\fR attributes.
+For the purposes of the descriptions herein, we will 
+assume vertical bars.  Everything works essentially
+the same way for horizontal bars, except that 
+X and Y should be read as reversed in the descriptions.
+
+.ig >>
+<br><br><br>
+.>>
+.SH FEATURES
+Stacked bars, clusters of bars, various labeling options, and variable bar width.
+.LP
+.ig >>
+<a href="clickmap.html">
+.>>
+\0HTML clickmap
+.ig >>
+</a>
+.>>
+support for the bars.
+
+.ig >>
+<br><br><br>
+.>>
+.SH EXAMPLES
+See the Gallery Bars examples
+.ig >>
+<a href="../gallery/gall.bars.html"><img src="../gallery/btn/here.gif"></a>
+and
+<a href="../gallery/gall.hbars.html"><img src="../gallery/btn/here.gif"></a>
+.>>
+
+.ig >>
+<br><br><br>
+.>>
+.SH UNPLOTTABLE DATA
+Invalid data points are omitted.
+If \fCtruncate\fR is set to \fCyes\fR, then
+bars extending beyond the plotting area are truncated to the 
+limit of the plotting area;
+if both the minima and the maxima of a bar segment or error bar
+lie outside of the plotting area, the bar is omitted with a warning.
+
+.ig >>
+<br><br><br>
+.>>
+.SH PREREQUISITES
+A plotting area must be set up using \fBproc areadef\fR 
+and \fBproc getdata\fR must be executed to 
+access or define some data.
+
+.ig >>
+<br><br><br>
+.>>
+.SH MODES 
+.LP
+Bars can be generated from data using one of several modes
+(remember to reverse X and Y in these descriptions if doing
+horizontal bars):
+.LP 
+\fBBars "where they fall":\fR  
+.IP
+By specifying \fClenfield\fR but not \fClocfield\fR, bars 
+are graphed at consecutive unit locations in X.
+The length of bars is controlled by the plottable values found 
+in \fClenfield\fR.
+.LP 
+\fBBars at specified locations:\fR
+.IP
+By specifying both \fClenfield\fR and \fClocfield\fR,
+bars are produced at the X locations found in \fClocfield\fR
+and the length of bars is controlled by the plottable values found 
+in \fClenfield\fR.
+.LP 
+\fBBar segments (to show ranges):\fR
+.IP
+By specifying \fCsegmentfields\fR, bars will be drawn
+as segments between two plottable values, to show ranges.
+This mode may be used with or without \fClocfield\fR,
+and \fClenfield\fR is not applicable.
+.LP 
+\fBError bars:\fR
+.IP
+By specifying \fClenfield\fR and \fCerrbarfields\fR
+error bars centered on the Y values in \fClenfield\fR 
+are produced.  
+This mode may be used with or without \fClocfield\fR.
+The length of the error bars is 
+controlled by the values in the \fCerrbarfields\fR
+(which have presumably been precomputed; use \fBproc rangebar\fR
+to caluclate mean/standard deviation and draw bars).
+The color & style of the error bar line can be
+controlled using the \fCthinbarline\fR attribute.
+.LP
+\fBStacked and/or clustered bars:\fR
+.IP
+\fBproc bars\fR draws one set of bars per invocation.
+Stacked and clustered bars may be done using multiple invocations.
+To do the upper portions of a stacked bargraph, the \fCstackfields\fR
+attribute controls what data the bars are to be placed above
+(stacked bar graphs require that the data be organized such that all components
+of a bar be located on the same data row).
+To do clustered bars, the \fCcluster\fR attribute is used.
+.LP
+\fBVery thin bars / histograms:\fR
+.IP
+The \fCthinbarline\fR attribute should be used when very thin line bars
+are desired and to specify style for error bar lines.
+
+.ig >>
+<br><br><br>
+.>>
+.SH MANDATORY ATTRIBUTE
+The \fClenfield\fR attribute MUST be specified.
+
+.ig >>
+<br><br><br>
+.>>
+.SH ATTRIBUTES
+.LP
+(Remember to reverse X and Y in these descriptions if
+horizontal bars are being generated.)
+
+.LP
+\fBlenfield\fR 
+.ig >>
+<a href="attributetypes.html#dfield">
+.>>
+\fI dfield \fR
+.ig >>
+</a>
+.>>
+.IP
+The contents of this data field will be used to control bar length.
+These should be plottable values in Y. 
+Example: \fClenfield: 2\fR
+
+.LP
+\fBlocfield\fR 
+.ig >>
+<a href="attributetypes.html#dfield">
+.>>
+\fI dfield \fR
+.ig >>
+</a>
+.>>
+.IP
+The contents of this data field will be used to control bar location in X.
+These should be plottable values in X.  
+If \fClocfield\fR is not specified, bars will be located at consecutive
+unit locations in X.
+Example: \fClocfield: 1\fR
+
+.LP
+\fBhorizontalbars\fR \fCyes\fR | \fCno\fR
+.IP
+If yes, bars will be horizontal.
+Otherwise, bars will be vertical.
+Example: \fChorizontalbars: yes\fR
+
+.LP
+\fBaxis\fR \fCx\fR | \fCy\fR
+.IP
+Has the same effect as the \fChorizontalbars\fR attribute.
+Specifies the axis that the bar lengths will be plotted against.
+Use \fCy\fR to produce vertical bars (the default),
+or \fCx\fR to produce horizontal bars.
+Example: \fCaxis: x\fR
+
+.LP
+\fBcolor\fR 
+.ig >>
+<a href="color.html">
+.>>
+\fI color \fR
+.ig >>
+</a>
+.>>
+.IP
+Color of the bars.  Example: \fCcolor: green\fR
+If bars are very thin, or error bars are being done, the
+color is specified via the \fCthinbarline\fR attribute.
+The \fChatch\fIN\fR color values may be useful when working
+in Postscript monochrome.  See also the \fCcolorlist\fR 
+and \fCcolorfield\fR attributes.
+
+
+.LP
+\fBlegendlabel\fR  
+.ig >>
+<a href="attributetypes.html#text">
+.>>
+\fI text \fR
+.ig >>
+</a>
+.>>
+.IP
+A label to be associated with the current set of bars in the legend.
+\fBproc legend\fR must be executed later in order to 
+render the legend.
+
+
+.LP
+\fBoutline\fR 
+.ig >>
+<a href="linedetails.html">
+.>>
+\fI linedetails \fR
+.ig >>
+</a>
+.>>
+.IP
+If \fCyes\fR or a linedetails specification, causes bars to be outlined
+with a line.  If \fCno\fR or \fCnone\fR, no outline is produced.
+Default is \fCyes\fR, which gives a thin black outline.
+.br
+Example: \fCoutline: color=blue\fR
+.br
+Example: \fCoutline: no\fR
+
+.LP
+\fBbarwidth\fR \fIn\fR
+.IP
+Width of bars in 
+.ig >>
+<a href="attributetypes.html#positionunits">
+.>>
+absolute units
+.ig >>
+</a>
+.>>
+ .  If not specified width will be determined based on scaling,
+but this may not always be satisfactory.  For very thin bars
+use \fCthinbarline\fR (see below).
+
+.LP
+\fBthinbarline\fR
+.ig >>
+<a href="linedetails.html">
+.>>
+\fI linedetails \fR
+.ig >>
+</a>
+.>>
+ | \fCyes\fR | \fCno\fR
+.IP
+If specified, bars will be rendered as lines with the given properties.
+\fCyes\fR gives a default thin black line.  This should be used when bars are
+to be very thin; otherwise, they may not be visible depending on your display
+resolution.  This attribute also controls the style, color, etc. of error bars.
+
+
+.LP
+\fBbarsrange\fR \fImin\fR [\fImax\fR]
+.IP
+If specified, and if \fClocfield\fR is used to position bars,
+bars will only appear if the value in \fClocfield\fR is within 
+this range.  If only one value is given it is taken as the \fBminima\fR.
+
+.LP
+\fBstackfields\fR \fC*\fR 
+.br
+\fIor\fR
+.br
+\fBstackfields\fR 
+.ig >>
+<a href="attributetypes.html#dfield">
+.>>
+\fI dfield1 \fR
+.ig >>
+</a>
+.>>
+ .. \fIdfieldN\fR
+.IP
+If specified, causes current set of bars to be placed on top
+of earlier sets.  
+If \fC*\fR is given, it is taken to mean "stack this set of bars on top of
+all previously plotted bars" (same area, same cluster member).
+Fields may be specified explicitly (see the examples).
+Max number of stackable fields is 40.  
+Stacked bar graphs require that the data be organized such that all components
+of a bar be located on the same data row.
+.br
+Example: \fCstackfields: *\fR
+.br
+Example: \fCstackfields: 3 4 5\fR
+
+.LP
+\fBcluster\fR \fIposition\fR \fC/\fR \fInmembers\fR
+.IP
+If specified, causes the current set of bars to be rendered as a
+member of a cluster.  \fIposition\fR indicates which member of the
+cluster is being done (1 = leftmost).  \fInmembers\fR
+indicates how many bars are in each cluster.
+.br
+Example: \fCcluster: 1 / 4\fR  would be used to render the
+first set of bars where clusters of 4 are being done.
+.IP
+You can also say \fCcluster: 1 of 4\fR if you prefer.
+
+.LP
+\fBclustersep\fR \fIn\fR
+.IP
+If specified when doing clustered bars, members of each cluster
+are separated from each other by \fIn\fR 
+.ig >>
+<a href="attributetypes.html#positionunits">
+.>>
+absolute units
+.ig >>
+</a>
+.>>
+  Default is 0.0 (bars butted up against one another).
+
+.LP
+\fBcrossover\fR 
+.ig >>
+<a href="attributetypes.html#plotvalue">
+.>>
+\fI plotvalue \fR
+.ig >>
+</a>
+.>>
+.IP
+If specified, causes plottable values less than this to be shown
+using bars extending in the opposite direction.  
+Typically used for values less than zero.  
+Default is no crossover.
+Example: \fCcrossover: 0\fR
+
+.LP
+\fBtruncate\fR \fCyes\fR | \fCno\fR
+.IP
+If \fCyes\fR, bars and labels will be truncated to the plotting area.
+Default is \fCno\fR.
+
+.LP
+\fBsegmentfields\fR 
+ [ \fIstart-dfield\fR ] 
+.ig >>
+<a href="attributetypes.html#dfield">
+.>>
+\fI stop-dfield \fR
+.ig >>
+</a>
+.>>
+.IP
+If specified, causes segment bars to be rendered rather than
+length-based bars.  These are typically used to display ranges
+(but should not be confused with \fBproc rangebar\fR which computes
+and displays percentiles).
+Each bar will be drawn from the data value in \fIstart-dfield\fR 
+to the data value in the \fIstop-dfield\fR.
+.br
+Example: \fCsegmentfields: 1 3\fR
+
+.LP
+\fBerrbarfields\fR 
+.ig >>
+<a href="attributetypes.html#dfield">
+.>>
+\fI errlowfield \fR
+.ig >>
+</a>
+.>>
+[ \fIerrhifield\fR ]
+.IP
+If specified, causes error bars to be rendered rather than
+length based bars.  \fClenfield\fR must also be specified.
+A thin error bar with tails is drawn from the value in \fClenfield\fR,
+downward for the distance located in \fIerrlowfield\fR, and then
+upward for the distance located in \fIerrhifield\fR.
+If \fIerrhifield\fR is not given, the error bar is assumed to
+be symmetrical.
+See also \fCerrbarmult\fR.
+.br
+Example: \fCerrbarfields:  3\fR
+
+.LP
+\fBerrbarmult\fR  \fIn\fR
+.IP
+If specified, error bars will be drawn to \fIn\fR times the distance
+given in the data.  Useful for drawing error bars showing 2 x standard error.
+
+.LP
+\fBtails\fR \fIn\fR
+.IP
+If specified, tails of length \fIn\fR (in 
+.ig >>
+<a href="attributetypes.html#positionunits">
+.>>
+ absolute units 
+.ig >>
+</a>
+.>>
+ ) are 
+rendered at the top and bottom of each bar.  Typcially used
+with error bars.  Tails of a default length are automatically
+rendered if \fCerrbarfields\fR is used.
+Example: \fCtails: 0.2\fR
+
+.LP
+\fBleftticfield\fR 
+.ig >>
+<a href="attributetypes.html#dfield">
+.>>
+\fIdfield\fR
+.ig >>
+</a>
+.>>
+.LP
+\fBmidticfield\fR \fIdfield\fR
+.LP
+\fBrightticfield\fR \fIdfield\fR
+.LP
+\fBticlen\fR \fIh\fR
+.IP
+If specified, a left-pointing, centered, or right-pointing tic mark 
+will be displayed at the value in \fIdfield\fR.  The tics are drawn
+on top of the bars using the current line (outline or thinbarline), beginning
+in the center of the bar.
+Length is set by attribute \fCticlen\fR, which sets the tick length
+to \fIh\fR
+.ig >>
+<a href="attributetypes.html#positionunits">
+.>>
+absolute units
+.ig >>
+</a>
+.>>
+ .
+
+.LP
+\fBselect\fR  
+.ig >>
+<a href="condex.html">
+.>>
+\fI conditional-expression \fR
+.ig >>
+</a>
+.>>
+.IP
+Allows data rows to be selected for inclusion 
+using a selection expression.
+
+.LP
+\fBreverseorder\fR  \fCyes\fR | \fCno\fR
+.IP
+If \fCyes\fR, and bars are being located in consecutive unit locations
+(i.e. no \fClocfield\fR specified), bars will be placed in reverse order.
+
+.LP
+\fBcolorfield\fR
+.ig >>
+<a href="attributetypes.html#dfield">
+.>>
+\0dfield
+.ig >>
+</a>
+.>>
+.IP
+If specified, the color of each individual bar to be controlled by this data field,
+using 
+.ig >>
+<a href="legendentry.html#legenddriven">
+.>>
+\0legend-driven technique
+.ig >>
+</a>
+.>>
+\0.
+An example:
+.ig >>
+<a href="../gallery/colorfld.htm">
+.>>
+\0colorfld
+.ig >>
+</a>
+.>>
+
+
+.LP
+\fBcolorlist\fR \fIlist\fR
+.IP
+Allows bars to be rendered in multiple colors.
+It can operate in one of two ways.
+.IP
+1) if \fIlist\fR is a space-separated
+list of 
+.ig >>
+<a href="color.html">
+.>>
+\fIcolors\fR
+.ig >>
+</a>
+.>>
+then the individual bars will be rendered using these colors.
+.br
+Example: \fCcolorlist: red yellow blue green\fR
+.br
+The leftmost bar will be red, the second yellow, and so on.
+If there are more bars then given colors,
+the remaining bars will be rendered using the default color, e.g.
+the value given in the \fCcolor\fR attribute.  
+A gallery example where this was done is 
+.ig >>
+<a href="../gallery/timeline1a.htm">
+.>>
+timeline1a
+.ig >>
+</a>
+.>>
+.IP
+2) \fIlist\fR may be some number of pairs having the form 
+\fIn\fR 
+.ig >>
+<a href="color.html">
+.>>
+\fI color \fR
+.ig >>
+</a>
+.>>
+where \fIn\fR is an integer. 
+.br
+Example: \fCcolorlist: 4 yellow 8 pink\fR
+.br
+The fourth bar from the left will be yellow; the eighth pink.
+All other bars will be rendered using the default color, e.g.
+the value given in the \fCcolor\fR attribute.  
+A gallery example where this was done is 
+.ig >>
+<a href="../gallery/hbars1.htm">
+.>>
+hbars1
+.ig >>
+</a>
+.>>
+.IP
+Any legend entries for the various colors must be
+done explicitly using proc legendentry.
+
+.LP
+\fBbarwidthfield\fR 
+.ig >>
+<a href="attributetypes.html#dfield">
+.>>
+\fIdfield\fR
+.ig >>
+</a>
+.>>
+.IP
+If specified, bar widths will be controlled by the contents of this field.
+These values should be in scaled basic units for the axis that the bars are perpendicular to.
+
+.LP
+\fBhidezerobars\fR \fCyes\fR | \fCno\fR
+.IP
+If \fCyes\fR, bars that are zero-length will not be drawn at all.
+Default is \fCno\fR (zero length bars may be visible as a thin line).
+
+.LP
+\fBclickmapurl\fR \fIurl template\fR
+.IP
+If generating an
+.ig >>
+<a href="clickmap.html">
+.>>
+\0HTML clickmap
+.ig >>
+</a>
+.>>
+, this specifies a url template.
+and causes the bar rectangles to be mapped.
+This attribute usually contains one or more embedded
+.ig >>
+<a href="attributetypes.html#dfield">
+.>>
+\0data field references
+.ig >>
+</a>
+.>>
+preceded by double at-sign (@@).
+See
+.ig >>
+<a href="clickmap.html">
+.>>
+\0HTML clickmap
+.ig >>
+</a>
+.>>
+for more details and examples.
+.br
+Example: \fCclickmapurl: http://abc.com/mycgi?category=@@3\fR
+
+.ig >>
+<br><br><br>
+.>>
+.SH BAR LABELING OPTIONS
+.LP
+One label may be rendered per bar.  It may be a value label
+(\fCshowvalues\fR), or label taken from a data field.
+
+.LP
+\fBshowvalues\fR \fCyes\fR | \fCno\fR
+.IP
+If \fCyes\fR, the plottable Y value will be displayed near the
+end of each bar.  Default is \fCno\fR.  Text details may be 
+controlled using the \fClabeldetails\fR attribute (the \fCadjust\fR
+subattribute may be used to control the location of the labels).
+Numeric decimal format may be controlled by the \fCnumbersformat\fR
+attribute.
+Example: \fCshowvalues: yes\fR
+
+.LP
+\fBnumbersformat\fR 
+.ig >>
+<a href="attributetypes.html#printfspec">
+.>>
+\fI printfspec \fR
+.ig >>
+</a>
+.>>
+.IP
+Allows control over number decimal format presentation in bar labels.
+Default is \fC%g\fR.
+.br
+Example: \fCnumbersformat: %8.0f\fR
+
+.LP
+\fBlabelzerovalue\fR \fCyes\fR | \fCno\fR
+.IP
+Used with \fCshowvalues\fR.
+If \fCyes\fR, zero length bars will have a value label displayed.
+Default is \fCno\fR, to not display any value for zero length bars.
+
+
+.LP
+\fBlabeldetails\fR 
+.ig >>
+<a href="textdetails.html">
+.>>
+\fI textdetails \fR
+.ig >>
+</a>
+.>>
+.IP
+Details concerning the appearance of the labelling (both end-of-bar
+labels and longways labels).
+Example: \fCtextdetails: adjust=0,-0.3  size=6\fR
+
+.LP
+\fBlabelword\fR 
+.ig >>
+<a href="attributetypes.html#text">
+.>>
+\fI text \fR
+.ig >>
+</a>
+.>>
+.IP
+Allows the \fCshowvalues\fR label to be formatted.
+The symbol \fC@@N\fR will be evaluated to the plottable value.
+May also be used to label bars with a constant.
+Example: \fClabelword: N=@@N\fR
+
+.LP
+\fBlabelfield\fR 
+.ig >>
+<a href="attributetypes.html#dfield">
+.>>
+\fI dfield \fR
+.ig >>
+</a>
+.>>
+.IP
+If specified, the contents of the data field \fIdfield\fR will be used as the label.
+The text may include embedded \fC@@N\fR (see above) and
+\fC\\n\fR to symbolize newlines if longways labels are being done.
+
+.LP
+\fBlabelpos\fR
+.ig >>
+<a href="attributetypes.html#locvalue">
+.>>
+\fI locvalue \fR
+.ig >>
+</a>
+.>>
+.IP
+If specified, controls the positioning of the labels.
+For example, if doing vertical bars, this attribute would
+control the vertical placement of bar labels.
+.br
+Example: \fClabelpos: min-0.2\fR 
+
+.LP
+\fBbackbox\fR 
+.ig >>
+<a href="color.html">
+.>>
+\fI color \fR
+.ig >>
+</a>
+.>>
+.IP
+If specified, a backing box of the given \fIcolor\fR will be 
+rendered behind each end-of-bar label (not done for longways labels).  
+This may be useful if the labels are hard to see because of bar color.
+
+.LP
+\fBlongwayslabel\fR \fCyes\fR | \fCno\fR
+.IP
+If \fCyes\fR, the label will be shown longways along the length of bars,
+rather than near the tops.  This may be useful for showing longer labels.
+Label text may include embedded newlines symbolized by \fC\\n\fR.
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="../doc/Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

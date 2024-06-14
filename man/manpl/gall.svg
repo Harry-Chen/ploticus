@@ -1,0 +1,98 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: ploticus svg examples</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>Ploticus SVG examples</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH Ploticus_SVG_examples PL "01-MAR-2002   PL ploticus.sourceforge.net"
+
+.ig >>
+These <a href="../doc/svg.html">SVG</a> examples require the SVG viewer plug-in
+and correct web server mime.type settings in order to be visible.  
+<br>
+<br>
+<hr>
+
+<embed src="dmag.svg" name="SVGEmbed" width="612.40" height="230.12" 
+type="image/svg-xml" pluginspage="http://www.adobe.com/svg/viewer/install/"> 
+<br>
+<a href="dmag.svg">dmag.svg (full size)</a> &nbsp; &nbsp; &nbsp; 
+<a href="dmag.htm">pl script</a>
+
+<hr>
+<embed src="sess.svg" name="SVGEmbed" width="561.20" height="647.04" 
+type="image/svg-xml" pluginspage="http://www.adobe.com/svg/viewer/install/"> 
+<br>
+<a href="sess.svg">sess.svg (full size)</a> &nbsp; &nbsp; &nbsp; 
+<a href="sess.htm">pl script</a>
+
+<hr>
+<embed src="volunteers.svg" name="SVGEmbed" width="500.00" height="616.04" 
+type="image/svg-xml" pluginspage="http://www.adobe.com/svg/viewer/install/"> 
+<br>
+<a href="volunteers.svg">volunteers.svg (full size)</a> &nbsp; &nbsp; &nbsp;
+<a href="volunteers.htm">pl script</a>
+
+<hr>
+<embed src="mouse.svgz" name="SVGEmbed" width="391.20" height="229.28" 
+type="image/svg-xml" pluginspage="http://www.adobe.com/svg/viewer/install/"> 
+<br>
+<a href="mouse.svgz">mouse.svgz (full size)</a> &nbsp; &nbsp; &nbsp;
+<a href="mouse.htm">pl script</a>
+
+<hr>
+<embed src="mouse.p2.svgz" name="SVGEmbed" width="189.20" height="64.80" 
+type="image/svg-xml" pluginspage="http://www.adobe.com/svg/viewer/install/"> 
+<br>
+<a href="mouse.p2.svgz">mouse.p2.svgz (full size)</a> &nbsp; &nbsp; &nbsp;
+<a href="mouse.htm">pl script</a>
+
+<hr>
+<embed src="ascii.svgz" name="SVGEmbed" width="186.40" height="342.80" 
+type="image/svg-xml" pluginspage="http://www.adobe.com/svg/viewer/install/"> 
+<br>
+<a href="ascii.svgz">ascii.svgz (full size)</a> &nbsp; &nbsp; &nbsp;
+<a href="ascii.htm">pl script</a>
+<hr>
+.>>
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="../doc/Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

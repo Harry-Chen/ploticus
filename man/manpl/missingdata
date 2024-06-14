@@ -1,0 +1,67 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: working with missing data</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>working with missing data</h2></td>
+  <td align=right>
+  <small>
+  <a href="Welcome.html"><img src="ploticus.gif" border=0></a><br>
+  <a href="Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH working_with_missing_data PL "18-JUN-2001   PL www.sgpr.net"
+
+.SH DESCRIPTION
+Ploticus can handle missing plot data values.
+In data sets that are to be plotted, missing items
+should be denoted by a value that is not plottable, e.g.
+for numeric data, a value that is non-numeric.
+The plotting procedures omit non-plottable values (the details of
+how this is handled are given in the man page for each plotting proc).
+
+.SH EXAMPLES
+An Gallery example involving missing numeric data represented 
+by dashes(-) is
+.ig >>
+<a href="../gallery/volunteers.htm">
+.>>
+volunteers 
+.ig >>
+</a>
+.>>
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="Welcome.html">
+<img src="ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

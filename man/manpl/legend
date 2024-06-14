@@ -1,0 +1,299 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: proc legend</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>proc legend</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH proc_legend PL "01-MAR-2002   PL ploticus.sourceforge.net"
+ 
+.ig >>
+<center>
+<img src="../gallery/legend0.gif">
+</center>
+.>>
+
+.SH DESCRIPTION
+Renders a legend.
+\fBproc legend\fR uses entries that you must have already supplied in 
+previous plotting procs (usually in an attribute called \fClegendlabel\fR).
+You can also explicitly define legend entries using 
+.ig >>
+<a href="legendentry.html">
+.>>
+\0proc legendentry
+.ig >>
+</a>
+.>>
+one or more times.  If this is not clear, check the example.
+.LP
+For bars, each legend entry is shown with a small square sample of color.
+For lineplot and curvefit, a small segment of the line is shown.
+For scatterplot, a symbol is shown.
+By default, legend entries are presented in the order that the plotting procs (or 
+.ig >>
+<a href="legendentry.html">
+.>>
+\0proc legendentry
+.ig >>
+</a>
+.>>
+invocations) were executed.
+The order can be reversed (\fCreverseorder\fR) or controlled explicitly
+(\fCspecifyorder\fR) if desired.
+.LP
+Legend entries may be displayed one per line, or all on the same line (\fCformat\fR).
+.LP
+If a
+.ig >>
+<a href="clickmap.html">
+.>>
+\0HTML clickmap
+.ig >>
+</a>
+.>>
+is being generated, legend entries may be mapped to URLs.  See
+.ig >>
+<a href="clickmap.html">
+.>>
+\0clickmaps page
+.ig >>
+</a>
+.>>
+for details.
+.LP
+After the legend is rendered, the internal list of legend entries is normally
+cleared (this can be suppressed using the \fCnoclear\fR attribute).
+It is also possible to clear the internal list without rendering any
+legend using the \fCreset\fR attribute.
+
+
+.SH EXAMPLES
+See the Gallery Legends examples
+.ig >>
+<a href="../gallery/gall.legend.html"><img src="../gallery/btn/here.gif"></a>
+.>>
+
+.SH PREREQUISITES
+Plotting proc(s) containing a \fClegendlabel\fR specification,
+and/or \fBproc legendentry\fR must have already been executed.
+
+
+.SH MANDATORY ATTRIBUTES
+None.  
+
+
+.SH ATTRIBUTES
+
+.LP
+\fBformat\fR \fCmultiline\fR | \fCsingleline\fR
+.IP
+Controls the overall format of the legend.
+\fCmultiline\fR gives entries that are placed downward on multiple lines.
+\fCsingleline\fR gives entries that are placed across all on the same line.
+.br
+Example: \fCformat: singleline\fR
+
+.LP
+\fBlocation\fR  
+.ig >>
+<a href="attributetypes.html#xy">
+.>>
+\fI x y \fR
+.ig >>
+</a>
+.>>
+.IP
+Location for the legend.  
+\fIx\fR will correspond to the beginning of the label (line segments,
+color squares, etc. will appear to the left of this).
+\fIy\fR will correspond to the top of the legend.
+.br
+Example: \fClocation: min+1.0 max\fR
+
+.LP
+\fBtextdetails\fR 
+.ig >>
+<a href="textdetails.html">
+.>>
+\fI textdetails \fR
+.ig >>
+</a>
+.>>
+.IP
+Details regarding the rendering of the legend text entries.
+
+.LP
+\fBsep\fR \fIn\fR
+.IP
+Amount of separation between entries.  
+.ig >>
+<a href="attributetypes.html#positionunits">
+.>>
+Absolute units.
+.ig >>
+</a>
+.>>
+
+.LP
+\fBseglen\fR \fIn\fR
+.IP
+If specified, controls the length of line segments.
+.ig >>
+<a href="attributetypes.html#positionunits">
+.>>
+Absolute units.
+.ig >>
+</a>
+.>>
+
+.LP
+\fBswatchsize\fR \fIn\fR
+.IP
+If specified, controls the size of color sample square.
+\fIn\fR is the length of one side in 
+.ig >>
+<a href="attributetypes.html#positionunits">
+.>>
+absolute units.
+.ig >>
+</a>
+.>>
+
+.LP
+\fBoutlinecolors\fR \fCyes\fR | \fCno\fR
+.IP
+If \fCyes\fR, color samples will be outlined.
+Normally they are not, except for white.
+
+.LP
+\fBspecifyorder\fR 
+.ig >>
+<a href="attributetypes.html#text">
+.>>
+\fI multiline-text \fR
+.ig >>
+</a>
+.>>
+.IP
+If specified, allows the order of legend entries to be controlled
+explicitly.  Also allows entries to selected/omitted.
+(Normally, entries are rendered in the order that they were added
+and all entries are rendered.)
+\fImultilinetext\fR should have one line for each entry to appear in the legend.
+Each line will be compared against all defined legend labels.  
+Upon a match, that entry will be rendered.
+The comparison is case-insensitive.
+Only the first few characters (enough to uniquely match) need be given 
+in the \fCspecifyorder\fR attribute.
+.br
+Example:
+.br
+.nf
+.ft C
+\fCspecifyorder: 
+   Jean
+   Jan
+   Joan
+   John
+   Juan
+.fi
+.ft R
+Other Gallery examples:
+.ig >>
+<a href="../gallery/timeline2.htm">
+.>>
+ timeline2 
+.ig >>
+</a>
+.>>
+and
+.ig >>
+<a href="../gallery/km2.htm">
+.>>
+ km2 
+.ig >>
+</a>
+.>>
+
+.LP
+\fBreverseorder\fR \fCyes\fR | \fCno\fR
+.IP
+If \fCyes\fR, entries are rendered from last to first.
+
+.LP
+\fBcolortext\fR \fCyes\fR | \fCno\fR
+.IP
+If \fCyes\fR, entry text inherits the color of the
+sample.  Normally it does not.
+.ig >>
+<a href="../gallery/colorfld.htm">
+.>>
+\0Example.
+.ig >>
+</a>
+.>>
+
+.LP
+\fBnoclear\fR  \fCyes\fR | \fCno\fR
+.IP
+If \fCyes\fR, the defined legend entries list is not cleared.
+Normally they are cleared out after the legend has been rendered.
+This is useful in rendering multi-column legends.
+.br
+Example: this is used in Gallery example
+.ig >>
+<a href="../gallery/propbars1.htm">
+.>>
+ propbars1 
+.ig >>
+</a>
+.>>
+
+.LP
+\fBreset\fR  
+.IP
+If specified, no legend will be rendered and the internal list
+of legend entries will be cleared.  This might be useful in situations
+where a number of cloned plots (and cloned legendentries) are being
+done, but only one actual legend is desired.  
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="../doc/Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

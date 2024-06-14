@@ -1,0 +1,110 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: program limitations</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>program limitations</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH program_limitations PL "17-SEP-2001   PL www.sgpr.net"
+
+.SH CAPACITY LIMITS
+Ploticus has these capacity limitations.
+They may be raised or lowered by modifying \fCpl.h\fR.
+.IP
+Data storage capacity: 1 million characters (data is stored as text).
+.IP
+Max total number of data fields: 200,000
+.IP
+Max length of a line in a ploticus script: 3000 chars before & after variable evaluation
+.IP
+Maximum total number of lines in current proc and all #saved procs: 5000
+.IP
+Max length of variable contents: 250 chars
+.IP
+Max length of data field: 250 chars
+.IP
+Max length of input data record: 2998 chars
+.IP
+Max length of field names and variable names: 38 chars
+.IP
+Max number of values for rangebar percentile computation: 100,000
+.IP
+Max number of points for lineplot, scatterplot or curvefit result curve: 50,000.
+.IP
+Max number of points for rangesweep: 33,333.
+.IP
+Max number of scale categories in X: 100; in Y: 100.
+.IP
+Max number of points from which to compute a 
+moving average or regression curve in proc curvefit: 5000.  
+Bspline curve: 100.
+.IP
+Max number of points in polygon (including line plot w area under curve filled): 1000
+.LP
+Proc Tabulate limits: 
+.IP
+max number of proc tabulate rows  200;
+.IP
+max number of proc tabulate columns  200; 
+.IP
+max number of proc tabulate ranges  200;
+.IP
+# of significant characters for differentiation during tabulation  38.
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH SYSTEM RESOURCES
+By default, the max amount of CPU time allowed is 10 seconds, and any files
+created cannot be larger than 5,000,000 bytes. 
+These limits are enforced using setrlimit(), and a core dump occurs when 
+limits are exceeded.  These limits may be modified using a 
+.ig >>
+<a href="config.html">
+.>>
+\0config file
+.ig >>
+</a>
+.>>
+or by modifying pl.h 
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

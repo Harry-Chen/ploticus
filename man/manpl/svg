@@ -1,0 +1,206 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: scalable vector graphics (svg) format</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>Scalable vector graphics (SVG) format</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH Scalable_vector_graphics_(SVG)_format PL "01-MAR-2002   PL ploticus.sourceforge.net"
+
+.LP
+ploticus (2.01 or higher, all builds) can produce graphics in SVG format.
+SVG is a vector graphic format supported by
+.ig >>
+<a href="http://www.adobe.com/svg">
+.>>
+\0Adobe Systems
+.ig >>
+</a>
+.>>
+and defined in a 
+.ig >>
+<a href="http://www.w3.org/TR/SVG/">
+.>>
+\0W3C spec
+.ig >>
+</a>
+.>>
+\0. SVGs look good because nice fonts are standard,
+and graphics are easily scaled up or down with no degradation in
+appearance.  
+SVG can be viewed with newer versions of
+Netscape and MSIE browsers, and can be imported into 
+MS word, MS powerpoint, etc.
+
+.LP
+SVG files have names ending in \fC.svg\fR.
+SVG files can also be compressed for smaller size; these files have names ending in \fC.svgz\fR.
+Browsers and applications that understand SVG generally understand SVG also.
+Compression requires zlib and hence may not be available in all ploticus builds.
+
+.ig >>
+<br><br><br>
+.>>
+.SH Generating SVG
+To generate SVG, use the \fB-svg\fR or \fB-svgz\fR command line option. 
+.IP
+\fCpl -svgz -tag bars2.pl\fR
+.LP
+Output files will have an \fC.svg\fR or \fC.svgz\fR ending by default.
+The \fB-tag\fR option may be used to have a suitable 
+HTML \fC<EMBED>\fR tag written to standard output.
+The \fB-zlevel \fIn\fR option may be used to set the compression level to \fIn\fR 
+(0 - 9 where 9 is highest level of compression).
+
+.ig >>
+<br><br><br>
+.>>
+.SH Embedding SVG graphics within HTML 
+.LP
+Netscape and MSIE display SVGs using a the Adobe SVG viewer plug-in.  
+To include an SVG graphic in an HTML document, use an \fC<EMBED>\fR tag like this:
+.LP
+.nf
+<embed src="bars2.svg" name="SVGEmbed" width="500" height="616"
+type="image/svg-xml" pluginspage="http://www.adobe.com/svg/viewer/install/">
+.fi
+.LP
+The \fCwidth\fR and \fCheight\fR attributes control the size of the graphic
+so you can adjust these to resize the graphic if desired 
+(the height/width ratio should remain constant).
+As with the <img> tag, src can be any URL, including CGI invocation.
+As mentioned above, the \fB-tag\fR command line option may be used to generate a suitable 
+html <embed> tag containing appropriate height and width values, for convenience.
+
+.ig >>
+<br><br><br>
+.>>
+.SH Examples
+Here is a 
+.ig >>
+<a href="../gallery/gall.svg.html">
+.>>
+\0page of some SVG examples
+.ig >>
+</a>
+.>>
+(plug-in will be required).
+Notice how the full size graphics are automatically sized to your browser window.
+
+.ig >>
+<br><br><br>
+.>>
+.SH Fonts
+.LP
+Default font is \fCHelvetica\fR.  Postscript font names such as
+\fCTimes-Roman\fR and \fCCourier\fR may be used.
+.ig >>
+<a href="fonts.html">
+.>>
+\0More info
+.ig >>
+</a>
+.>>
+
+
+.ig >>
+<br><br><br>
+.>>
+.SH Importing SVG into applications
+Microsoft Office applications can import SVG graphics.
+On the version I have, import via dragging and dropping works.  
+Import via the "Insert graphic" menu does not.
+
+
+.ig >>
+<br><br><br>
+.>>
+.SH Troubleshooting
+The location for downloading the SVG viewer is
+.ig >>
+<a href="http://www.adobe.com/svg/viewer/install">
+.>>
+\0www.adobe.com/svg/viewer/install
+.ig >>
+</a>
+.>>
+\0.  Follow the instructions there for easy installation.
+Then restart your browser.
+If your Netscape browser doesn't display SVG properly when originating
+via a web server, try accessing an SVG file directly using \fCfile:///\fR.
+If this works then there is probably a mime types problem with your 
+web server.  Ask your web server administrator to add a \fCmime.types\fR entry 
+such as this:
+.IP
+.nf
+image/svg-xml                   svg svgz
+.fi
+.LP
+Or with apache you can add lines like this to your .htaccess file:
+.IP
+.nf
+AddType image/svg+xml svg
+AddType image/svg+xml svgz
+.fi
+.LP
+I have noticed that the SVG viewer plugin works differently for Netscape vs. IE,
+and that there is some occasional flakiness, at least on my system.
+Netscape seems more likely to default to postage-stamp size graphics when
+sizes aren't fully specified.
+
+
+
+.ig >>
+<br><br><br>
+.>>
+.SH Acknowledgement
+Many thanks to Bill Traill 
+(\fC bill@traill.demon.co.uk \fR)
+for initiating ploticus 
+SVG support and writing the ploticus SVG driver.
+
+.ig >>
+<br><br><br>
+.>>
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="../doc/Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>
+
+

@@ -1,0 +1,83 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: gallery - curve fitting</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>Gallery - Curve fitting</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH Gallery_-_Curve_fitting PL "01-MAR-2002   PL ploticus.sourceforge.net"
+
+.ig >>
+<p>
+This page contains a series of curvefit examples
+illustrating the available varieties and options.
+These examples all use ploticus's
+<a href="../doc/curvefit.html">proc curvefit</a>.
+<p>
+<h1><br>Example 1 - script</h1>
+<a href="curvefit1.htm">curvefit1<br><img src="curvefit1.gif"></a>
+<br>
+Simple example of a moving average curve.
+<p>
+<h1><br>Example 2 - script</h1>
+<a href="stock.htm">stock<br><img src="stock.gif"></a>
+<br>
+Another example of a moving average curve.
+<p>
+<h1><br>Example 3 - script</h1>
+<a href="scatterplot10.htm">scatterplot10<br><img src="scatterplot10.gif"></a>
+<br>
+A regression curve.  Ploticus computes the curve as well as
+the Pearson correlation coefficient <i>r</i>.
+<p>
+<h1><br>Example 4 - script</h1>
+<a href="mouse.htm">mouse.p2<br><img src="mouse.p2.gif"></a>
+<br>
+A bspline curve fit to a histogram.
+<p>
+<h1><br>Example 5 - script</h1>
+<a href="scatterplot9.htm">scatterplot9<br><img src="scatterplot9.gif"></a>
+<br>
+In this example, the curve shows the moving average of points in
+a scatterplot.
+
+.>>
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="../doc/Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

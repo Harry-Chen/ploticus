@@ -1,0 +1,35 @@
+ Ploticus data display engine software     
+
+ ploticus data display engine.  Software, documentation, and examples.  
+ Copyright 1998-2001 Stephen C. Grubb  (scg@jax.org).
+ Covered under GPL; see the file ./Copyright for details.
+
+ To install, look over the Makefile and select OS platform, desired GD image
+ capability, etc., then type:  make
+
+ For an overview visit http://ploticus.sourceforge.net
+
+ Notes:
+
+ Be sure env var PLOTICUS_PREFABS is set to the full path name
+ of the ./prefabs directory.
+
+ To test the prefabs: cd $PLOTICUS_PREFABS; sh runall
+ There are also some test scripts included in this directory.  Try:
+	pl volunteers.htm
+   	pl stock.htm
+ A test suite is also available.
+
+  Optional libraries and where to get them:
+	 GD	 	www.boutell.com/gd
+	 LIBPNG  	www.cdrom.com/pub/png/pngcode.html
+	 ZLIB    	www.cdrom.com/pub/infozip/zlib
+	 LIBJPEG 	www.ijg.org
+         LIBFREETYPE 	www.freetype.org
+
+  Additional Makefile statement examples:
+   eg: GD16LIBS = /home/scg/lib/libpng.a /home/scg/lib/libz.a
+   eg: GD16H = -I/home/scg/lib
+   eg: GD18LIBS = -L /home/scg/lib -lgd -lpng -lz -ljpeg -lfreetype
+   eg: GD18H = -I/home/scg/lib/freetype-2.0.4/include 
+   eg: GD18H = -I/home/scg/lib/gd-1.8.4 -I/home/scg/lib/jpeg-6b -I/home/scg/lib -I/home/scg/lib/freetype-2.0.4/include

@@ -1,0 +1,739 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: proc areadef</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>proc areadef</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH proc_areadef PL "01-MAR-2002   PL ploticus.sourceforge.net"
+
+\fBproc areadef\fR is used to define the size, location, and scaling method and range in X and Y
+for one plot rectangle (referred to as the "plotting area").
+All subsequent scaled plotting will occur in this area, until a new invocation of
+\fBproc areadef\fR.
+\fBproc areadef\fR may be used any number of times within the same script
+to do multiple plots per page, to produce multiple page results, or to 
+overlay different scales or units on the same plot.
+
+.ig >>
+<br><br><br>
+.>>
+.SH FEATURES
+Various scaling types, including linear, log, date, time and category are available
+for X and Y.
+Automatic scaling based on data content may be done using
+\fCxautorange\fR and \fCyautorange\fR.
+Axes may be specified within \fBproc areadef\fR
+or individually later using \fBproc xaxis\fR or \fBproc yaxis\fR.  
+If specified here, the various \fBproc axis\fR attributes should be
+prefixed with \fCxaxis.\fR or \fCyaxis.\fR.
+
+.ig >>
+<br><br><br>
+.>>
+.SH EXAMPLES
+.ig >>
+<a href="../gallery/sa1.htm">sa1.p<br><img src="../gallery/sa1.gif" border=0></a>
+.>>
+.br
+Almost all of the examples in the gallery use 
+proc areadef in various ways.
+
+.ig >>
+<br><br><br>
+.>>
+.SH PREREQUISITES
+None.
+
+.ig >>
+<br><br><br>
+.>>
+.SH MODES
+The size and location of the plotting area
+on a page (the plotting area) may be specified in one 
+of these three ways: 
+.IP 1.
+by name using the \fCareaname\fR attribute;
+.IP 2.
+by specifying a rectangle (two points) using the \fCrectangle\fR attribute;
+.IP 3.
+by specifying plotting area size using
+the \fCbox\fR attribute and the location using the \fClocation\fR attribute.
+
+.ig >>
+<br><br><br>
+.>>
+.SH VARIABLES THAT ARE SET
+Areadef will set the variables \fBAREALEFT\fR, \fBAREARIGHT\fR, 
+\fBAREABOTTOM\fR, and \fBAREATOP\fR
+to hold the locations of the plot area edges in 
+.ig >>
+<a href="attributetypes.html#positionunits">
+.>>
+absolute units
+.ig >>
+</a>
+.>>
+ . 
+Also, \fBXMIN\fR, \fBXMAX\fR, \fBYMIN\fR, and \fBYMAX\fR are set to the
+scaled space boundaries.
+
+.ig >>
+<br><br><br>
+.>>
+.SH MANDATORY ATTRIBUTES
+The range in X and Y must be specified, either using
+\fCxrange\fR / \fCyrange\fR, or
+\fCxautorange\fR / \fCyautorange\fR.
+Exception: when categories are being used for an axis, range does not 
+need to be specified.
+.LP
+If nothing else is specified,
+default behaviour is for the \fCstandard\fR
+plotting area to be used, with linear scaling in x and y.
+
+
+.ig >>
+<br><br><br>
+.>>
+.SH ATTRIBUTES
+
+.SH Location & size of the plotting rectangle
+
+.LP
+\fBareaname\fR  \fIname\fR 
+.IP
+Allows a plotting area to be defined by selecting a 
+predefined rectangle by name. 
+These are most useful when generating plots on standard paper.
+Example: \fCareaname: 2hi\fR
+.br
+Available names include:
+.IP
+.nf
+.ft C
+Name    	Description
+--------	------------------------------
+standard	the default
+square		a square area
+whole   	as much of the page as possible
+2hi, 2lo	for two plots on a page, one above the other
+2left, 2right	for two plots on a page, side by side
+3hi, 3mid, 3lo	for three plots on a page
+4ne, 4nw, 4se, 4sw	for four plots on a page (ne = northeast)
+slide   	works well with slides generation
+lifetab  	works well for life tables
+.fi
+.ft R
+
+.LP
+\fBrectangle\fR  \fIx1 y1 x2 y2\fR
+.IP
+Allows a plotting area to be defined by giving two points:
+(x1,y1) is the lower left corner 
+and (x2,y2) is the upper right corner 
+(both are in 
+.ig >>
+<a href="attributetypes.html#positionunits">
+.>>
+absolute units
+.ig >>
+</a>
+.>>
+). 
+.br
+Example: \fCrectangle: 1.4 4 7.4 8\fR
+
+.LP
+\fBbox\fR  \fIwidth height\fR 
+.IP
+Allows a plotting area to be defined by giving width and height in 
+.ig >>
+<a href="attributetypes.html#positionunits">
+.>>
+absolute units
+.ig >>
+</a>
+.>>
+ . 
+A \fBlocation\fR attribute should also be given to
+specify where to place the box.
+Example: \fCbox: 1.4 4\fR
+
+.LP
+\fBlocation\fR 
+.ig >>
+<a href="attributetypes.html#xy">
+.>>
+\fIx y\fR
+.ig >>
+</a>
+.>>
+.IP
+Used with the \fBbox\fR attribute.  
+Defines the location of the lower-left corner of the plotting area.
+
+.LP
+\fBautowidth\fR  \fIf\fR  [ \fIminallowablesize  maxallowablesize\fR ]
+.IP
+Allows the width of the plotting area to be driven by the data range in X.
+For example, you would probably want to display 8 categories using a smaller plot
+area than 48 categories.
+\fCautowidth\fR allows this to be done automatically, driven by the data.
+You must fully specify the plotting area using \fCrectangle\fR or some other attribute(s),
+and specify the scaling in X.
+This attribute then revises the width of the plotting area by setting it
+to \fIf\fR times the number of basic units in the range of X, in absolute units.
+You can optionally set a \fIminallowablesize\fR and a \fImaxallowablesize\fR (both in absolute units)
+that the plot will never be smaller than, or larger than, respectively.
+For example:
+.nf
+\0  #proc areadef
+\0     rectangle: 1 1 6 3
+\0     xcategories: datafield=2
+\0     autowidth: 0.3  3.0  8.0
+.fi
+For example, if there are 12 categories represented in your data, 12 x 0.3 = 3.6, so the resulting
+plotting area would be 3.6 inches wide.
+If there are 20 categories, 20 x 0.3 = 6.0, and the resulting
+plotting area would be 6.0 inches wide.
+If there are only six categories, the resulting plot would have been 1.8 inches wide,
+however a minimum allowable size of 3.0 inches was specified, so the plot will be 3 inches wide.
+If there are 40 categories, the resulting plot would have been 12 inches wide,
+however a maximum allowable size of 8.0 inches was specified, so the plot will be 8 inches wide.
+.IP
+Remember that with date and datetime scaling the basic unit is the day, and with time
+scaling the basic unit is the minute.
+
+
+.LP
+\fBautoheight\fR  \fIf\fR
+.IP
+Allows the height of the plotting area to be determined by the data range in Y.
+See \fCautowidth\fR.
+
+
+.ig >>
+<br><br><br>
+.>>
+.SH Scaling method & range in X and Y
+
+.LP
+\fBxscaletype\fR  \fItype\fR [ \fIformat\fR ]
+.IP
+Defines the type of scaling for the X axis.  Default is \fClinear\fR.
+Other possible \fItype\fRs include: \fClog\fR, \fClog+1\fR,
+\fCcategories\fR, \fCdate\fR, \fCtime\fR, and \fCdatetime\fR.  
+The \fIformat\fR parameter may be given when
+xscaletype is \fCdate\fR, \fCtime\fR, or \fCdatetime\fR to set the default notation.
+See 
+.ig >>
+<a href="scaleunits.html">
+.>>
+\0scaleunits
+.ig >>
+</a>
+.>>
+for discussion of the various scale types and units, and the
+.ig >>
+<a href="../gallery/gall.sa.html>">
+.>>
+\0gallery scale & axis examples.
+.ig >>
+</a>
+.>>
+There are a few additional proc areadef attributes for
+.ig >>
+<a href="#categories">
+.>>
+\0working with categories.
+.ig >>
+</a>
+.>>
+.br
+Example: \fCxscaletype: date yymm\fR
+.br
+Example: \fCxscaletype: datetime mm/dd/yyyy.hh:mm\fR
+
+
+.LP
+\fByscaletype\fR  \fItype\fR  [ \fIformat\fR ]
+.IP
+Defines the type of scaling for the Y axis.  
+Same syntax as \fCxscaletype\fR above.
+Default is \fClinear\fR.
+
+
+.LP
+\fBxrange\fR  \fImin max\fR
+.IP
+Defines the plottable range in x.  \fImin\fR and \fImax\fR must both be given,
+and must both be plottable values for the scaletype to be used.
+(To set the range automatically based on a data field, use \fCxautorange\fR;
+not used when \fCxscaletype\fR is \fCcategories\fR.)
+If \fBlog\fR scaling is being used, 0.0 may not given as the minima
+(but a very small value like 0.01 is ok).
+If date, time, log, categories, or other special type of scaling is to be done, 
+see also \fCxscaletype\fR.
+.br
+Example: if your data ranges in x between
+1.5 and 23.5 you might use: \fCxrange: 0 24\fR
+
+.LP
+\fBxautorange\fR \fCdatafield=\fIdfields\fR .. other subattributes..
+.IP
+Scan the datafield(s) given in \fIdfields\fR to automatically find minima 
+and maxima, and set the X range accordingly.
+(To set the range explicitly, use \fCxrange\fR.)
+This attribute has its own 
+.ig >>
+<a href="autorange.html">
+.>>
+\0manual page.
+.ig >>
+</a>
+.>>
+
+.LP
+\fByrange\fR  \fImin max\fR
+.IP
+Defines the plottable range in y.   Same as \fCxrange\fR above.
+If date, time, log, categories, or other special type of scaling is to be done, 
+see also \fCyscaletype\fR.
+.br
+Example: if your data ranges in y between
+4 and 78.3 you might use: \fCyrange: 0 100\fR
+
+.LP
+\fByautorange\fR \fCdatafield=\fIdfield\fR .. other subattributes..
+.IP
+Scan the datafield(s) given in \fIdfields\fR to automatically find minima 
+and maxima, and set the Y range accordingly.
+(To set the range explicitly, use \fCyrange\fR.)
+This attribute has its own 
+.ig >>
+<a href="autorange.html">
+.>>
+\0manual page.
+.ig >>
+</a>
+.>>
+
+
+
+.ig >>
+<a name=categories></a>
+.>>
+
+.ig >>
+<br><br><br>
+.>>
+.SH Setting up categories 
+.ig >>
+<a href="scaleunits.html#categories">
+.>>
+\0Categories
+.ig >>
+</a>
+.>>
+may be taken from a data field or listed explicitly.  Categories may be 
+used on either the X or Y axis.
+Categories are always unique and are normally displayed in the same order as specified.
+.ig >>
+<a href="scaleunits.html#categories">
+.>>
+\0More on categories.
+.ig >>
+</a>
+.>>
+
+.LP
+\fBxcategories\fR  \fCdatafield=\fIdfield\fC  [selectrows=\fIconditional expression\fR]
+.br
+\0..OR..
+.br
+\fBxcategories\fR 
+.ig >>
+<a href="attributetypes.html#text">
+.>>
+\0multi-line text
+.ig >>
+</a>
+.>>
+.IP
+Defines a set of categories for use on the X axis.
+To take categories from a data field, use the construct
+\fCdatafield=\fIdfield\fR 
+where \fIdfield\fR is a 
+.ig >>
+<a href="attributetypes.html#dfield">
+.>>
+\0data field specification.
+.ig >>
+</a>
+.>>
+Or, category names may be listed explicitly one per line, terminating with a blank line.
+An optional 
+.ig >>
+<a href="condex.html">
+.>>
+\0conditional expression
+.ig >>
+</a>
+.>>
+may be supplied if taking categories from data field, 
+to use selected data rows only (new in 2.03.. see example 2 below).
+.nf
+Example 1:   xcategories: datafield=1
+
+Example 2:   xcategories: datafield=1  selectrows=@3 like S*
+
+Example 3:   xcategories: Red
+   			  Blue
+   			  Green
+.fi
+
+.LP
+\fBycategories\fR  \fCdatafield=\fIdfield\fC  [selectrows=\fIconditional expression\fR]
+.br
+\0..OR..
+.br
+\fBycategories\fR 
+.ig >>
+<a href="attributetypes.html#text">
+.>>
+\0multi-line text
+.ig >>
+</a>
+.>>
+.IP
+Specify categories for use in Y, one per line.
+Same syntax as \fCxcategories\fR above.
+Default orientation of categories along Y is from top to bottom.
+
+.LP
+\fBxextracategory\fR 
+.ig >>
+<a href="attributetypes.html#text">
+.>>
+\0text
+.ig >>
+</a>
+.>>
+.IP
+Allows an extra X axis category to be added explicitly.  For example, this attribute might
+be useful when categories are
+being set by a data field and it is desired to have an additional "Total" category.
+Unlike most other ploticus attributes, its behavior is position-dependent,
+and it may be specified more than once.
+If specified before (above) \fCxcategories\fR in the proc areadef attributes,
+the extra category will be added to the beginning of the category list and it will appear 
+near the X axis min.  If specified after, the extra category will be
+appended to the category list and appear near the X max.
+This attribute may be specified one or more times, with each 
+adding a category.  
+.nf
+Example: 	xextracategory: Total
+		xextracategory: Weekly average
+.fi
+
+.LP
+\fByextracategory\fR 
+.ig >>
+<a href="attributetypes.html#text">
+.>>
+\0text
+.ig >>
+</a>
+.>>
+.IP
+Same as \fCxextracategory\fR above, but for the Y axis.
+
+
+.LP
+\fBcatcompmethod\fR  \fCbeginswith\fR | \fCexact\fR | \fClength=\fIN\fR
+.IP
+Control the details of how category comparisons are done.
+The default is \fCbeginswith\fR for backward compatibility; \fCexact\fR
+is highly recommeded for new work.
+In all cases, the comparisons are case-insensitive, and work from the beginning of the
+categories list to the end, stopping when a match is found.
+.IP
+\fCbeginswith\fR = the comparison is successful if the data item matches 
+the category name but only to the length of the data item. 
+.IP
+\fCexact\fR = the comparison is successful if the data item exactly
+matches the category name.
+.IP
+\fClength=\fIN\fR = the comparison is successful if the first \fIN\fR characters
+of the data item match the first \fIN\fR characters of the category name.
+.IP
+\fCfuzzy=\fID\fR = a "fuzzy match" algorithm is applied to do the comparison.  \fID\fR controls the degree
+of strictness: 5 = strict, 4 = medium-strict, 3 = medium 2= loose, 1 = very loose.
+With fuzzy matching an asterisk (*) at beginning or end of data item will be interpreted 
+as a wild card.
+.LP
+.ig >>
+<a name=catnote></a>
+.>>
+.LP
+Note: There is a minor issue when cloning an areadef where categories are used.  
+Categories attributes cannot be "turned off" when cloning.  If categories are
+used in an areadef and then that areadef is cloned, the categories will be
+active in the clone, and cannot be suppressed.
+
+
+.ig >>
+<br><br><br>
+.>>
+.SH Axis generation
+X and Y axes are generated by 
+.ig >>
+<a href="axis.html">
+.>>
+\0proc axis
+.ig >>
+</a>
+.>>
+; however, axis attributes may be specified from within \fBproc areadef\fR 
+as a convenience (this usually involves adding a \fCxaxis.\fR or \fCyaxis.\fR prefix 
+to the attribute name).
+
+.LP
+\fBxaxis.*\fR
+.IP
+\fBproc axis\fR attributes for the x axis.  Any \fBproc xaxis\fR attributes may be used
+from within \fBproc areadef\fR as a convenience, by prefixing the name with \fCxaxis.\fR.
+See 
+.ig >>
+<a href="axis.html">
+.>>
+\0proc axis
+.ig >>
+</a>
+.>>
+
+.LP
+\fByaxis.*\fR
+.IP
+\fBproc yaxis\fR options for the y axis.  Any \fBproc yaxis\fR attributes may be used
+from within \fBproc areadef\fR as a convenience, by prefixing the name with \fCyaxis.\fR.
+See
+.ig >>
+<a href="axis.html">
+.>>
+\0proc axis
+.ig >>
+</a>
+.>>
+
+.LP
+\fBaxisline\fR, \fBtic*\fR, \fBminortic*\fR
+.IP
+These \fBproc xaxis/yaxis\fR attributes may be defined within
+\fBproc areadef\fR to control \fBboth\fR axes.  
+See
+.ig >>
+<a href="axis.html">
+.>>
+\0proc axis
+.ig >>
+</a>
+.>>
+
+
+
+.ig >>
+<br><br><br>
+.>>
+.SH Other attributes of the plotting area
+
+.LP
+\fBareacolor\fR 
+.ig >>
+<a href="color.html">
+.>>
+\fIcolor\fR
+.ig >>
+</a>
+.>>
+.IP
+Causes the area background to be filled with \fIcolor\fR.
+Example: \fCareacolor: yellow\fR
+
+.LP
+\fBframe\fR 
+.ig >>
+<a href="linedetails.html">
+.>>
+\fIlinedetails\fR
+.ig >>
+</a>
+.>>
+\fC | no | yes | bevel\fR
+.IP
+Specifies a box or frame around the plotting area.  
+Options are: \fCno\fR (no frame), \fCyes\fR (do
+a default line frame), \fCbevel\fR for a beveled gray frame,
+or a line detail specification, 
+which results in a frame made of lines with the given characteristics
+(A \fCbevel\fR frame will probably clash with tics and stubs
+unless these are positioned inward.)
+.br
+Example 1: \fCframe: none\fR
+.br
+Example 2: \fCframe: color=red width=4.0\fR
+.br
+Example 3: \fCframe: bevel\fR
+
+.LP
+\fBlinebottom\fR 
+.ig >>
+<a href="linedetails.html">
+.>>
+\fIlinedetails\fR
+.ig >>
+</a>
+.>>
+.IP
+Specifies a line to be drawn along the bottom edge of the plotting
+area.  This is just a line, not an X axis.
+.br
+Example: \fClinebottom: yes\fR
+.br
+Example: \fClinebottom: none\fR
+.br
+Example: \fClinebottom: width=0.5 color=green\fR
+
+.LP
+\fBlineside\fR 
+.ig >>
+<a href="linedetails.html">
+.>>
+\fIlinedetails\fR
+.ig >>
+</a>
+.>>
+.IP
+Same as \fClinebottom\fR but specifies a line to be drawn along
+the left side.  This is just a line, not a Y axis.
+
+.LP
+\fBtitle\fR 
+.ig >>
+<a href="attributetypes.html#text">
+.>>
+\fI text \fR
+.ig >>
+</a>
+.>>
+.IP
+Specifies a plot title (not a page title).  
+Plot title will appear above the upper left corner
+of the plotting area by default.
+.br
+Example: \fCtitle: Subgroup 24-C\fR
+
+.LP
+\fBtitledetails\fR 
+.ig >>
+<a href="textdetails.html">
+.>>
+\fItextdetails\fR
+.ig >>
+</a>
+.>>
+.IP
+Text details for the plot title.
+.br
+Example: \fCtitledetails: align=R size=9 style=I\fR
+
+.LP
+\fBtitle2\fR 
+.ig >>
+<a href="attributetypes.html#text">
+.>>
+\fI text \fR
+.ig >>
+</a>
+.>>
+.IP
+Allows a second title to be specified.  May be useful to create
+a plot header on both left and right.
+
+.LP
+\fBtitle2details\fR 
+.ig >>
+<a href="textdetails.html">
+.>>
+\fItextdetails\fR
+.ig >>
+</a>
+.>>
+.IP
+Text details for the second plot title.
+
+.LP
+\fBclickmapurl\fR  \fIurl template\fR
+.IP
+If a
+.ig >>
+<a href="clickmap.html">
+.>>
+\0clickmap
+.ig >>
+</a>
+.>>
+is being generated, and the plotting area is being mapped as a grid,
+this attribute must be specified to supply a URL template, into which
+@@XVAL and/or @@YVAL will be substituted.  See the
+.ig >>
+<a href="clickmap.html">
+.>>
+\0clickmap page
+.ig >>
+</a>
+.>>
+for more details and examples.
+.IP
+Example: \fCclickmapurl: http://abc.com/cgi-bin/details?x=@@XVAL&y=@@YVAL\fR
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="../doc/Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

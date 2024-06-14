@@ -1,0 +1,373 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: standard prefab parameters</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>Standard prefab parameters</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH Standard_prefab_parameters PL "08-JAN-2002   PL ploticus.sourceforge.net"
+
+.LP
+The following parameters are accepted by all 
+.ig >>
+<a href="prefabs.html">
+.>>
+\0prefabs
+.ig >>
+</a>
+.>>
+unless otherwise stated.
+The \fBdata\fR parameter is always required.  
+
+.LP
+\fBdata\fR 
+.IP
+Name of data file.  Always required.  May be given as \fC-\fR if data are to
+be read from standard input.
+
+.LP
+\fBx\fR
+.IP
+.ig >>
+<a href="attributetypes.html#dfield">
+.>>
+\0Data field
+.ig >>
+</a>
+.>>
+to plot in X.  
+Either a number (eg 2 for the 2nd field) or a name if a data file contains a header.
+
+.LP
+\fBy\fR
+.IP
+.ig >>
+<a href="attributetypes.html#dfield">
+.>>
+\0Data field
+.ig >>
+</a>
+.>>
+to plot in Y.
+Either a number (eg 2 for the 2nd field) or a name if a data file contains a header.
+
+.LP
+\fBerr\fR
+.IP
+.ig >>
+<a href="attributetypes.html#dfield">
+.>>
+\0Data field
+.ig >>
+</a>
+.>>
+for plotting vertical error bar around ( x, y ).
+If not specified no error bars will be drawn.
+Either a number (eg 2 for the 2nd field) or a name if a data file contains a header.
+
+.LP
+\fBtitle\fR
+.IP
+A plot title to be centered at the top, for example: \fCtitle="My first plot"\fR
+.IP
+The parameter \fBtitledet\fR is also available for controlling 
+.ig >>
+<a href="textdetails.html">
+.>>
+\0details
+.ig >>
+</a>
+.>>
+of title placement and appearance.
+
+.LP
+\fBrectangle\fR
+.IP
+Four numbers (x1 y1 x2 y2) specifying a plot area rectangle in inches from lower-left.
+x1 and y1 are the coordinates of the lower-left corner of the rectangle, and 
+x2 and y2 are the coordinates of the upper-right corner.
+.br
+Example: \fCrectangle="1 1 3 1.8"\fR
+
+.LP
+\fBxlbl\fR
+.IP
+Label for X axis, for example: \fCxlbl="Date of receipt"\fR
+.IP
+The parameter \fBxlbldet\fR is also available for controlling
+.ig >>
+<a href="textdetails.html">
+.>>
+\0details
+.ig >>
+</a>
+.>>
+of X label placement and appearance.
+For example, to adjust the label downward 8/10 inch:
+\fC-xlbldet=adjust=0,-0.8\fR.
+
+.LP
+\fBxrange\fR
+.IP
+Range for numeric X axis.  
+This is two values, a min and a max.  Example: \fC"xrange=0 100"  \fR.
+\fBxrange\fR causes automatic scaling in X to be disabled.
+
+.LP
+\fBxinc\fR
+.IP
+Increment amount for numeric X axis.
+
+.LP
+\fBxlog\fR
+.IP
+Logarithmic X axis.  Allowable values are \fClog\fR and \fClog+1\fR.
+
+.LP
+\fBxgrid\fR
+.IP
+If \fCyes\fR, vertical grid lines will be drawn at each X stub.  May also be specified as a
+.ig >>
+<a href="linedetails.html">
+.>>
+\0linedetails
+.ig >>
+</a>
+.>>
+attribute.
+
+
+.LP
+\fBylbl\fR
+.IP
+Label for Y axis, for example: \fCylbl="Temperature [C]" \fR
+.IP
+The parameter \fBylbldet\fR is also available for controlling
+.ig >>
+<a href="textdetails.html">
+.>>
+\0details
+.ig >>
+</a>
+.>>
+of Y label placement and appearance.
+For example, to adjust the label leftward 8/10 inch:
+\fC-ylbldet=adjust=0,-0.8\fR.
+
+.LP
+\fByrange\fR
+.IP
+Range for numeric Y axis.  
+This is two values, a min and a max, for example: \fC"yrange=0 100"\fR
+For prefabs where it is appropriate, \fByrange\fR may
+also be given as \fCyrange=0\fR which fixes the min at 0
+but allows the max to be automatically determined from the data.
+When two values are given, \fByrange\fR causes all automatic scaling in Y to be disabled.
+
+.LP
+\fByinc\fR
+.IP
+Increment amount for numeric Y axis.
+
+.LP
+\fBylog\fR
+.IP
+Logarithmic Y axis.  Allowable values are \fClog\fR and \fClog+1\fR.
+
+.LP
+\fBygrid\fR
+.IP
+If \fCyes\fR, horizontal grid lines will be drawn at each Y stub.  May also be specified as a
+.ig >>
+<a href="linedetails.html">
+.>>
+\0linedetails
+.ig >>
+</a>
+.>>
+attribute.
+
+.LP
+\fBautow\fR
+.IP
+If \fCyes\fR, width of plotting area will be automatically determined by the data.
+
+.LP
+\fBstubvert\fR
+.IP
+If \fCyes\fR, X axis stubs will be rendered vertically.
+
+.LP
+\fBdelim\fR
+.IP
+Data file field delimitation method, either \fCspace\fR, \fCcomma\fR, or \fCtab\fR.  
+\fCspace\fR is the default, and indicates that fields will be delimited on 
+"white space".  See
+.ig >>
+<a href="dataformat.html">
+.>>
+\0data formats
+.ig >>
+</a>
+.>>
+for more information.
+
+.LP
+\fBheader\fR
+.IP
+\fCyes\fR if first non-comment line of data file contains field names.
+These names may be used to reference the data fields.  Default is \fCno\fR.
+
+.LP
+\fBcomment\fR
+.IP
+Indicates data file comment character or symbol.
+Default is \fC//\fR.
+
+.LP
+\fBselect\fR
+.IP
+A 
+.ig >>
+<a href="condex.html">
+.>>
+\0conditional expression
+.ig >>
+</a>
+.>>
+for selecting data records to include.
+One at-sign should be used, not two.
+Example: \fCselect="@1 = A"\fR
+
+.ig >>
+<a name=clickmapurl></a>
+.>>
+.LP
+\fBclickmapurl\fR
+.IP
+A template for generating URLs when an
+.ig >>
+<a href="clickmap.html">
+.>>
+\0HTML clickmap
+.ig >>
+</a>
+.>>
+is being generated.  The \fB-map\fR command line option must be
+used in order to turn on clickmap generation.
+Bars (including those done using 
+.ig >>
+<a href="prefab_vbars.html">
+.>>
+\0vbars
+.ig >>
+</a>
+.>>
+,
+.ig >>
+<a href="prefab_chron.html">
+.>>
+\0chron
+.ig >>
+</a>
+.>>
+and 
+.ig >>
+<a href="prefab_dist.html">
+.>>
+\0dist
+.ig >>
+</a>
+.>>
+), 
+scatterplot points (
+.ig >>
+<a href="prefab_scat.html">
+.>>
+\0scat
+.ig >>
+</a>
+.>>
+), and 
+.ig >>
+<a href="prefab_pie.html">
+.>>
+\0pie
+.ig >>
+</a>
+.>>
+slice labels may be mapped.
+See the
+.ig >>
+<a href="clickmap.html">
+.>>
+\0clickmap page
+.ig >>
+</a>
+.>>
+for more information.
+(Note: with the
+.ig >>
+<a href="prefab_dist.html">
+.>>
+\0dist prefab
+.ig >>
+</a>
+.>>
+, the label is in data field 1 and the count in field 2.)
+
+.LP
+\fBinclude1\fR
+.IP
+Specifies a file containing
+ploticus script code.  The code is included after the plotting area has
+been set up but before the data display is drawn.  May be useful
+in adding baselines, etc.
+
+.LP
+\fBinclude2\fR
+.IP
+Specifies a file containing
+ploticus script code.  The code is included after the data display is
+drawn.  May be useful for adding annotation.
+
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

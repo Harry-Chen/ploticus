@@ -1,0 +1,47 @@
+Notes on using FreeType2 font rendering:
+
+
+During the course of a morning I was able to get through the following on a
+Solaris 2.x system.  Not having root priviledges, I downloaded and installed 
+all of the following packages in my personal home directory.
+
+
+Requirements:
+
+You need a local copy of the FreeType2 library.  
+You can get it from www.freetype.org or freetype.sourceforge.net.  I had to
+download and build a recent version of gnu make before I could proceed.
+
+You need your own copy of gd library 1.8.4 or higher, compiled with FreeType 
+capability.  It is available from www.boutell.com/gd .   It will require
+that you have local copies of libz, libpng, and libjpeg and the corresponding 
+.h files.  To specify the freetype .h files I used -I/mydir/freetype-2.0.9/include
+in the Makefile.
+
+You need some TrueType .ttf font files, stored in a directory somewhere.  
+You can find these on NT machines in c:\winnt\fonts or download them from the web.  
+
+
+Compiling ploticus:
+
+Compile ploticus with the GDFREETYPE flag turned on (see the Makefile), and
+using the settings for GD18.  You will need to specify locations (-L) for all 
+the above libraries and corresponding .h files (-I) if they are in non-standard 
+locations.
+
+If you have installed freetype library in a non-standard place like I did, you may
+have problems with dynamic libraries not being found when you try to execute 
+ploticus.  One solution is to move the freetype *so* files out of the way and 
+then recompile ploticus, so that the linker uses the .a file rather than the 
+dynamic libs.
+
+
+Font names:
+
+So that GD can find your ttf fonts, the environment variable GDFONTPATH must be 
+set to a directory where TrueType (.ttf) font files reside.
+
+Within the ploticus context, TrueType font names should be given without the 
+.ttf extension, e.g. if you have a font file called times.ttf you would use the 
+name 'times'.
+

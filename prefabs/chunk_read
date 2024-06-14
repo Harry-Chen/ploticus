@@ -1,0 +1,28 @@
+#musthave data
+
+//// read data file..
+#proc getdata
+file: @data
+#if @data = stdin
+  standardinput: yes
+#endif
+#if @delim != ""
+  delim: @delim
+#endif
+#if @header = yes
+  fieldnameheader: yes
+#endif
+#if @comment != ""
+  commentchar: @comment
+#endif
+select: @select
+//showresults: yes
+ 
+#proc endproc
+
+#if @NRECORDS = 0
+  #exit
+#endif
+
+#proc print
+label: Got @NRECORDS records, @NFIELDS fields per record.  

@@ -1,0 +1,102 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: proc import</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>proc import</h2></td>
+  <td align=right>
+  <small>
+  <a href="Welcome.html"><img src="ploticus.gif" border=0></a><br>
+  <a href="Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH proc_import PL "18-JUN-2001   PL www.sgpr.net"
+
+
+.SH DESCRIPTION
+\fBproc import\fR reads a graphics file and integrates
+it with the ploticus result.  
+PNG files may be imported when running in -png mode.
+
+.SH EXAMPLE
+A Gallery example that imports a PNG file, and changes its size, is
+.ig >>
+<a href="../gallery/pngresize.htm">
+.>>
+pngresize 
+.ig >>
+</a>
+.>>
+
+.SH ATTRIBUTES
+
+.LP
+\fBfile\fR \fIname\fR
+.IP
+The name of the file to import.
+
+.LP
+\fBlocation\fR  
+.ig >>
+<a href="attributetypes.html#xy">
+.>>
+\fI x y \fR
+.ig >>
+</a>
+.>>
+.IP
+Where the imported image should be placed.
+May be in absolute or scaled units.
+
+
+
+.LP
+\fBscale\fR  \fIs\fR
+.IP
+Scale factor to apply when rendering the image.  \fC1.0\fR
+results in the original size; smaller values reduce the size;
+larger values increase the size.
+
+.LP
+\fBalign\fR  \fCcenter\fR | \fCtopleft\fR | \fCbottomleft\fR
+.IP
+Alignment of image relative to the specified \fClocation\fR.
+\fCcenter\fR causes the image to be centered about the \fIx, y\fR
+location; 
+\fCtopleft\fR causes the image to be placed so that its top left is at \fIx, y\fR;
+\fCbottomleft\fR causes the image to be placed so that its bottom left is at \fIx, y\fR.
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="Welcome.html">
+<img src="ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

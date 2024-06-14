@@ -1,0 +1,11 @@
+#!/bin/sh
+#
+DEV=$1
+OUTDIR=$2
+ARGS=$3
+
+echo stack1..
+pl -prefab stack data=data10 x=1 y=2 y2=4 y3=6 y4=8 xlbl=Months \
+	name="Group A" name2="Group B" name3="Group C" name4="Group D" \
+	$DEV -o ${OUTDIR}stack1.$DEV $ARGS
+

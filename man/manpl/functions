@@ -1,0 +1,933 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: functions</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>FUNCTIONS</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH FUNCTIONS PL "14-DEC-2001   PL ploticus.sourceforge.net"
+
+.LP
+Categories of available functions:
+.LP
+.ig >>
+<a href="functions.html#ploticus">
+.>>
+\0plotting
+.ig >>
+</a>
+.>>
+.br
+.ig >>
+<a href="functions.html#arithmetic">
+.>>
+\0arithmetic
+.ig >>
+</a>
+.>>
+.br
+.ig >>
+<a href="functions.html#strings">
+.>>
+\0strings
+.ig >>
+</a>
+.>>
+.br
+.ig >>
+<a href="functions.html#commalists">
+.>>
+\0commalists
+.ig >>
+</a>
+.>>
+.br
+.ig >>
+<a href="shell.html">
+.>>
+\0shell
+.ig >>
+</a>
+.>>
+.br
+.ig >>
+<a href="sql.html">
+.>>
+\0sql
+.ig >>
+</a>
+.>>
+.br
+.ig >>
+<a href="functions.html#dates">
+.>>
+\0dates
+.ig >>
+</a>
+.>>
+.br
+.ig >>
+<a href="functions.html#times">
+.>>
+\0times
+.ig >>
+</a>
+.>>
+.br
+
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH HOW TO USE FUNCTIONS
+.LP
+A number of functions are available for use in 
+.ig >>
+<a href="scripts.html">
+.>>
+\0scripts
+.ig >>
+</a>
+.>>
+, for a wide range of purposes including processing of arithmetic, strings
+dates, times, 
+, and so on.  
+Functions usually take one or more arguments and return a value.
+Functions may be used with 
+.ig >>
+<a href="set.html">
+.>>
+\0#set
+.ig >>
+</a>
+.>>
+,
+.ig >>
+<a href="call.html">
+.>>
+\0#call
+.ig >>
+</a>
+.>>
+, or as operands in
+.ig >>
+<a href="if.html">
+.>>
+\0#if/#elseif
+.ig >>
+</a>
+.>>
+.ig >>
+<a href="condex.html">
+.>>
+\0conditional expressions
+.ig >>
+</a>
+.>>
+\0.  
+.LP
+Custom functions may be coded and added to the file \fCcustom.c\fR,
+and accessed like any of the built in functions, except that the
+names of custom functions should begin with a
+double dollar sign ($$) when invoked from scripts.
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH FUNCTION SYNTAX
+Function names always start with a dollar sign (\fB$\fR).
+Function arguments are enclosed by parentheses and if more than one
+argument, separated by commas (,).  For example:
+.IP
+\fC$formatfloat( @NUM, "%7.2f" )\fR
+.LP
+Function calls may not be nested, ie. function arguments may not be functions.
+
+.ig >>
+<br><br><br>
+.>>
+
+.LP
+In the following summaries, the function name appears along with a
+template for arguments that must be supplied.
+
+.ig >>
+<br><br><br>
+.>>
+.ig >>
+<a name=ploticus></a>
+.>>
+.SH PLOTTING
+Note: the functions in this section may be used with a double dollar sign ($$)
+for faster function name search.
+.LP
+\fB$inrange( value, axis )\fR   or
+.br
+\fB$inrange( value, axis, min, max )\fR
+.IP
+Return 1 if \fIvalue\fR within a range on the given \fIaxis\fR.
+\fImin\fR and \fImax\fR are optional; if given they determine the range.
+If they are not given the range is the range of the axis within the
+plotting area.
+
+.LP
+\fB$icolor( i )\fR
+.IP
+Return one of 20 preselected colors.  The color sequence was
+selected to give good contrast between nearby entries.
+\fIi\fR allowable range is 1 to 20; values out of this range
+are modulo into range.
+.br
+Example: \fC#set COLOR = $icolor( 2 )
+
+.LP
+\fB$fieldname( n )\fR
+.IP
+Return the field name assigned to field \fIn\fR.  First is 1.
+If no field name was defined, \fCnoname\fR is returned.
+
+.LP
+\fB$dataitem( row, field )
+.IP
+Return the contents of the item in \fIrow\fR and \fIfield\fR of
+the current data set.  \fIrow\fR is a number, first is 1.
+\fIfield\fR is either a number or an assigned name.
+
+.LP
+\fB$data_to_absolute( axis, val )\fR
+.IP
+Given a data location \fIva\fR in either X or Y space (specified by
+\fIaxis\fR), return the absolute location.
+
+.LP
+\fB$nextstub( maxlen )\fR
+.IP
+Returns the text of a defined category or pltab row stub.
+Usually called multiple times within a loop; the result is used to build an expression to
+select data rows.  The first time it is called, the first category or row stub text will 
+be returned; second time, the second category or row stub text will be returned, and so on.
+The length will be limited to \fImaxlen\fR.  Any embedded spaces will be converted to underscores.
+.IP
+Example: \fC#set S = $nextstub(5)\fR
+.IP
+A gallery example where this is used is
+.ig >>
+<a href="../tabgallery/caselist.html">
+.>>
+\0caselist
+.ig >>
+</a>
+.>>
+
+.LP
+\fB$sleep( n )\fR
+.IP
+Delay for \fIn\fR seconds.  
+Occasionally useful when viewing plots interactively.
+
+.LP
+\fB$getclick()\fR
+.IP
+Produce a "More.." button and wait for user to click on it.
+Upon the click, return.
+Occasionally useful when viewing plots interactively.
+
+
+.ig >>
+<a name=arithmetic></a>
+.>>
+.ig >>
+<br><br><br>
+.>>
+
+.SH ARITHMETIC AND NUMBERS
+
+.LP
+\fB$arith(exp)\fP 
+.IP
+Simplistic arithmetic expression evaluator. 
+\fIexp\fR is an expression made up of numbers and the arithmetic operators
+\fC+ - * /\fR.
+No embedded spaces nor parentheses are allowed within the expression.
+Evaluation is strictly left to right.
+Unary plus/minus are allowed.
+.br
+Example: \fC#set RESULT = $arith(2+8/5)\fP  (result: 2)
+.br
+Example: \fC#set RESULT = $arith(2+-8)\fP  (result: -6)
+
+.LP
+\fB$arithl(exp)\fP
+.IP
+Same as \fB$arith()\fP except 
+lazy, i.e. non-numeric operands 
+are accepted and treated as if they were 0.  
+
+.LP
+\fB$isnumber(s)\fP
+.IP
+Returns 1 if \fIs\fP is a valid number, 0 if not.
+.br
+Example: \fC#set RESULT = $isnumber(-0.24)\fR  (result: 1)
+.br
+Example: \fC#set RESULT = $isnumber(=)\fR  (result: 0)
+
+.LP
+\fB$formatfloat(x,fmt)\fR
+.IP
+Format \fIx\fR using printf-style format string \fIfmt\fR.
+May also be used to format integers by using a \fIfmt\fR such as \fC%03.0f\fR.
+.br
+Example: \fC#set RESULT = $formatfloat( 3.4425, "%3.2f" )\fR (result: 3.44)
+
+.LP
+\fB$inr(n,lo,hi)\fR
+.IP
+See if \fIn\fR is within the numeric range of \fIlo\fR
+to \fIhi\fR.  Returns 1 if so, 0 if not.  Non-numeric \fIn\fR always returns 0.
+
+.LP
+\fB$numgroup( val, h, mode )\fR
+.IP
+Convert \fIval\fR to a nearby multiple of \fIh\fR.
+Useful in grouping a set of numbers into bins.
+\fImode\fR may be either \fClow\fR, \fCmid\fR, or \fChigh\fR.   
+For example, if f is 73 and h is 10, function returns 70, 75, or 80 for modes 
+\fClow\fR, \fCmid\fR, \fChigh\fR respectively.
+
+.LP
+\fB$autoround(val,d)\fR
+.IP
+Round \fIval\fR to a reasonable precision.
+Use a value of 0 for \fId\fR for normal behavior.  Increase \fId\fR to
+get more precision, reduce \fId\fR to get less precision.
+.br
+Example: \fC#set X = $autoround( @X, 0 )\fR
+
+.LP
+\fB$math(what,val)\fR
+.IP
+Mathematical functions on \fIval\fR.  
+.nf
+what	returns
+----    -------
+abs	absolute value (integer or floating point)
+.fi
+.br
+Example: \fC#set X = $math(abs,@X)\fR
+
+.LP
+\fB$random()\fR
+.IP
+Returns a random number between 0.0 and 1.0.
+
+.ig >>
+<a name=strings></a>
+.>>
+.ig >>
+<br><br><br>
+.>>
+
+.SH STRINGS
+
+.LP
+\fB$len(s)\fR
+.IP
+Return the length of \fIs\fR.
+
+.LP
+\fB$change(s1,s2,string)\fR
+.IP
+Change all occurances of \fIs1\fR to \fIs2\fR in string.
+.br
+Example: \fC#set T = $change( "<", "<sup>", @T )\fR
+
+.LP
+\fB$expand( s )\fR
+.IP
+Expand all @variables present in \fIs\fR.
+Example: 
+.nf
+\0#set B = "@A world"
+\0#set A = hello
+\0#set C = $expand( @B )
+.fi
+Variable C would then contain \fChello world\fR.
+
+.LP
+\fB$substring(s,n,len)\fR
+.IP
+Return a substring of \fIs\fR.  Substring begins at character \fIn\fR (first is 1)
+for a maximum length of \fIlen\fR.
+.br
+Example: \fC$substring( "abcde", 3, 99 )\fR would give \fCcde\fR
+
+
+.LP
+\fB$changechars(clist,s,newchar)\fR
+.IP
+If string \fIs\fR contains any of chars in \fIclist\fR, change that
+character to \fInewchar\fR.  
+\fBclist\fR may be passed as the word \fCcomma\fR to represent a comma (,).
+.br
+Example: \fC#set RESULT = $changechars("*'", @S, "_" )\fR
+
+.LP
+\fB$deletechars(clist,s)\fR
+.IP
+If string \fIs\fR contains any of chars in \fIclist\fR, delete that character.
+.br
+Example: \fC#set RESULT = $deletechars("*'",@S)\fR
+
+.LP
+\fB$contains(clist,s)\fR
+.IP
+If string \fIs\fR contains any of chars in \fIclist\fR, return position
+(first=1) of the first occurance.  Return 0 if none found.  
+\fIclist\fR may be passed as the word \fCcomma\fR to represent a comma (,).
+.br
+Example: \fC#set RESULT = $contains( "*'", @S )\fR
+.br
+Example: \fC#set RESULT = $contains( ",", @S )\fR
+
+.LP
+\fB$fuzzymatch(s1,s2,degree)\fR
+.IP
+Perform an approximate match of \fIs1\fR against \fIs2\fR.
+A wildcard character '*' at the beginning or end of \fIs2\fR indicates
+that a match can occur anywhere within \fIs1\fR (eg. smith* would match
+smithington and *smith would match harrowsmith; *smith* would match
+both).  If there are no asterisks, lengths of the two strings must be similar.
+.br
+\fIdegree\fR changes the 'looseness' of the match.
+5 = strict, 4 = medium-strict, 3 = medium 2= loose, 1 = very loose.
+.br
+Returns 1 on a match, 0 not.
+.br
+Example: \fC#set STAT = $fuzzymatch(hello,hillo,3)\fP (result: \fC1\fR)
+.br
+Example: \fC#set STAT = $fuzzymatch(hello,hillo,5)\fP (result: \fC0\fR)
+
+
+.LP
+\fB$lowerc(string)\fP
+.IP
+Return the lower-case equivalent of \fIstring\fP.
+.br
+Example: \fC#set RESULT = $lowerc(HELLO)\fP (result: \fChello\fP)
+
+.LP
+\fB$upperc(string)\fP
+.IP
+Return the upper-case equivalent of \fIstring\fP
+.br
+Example: \fC#set RESULT = $upperc(Hello)\fP (result: \fCHELLO\fP)
+
+
+.LP
+\fB$strcat(s,t)\fP
+.IP
+Return the concatenatation of strings \fIs\fP and \fIt\fP
+.br
+Example: \fC#set RESULT = $strcat(ABC,XY)\fP  (result: \fCABCXY\fP)
+
+.LP
+\fB$ntoken( n, s )\fR
+.IP
+return the \fIn\fRth whitespace-delimited token in \fIs\fR.
+
+.LP
+\fB$extractnum( s )\fR
+.IP
+extract the first numeric entity embedded anywhere in \fIs\fR and return it.
+
+
+.ig >>
+<a name=commalists></a>
+.>>
+.ig >>
+<br><br><br>
+.>>
+
+.SH COMMALISTS
+These functions operate on a string which is in the form of a 
+.ig >>
+<a href="commalist.html">
+.>>
+\0commalist
+.ig >>
+</a>
+.>>
+\0.
+
+.LP
+\fB$count(str,list)\fP
+.IP
+Count the number of times \fIstr\fP appears in 
+\fIlist\fP.  If \fIstr\fR is passed as \fC*\fR then this function
+will count the number of members in the list.
+.br
+Example: \fC#set RESULT = $count( "hello,aba,gabba,jabba" )\fP (result: 0)
+.br
+Example: \fC#set RESULT = $count( "x", "x,y,x,y,y,z,x" )\fP (result: 3)
+
+.LP
+\fB$addmember(newmem,list)\fP
+.IP
+Append a new member \fInewmem\fR to end of \fIlist\fR.
+If \fIlist\fR is empty before call, result will have one member.
+.br
+Example: \fC#set RESULT = $addmember( "red", @MYLIST )\fR
+
+.LP
+\fB$nmember(n,list)\fP
+.IP
+Get the \fIn\fPth member of \fIlist\fP.  
+.br
+Example: \fC#set RESULT = $nmember( 2, "a,b,c,d,e" )\fP (result: \fCb\fB)
+
+.LP
+\fB$commonmembers( list1, list2, mode )
+.IP
+Detect if \fIlist1\fR and \fIlist2\fR have any members in common.
+Returns 0 if no members in common.
+If \fImode\fR is \fC"count"\fR, then the number in common is returned
+(for a,b,c vs. c,d,e this would be 1; for a,a,a vs a,b,c it would be 3).
+Otherwise, when a match is found 1 is returned immediately.
+.br
+Example: \fC#set MATCH = $commonmembers( "a,b,c,d,e", "c,d,ee", "count" )\fR  (result: \fC2\fR)
+
+.LP
+\fB$homogenous( list )\fR
+.IP
+Return 1 if all members of list are the same, 0 if there are any differences
+among members.
+If \fIlist\fR has only 1 member, 1 is returned.  
+If \fIlist\fR is empty, 0 is returned.
+
+.LP
+\fB$makelist( s )\fR
+.IP
+Convert \fIs\fR, a list of items separated by commas and/or whitespace, 
+and return a commalist.
+Useful for building commalists from user input.
+.br
+Example: \fC#set LIST = $makelist( "1101   1102 1103" )\fR  (result: \fC1101,1102,1103\fR)
+.br
+Example: \fC#set LIST = $makelist( "1101,  1102, 1103" )\fR  (result: \fC1101,1102,1103\fR)
+
+.ig >>
+<a name=shell></a>
+.>>
+.ig >>
+<br><br><br>
+.>>
+
+.SH SHELL COMMAND INTERFACE
+Functions related to the shell interface are described on the
+.ig >>
+<a href="shell.html">
+.>>
+\0#shell manual page
+.ig >>
+</a>
+.>>
+\0.
+
+
+.ig >>
+<a name=sql></a>
+.>>
+.ig >>
+<br><br><br>
+.>>
+
+.SH SQL DATABASE INTERFACE
+Functions related to SQL interface are described on the
+.ig >>
+<a href="sql.html">
+.>>
+\0#sql manual page
+.ig >>
+</a>
+.>>
+\0.
+
+
+.ig >>
+<a name=dates></a>
+.>>
+.ig >>
+<br><br><br>
+.>>
+
+.SH DATES
+.LP
+These functions work with 
+.ig >>
+<a href="dates.html">
+.>>
+\0dates in various notations
+.ig >>
+</a>
+.>>
+\0.  Some date-related parameters may be set in the 
+.ig >>
+<a href="config.html">
+.>>
+\0project config file
+.ig >>
+</a>
+.>>
+.LP
+The default date format is \fCmmddyy\fR.
+Unless otherwise specified, these functions expect date arguments
+to be in the "current date format".
+
+.LP
+\fB$setdatefmt(format)\fR
+.IP
+Set the current date format.
+.br
+Example: \fC#call $setdatefmt( "yyyymmdd" )\fR
+
+.LP
+\fB$formatdate(date,newformat)\fR
+.IP
+Return \fIdate\fR, formatted to \fInewformat\fR.
+Use to convert dates to different notations, to extract year, month, day
+components, or to get weekday equivalent.
+Available formats are described 
+.ig >>
+<a href="dates.html">
+.>>
+\0here
+.ig >>
+</a>
+.>>
+.br
+Example: \fC#set RESULT = $formatdate( @D, "yyyymmmdd" )\fR
+
+.LP
+\fB$datevalid(date)\fR
+.IP
+Return 1 if \fIdate\fR is a valid one in the current date format;
+return 0 if it is not.
+.br
+Example: \fC#if $datevalid(@apptdate) != 1\fR
+
+.LP
+\fB$todaysdate()\fR
+.IP
+Return the current date.  It will be in the date format currently in effect.
+.br
+Example: \fC#set RESULT = $todaysdate()\fR
+
+.LP
+\fB$daysdiff(date1,date2)\fR
+.IP
+Return the difference in days between \fIdate1\fR and \fIdate2\fR.
+.br
+Example: \fC#set RESULT = $daysdiff( 011298, 010198 )\fR (result: 11)
+
+.LP
+\fB$julian(date)\fR
+.IP
+Return the julian (number of days since Jan 1, 1977) equivalent of \fIdate\fR.
+\fIdate\fR should be a date in current format, or the special symbol \fCtoday\fR.
+
+.LP
+\fB$jultodate(jul)\fR
+.IP
+Return the date (in current format) that is equivalent to julian value \fIjul\fR.
+
+.LP
+\fB$dateadd(date,ndays)\fR
+.IP
+Return the date resulting when \fIndays\fR are added to \fIdate\fR.  
+.br
+Example: \fC#set RESULT = $dateadd( 010198, 11 )\fR (result: 011298)
+
+.LP
+\fB$dategroup( interval, mode, input )\fR
+.IP
+Take date, datetime, or time \fIinput\fR value, and adjust it for 
+grouping purposes.  For example, after a set of dates
+are processed using \fC$dategroup( week, mid, .. )\fR, the result can be tabulated to
+get a weekly distribution.  
+Allowable \fIinterval\fR values are \fCweek  month  quarter  year  day  hour\fR.
+Allowable \fImode\fR values are \fCmid\fR and \fCfirst\fR.
+First character is sufficient for these two args.
+
+.LP
+\fB$yearsold(birthdate,testdate)\fR
+.IP
+Return the integer age in years as of 
+\fItestdate\fR of a person born on \fIbirthdate\fR.
+.br
+Example: \fC#set RESULT = $yearsold( 062661, 022098 )\fR (result: 36)
+
+.LP
+\fB$setdateparms(parmname,value)\fR
+.IP
+Set a date parameter.  See 
+.ig >>
+<a href="config.html">
+.>>
+\0config file documentation
+.ig >>
+</a>
+.>>
+for descriptions of these parameters, including
+strictness of date format checking, 
+the century pivot year, and lazy dates.
+.br
+A pivot year is used to accomodate two-digit year values.
+.br
+A lazy date has 00 as the day and/or month portion and is usually
+used in situations where the day and/or month is unknown or unavailable.
+.br
+Strictness of date format checking: by default the length of a presented date must be
+consistent with the format specification.  For example, an mm/dd/yy date must be
+8 or 10 characters long; other lengths result in an error.
+This strictness may be relaxed by doing: \fC#set STATUS = $setdateparms(Strictdatelengths,no)\fR
+.br
+Example of setting the pivot year: \fC#set STATUS = $setdateparms(Pivotyear,90)\fR
+.br
+Example of allowing lazy days: \fC#set STATUS = $setdateparms(Lazydates,days)\fR
+.br
+Example of allowing lazy days and months: \fC#set STATUS = $setdateparms(Lazydates,both)\fR
+
+.ig >>
+<a name=times></a>
+.>>
+.ig >>
+<br><br><br>
+.>>
+
+.SH TIMES
+These functions work with 
+.ig >>
+<a href="times.html">
+.>>
+\0time values
+.ig >>
+</a>
+.>>
+in various notations.
+
+.LP
+\fB$settimefmt(fmt)\fR
+.IP
+Set the current time notation to \fIfmt\fR.
+Available notations are \fCHH:MM:SS\fR, \fCHH:MM\fR, and \fCMM:SS\fR.
+(A leading HH can handle single digit hour values; a leading MM
+can handle single digit minute values).
+.br
+Example: \fC#set RESULT = $settimefmt(MM:SS)\fR
+These functions work with time values.
+
+.LP
+\fB$time()\fP
+.IP
+Return the current time in \fChh:mm:ss\fR format.
+.br
+Example: \fC#set RESULT = $time()\fP
+
+.LP
+\fB$timevalid(time)\fR
+.IP
+Return 1 if \fItime\fR is valid in the current time format;
+return 0 if it is not.
+.br
+Example: \fC#if $timevalid(@appttime) != 1\fR
+
+.LP
+\fB$formattime(time,newformat)\fR
+.IP
+Take \fItime\fR, which is in the current time format,
+and reformat it using \fInewformat\fR.
+.br
+Example: \fC#set t2 = $formattime( "14:22", "hh:mma" )
+
+.LP
+\fB$timesec()\fP
+.IP
+Get number of seconds since midnight for the current time.
+.br
+Example: \fC#set RESULT = $timesec()\fP
+
+.LP
+\fB$tomin(t)\fR
+.IP
+Take \fIt\fR (a value in the current time notation) and return the equivalent,
+expressed in # of minutes since 0:00:00.  Result is float,
+with any seconds expressed as the decimal portion of a minute. 
+.br
+Example: \fC#set RESULT = $tomin( "3:45" )\fR
+ 
+.LP
+\fB$frommin(m)\fR
+.IP
+Inverse of $tomin(), where \fIm\fR is a float minutes value.
+Result is equivalent time in current notation.
+.br
+Example: \fC#set RESULT = $frommin( 3.75 )\fR
+
+.LP
+\fB$timediff(t1,t2)\fR
+.IP
+Find the difference between two times 
+\fIt1\fR and \fIt2\fR (both in current notation).  Result is expressed 
+in float minutes (any seconds expressed as fraction of a minute) 
+.br
+Example: \fC#set RESULT = $timediff( "3:43", "2:28" )\fR
+
+.ig >>
+<a name=checksums></a>
+.>>
+.ig >>
+<br><br><br>
+.>>
+
+.SH CHECKSUMS
+Checksum routines use an odd-even algorithm that takes an integer and
+computes a checksum digit 0 - 9 or x.  This checksum digit may be
+used to guard against key errors and transposed digits.
+.LP
+
+\fB$checksumvalid(s)\fP
+.IP
+Returns 1 if \fIs\fR is a valid
+number with checksum.  0 if not.
+.br
+Example: \fC#if $checksumgood(39) = 1\fR (result: true)
+
+.LP
+\fB$checksumencode(i)\fR
+.IP
+Result is integer \fBi\fR with 
+a checksum digit appended.
+.br
+Example: \fC#set CHECKNUM = $checksumencode(29)\fR (result: 294)
+
+.LP
+\fB$checksumnext(s)\fR
+.IP
+Take \fIs\fR which is a number 
+including trailing checksum digit, and increment the number and 
+recompute new checksum digit.  Result is returned.
+Example: \fC#set RESULT = $checksumnext(39) = 1\fR (result: 41)
+
+
+.ig >>
+<a name=misc></a>
+.>>
+.ig >>
+<br><br><br>
+.>>
+
+.SH MISCELLANEOUS
+.LP
+\fB$getenv(varname)\fR
+.IP
+Return the contents of environment variable \fIvarname\fR.
+
+
+.LP
+\fB$uniquename()\fR
+.IP
+Return a short identifier generated
+using the current date, time to the current second, and process id.  
+The name will be unique on a per-host basis.
+
+.LP
+\fB$tmpfilename(tag)\fR
+.IP
+Generate a unique (on a per-host basis) temporary file name, suitable
+for use in shell commands.  Uses \fBtmpdir\fR as specified in
+.ig >>
+<a href="config.html">
+.>>
+\0project config file
+.ig >>
+</a>
+.>>
+\0.  Format of the name is \fItmpdir\fC/\fItag\fC.\fIuniquename\fR where
+\fIuniquename\fR is a short name generated using the current date, current time
+to the second, and process id.  \fItag\fR may be passed as a zero length string
+if desired.
+
+.LP
+\fB$fileexists( dir, name )\fR
+.IP
+Return 1 if the requested file can be opened, 0 otherwise.
+\fIdir\fR indicates the directory that \fIname\fR is relative to
+and may be one of \fC/\fR, \fCscriptdir\fR, \fCdatadir\fR, \fCtmpdir\fR.
+.br
+Example: \fC#set A = $fileexists( tmpdir, "mytmp" )\fR
+
+.LP
+\fB$ref( varname ) \fR
+.IP
+Return the contents of \fIvarname\fR.  May be useful when a variable contains
+the name of another variable, to extract the value of the other variable.
+Example:
+.br
+.nf
+\0 #set A = "hello"
+\0 #set B = "A"
+\0 #set C = $ref(@B)
+.fi
+.br
+C would then contain \fChello\fR.
+
+.LP
+\fB$def( varname ) \fR
+.IP
+Return 1 if varname has been set to a value.
+Return 0 otherwise.
+
+
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

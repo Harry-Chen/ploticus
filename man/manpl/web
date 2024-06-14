@@ -1,0 +1,330 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: making web-based graphs</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>making web-based graphs</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH making_web-based_graphs PL "05-DEC-2001   PL ploticus.sourceforge.net"
+
+.ig >>
+<center>
+<img src="../gallery/candlesticks.gif"><br>
+</center>
+.>>
+
+.SH Web-based graphs
+This page contains notes related to use of ploticus to produce
+data displays that are viewable on web pages.
+There are a number of
+.ig >>
+<a href="../gallery/gall.real.html">
+.>>
+\0web sites that are using ploticus
+.ig >>
+</a>
+.>>
+\0.
+
+.LP
+Ploticus can generate the following types of graphics that web
+browsers can display: PNG, JPEG, WBMP, pseudo-GIF, and SVG.
+Some of these types are more compact than others (smaller is faster).  
+Here's a comparison, done on gallery example \fCstock\fR:
+.IP
+.nf
+PNG         2978 bytes
+SVGZ        3918 bytes
+pseudo-GIF 14874 bytes 
+SVG        17743 bytes
+JPEG       27006 bytes
+.fi
+
+.LP
+As of version 2.02 ploticus can also generate
+.ig >>
+<a href="clickmap.html">
+.>>
+\0HTML clickmaps
+.ig >>
+</a>
+.>>
+to accompany images.
+
+.LP
+PNG, JPEG, WBMP, and pseudo-GIFs are generated using
+the GD image generation library from 
+.ig >>
+<a href="http://www.boutell.com">
+.>>
+\0boutell.com
+.ig >>
+</a>
+.>>
+\0.  Ploticus is bundled
+with portions of GD 1.3 (pseudo-GIF) and GD 1.6 (PNG images).  
+Of, if you prefer, ploticus may be
+built by linking it with your own copy of GD 1.8.4 or higher,
+for PNG, PJEG, WBMP, and FreeType2 support (see GD18 in the Makefile).
+
+.LP
+.ig >>
+<a href="svg.html">
+.>>
+\0SVG
+.ig >>
+</a>
+.>>
+is a relatively new vector-based format that looks
+good.  Browsers display SVG via a plug-in.
+Ploticus (version 2.01 or later, all builds) can produce
+.ig >>
+<a href="svg.html">
+.>>
+\0SVG
+.ig >>
+</a>
+.>>
+graphics.  
+
+.ig >>
+<br><br><br>
+.>>
+
+.SH Creating PNG
+To create a PNG image, use pl or pltab with the \fC-png\fR option.
+.LP
+To incorporate a PNG image into an HTML web page, use the
+HTML construct:
+.ce
+\fC<img src="mygraph.png">\fR
+.LP
+\fBPNG\fR is a newer image format that has superior compression 
+(hence the images are smaller and faster to transmit).  
+The images can be viewed using the newer versions of web browsers 
+(Netscape 4.04 or higher, Explorer 4.0 or higher)
+and image viewing tools such as \fBxv\fR.  To see if your
+current web browser can display PNG, try
+.ig >>
+<a href="../thumbpng/index.html">this page</a>.
+See also <a href="http://www.libpng.org/pub/png">the PNG home page</a>
+.>>
+
+.ig >>
+<br><br><br>
+.>>
+.SH Creating pseudo-GIF
+To create pseudo-GIF, use pl or pltab with the \fC-gif\fR option.
+.LP
+To incorporate a GIF image into an HTML web page, use the HTML
+construct:
+.ce
+\fC<img src="mygraph.gif">\fR
+.LP
+\fBGIF\fR format has been around for a long while, is fairly universal, and
+can be viewed on any graphical web browser or image viewing tool.
+\fIPloticus does not read GIF files.
+Ploticus writes run-length-encoded (RLE) GIF files. 
+Our understanding is that these RLE GIF files do not 
+use patented LZW compression.\fR
+The RLE GIF images that ploticus produces are viewable via
+any graphical web browser or image viewer that supports GIF.
+.LP
+.ig >>
+<a href="../doc/gifpatent.html">
+.>>
+More on GIF LZW patent and licensing issues
+.ig >>
+</a>
+.>>
+
+.ig >>
+<br><br><br>
+.>>
+.SH Creating SVG
+This is discussed 
+.ig >>
+<a href="svg.html">
+.>>
+\0here
+.ig >>
+</a>
+.>>
+
+
+.ig >>
+<br><br><br>
+.>>
+.SH Transparent background
+.ig >>
+<a href="../gallery/transparent.htm"><img src="../gallery/transparent.gif" border=0></a>
+.>>
+.LP
+Images may be created with 'transparent' background by setting
+the background color to \fCtransparent\fR.  This allows the ploticus
+graphs to be "overlayed" against the existing background color of
+the web page.
+.br
+.br
+
+.ig >>
+<br><br><br>
+.>>
+.SH Web page example
+.LP
+Here is an example HTML page that is viewable using any web browser:
+.nf
+.ft C
+<html>
+<center>
+Here is an image.
+<img src="lineplot1.gif">
+</html>
+.ft R
+.fi
+.LP
+Suppose the above is in a file called \fC/home/steve/firsttry.html\fR.  
+If you don't have a web server running, you can view the file by 
+entering the following URL into your web browser:
+.ce
+\fBfile:///home/steve/firsttry.html\fR
+This assumes that your web browser is running on the same computer
+that the HTML file is located upon.
+
+.SH Clickmap support
+As of version 2.02 ploticus can also generate
+.ig >>
+<a href="clickmap.html">
+.>>
+\0HTML clickmaps
+.ig >>
+</a>
+.>>
+to accompany images.
+
+
+.ig >>
+<br><br><br>
+.>>
+.SH CGI control
+As of version 2.00, pl may be
+.ig >>
+<a href="cgi.html">
+.>>
+\0directly invoked as a CGI program
+.ig >>
+</a>
+.>>
+\0.
+Another way to use ploticus via CGI is to 1) generate a unique temp file name; 2) invoke ploticus via shell or system()
+and build a PNG or GIF file using the unique name; 3) reference that file in an <IMG> tag;
+4) clean up temp PNG / GIF files regularly using a find command run by cron.
+In my applications I use a static ploticus script with several @variables that I pass to it; 
+it would also be possible to dynamically build a ploticus script (as step 1a above).
+.LP
+A 
+.ig >>
+<a href="../download/ploticus.perl">
+.>>
+perl script 
+.ig >>
+</a>
+.>>
+which implements a web interface to ploticus was
+contributed by Tom McClure.
+See also
+.ig >>
+<a href="controlling.html">
+.>>
+Controlling Ploticus from Other Programs
+.ig >>
+</a>
+.>>
+\0.
+
+.ig >>
+<br><br><br>
+.>>
+.SH Image import
+\fBPloticus\fR includes the capability to import PNG images 
+into graphs, and can use small images as scatterplot points and symbols.
+GIF import is not supported.
+\fBPloticus\fR can also be used to reduce, enlarge, and crop images;
+see the gallery example
+.ig >>
+<a href="../gallery/pngresize.htm">
+.>>
+pngresize 
+.ig >>
+</a>
+.>>
+
+.ig >>
+<br><br><br>
+.>>
+.SH Thumbnail and button images
+Thumbnail images (tiny renditions of a plot for icon or selection uses) may be
+rendered using the -scale command line option.  For example: \fC-scale 0.15\fR.
+Very small text is rendered as lines.  
+.LP
+\fBPloticus\fR can also be used to make simple buttons for web pages.
+See the gallery example 
+.ig >>
+<a href="../gallery/button.htm">
+.>>
+button 
+.ig >>
+</a>
+<center>
+<img src="../gallery/button.gif">
+</center>
+.>>
+.LP
+Example HTML code for making a thumbnail or button that will take a user to
+a new page when clicked upon:
+.nf
+.ft C
+<a href="newpage.html"><img src="mybutton.gif"></a>
+.ft R
+.fi
+
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

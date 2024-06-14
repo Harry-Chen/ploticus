@@ -1,0 +1,94 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: control</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>CONTROL</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH CONTROL PL "31-AUG-2001   PL www.sgpr.net"
+
+.SH NAME
+\fC#control  \fIattribute\fC   \fIvalue\fR
+
+.SH DESCRIPTION
+Set various operational modes.
+Note: This is part of the general script processing package and
+has little use in the ploticus context.
+
+.SH ATTRIBUTES
+\fIattribute\fR may be one of:
+
+
+.LP
+\fBevalvars\fR 
+.IP
+\fIvalue\fR should be \fCno\fR to turn off evaluation of variables
+and \fCyes\fR to turn it on.  Default is \fCyes\fR.
+
+.LP
+\fBdot_in_varnames\fR
+.IP
+If \fIvalue\fR is
+\fCyes\fR, variable names may contain periods (.).  
+If \fIvalue\fR is \fCno\fR, period will be used as a delimiting
+character when scanning variable names in the script, and variable
+names cannot contain any periods.  
+The default is \fCno\fR unless sql database functionality is included 
+in which case the default is \fCyes\fR (since sql join result field names
+contain periods).
+
+.LP
+\fBsuppressdll\fR
+.IP
+\fIvalue\fR should be \fCyes\fR to suppress data-less lines, and \fCno\fR
+to show data-less lines.  Default is \fCno\fR.  
+A data-less line is a line
+having one or more variables, all of which evaluate to a zero-length value.
+Suppressing data-less lines is sometimes useful, for example, when displaying
+multi-line entities such as postal addresses.
+
+
+
+.ig >>
+<br><br><br>
+.>>
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

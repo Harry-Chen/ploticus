@@ -1,0 +1,104 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: using the gallery examples</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>Using the gallery examples</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH Using_the_gallery_examples PL "01-MAR-2002   PL ploticus.sourceforge.net"
+
+.ig >>
+<p>
+<b>You can click on any example image</b> in the gallery to see more.
+
+<h2>Prefab examples</h2>
+For 
+.ig >>
+<a href="../doc/prefabs.html">
+.>>
+\0prefab
+.ig >>
+</a>
+.>>
+examples, you will arrive at the prefab's man page
+and you can view additional examples, along with the commands that were used.
+
+<h2>Script examples</h2>
+For <b>script</b> examples, you will see
+the image with the <b>ploticus</b> script that generated the image.
+<b>Are the script files HTML?</b>  Not really.  They are 
+<a href="../doc/scripts.html">ploticus script files</a>.
+They are named with an <b>.htm</b> suffix and
+contain some HTML tags, to allow them to look nice when
+displayed in your web browser.  Ploticus ignores the HTML tags.
+<p>
+<b>Script file names:</B> can be anything,
+although a <b>.p</b>, <b>.pl</b>, <b>.pls</b> or <b>.htm</b> suffix is recommended.
+<p>
+<br>
+<b>To download a script</b> that you are viewing in your browser, use
+your browser's <b>File/Save As</b> menu button.
+The result should be HTML ("Source").
+The downloaded file will be placed in your local current
+working directory (the directory where you started your browser).
+If the script references other files (e.g. a data file), you will need
+to download those as well (a link should be provided).
+<br>
+<p>
+<br>
+<b>To try ploticus on your own system</b>:  After you have 
+<a href="../doc/Download.html">downloaded</a> the software,
+suppose you then downloaded the ploticus script called <b>lineplot1.htm</b>
+<p>
+<li>To create a GIF file (lineplot1.gif), type this command:
+<center><b>pl -gif lineplot1.htm</b></center>
+<p>
+<li>To create an EPS file (lineplot1.eps), type: 
+<center><b>pl -eps lineplot1.htm</b></center>
+<p>
+<li>To create paginated PostScript, and send it directly to your printer, 
+type: 
+<center><b>pl -ps lineplot1.htm | lp</b></center>
+<p>
+<li>To view on an X11 display, type: 
+<center><b>pl -x11 lineplot1.htm</b></center>
+.>>
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="../doc/Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

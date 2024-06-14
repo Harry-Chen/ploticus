@@ -1,0 +1,156 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: script syntax changes - version 2.00</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>Script syntax changes - version 2.00</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH Script_syntax_changes_-_version_2.00 PL "05-MAR-2002   PL ploticus.sourceforge.net"
+
+.SH NEW SCRIPT INTERPRETER
+Ploticus release 2.00 debuts a new underlying script interpreter system,
+with some consequent changes in legal script syntax.
+These changes should be fairly obscure; when I tested on the collection of
+gallery examples there were minor problems with 3 or 4 of the examples and these were easily fixed.
+I appologize in advance for any disruption this may cause.
+.LP
+The following is a summary
+of known changes; if you find others, please inform me
+(\fCscg@jax.org\fR).
+
+.LP
+\fBChanges that may require maintenance to existing scripts:\fR
+
+.IP \(bu
+Variables no longer need to be \fB#declare\fRd.
+\fB#declare\fR no longer does anything; if encountered
+it will be silently ignored. 
+Scripts that depended on \fB#declare\fR to initialize a
+variable should now use \fB#set\fR or \fB#setifnotgiven\fR instead.
+.br
+.br
+.IP \(bu
+\fB#setifnotgiven\fR should be used to set a default value for any 
+variable that may be passed in to the script.  Scripts that use
+\fB#declare soft\fR, \fB$exists()\fR, or \fB$notexists()\fR to
+handle passed variables should be changed to use \fB#setifnotgiven\fR.
+.br
+.br
+.IP \(bu
+References to variables that have never been given a value
+cause evaluation to be cancelled, leaving the variable name to appear 
+in result, and do not cause an error message to be issued.  
+.br
+.br
+.IP \(bu
+Concatenation of constants and/or variables in \fB#set\fR statements
+are now done differently.  You used to be able to do this:
+\fC#set A = /home/scg/data/@TESTRUN \fR
+.br
+Now it must be done this way:
+\fC#set A = "/home/scg/data/" @TESTRUN\fR
+.br
+.br
+.IP \(bu
+Implicit concatentation of constants and/or variables in an \fB#if\fR statement
+is longer supported.  For instance, you used to be able to do this:
+.br
+\fC#if @FILENAME = /home/scg/data/@TESTRUN\fR
+.br
+Now it must be done this way:
+.nf
+\0#set F = "/home/scg/data/" @TESTRUN
+\0#if @FILENAME = @F
+\0...
+.fi
+.IP \(bu
+\fB#clone\fR no longer accepts a filename argument.  
+Use \fB#include\fR and \fB#procdef\fR instead.
+.br
+.br
+.IP \(bu
+The \fB$change()\fR function no longer supports the special symbol \fCspace\fR.
+A space may be represented naturally, eg \fC$change( "_", " ", @FOO )\fR
+.br
+.br
+.IP \(bu
+The \fB$validate()\fR function is no longer supported.
+Scripts should use $isnumber() to test numbers, 
+$datevalid() to test date values, 
+and $timevalid() to test time values.
+.br
+.br
+.IP \(bu
+Trailing comments may cause errors where they didn't before.
+This line contains a trailing comment:
+.nf
+	rectangle: 1 1 5 6.5    //xlo, ylo, xhi, yhi
+.fi
+The documentation has always stated that "any line beginning with a double slash (//)
+is taken as a comment", however some of the examples may have used trailing
+comments.  When in doubt don't use them.  \fI(added Oct 2 '01)\fR
+
+.ig >>
+<br><br><br>
+.>>
+
+.LP
+\fBChanges that should not affect existing scripts:\fR
+
+.IP \(bu
+\fB#if\fR statements support quoted operands,
+useful for constants that have embedded white space.
+Example: \fC#if @A = "hello world"\fR
+.br
+.br
+.IP \(bu
+Function constructs may now contain embedded spaces, and quoted arguments.
+Exceptions are \fB$arith()\fR and \fB$arithl()\fR, which do not allow
+embedded spaces within the arithmetic expression.
+.br
+.br
+.IP \(bu
+\fB#hideund\fR and \fB#showund\fR directives are no longer necessary, 
+and are silently ignored.
+
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="../doc/Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>
+

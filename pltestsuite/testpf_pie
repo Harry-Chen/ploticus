@@ -1,0 +1,10 @@
+#!/bin/sh
+#
+DEV=$1
+OUTDIR=$2
+ARGS=$3
+
+echo pie1..
+pl  -prefab pie  values=3  labels=1  data=data9  delim=tab  title="Student enrollment" \
+	$DEV -o ${OUTDIR}pie1.$DEV $ARGS
+

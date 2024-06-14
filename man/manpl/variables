@@ -1,0 +1,154 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: system variables</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>System variables</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH System_variables PL "28-FEB-2002   PL ploticus.sourceforge.net"
+
+.SH System Variables
+Ploticus reserves the right to assign certain variables, described below.
+These variables may be accessed by user scripts as needed.
+.LP
+In order to reference a variable immediately after the proc that set the variable, 
+.ig >>
+<a href="scripts.html">
+.>>
+\0#endproc
+.ig >>
+</a>
+.>>
+must be used beforehand.
+
+.ig >>
+<br><br><br>
+.>>
+
+.LP
+\fBAREALEFT  AREARIGHT  AREABOTTOM  AREATOP\fR
+.IP
+Set by \fBproc areadef\fR to the locations of the current plot area edges in
+.ig >>
+<a href="attributetypes.html#positionunits">
+.>>
+absolute units.  
+.ig >>
+</a>
+.>>
+ .
+.LP
+\fBXMIN  XMAX  YMIN  YMAX\fR
+.IP
+Set by \fBproc areadef\fR to the limits in scaled units, of the plotting area.
+
+.LP
+\fBDATAXMIN\fR, \fBDATAXMAX\fR
+.IP
+The minima and maxima of the data field when xautorange is used.
+Different from XMIN and XMAX in that these do not include any margin.
+.LP
+\fBDATAYMIN\fR, \fBDATAYMAX\fR
+.IP
+The minima and maxima of the data field when yautorange is used.
+Different from YMIN and YMAX in that these do not include any margin.
+
+
+.LP
+\fBCM_UNITS\fR
+.IP
+if user has opted to use centimeters as absolute units, this will contain 1,
+otherwise 0.
+
+
+.LP
+\fBDEVICE\fR
+.IP
+the output display format, one of: \fCpng gif eps ps bwps x11 jpeg wbmp\fR
+.LP
+
+.LP
+\fBNFIELDS\fR
+.IP
+the number of fields per record in the current data set.
+
+.LP
+\fBNRECORDS\fR
+.IP
+the number of records in the current data set.
+
+.LP
+\fBNVALUES\fR
+.IP
+the number of in-range plottable points rendered by the most recent
+\fBproc scatterplot\fR or \fBproc rangebar\fR.  
+May be used in the proc scatterplot legend label.
+
+.LP
+\fBRANGEBARMEDIAN RANGEBARMIN RANGEBARMAX\fR
+.IP
+the median, min, and max value of the most recently drawn rangebar,
+in scaled units.
+
+.LP
+\fBTOTALS\fR
+.IP
+Set by \fBproc processdata\fR when action is \fCtotals\fR, it holds
+either a single total value, or a comma-delimited list of total values.
+
+.LP
+\fBBREAKFIELD1 ..\fR
+.IP
+Set by \fBproc processdata\fR when action is \fCbreaks\fR, it holds
+the contents of the break field(s), before reaching the breakpoint.
+
+.LP
+\fBXSTART\fR, \fBYSTART\fR
+.IP
+X and Y location where the most recent \fBproc lineplot\fR curve began, in scaled units.
+
+.LP
+\fBXFINAL\fR, \fBYFINAL\fR
+.IP
+X and Y location where the most recent \fBproc lineplot\fR curve ended, in scaled units.
+
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

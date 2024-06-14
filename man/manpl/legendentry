@@ -1,0 +1,312 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: proc legendentry</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>proc legendentry</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH proc_legendentry PL "10-DEC-2001   PL ploticus.sourceforge.net"
+
+.SH DESCRIPTION
+Defines one legend entry.
+This entry will be rendered the next time that 
+\fBproc legend\fR is executed.
+Usually, legends are built by successive plotting procs
+having a \fClegendlabel\fR attribute.  However, if additional
+flexibility is needed to make custom legend entries, this
+proc may be invoked, once per legend entry.
+.LP
+For example, if a scatterplot is being created with various sized
+points, there is no automatic way to get a legend of the various
+point sizes, so \fBproc legendentry\fR could be executed (probably several 
+times) to define legend information, then \fBproc legend\fR could be
+executed to render it.
+.LP
+\fBproc legendentry\fR is also useful in setting up
+.ig >>
+<a href="#legenddriven">
+.>>
+\0legend-driven plots
+.ig >>
+</a>
+.>>
+which allow things like bar color, or scatterplot symbol color, size, or
+shape to be controlled by a data field.
+
+.ig >>
+<br><br><br>
+.>>
+.SH EXAMPLE
+See the gallery example
+.ig >>
+<a href="../gallery/scatterplot3a.html">
+.>>
+scatterplot3a 
+.ig >>
+</a>
+.>>
+
+.ig >>
+<br><br><br>
+.>>
+.SH PREREQUISITES
+None.
+
+.SH MANDATORY ATTRIBUTES
+None.  
+
+.ig >>
+<br><br><br>
+.>>
+.SH ATTRIBUTES
+
+.LP
+\fBsampletype\fR \fIt\fR
+.IP
+The type of sample to be displayed with the entry.
+\fIt\fR may be one of:
+\fCline\fR, \fCcolor\fR , \fCsymbol\fR , \fCtext\fR , \fCline+symbol\fR , or 
+\fCtext+symbol\fR, or \fCnone\fR.
+.br
+\fCnone\fR may be used to insert spacing or text headers/separators into the legend.
+.br
+Example: \fCsampletype: text\fR
+
+.LP
+\fBlabel\fR  
+.ig >>
+<a href="attributetypes.html#text">
+.>>
+\fI text \fR
+.ig >>
+</a>
+.>>
+.IP
+The label for the entry.
+Example: \fClabel: Eastern counties\fR
+
+.LP
+\fBtag\fR
+.ig >>
+<a href="attributetypes.html#string">
+.>>
+\0\fI string \fR
+.ig >>
+</a>
+.>>
+.IP
+An optional short identifier to be associated with the entry,
+so that the entry can be accessed later.
+Used with proc bars colorfield, as in this example:
+.ig >>
+<a href="../gallery/colorfld.htm">
+.>>
+\0colorfld
+.ig >>
+</a>
+.>>
+
+
+.LP
+\fBdetails\fR  
+.ig >>
+<a href="attributetypes.html#text">
+.>>
+\fI text \fR
+.ig >>
+</a>
+.>>
+.IP
+Details regarding the rendering of the sample.
+What this is depends on the \fCsampletype\fR.  
+
+.IP
+For \fCline\fR, a 
+.ig >>
+<a href="linedetails.html">
+.>>
+\fI linedetails \fR
+.ig >>
+</a>
+.>>
+specification should be given.
+
+.IP
+For \fCcolor\fR, a 
+.ig >>
+<a href="color.html">
+.>>
+\fI color \fR
+.ig >>
+</a>
+.>>
+should be given.
+
+.IP
+For \fCsymbol\fR, a 
+.ig >>
+<a href="symboldetails.html">
+.>>
+\fI symboldetails \fR
+.ig >>
+</a>
+.>>
+specification should be given.
+
+.IP
+For \fCtext\fR, the character or word should be given here, and a
+.ig >>
+<a href="textdetails.html">
+.>>
+\fI textdetails \fR
+.ig >>
+</a>
+.>>
+specification may be given using the \fCdetails2\fR attribute.
+
+.IP
+For \fCline+symbol\fR, a 
+.ig >>
+<a href="linedetails.html">
+.>>
+\fI linedetails \fR
+.ig >>
+</a>
+.>>
+specification should be given here,
+and a 
+.ig >>
+<a href="symboldetails.html">
+.>>
+\fI symboldetails \fR
+.ig >>
+</a>
+.>>
+specification given using the \fCdetails2\fR attribute.
+
+.IP
+For \fCtext+symbol\fR, the character or word should be given here, a 
+.ig >>
+<a href="textdetails.html">
+.>>
+\fI textdetails \fR
+.ig >>
+</a>
+.>>
+specification should be given using the \fCdetails2\fR attribute,
+and a 
+.ig >>
+<a href="symboldetails.html">
+.>>
+\fI symboldetails \fR
+.ig >>
+</a>
+.>>
+specification given using the \fCdetails3\fR attribute.
+
+.IP
+If \fCsampletype\fR is \fCnone\fR, nothing should be given for this attribute.
+
+.LP
+\fBdetails2\fR  
+.ig >>
+<a href="attributetypes.html#text">
+.>>
+\fI text \fR
+.ig >>
+</a>
+.>>
+.IP
+Secondary details attribute.  See \fCdetails\fR above.
+
+.LP
+\fBdetails3\fR  
+.ig >>
+<a href="attributetypes.html#text">
+.>>
+\fI text \fR
+.ig >>
+</a>
+.>>
+.IP
+See \fCdetails\fR above.
+
+.ig >>
+<a name="legenddriven"></a>
+.>>
+.ig >>
+<br><br><br>
+.>>
+
+.SH LEGEND-DRIVEN TECHNIQUE
+
+.LP
+"Legend-driven technique" allows 
+bar color, scatterplot symbol, etc. to be controlled by a data field.
+This technique involves defining a legend \fIfirst\fR, containing information
+to associate data field contents with appearance details.
+Then the plotting is done.
+
+.LP
+Here is the procedure:
+.IP
+1. For every expected variation,
+set up an explicit legend entry using \fBproc legendentry\fR.
+\fClabel\fR, \fCtag\fR, and \fCdetails\fR attributes should be supplied.
+The \fCtag\fR will be compared with data field contents.
+The \fCdetails\fR attributes control appearance.
+.IP
+2. Plot, using the appropriate attribute.  For example, if you are
+doing a bar graph where individual bar colors are controlled by a data
+field, you would use \fBproc bars\fR and specify a \fCcolorfield\fR.
+
+.LP
+An example of legend-driven technique is
+.ig >>
+<a href="../gallery/colorfld.htm">
+.>>
+\0colorfld
+.ig >>
+</a>
+.>>
+
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

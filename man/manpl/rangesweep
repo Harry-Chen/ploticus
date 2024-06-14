@@ -1,0 +1,200 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: proc rangesweep</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>proc rangesweep</h2></td>
+  <td align=right>
+  <small>
+  <a href="Welcome.html"><img src="ploticus.gif" border=0></a><br>
+  <a href="Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH proc_rangesweep PL "18-JUN-2001   PL www.sgpr.net"
+
+.ig >>
+<center>
+<img src="../gallery/rangesweep0.gif">
+</center>
+.>>
+
+.SH DESCRIPTION
+\fBproc rangesweep\fR draws a moving range.
+The plot is drawn beginning with first data record, working to the last one.
+
+.SH EXAMPLES
+See the Gallery Rangesweep page
+.ig >>
+<a href="../gallery/gall.rangesweep.html"><img src="../gallery/btn/here.gif"></a>
+.>>
+
+.SH UNPLOTTABLE DATA
+Invalid values are skipped;
+the rangesweep will be drawn to connect only the points corresponding to plottable
+values.  Points lying outside of the plotting area are displayed if possible.
+ 
+
+.SH PREREQUISITES
+A plotting area must be set up using \fBproc areadef\fR 
+and \fBproc getdata\fR must be executed to 
+access or define some data.
+The data must be ordered in X.
+
+.SH MODES 
+This proc can operate in one of these modes:
+.LP
+\fBY only (points "where they fall"):\fR
+.IP 
+By not specifying \fCxfield\fR, range values are shown
+at consecutive unit locations in X.
+.LP
+\fBX, Y:\fR
+.IP 
+By specifying \fCxfield\fR as well as \fClofield\fR and \fChifield\fR, 
+range values are shown at given X, Y locations in the data.
+
+.SH MANDATORY ATTRIBUTE
+The \fClofield\fR and \fChifield\fR attributes MUST be specified.
+
+.SH ATTRIBUTES
+.LP
+\fBlofield\fR 
+.ig >>
+<a href="attributetypes.html#dfield">
+.>>
+\fI dfield \fR
+.ig >>
+</a>
+.>>
+.IP
+Data field to use for low end of range.
+Example: \fClofield: 1\fR
+
+.LP
+\fBhifield\fR 
+.ig >>
+<a href="attributetypes.html#dfield">
+.>>
+\fI dfield \fR
+.ig >>
+</a>
+.>>
+.IP
+Data field to use for high end of range.
+Example: \fChifield: 2\fR
+
+.LP
+\fBxfield\fR 
+.ig >>
+<a href="attributetypes.html#dfield">
+.>>
+\fI dfield \fR
+.ig >>
+</a>
+.>>
+.IP
+Data field to use for X values.
+If not specified, sequential unit locations in X will be used.
+Example: \fCxfield: 1\fR
+
+.LP
+\fBcolor\fR 
+.ig >>
+<a href="color.html">
+.>>
+\fI color \fR
+.ig >>
+</a>
+.>>
+.IP
+Color of the range sweep.
+Example: \fCcolor: powderblue\fR
+
+.LP
+\fBlegendlabel\fR 
+.ig >>
+<a href="attributetypes.html#text">
+.>>
+\fI text \fR
+.ig >>
+</a>
+.>>
+.IP
+A label to be associated with the current range sweep in the legend.
+\fBproc legend\fR must be executed later in order to
+render the legend.
+.br
+Example: \fClegendlabel: Group A\fR
+
+.LP
+\fBsweeprange\fR \fIxlo\fR [\fIxhi\fR]
+.IP
+If specified, range will be rendered only at x values falling between 
+\fIxlo\fR and \fIxhi\fR.  \fIxlo\fR and \fIxhi\fR must be plottable 
+values in X.  If \fIxhi\fR is not given then this will control
+only the lower bound.
+.br
+Example: \fCsweeprange: 5 24\fR
+
+.LP
+\fBxstart\fR  
+.ig >>
+<a href="attributetypes.html#plotvalue">
+.>>
+\fI plotvalue \fR
+.ig >>
+</a>
+.>>
+.IP
+If specified, and if using sequential locations in x (\fCxfield\fR not
+specified), determines where in X the range will start.
+
+.LP
+\fBselect\fR  
+.ig >>
+<a href="condex.html">
+.>>
+\fI conditional-expression \fR
+.ig >>
+</a>
+.>>
+.IP
+If specified, the \fIselect-expression\fR will be used to determine
+whether or not to plot a given row of data.
+.br
+Example: \fCselect: @7 >= @9\fR
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="Welcome.html">
+<img src="ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

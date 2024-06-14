@@ -1,0 +1,107 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: gallery - error bars</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>Gallery - Error bars</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH Gallery_-_Error_bars PL "01-MAR-2002   PL ploticus.sourceforge.net"
+
+.ig >>
+This page contains a series of error bar examples.
+If the amount of error has been calculated in
+advance, use <a href="../doc/bars.html">proc bars</a>.  If you want
+<b>ploticus</b> to compute the mean and standard deviation, use
+<a href="../doc/rangebar.html">proc rangebar</a> with the <b>meanmode</b> option.
+<p>
+<h1><br>Example 1 - vbars prefab</h1>
+<a href="../doc/prefab_vbars.html">vbars prefab<br><img src="../gallery/prefab_img/vbars3.gif"></a>
+<br>
+The <a href="../doc/prefab_vbars.html">vbars prefab</a>
+can create various error bar displays without requiring you to write any script code.
+<p>
+<h1><br>Example 2 - lines prefab</h1>
+<a href="../doc/prefab_lines.html">lines prefab<br><img src="../gallery/prefab_img/lines3.gif"></a>
+<br>
+The <a href="../doc/prefab_lines.html">lines prefab</a>
+can also create error bars.
+<p>
+<h1><br>Example 3 - script</h1>
+<a href="errbar2.htm">errbar2<br><img src="errbar2.gif"></a>
+<br>
+Simple example where standard deviation was computed in advance.
+<p>
+<h1><br>Example 4 - script</h1>
+<a href="mouse.htm">mouse<br><img src="mouse.gif"></a>
+<br>
+Error bars to +/- one standard error were computed in advance.
+<p>
+<h1><br>Example 5 - script</h1>
+<a href="errbar3.htm">errbar3<br><img src="errbar3.gif"></a>
+<br>
+Simple example where mean and standard deviation were computed by
+<b>proc rangebar</b>.
+<p>
+<h1><br>Example 6 - script</h1>
+<a href="errbar5.htm">errbar5<br><img src="errbar5.gif"></a>
+<br>
+Multiple error bars, showing increased statistical power
+as sample size increases.  Values computed externally, in advance.
+<p>
+<h1><br>Example 7 - script</h1>
+<a href="errbar4.htm">errbar4<br><img src="errbar4.gif"></a>
+<br>
+In this example, <b>proc rangebar</b> computed the means and
+standard deviations and displayed them as horizonal error bars.
+<p>
+<h1><br>Example 8 - script</h1>
+<a href="scatterplot10.htm">scatterplot10<br><img src="scatterplot10.gif"></a>
+<br>
+Error bars in both horizontal and vertical directions for a scatterplot.
+<p>
+<h1><br>Example 9 - script</h1>
+<a href="errbar1.htm">errbar1<br><img src="errbar1.gif"></a>
+<br>
+A more elaborate example.  <b>proc scatterplot</b> was used to
+render points, and <b> proc bars</b> the error bars.  
+The standard deviations were computed in advance.
+.>>
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="../doc/Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

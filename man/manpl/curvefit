@@ -1,0 +1,251 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: proc curvefit</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>proc curvefit</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH proc_curvefit PL "01-MAR-2002   PL ploticus.sourceforge.net"
+
+.ig >>
+<center>
+<img src="../gallery/curvefit0.gif">
+</center>
+.>>
+
+.SH DESCRIPTION
+.LP
+\fBproc curvefit\fR fits a curve to the data and renders
+the curve with a line.
+
+.SH FEATURES
+Can compute moving average, linear regression, or bspline curve.
+Also, complete control over color, width, and dash style of line.
+
+.SH EXAMPLES
+See the Gallery curvefit examples
+.ig >>
+<a href="../gallery/gall.curvefit.html"><img src="../gallery/btn/here.gif"></a>
+.>>
+
+.SH PREREQUISITES
+A plotting area must be set up using \fBproc areadef\fR 
+and \fBproc getdata\fR must be executed to 
+access or define some data.
+The data may be presented in any order; proc curvefit will order it in X.
+
+.SH MODES
+Like \fBproc lineplot\fR, data may be given for both X and Y 
+or just for Y.  In the latter case, sequential unit locations are
+used for the X component.
+
+.SH VARIABLES THAT ARE SET
+.LP
+\fBREGRESSION_LINE\fR
+.IP
+If curvetype is \fCregression\fR, this variable will be set to display
+the formula for the regression line.
+.LP
+\fBCORRELATION\fR
+.IP
+If curvetype is \fCregression\fR, this variable will be set to display
+the Pearson correlation coefficient (r), which ranges from -1.0 to 1.0, where
+1.0 is a strong correlation (positive slope), -1.0 is a strong correlation
+(negative slope), and 0 is no correlation.
+
+
+.SH MANDATORY ATTRIBUTE
+The \fCyfield\fR attribute MUST be specified.
+
+.SH ATTRIBUTES
+.LP
+\fByfield\fR 
+.ig >>
+<a href="attributetypes.html#dfield">
+.>>
+\fI dfield \fR
+.ig >>
+</a>
+.>>
+.IP
+Data field to use for Y values.
+Example: \fCyfield: 1\fR
+
+.LP
+\fBxfield\fR 
+.ig >>
+<a href="attributetypes.html#dfield">
+.>>
+\fI dfield \fR
+.ig >>
+</a>
+.>>
+.IP
+Data field to use for X values.
+If not given, sequential unit locations in X will be used.
+Example: \fCxfield: 4\fR
+
+.LP
+\fBcurvetype\fR \fCmovingavg\fR | \fCregression\fR | \fCbspline\fR | \fCavg\fR
+.IP
+The type of curve fitting computation to perform.  
+.IP
+\fBmovingavg\fR: For each point, it takes the average of the current point and \fIn\fR-1 
+points to the left (or as many points as are available).
+\fIn\fR is controlled by the \fCorder\fR attribute.
+Often used in finance.
+.IP
+\fBregression\fR computes the linear regression for the set of points.  The result will be a
+straight line expressing the relationship between X and Y.  Often used with scatterplots.
+The variables REGRESSION_LINE and CORRELATION will be set (see VARIABLES above).
+.IP
+\fBbspline\fR draws a curve using the bspline algorithm.  The \fCorder\fR and \fCresolution\fR
+attributes control the appearance of the result.  May be used to fit a curve to a histogram.
+.IP
+\fBavg\fR is similar to movingavg except that it also includes \fIn\fR-1 points to the right
+of the current point (or as many points as are available) in the average.  
+Thus, for a point that is far from either edge, 2\fIn\fR-1 points will be averaged.
+.IP
+Example: \fCcurvetype: movingavg\fR
+
+.LP
+\fBorder\fR \fIn\fR
+.IP
+For bspline curves, this is a value between 2 and 20; a lower value
+yields a more jagged curve, while a higher value gives a smoother curve.
+The number of data points must be at least this value for a bspline curve
+to be possible.
+.IP
+For movingavg curves, this defines the number of points
+to include in each average computation.  For avg curves, 2\fIn\fR - 1
+points will be considered, where \fIn\fR = the \fCorder\fR value.
+.IP
+This attribute has no effect with regression curve.
+.IP
+Default order for either type of curve is 4.
+.IP
+Example: \fCorder: 8\fR
+
+.LP
+\fBresolution\fR \fIn\fR
+.IP
+Only relevant for bspline curves.  
+For every input point, \fIn\fR result points will be generated.
+Default is 5.0.
+
+.LP
+\fBlinedetails\fR 
+.ig >>
+<a href="linedetails.html">
+.>>
+\fI linedetails \fR
+.ig >>
+</a>
+.>>
+.IP
+Rendering details for the curve.
+Example: \fClinedetails: color=red width=2.0 style=2\fR
+
+.LP
+\fBcalcrange\fR \fImin\fR [\fImax\fR]
+.IP
+Data within this range will be included in curve calculation.
+If only one value is given, it will be taken as the range
+minima and the maxima will be the plottable maxima.
+If not specified all data rows will be included.
+
+.LP
+\fBlinerange\fR \fImin\fR [\fImax\fR]
+.IP
+Controls the X range (in scaled units) within which the curve will be rendered.
+Data points falling outside this range will not be rendered.
+If accumulation is being done, points outside the range will contribute
+to the accumulated total.
+If only one value is given, it will be taken as the range
+minima and the maxima will be the plottable maxima.
+If not specified all data rows will be plotted.
+.IP
+For regression curves, this attribute may be used to limit
+the X range of the regression line, or to create a regression line that extends 
+beyond the X range of the data.  
+In this case, \fImin\fR and \fImax\fR should both be given.
+.IP
+Example: \fClinerange: 1\fR
+
+.LP
+\fBlegendlabel\fR  
+.ig >>
+<a href="attributetypes.html#text">
+.>>
+\fI text \fR
+.ig >>
+</a>
+.>>
+.IP
+A label to be associated with the curve in the legend.
+\fBproc legend\fR must be executed later in order to
+render the legend.
+
+.LP
+\fBselect\fR  
+.ig >>
+<a href="condex.html">
+.>>
+\fI conditional-expression \fR
+.ig >>
+</a>
+.>>
+.IP
+Allows selected data points to be included in curve computation.
+ 
+.LP
+\fBshowresults\fR  \fCyes\fR | \fCno\fR
+.IP
+If \fCyes\fR, a listing of the points in the computed curve will
+be written to the diagnostic stream (-diag).
+
+.LP
+\fBstatsonly\fR  \fCyes\fR | \fCno\fR
+.IP
+For regression curves, this option may be used if it is desired to
+compute the REGRESSION_LINE and CORRELATION variables but display no curve.
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="../doc/Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

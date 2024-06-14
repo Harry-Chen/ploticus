@@ -1,0 +1,167 @@
+.ig >>
+<STYLE TYPE="text/css">
+<!--
+        A:link{text-decoration:none}
+        A:visited{text-decoration:none}
+        A:active{text-decoration:none}
+-->
+</STYLE>
+<title>ploticus: ploticus handbook - contents</title>
+<body bgcolor=D0D0EE vlink=0000FF>
+<br>
+<br>
+<center>
+<table cellpadding=2 bgcolor=FFFFFF width=550 ><tr>
+<td>
+  <table cellpadding=2 width=550><tr>
+  <td><br><h2>Ploticus Handbook - Contents</h2></td>
+  <td align=right>
+  <small>
+  <a href="../doc/Welcome.html"><img src="../doc/ploticus.gif" border=0></a><br>
+  <a href="../doc/Welcome.html">Welcome</a> &nbsp; &nbsp;
+  <a href="../gallery/index.html">Gallery</a> &nbsp; &nbsp;
+  <a href="../doc/Contents.html">Handbook</a> 
+  <td></tr></table>
+</td></tr>
+<td>
+<br>
+<br>
+.>>
+
+.TH Ploticus_Handbook_-_Contents PL "04-MAR-2002   PL ploticus.sourceforge.net"
+
+.ig >>
+<b>GENERAL INFO</b><br>
+<ul>
+<a href="Welcome.html">Welcome - introduction</a><br>
+<a href="Faq.html">FAQ</a><br>
+<a href="Versions.html">What's new</a><br>
+<a href="dataformat.html">Plot data file formats</a><br>
+<a href="scaleunits.html">Scaling and various types of plottable units</a><br>
+<a href="web.html">Uses: &nbsp; &nbsp; web pages</a> &nbsp; &nbsp;
+<a href="clickmap.html">clickmaps</a> &nbsp; &nbsp;
+<a href="svg.html">SVG</a> &nbsp; &nbsp;
+<a href="cgi.html">CGI</a> &nbsp; &nbsp;
+<a href="paper.html">hard copy</a> &nbsp; &nbsp;
+<a href="posters.html">posters</a> &nbsp; &nbsp;
+<a href="slides.html">slides</a> &nbsp; &nbsp;
+<a href="interactive.html">X11</a>
+<br>
+<a href="../gallery/index.html">Gallery of examples</a>
+</ul>
+<br>
+<b>PROGRAMS</b> - invoked from the command line (console)
+<ul>
+The <a href="pl.1.html">pl program</a><br>
+</ul>
+<br>
+<b>PREFABS</b> - 
+produce graphs quickly from the command line without coding scripts
+<br>
+<ul>
+<a href="prefabs.html">Intro to prefabs</a><br>
+<a href="prefab_stdparms.html">Standard prefab parameters</a><br>
+<a href="prefab_chron.html">chron</a> - display chronological data<br>
+<a href="prefab_dist.html">dist</a> - frequency distribution histograms<br>
+<a href="prefab_lines.html">lines</a> - line plots<br>
+<a href="prefab_pie.html">pie</a> - pie graphs<br>
+<a href="prefab_scat.html">scat</a> - scatterplots with correlations<br>
+<a href="prefab_stack.html">stack</a> - stacked bar graphs<br>
+<a href="prefab_vbars.html">vbars</a> - bar graphs<br>
+<a href="prefab_draw.html">draw</a> - interpret ploticus draw commands<br>
+</ul>
+<br>
+<a name=scripts></a>
+<b>SCRIPTS</b> - 
+for maximum flexibility and customization.
+<ul>
+<a href="scripts.html">Introduction to scripts</a><br>
+&nbsp; &nbsp; <a href="scripts.html#procs">Using procs and attributes; #proc, #procdef, #saveas, #clone</a><br>
+&nbsp; &nbsp; <a href="scripts.html#syntax">Syntax and variables</a><br>
+&nbsp; &nbsp; <a href="scripts.html#directives">Flow of control directives such as #set and #if</a><br>
+&nbsp; &nbsp; <a href="plshellsql.html">Using #shell and #sql</a><br>
+<a href="variables.html">Reserved variables</a><br>
+<a href="functions.html">Functions</a><br>
+<a href="../gallery/Listall.html">Script examples: &nbsp; Index</a> &nbsp; &nbsp;
+<a href="../thumbpng/Viewall.html">PNG thumbnails</a> &nbsp; &nbsp;
+<a href="../thumbnails/Viewall.html">GIF thumbnails</a>
+<br>
+<br>
+<b>PLOTTING PROCS</b><br>
+<a href="annotate.html">proc annotate</a> - add annotation<br>
+<a href="areadef.html">proc areadef</a> - define a plotting area<br>
+&nbsp; &nbsp; <a href="autorange.html">notes on automatic scaling</a><br>
+<a href="axis.html"> proc axis (xaxis/yaxis)</a> - render an axis<br>
+<a href="bars.html">proc bars</a> - bar graphs, histograms, error bars<br>
+<a href="curvefit.html">proc curvefit</a> - generate a curve from data points<br>
+<a href="drawcommands.html">proc drawcommands</a> - draw using command set<br>
+<a href="getdata.html">proc getdata</a> - get or specify plot data<br>
+<a href="legend.html">proc legend</a> - render a legend<br>
+<a href="line.html">proc line</a> - draw arbitrary lines<br>
+<a href="lineplot.html">proc lineplot</a> - produce a line plot<br>
+<a href="page.html">proc page</a> - set page-wide attributes/ break page<br>
+<a href="pie.html">proc pie</a> - produce a pie graph<br>
+<a href="rangebar.html">proc rangebar</a> - produce a rangebar / boxplot<br>
+<a href="rangesweep.html">proc rangesweep</a> - produce a range sweep<br>
+<a href="rect.html">proc rect</a> - draw an arbitrary rectangle <br>
+<a href="scatterplot.html">proc scatterplot</a> - produce a scatterplot<br>
+<a href="settings.html">proc settings</a> - overall settings for units, notations, etc<br>
+<p>
+<b>UTILITY PROCS</b><br>
+<a href="bevelrect.html">proc bevelrect</a> - <i>renamed <a href="rect.html">proc rect</a></i><br>
+<a href="breakaxis.html">proc breakaxis</a> - break an axis for display of extreme values<br>
+<a href="catslide.html">proc catslide</a> - adjust placement of categories<br>
+<a href="settings.html">proc datesettings</a> - <i>renamed <a href="settings.html">proc settings</a></i><br>
+<a href="defineunits.html">proc defineunits</a> - explicitly define scaling units<br>
+<a href="import.html">proc import</a> - import an external PNG image file<br>
+<a href="legendentry.html">proc legendentry</a> - define a legend entry explicitly<br>
+<a href="originaldata.html">proc originaldata</a> - reference original data set<br>
+<a href="print.html">proc print</a> - show outliers, contents of variables, etc.<br>
+<a href="processdata.html">proc processdata</a> - process data set in various ways<br>
+<a href="tabulate.html">proc tabulate</a> - perform tabulations & frequency distributions<br>
+<a href="trailer.html">proc trailer</a> - specify data at end of script<br>
+</ul>
+<br>
+<b>ATTRIBUTES</b><br>
+<ul>
+<a href="attributetypes.html">Basic attribute types</a><br>
+<a href="color.html">Colors</a><br>
+<a href="condex.html">Conditional expressions</a><br>
+<a href="linedetails.html">Linedetails</a><br>
+<a href="symboldetails.html">Symboldetails</a><br>
+<a href="textdetails.html">Textdetails</a><br>
+<a href="fonts.html">Fonts</a><br>
+<a href="dates.html">Dates</a><br>
+<a href="times.html">Times</a><br>
+</ul>
+<br>
+<b>APPENDIX</b><br>
+<ul>
+<a href="config.html">Ploticus configuration files</a><br>
+<a href="nonunix.html">Notes for non-unix environments</a><br>
+<a href="specialchars.html">Special characters</a><br>
+<a href="limits.html">Program limitations</a><br>
+<a href="Copyright.html">Copyright and permissions <img src="../doc/gpl.gif" border=0></a><br>
+<a href="http://ploticus.sourceforge.net">Home page (ploticus.sourceforge.net)</a><br>
+<a href="http://ploticus.sourceforge.net/doc/Download.html">Downloading the software</a><br>
+<a href="Feedback.html">User comments and feedback</a><br>
+<a href="Problems.html">Correspondence, troubleshooting, & bug reports</a><br>
+</ul>
+.>>
+
+.ig >>
+<br>
+<br>
+</td></tr>
+<td align=right>
+<a href="../doc/Welcome.html">
+<img src="../doc/ploticus.gif" border=0></a><br><small>data display engine &nbsp; <br>
+<a href="../doc/Copyright.html">Copyright Steve Grubb</a>
+<br>
+<br>
+<center>
+<img src="../gallery/all.gif">
+</center>
+</td></tr>
+</table>
+.>>

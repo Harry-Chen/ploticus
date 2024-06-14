@@ -1,0 +1,26 @@
+ploticus (2.0.3-1) unstable; urgency=low
+
+  * The "That Tears it, Now You Have to Update Docs Package" Release.
+  * New upstream release (well, not so new :-( )   closes: Bug#137578
+  * Correct missing libpng2-dev in build-depends.  closes: Bug#142205
+  * Use correct syntax to:
+  * close URL type.                                closes: Bug#137577
+  * fix Architecture                               closes: Bug#141657
+  * close ITP                                      closes: Bug#132878
+
+ -- James W. Penny <jpenny@debian.org>  Wed, 10 Apr 2002 23:02:04 -0400
+
+ploticus (2.0.2-2) unstable; urgency=low
+
+  *  Correct packaging  mistakes.  
+  *  First, missing : in http:                close: Bug#137577
+  *  Second, should be Architecture: any.     close: Bug#141657
+
+ -- James W. Penny <jpenny@debian.org>  Mon,  4 Apr 2002 23:45:15 -0500
+
+ploticus (2.0.2-1) unstable; urgency=low
+
+  * Initial Debian package.			close: Bug#132878
+
+ -- James W. Penny <jpenny@debian.org>  Mon, 18 Feb 2002 22:24:15 -0500
+
