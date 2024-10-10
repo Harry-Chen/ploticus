@@ -1,3 +1,10 @@
+ploticus (2.42-7) unstable; urgency=medium
+
+  * QA upload.
+  * d/patches: add patch to fix FTBFS with GCC-14 (closes: #1075391)
+
+ -- Shengqi Chen <harry-chen@outlook.com>  Wed, 09 Oct 2024 00:24:04 +0800
+
 ploticus (2.42-6) unstable; urgency=medium
 
   * QA upload.
