@@ -1,3 +1,21 @@
+ploticus (2.42-8) UNRELEASED; urgency=medium
+
+  * QA upload.
+
+  * d/rules:
+    + migrate from hand-written rules to dh sequence (closes: #960225)
+    + enable all hardening flags, compile with C99
+    + disable DH_VERBOSE by default
+  * d/patches:
+    + add Forwarded header to all patches
+    + add patch to fix OOB memory access (closes: #911331)
+    + add more fixes to man-fix.patch
+  * d/watch: update version & use https
+  * Add necessary dependencies to shared library
+  * Add lintian-overrides for libploticus0
+
+ -- Shengqi Chen <harry-chen@outlook.com>  Wed, 16 Oct 2024 17:02:57 +0800
+
 ploticus (2.42-7) unstable; urgency=medium
 
   * QA upload.
