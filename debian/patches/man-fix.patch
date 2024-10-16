@@ -1041,7 +1041,8 @@ Forwarded: not-needed
 -.>>
 +..
  .SH Capacity setting options
- These options (new with version 2.10) allow capacities to be raised for accomodation 
+-These options (new with version 2.10) allow capacities to be raised for accomodation 
++These options (new with version 2.10) allow capacities to be raised for accommodation 
  of very large data sets, or lowered to minimize memory usage.
  The defaults in this section are defined in \fCpl.h\fR.
  .LP
@@ -1334,7 +1335,7 @@ Forwarded: not-needed
  
  .SH Paper orientation options
  .LP
-@@ -1087,54 +1087,54 @@
+@@ -1087,60 +1087,60 @@
  .IP \0
  For paginated postscript, set paper orientation to landscape (oblong).
  
@@ -1407,6 +1408,13 @@ Forwarded: not-needed
  
  .SH Development and debugging options
  .LP
+ \fB-debug\fR
+ .IP \0
+-Debug mode.  Causes dianostic information to be written to the 
++Debug mode.  Causes diagnostic information to be written to the 
+ diagnostic stream (stderr by default, see \fC-diagfile\fR below).
+ Highly recommended if you are experiencing difficulty.
+ Best to 
 @@ -1148,23 +1148,23 @@
  on all arguments gotten.
  Another effect of debug mode is that any temporary files are not removed upon termination.
