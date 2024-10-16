@@ -18,7 +18,7 @@ build: build-stamp
 build-stamp: configure-stamp
 	dh_prep
 	dh_testdir
-	$(MAKE)
+	dh_auto_build
 	touch build-stamp
 
 clean:
