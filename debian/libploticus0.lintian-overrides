@@ -1,0 +1,2 @@
+# libploticus use a specific & tailored version of libgd
+embedded-library libgd [usr/lib/libploticus.so.0.0.0]
