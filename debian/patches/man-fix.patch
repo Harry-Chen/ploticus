@@ -1,5 +1,6 @@
-Fix roff warnings from Lintian caused by use of non-standard .ig >> / .>>
-Fix spellings
+Description: Fix roff warnings from Lintian caused by use of non-standard .ig >> / .>>
+ Fix spellings
+Forwarded: not-needed
 --- a/man/man1/pl.1
 +++ b/man/man1/pl.1
 @@ -1,4 +1,4 @@
