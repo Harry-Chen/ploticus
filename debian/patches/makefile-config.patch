@@ -157,14 +157,16 @@ Forwarded: not-needed
  
  # libploticus.a with png
  libploticus-static: $(OBJ) $(XOBJ) api.o gd00files gd16files
-@@ -229,8 +239,8 @@
+@@ -228,9 +238,9 @@
+ 	$(ARCOM) libploticus.$(LIBEXT) $(OBJ) $(XOBJ) api.o $(GD16) $(GD)
  
  # this one needs work... suggestions welcome
- libploticus-so: $(OBJ) $(GDOBJ)
+-libploticus-so: $(OBJ) $(GDOBJ)
 -	$(RMCOM) libploticus.$(LIBEXT)
 -	$(CC) $(SHAREFLAG) -o libploticus.$(LIBEXT) $(OBJ) $(GDOBJ)
++libploticus-so: $(OBJ) $(GDOBJ) $(XOBJ) api.o gd00files gd16files
 +	$(RMCOM) libploticus.$(SHARELIBEXT)
-+	$(CC) $(LDFLAGS) $(SHAREFLAG) -o libploticus.$(SHARELIBEXT) $(OBJ) $(GDOBJ)
++	$(CC) $(LDFLAGS) $(SHAREFLAG) -o libploticus.$(SHARELIBEXT) $(OBJ) $(GDOBJ) $(XOBJ) api.o $(GD16) $(GD) -lz -lm -lpng -lX11
  
  
  gd00files: 

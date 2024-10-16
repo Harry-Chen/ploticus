@@ -2,6 +2,7 @@
 
 # Uncomment this to turn on verbose mode.
 # export DH_VERBOSE=1
+export DEB_CFLAGS_MAINT_APPEND = -std=c99 -D_DEFAULT_SOURCE
 export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 
 DPKG_EXPORT_BUILDFLAGS = 1
